@@ -12,7 +12,14 @@ class SubMap extends StatefulWidget {
 
 class _SubMapState extends State<SubMap> {
   List<LatLng> tappedPoints = [
-
+    LatLng(18.584182, 73.964446),
+    LatLng(18.575598, 73.990024),
+    LatLng(18.588371, 74.000023),
+  ];
+  List<LatLng> chefmarker = [
+    LatLng(18.5773174, 73.9775144),
+    LatLng(18.585280, 73.984445),
+    LatLng(18.584141, 73.971699),
   ];
 
   @override
@@ -46,8 +53,22 @@ class _SubMapState extends State<SubMap> {
                 width: 80.0,
                 height: 80.0,
                 child: Icon(
-                  Icons.location_on,
+                  Icons.location_history_outlined,
                   color: Colors.red,
+                  size: 25.0,
+                ),
+              ),
+            ).toList(),
+          ),
+          MarkerLayer(
+            markers: chefmarker.map(
+                  (point) => Marker(
+                point: point,
+                width: 80.0,
+                height: 80.0,
+                child: Icon(
+                  Icons.location_history_outlined,
+                  color: Colors.blue,
                   size: 25.0,
                 ),
               ),
