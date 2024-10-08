@@ -11,6 +11,7 @@ class SubMap extends StatefulWidget {
 }
 
 class _SubMapState extends State<SubMap> {
+<<<<<<< HEAD
   List<LatLng> tappedPoints = [LatLng(18.534520, 73.902025)];
  List<LatLng>RegisteredNurseMarker = [LatLng(18.591248, 74.000139)];
 
@@ -53,6 +54,18 @@ List<LatLng>AdministrativeAssistantsMarker = [LatLng(18.658596, 74.158867)];
 
 
 
+=======
+  List<LatLng> tappedPoints = [
+    LatLng(18.584182, 73.964446),
+    LatLng(18.575598, 73.990024),
+    LatLng(18.588371, 74.000023),
+  ];
+  List<LatLng> chefmarker = [
+    LatLng(18.5773174, 73.9775144),
+    LatLng(18.585280, 73.984445),
+    LatLng(18.584141, 73.971699),
+  ];
+>>>>>>> origin/main
 
   @override
   Widget build(BuildContext context) {
@@ -85,26 +98,38 @@ List<LatLng>AdministrativeAssistantsMarker = [LatLng(18.658596, 74.158867)];
                 width: 80.0,
                 height: 80.0,
                 child: Icon(
+<<<<<<< HEAD
               
                    Icons.person_pin,
                   color: const Color.fromARGB(255, 245, 3, 3),
                   size: 30.0,
                  
+=======
+                  Icons.location_history_outlined,
+                  color: Colors.red,
+                  size: 25.0,
+>>>>>>> origin/main
                 ),
               ),
 
             ).toList(),
           ),
+<<<<<<< HEAD
          
 
 
           MarkerLayer(
             markers: RegisteredNurseMarker .map(
+=======
+          MarkerLayer(
+            markers: chefmarker.map(
+>>>>>>> origin/main
                   (point) => Marker(
                 point: point,
                 width: 80.0,
                 height: 80.0,
                 child: Icon(
+<<<<<<< HEAD
                    Icons.person_pin,
                   color: const Color.fromRGBO(253, 232, 45, 1),
                   size: 30.0,
@@ -459,6 +484,15 @@ MarkerLayer(
 
 
 
+=======
+                  Icons.location_history_outlined,
+                  color: Colors.blue,
+                  size: 25.0,
+                ),
+              ),
+            ).toList(),
+          ),
+>>>>>>> origin/main
           PolylineLayer(
             polylines: [
               Polyline(
