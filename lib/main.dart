@@ -31,7 +31,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: SubMap(),
+      home: LoginPage(),
     );
   }
 }
@@ -49,7 +49,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
     // 1. User name of the staff
 
-    await FirebaseFirestore.instance.collection('user').doc('')
+    // await FirebaseFirestore.instance.collection('user').doc('')
 
     // 2. Profession
     // 3. Place

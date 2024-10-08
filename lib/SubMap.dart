@@ -11,8 +11,6 @@ class SubMap extends StatefulWidget {
 }
 
 class _SubMapState extends State<SubMap> {
-<<<<<<< HEAD
-  List<LatLng> tappedPoints = [LatLng(18.534520, 73.902025)];
  List<LatLng>RegisteredNurseMarker = [LatLng(18.591248, 74.000139)];
 
   List<LatLng> LicensdePracticalNurseMarker = [LatLng(18.576116, 73.972072)];
@@ -27,7 +25,7 @@ List<LatLng> OccupationalTherapistsMarker = [LatLng(18.570415, 73.918444)];
 
 List<LatLng>ParamedicsMarker = [LatLng(18.565543, 73.936531)];
 
-List<LatLng> DisabledCaregiversMarker = [LatLng(18.582879, 73.984277)];                  
+List<LatLng> DisabledCaregiversMarker = [LatLng(18.582879, 73.984277)];
 
 List<LatLng> CooksMarker = [LatLng(18.553016, 73.887723)];
 
@@ -36,7 +34,7 @@ List<LatLng> HousekeepersMarker = [LatLng(18.553527, 73.949120)];
  List<LatLng> CleaningStaffMarker = [LatLng(18.496048, 73.872785)];
 
 List<LatLng> BabysittersMarker = [LatLng(18.591861, 73.939677)];
-                          
+
 List<LatLng> ElderCompanionsMarker = [LatLng(18.501442, 73.934076)];
 
 List<LatLng>HomeGuardsMarker = [LatLng(18.716868, 73.485374)];
@@ -48,13 +46,7 @@ List<LatLng>PersonalCareAssistantsMarker = [LatLng(18.739626, 73.425736)];
 List<LatLng>DriverMarker = [LatLng(18.973073, 74.438641)];
 
 List<LatLng>AdministrativeAssistantsMarker = [LatLng(18.658596, 74.158867)];
-                                       
 
-
-
-
-
-=======
   List<LatLng> tappedPoints = [
     LatLng(18.584182, 73.964446),
     LatLng(18.575598, 73.990024),
@@ -65,7 +57,6 @@ List<LatLng>AdministrativeAssistantsMarker = [LatLng(18.658596, 74.158867)];
     LatLng(18.585280, 73.984445),
     LatLng(18.584141, 73.971699),
   ];
->>>>>>> origin/main
 
   @override
   Widget build(BuildContext context) {
@@ -98,51 +89,28 @@ List<LatLng>AdministrativeAssistantsMarker = [LatLng(18.658596, 74.158867)];
                 width: 80.0,
                 height: 80.0,
                 child: Icon(
-<<<<<<< HEAD
-              
-                   Icons.person_pin,
-                  color: const Color.fromARGB(255, 245, 3, 3),
-                  size: 30.0,
-                 
-=======
                   Icons.location_history_outlined,
                   color: Colors.red,
                   size: 25.0,
->>>>>>> origin/main
                 ),
               ),
 
             ).toList(),
           ),
-<<<<<<< HEAD
-         
-
-
-          MarkerLayer(
-            markers: RegisteredNurseMarker .map(
-=======
           MarkerLayer(
             markers: chefmarker.map(
->>>>>>> origin/main
                   (point) => Marker(
                 point: point,
                 width: 80.0,
                 height: 80.0,
                 child: Icon(
-<<<<<<< HEAD
                    Icons.person_pin,
                   color: const Color.fromRGBO(253, 232, 45, 1),
                   size: 30.0,
-                 
                 ),
               ),
-
             ).toList(),
           ),
-         
-
-
-
           MarkerLayer(
             markers: LicensdePracticalNurseMarker.map(
                   (point) => Marker(
@@ -153,15 +121,11 @@ List<LatLng>AdministrativeAssistantsMarker = [LatLng(18.658596, 74.158867)];
                    Icons.person_pin,
                   color: const Color.fromARGB(255, 3, 94, 230),
                   size: 30.0,
-                 
+
                 ),
               ),
-
             ).toList(),
           ),
-
-
-
    MarkerLayer(
             markers:CertifiedNursAssistentMarker.map(
                   (point) => Marker(
@@ -172,18 +136,11 @@ List<LatLng>AdministrativeAssistantsMarker = [LatLng(18.658596, 74.158867)];
                    Icons.person_pin,
                   color: Colors.purple,
                   size: 30.0,
-                 
+
                 ),
               ),
-
             ).toList(),
-          ),       
-         
-         
-         
-         
-         
-
+          ),
           MarkerLayer(
             markers:HomeHealthAidesMarker .map(
                   (point) => Marker(
@@ -194,15 +151,10 @@ List<LatLng>AdministrativeAssistantsMarker = [LatLng(18.658596, 74.158867)];
                    Icons.person_pin,
                   color: Colors.blue,
                   size: 30.0,
-                 
                 ),
               ),
-
             ).toList(),
           ),
-         
-         
-         
           MarkerLayer(
             markers:PhysiotherapistsMarker.map(
                   (point) => Marker(
@@ -213,17 +165,10 @@ List<LatLng>AdministrativeAssistantsMarker = [LatLng(18.658596, 74.158867)];
                    Icons.person_pin,
                   color: Colors.black,
                   size: 30.0,
-                 
                 ),
               ),
-
             ).toList(),
           ),
-
-
-
-
-
  MarkerLayer(
             markers: OccupationalTherapistsMarker.map(
                   (point) => Marker(
@@ -234,16 +179,10 @@ List<LatLng>AdministrativeAssistantsMarker = [LatLng(18.658596, 74.158867)];
                    Icons.person_pin,
                   color: Colors.green,
                   size: 30.0,
-                 
                 ),
               ),
-
             ).toList(),
           ),
-
-
-
-
  MarkerLayer(
             markers:ParamedicsMarker.map(
                   (point) => Marker(
@@ -254,16 +193,12 @@ List<LatLng>AdministrativeAssistantsMarker = [LatLng(18.658596, 74.158867)];
                  Icons.person_pin,
                   color: Colors.brown,
                   size: 30.0,
-                 
+
                 ),
               ),
 
             ).toList(),
           ),
-
-
-
-
  MarkerLayer(
             markers:DisabledCaregiversMarker .map(
                   (point) => Marker(
@@ -274,15 +209,10 @@ List<LatLng>AdministrativeAssistantsMarker = [LatLng(18.658596, 74.158867)];
                    Icons.person_pin,
                   color: Colors.pink,
                   size: 30.0,
-                 
                 ),
               ),
-
             ).toList(),
           ),
-
-
-
 MarkerLayer(
             markers:CooksMarker .map(
                   (point) => Marker(
@@ -293,16 +223,10 @@ MarkerLayer(
                    Icons.person_pin,
                   color: const Color.fromRGBO(240, 181, 177, 1),
                   size: 30.0,
-                 
                 ),
               ),
-
             ).toList(),
           ),
-
-
-
-
 MarkerLayer(
             markers:HousekeepersMarker .map(
                   (point) => Marker(
@@ -313,15 +237,10 @@ MarkerLayer(
                    Icons.person_pin,
                   color: const Color.fromARGB(255, 234, 132, 132),
                   size: 30.0,
-                 
                 ),
               ),
-
             ).toList(),
           ),
-
-
-
 MarkerLayer(
             markers: CleaningStaffMarker.map(
                   (point) => Marker(
@@ -332,15 +251,10 @@ MarkerLayer(
                    Icons.person_pin,
                   color: const Color.fromARGB(183, 226, 43, 30),
                   size: 30.0,
-                 
                 ),
               ),
-
             ).toList(),
           ),
-
-
-
 MarkerLayer(
             markers:BabysittersMarker.map(
                   (point) => Marker(
@@ -351,15 +265,10 @@ MarkerLayer(
                    Icons.person_pin,
                   color: const Color.fromARGB(255, 2, 242, 10),
                   size: 30.0,
-                 
                 ),
               ),
-
             ).toList(),
           ),
-
-
-
 MarkerLayer(
             markers:ElderCompanionsMarker.map(
                   (point) => Marker(
@@ -370,15 +279,10 @@ MarkerLayer(
                    Icons.person_pin,
                   color: const Color.fromARGB(255, 3, 86, 153),
                   size: 30.0,
-                 
                 ),
               ),
-
             ).toList(),
           ),
-
-
-
 MarkerLayer(
             markers:HomeGuardsMarker.map(
                   (point) => Marker(
@@ -389,15 +293,10 @@ MarkerLayer(
                    Icons.person_pin,
                   color: Colors.red,
                   size: 30.0,
-                 
                 ),
               ),
-
             ).toList(),
           ),
-
-
-
 MarkerLayer(
             markers:SecurityGuardsMarker.map(
                   (point) => Marker(
@@ -408,15 +307,10 @@ MarkerLayer(
                    Icons.person_pin,
                   color: Colors.blueGrey,
                   size: 30.0,
-                 
                 ),
               ),
-
             ).toList(),
           ),
-
-
-
 MarkerLayer(
             markers:PersonalCareAssistantsMarker.map(
                   (point) => Marker(
@@ -427,17 +321,10 @@ MarkerLayer(
                    Icons.person_pin,
                   color: Colors.white,
                   size: 30.0,
-                 
                 ),
               ),
-
             ).toList(),
           ),
-
-
-
-
-
 MarkerLayer(
             markers:DriverMarker.map(
                   (point) => Marker(
@@ -448,17 +335,10 @@ MarkerLayer(
                    Icons.person_pin,
                   color: const Color.fromARGB(255, 119, 2, 41),
                   size: 30.0,
-                 
                 ),
               ),
-
             ).toList(),
           ),
-
-
-
-
-
 MarkerLayer(
             markers:AdministrativeAssistantsMarker.map(
                   (point) => Marker(
@@ -469,30 +349,10 @@ MarkerLayer(
                    Icons.person_pin,
                   color: const Color.fromARGB(255, 25, 0, 29),
                   size: 30.0,
-                 
-                ),
-              ),
-
-            ).toList(),
-          ),
-
-
-
-
-
-         
-
-
-
-=======
-                  Icons.location_history_outlined,
-                  color: Colors.blue,
-                  size: 25.0,
                 ),
               ),
             ).toList(),
           ),
->>>>>>> origin/main
           PolylineLayer(
             polylines: [
               Polyline(
@@ -510,6 +370,5 @@ MarkerLayer(
         ],
       ),
     );
-
   }
 }
