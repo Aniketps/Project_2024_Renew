@@ -221,7 +221,11 @@ class _MyHomePageState extends State<MyHomePage> {
             height: 150,
             color: Colors.red,
             child: AppBar(
-              title: Text((StaffData != null && StaffData['City'] != null)? StaffData['City'] : "Location...", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              title: InkWell(
+                  onTap: () {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => MainMap(),));
+                  },
+                  child: Text((StaffData != null && StaffData['City'] != null)? StaffData['City'] : "Location...", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold))),
               backgroundColor: Colors.red,
               automaticallyImplyLeading: true,
             ),
