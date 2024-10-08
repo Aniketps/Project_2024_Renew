@@ -16,9 +16,7 @@ class MainMap extends StatefulWidget {
 
 class _MainMapState extends State<MainMap> {
 
-  List<LatLng> AvailableStaff = [
-    LatLng(18.582879, 73.984277),
-  ];
+  List<LatLng> AvailableStaff = [];
 
   late double lat;
   late double long;

@@ -43,6 +43,19 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
 
+  TextEditingController SearchGlobal = TextEditingController();
+
+  Future<void> search(searchData) async {
+
+    // 1. User name of the staff
+
+    await FirebaseFirestore.instance.collection('user').doc('')
+
+    // 2. Profession
+    // 3. Place
+
+  }
+
   @override
   void initState() {
     super.initState();
@@ -289,6 +302,7 @@ class _MyHomePageState extends State<MyHomePage> {
                               ),
                               Expanded(
                                 child: TextField(
+                                  controller: SearchGlobal,
                                   decoration: InputDecoration(
                                     border: InputBorder.none,
                                     hintText: 'Search...',
