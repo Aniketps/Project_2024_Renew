@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "195391760517",
+    "project_id": "carehub-af7ec",
+    "storage_bucket": "carehub-af7ec.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:195391760517:android:9a80ee93672f92234ae1ec",
+        "android_client_info": {
+          "package_name": "com.example.carehub"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "195391760517-tn69ld52adkn3n5m1tfsfvf41r2au544.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCowM7mjk-LtmOYXDR01nwSszpRdZb3-m0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "195391760517-tn69ld52adkn3n5m1tfsfvf41r2au544.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
