@@ -43,18 +43,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
 
-  TextEditingController SearchGlobal = TextEditingController();
-
-  Future<void> search(searchData) async {
-
-    // 1. User name of the staff
-
-    // await FirebaseFirestore.instance.collection('user').doc('')
-
-    // 2. Profession
-    // 3. Place
-
-  }
+  String SearchGlobal = '';
 
   @override
   void initState() {
@@ -121,7 +110,8 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
-
+    final screenHeight = MediaQuery.of(context).size.height;
+    
     return Scaffold(
       drawer: Drawer(
         width: screenWidth * 0.7,
@@ -274,97 +264,261 @@ class _MyHomePageState extends State<MyHomePage> {
               ],
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.only(top: 125),
-            child: Container(
-              margin: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
-              child: Column(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 5),
-                    child: Row(
-                      children: [
-                        Container(
-                          height: 50,
-                          width: screenWidth * 0.7,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(50),
-                            color: Colors.white,
-                            boxShadow: [
-                              BoxShadow(spreadRadius: 1, color: Colors.black26, blurRadius: 1)
-                            ],
-                          ),
-                          child: Row(
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.only(left: 10),
-                                child: Icon(Icons.search, color: Colors.blue, size: 25),
+          Stack(
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(top: 125),
+                child: Container(
+                  margin: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
+                  child: Column(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 5),
+                        child: Row(
+                          children: [
+                            Container(
+                              height: 50,
+                              width: screenWidth * 0.7,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(50),
+                                color: Colors.white,
+                                boxShadow: [
+                                  BoxShadow(spreadRadius: 1, color: Colors.black26, blurRadius: 1)
+                                ],
                               ),
-                              Expanded(
-                                child: TextField(
-                                  controller: SearchGlobal,
-                                  decoration: InputDecoration(
-                                    border: InputBorder.none,
-                                    hintText: 'Search...',
-                                    contentPadding: const EdgeInsets.symmetric(horizontal: 10),
+                              child: Row(
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.only(left: 10),
+                                    child: Icon(Icons.search, color: Colors.blue, size: 25),
+                                  ),
+                                  Expanded(
+                                    child: TextField(
+                                      onChanged: (value) {
+                                        setState(() {
+                                          SearchGlobal = value;
+                                        });
+                                      },
+                                      decoration: InputDecoration(
+                                        border: InputBorder.none,
+                                        hintText: 'Search...',
+                                        contentPadding: const EdgeInsets.symmetric(horizontal: 10),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.only(left: 5),
+                              child: Container(
+                                height: 50,
+                                width: screenWidth * 0.18,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(20),
+                                  color: Colors.white,
+                                  boxShadow: [
+                                    BoxShadow(spreadRadius: 1, color: Colors.black26, blurRadius: 1),
+                                  ],
+                                ),
+                                child: Icon(Icons.filter_list_sharp, size: 30, color: Colors.blue),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Expanded(
+                        child: ListView.builder(
+                          itemCount: Profession.length,
+                          itemBuilder: (context, index) {
+                            return Padding(
+                              padding: const EdgeInsets.all(10.0),
+                              child: InkWell(
+                                onTap: () {
+                                  Navigator.push(context, MaterialPageRoute(builder: (context) => StaffPage(Skill: Profession[index].toLowerCase()),));
+                                },
+                                child: Container(
+                                  height: 150,
+                                  width: screenWidth,
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(15),
+                                    boxShadow: [
+                                      BoxShadow(color: Colors.black26, blurRadius: 1, spreadRadius: 1),
+                                    ],
+                                  ),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(10.0),
+                                    child: Text(Profession[index], style: TextStyle(fontSize: 18)),
                                   ),
                                 ),
                               ),
-                            ],
-                          ),
+                            );
+                          },
                         ),
-                        Padding(
-                          padding: const EdgeInsets.only(left: 5),
-                          child: Container(
-                            height: 50,
-                            width: screenWidth * 0.18,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(20),
-                              color: Colors.white,
-                              boxShadow: [
-                                BoxShadow(spreadRadius: 1, color: Colors.black26, blurRadius: 1),
-                              ],
-                            ),
-                            child: Icon(Icons.filter_list_sharp, size: 30, color: Colors.blue),
-                          ),
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                  Expanded(
-                    child: ListView.builder(
-                      itemCount: Profession.length,
-                      itemBuilder: (context, index) {
-                        return Padding(
-                          padding: const EdgeInsets.all(10.0),
-                          child: InkWell(
-                            onTap: () {
-                              Navigator.push(context, MaterialPageRoute(builder: (context) => StaffPage(Skill: Profession[index].toLowerCase()),));
-                            },
-                            child: Container(
-                              height: 150,
-                              width: screenWidth,
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(15),
-                                boxShadow: [
-                                  BoxShadow(color: Colors.black26, blurRadius: 1, spreadRadius: 1),
-                                ],
-                              ),
-                              child: Padding(
-                                padding: const EdgeInsets.all(10.0),
-                                child: Text(Profession[index], style: TextStyle(fontSize: 18)),
-                              ),
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                ],
+                ),
               ),
-            ),
-          ),
+              SearchGlobal.isEmpty? Container() : Padding(
+                padding: const EdgeInsets.only(top: 180,),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                        height: screenHeight * 0.5,
+                        width: screenWidth * 0.85,
+                        decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(20),
+                            boxShadow: [BoxShadow(
+                                color: Colors.black26,
+                                spreadRadius: 1,
+                                blurRadius: 2
+                            )]
+                        ),
+                        child: StreamBuilder<QuerySnapshot>(
+                          stream: FirebaseFirestore.instance.collection('user').snapshots(),
+                          builder: (context, snapshot) {
+
+                            if (snapshot.connectionState == ConnectionState.waiting) {
+                              return Center(
+                                child: CircularProgressIndicator(),
+                              );
+                            }
+
+                            if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                              return Center(
+                                child: Text("No Users Found"),
+                              );
+                            }
+
+                            if (SearchGlobal.isEmpty) {
+                              return Center(child: Text("Empty"));
+                            }
+
+                            return ListView.builder(
+                              itemCount: snapshot.data!.docs.length,
+                              itemBuilder: (context, index) {
+                                var data = snapshot.data!.docs[index].data() as Map<String, dynamic>;
+                                var UID = snapshot.data!.docs[index].id;
+                                if (data['professionOfStaff'] != null && data['First_name'] != null &&
+                                    data['First_name'].toString().toLowerCase().startsWith(SearchGlobal.toLowerCase())) {
+                                  return Padding(
+                                    padding: const EdgeInsets.all(5.0),
+                                    child: InkWell(
+                                      onTap: () {
+                                        Navigator.push(context, MaterialPageRoute(builder: (context) => StaffProfilePage(StaffID: UID, Skill: data['professionOfStaff']),));
+                                      },
+                                      child: Container(
+                                        height: 50,
+                                        width: 200,
+                                        decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          borderRadius: BorderRadius.circular(15),
+                                          boxShadow: [BoxShadow(
+                                            color: Colors.black26,
+                                            spreadRadius: 1,
+                                            blurRadius: 1
+                                          )]
+                                        ),
+                                        child: Row(
+                                          children: [
+                                            Padding(
+                                              padding: const EdgeInsets.only(left: 10),
+                                              child: Container(
+                                                height: 40,
+                                                width: 40,
+                                                decoration: BoxDecoration(
+                                                  borderRadius: BorderRadius.circular(40),
+                                                  image: DecorationImage(
+                                                      image: NetworkImage(data['Profile_Pic']),
+                                                      fit: BoxFit.cover
+                                                  )
+                                                ),
+                                              ),
+                                            ),
+                                            Padding(
+                                              padding: const EdgeInsets.only(left: 10),
+                                              child: Container(
+                                                  width: 150,
+                                              child: Text("${data['First_name']} ${data['Last_name']}", overflow: TextOverflow.ellipsis, maxLines: 1,)),
+                                            ),
+                                            Padding(
+                                              padding: const EdgeInsets.only(left: 10),
+                                              child: Text(data['City'][0].toUpperCase()+data['City'].substring(1), style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold),),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                }
+                                else if(data['professionOfStaff'] != null && data['First_name'] != null &&
+                                    data['City'].toString().toLowerCase().startsWith(SearchGlobal.toLowerCase())){
+                                  return Padding(
+                                    padding: const EdgeInsets.all(5.0),
+                                    child: InkWell(
+                                      onTap: () {
+                                        Navigator.push(context, MaterialPageRoute(builder: (context) => StaffProfilePage(StaffID: UID, Skill: data['professionOfStaff']),));
+                                      },
+                                      child: Container(
+                                        height: 50,
+                                        width: 200,
+                                        decoration: BoxDecoration(
+                                            color: Colors.white,
+                                            borderRadius: BorderRadius.circular(15),
+                                            boxShadow: [BoxShadow(
+                                                color: Colors.black26,
+                                                spreadRadius: 1,
+                                                blurRadius: 1
+                                            )]
+                                        ),
+                                        child: Row(
+                                          children: [
+                                            Padding(
+                                              padding: const EdgeInsets.only(left: 10),
+                                              child: Container(
+                                                height: 40,
+                                                width: 40,
+                                                decoration: BoxDecoration(
+                                                    borderRadius: BorderRadius.circular(40),
+                                                    image: DecorationImage(
+                                                        image: NetworkImage(data['Profile_Pic']),
+                                                        fit: BoxFit.cover
+                                                    )
+                                                ),
+                                              ),
+                                            ),
+                                            Padding(
+                                              padding: const EdgeInsets.only(left: 10),
+                                              child: Container(
+                                                  width: 150,
+                                                  child: Text("${data['First_name']} ${data['Last_name']}", overflow: TextOverflow.ellipsis, maxLines: 1,)),
+                                            ),
+                                            Padding(
+                                              padding: const EdgeInsets.only(left: 10),
+                                              child: Text(data['City'][0].toUpperCase()+data['City'].substring(1), style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold),),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                }
+                                return Container();
+                              },
+                            );
+                          },
+                        )
+
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          )
         ],
       ),
     );
