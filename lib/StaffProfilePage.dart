@@ -2,6 +2,7 @@ import 'package:carehub/BookingScheduleAndPayment.dart';
 import 'package:carehub/ClientNotificationPage.dart';
 import 'package:carehub/EContact.dart';
 import 'package:carehub/EPersonal.dart';
+import 'package:carehub/Rating.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -189,26 +190,31 @@ class _UserView extends State<UserView>{
                                         Text(StaffData["City"], style: TextStyle(color: Colors.green, fontSize: 12)),
                                       ],
                                     ),
-                                    Container(
-                                      height: 45,
-                                      margin: EdgeInsets.only(top: 10),
-                                      width: screenHeight * 0.27,
-                                      decoration: BoxDecoration(
-                                        color: Color(0xff00008B),
-                                        borderRadius: BorderRadius.circular(10),
-                                      ),
-                                      child: Row(
-                                        crossAxisAlignment: CrossAxisAlignment.center,
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: [
-                                          Icon(Icons.star, color: Color(0xffFFD700),),
-                                          Padding(
-                                            padding: const EdgeInsets.only(right: 10, left: 5),
-                                            child: Text("${StaffData["Rating"]}/5.0", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),),
-                                          ),
-                                          Text("Check",style: TextStyle(fontSize: 12, color: Colors.white),),
-                                          Icon(Icons.play_arrow, color: Colors.white,)
-                                        ],
+                                    InkWell(
+                                      onTap: () {
+                                        Navigator.push(context, MaterialPageRoute(builder: (context) => Rating(),));
+                                      },
+                                      child: Container(
+                                        height: 45,
+                                        margin: EdgeInsets.only(top: 10),
+                                        width: screenHeight * 0.27,
+                                        decoration: BoxDecoration(
+                                          color: Color(0xff00008B),
+                                          borderRadius: BorderRadius.circular(10),
+                                        ),
+                                        child: Row(
+                                          crossAxisAlignment: CrossAxisAlignment.center,
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            Icon(Icons.star, color: Color(0xffFFD700),),
+                                            Padding(
+                                              padding: const EdgeInsets.only(right: 10, left: 5),
+                                              child: Text("${StaffData["Rating"]}/5.0", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),),
+                                            ),
+                                            Text("Check",style: TextStyle(fontSize: 12, color: Colors.white),),
+                                            Icon(Icons.play_arrow, color: Colors.white,)
+                                          ],
+                                        ),
                                       ),
                                     )
                                   ],
