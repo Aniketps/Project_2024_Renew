@@ -190,20 +190,18 @@ class _MainMapState extends State<MainMap> {
 
         // Chef
         MarkerLayer(
-          markers: chefmarker
-              .map(
+          markers: chefmarker.map(
                 (point) => Marker(
               point: point,
               width: 80.0,
               height: 80.0,
               child: Icon(
                 Icons.person_pin,
-                color: const Color.fromRGBO(253, 232, 45, 1),
+                color: Colors.yellow,
                 size: 30.0,
               ),
             ),
-          )
-              .toList(),
+          ).toList(),
         ),
 
         // Licenade Practical Nurse
@@ -457,7 +455,6 @@ class _MainMapState extends State<MainMap> {
             ),
           ).toList(),
         ),
-
       ]),
     );
   }
