@@ -214,7 +214,7 @@ class _Deals extends State<Deals> {
                                                       spreadRadius: 1
                                                   )]
                                               ),
-                                              child: Center(child: Text("Hour base", style: TextStyle(fontWeight: FontWeight.bold),)),
+                                              child: Center(child: Text("${user['ServiceBase']} base", style: TextStyle(fontWeight: FontWeight.bold),)),
                                             ),
                                           ),
                                         ],
@@ -230,7 +230,7 @@ class _Deals extends State<Deals> {
                                               child: Row(
                                                 children: [
                                                   Expanded(
-                                                      child: Text("Hours")),
+                                                      child: Text("${user['ServiceBase']}")),
                                                   Text("${user['hours']}"),
                                                 ],
                                               ),
@@ -252,7 +252,7 @@ class _Deals extends State<Deals> {
                                                             color: Colors.green)),
                                                   ),
                                                   Spacer(),
-                                                  Text("145",
+                                                  Text("${user['totalcost']}",
                                                       style: TextStyle(
                                                           fontWeight:
                                                           FontWeight.bold)),
