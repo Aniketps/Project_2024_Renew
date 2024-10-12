@@ -1,6 +1,8 @@
+import 'package:carehub/TempMap.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
 
 class ClientNotificationPage extends StatefulWidget {
@@ -9,7 +11,6 @@ class ClientNotificationPage extends StatefulWidget {
 }
 
 class _ClientNotificationPageState extends State<ClientNotificationPage> {
-
   @override
   void initState() {
     super.initState();
@@ -20,20 +21,25 @@ class _ClientNotificationPageState extends State<ClientNotificationPage> {
       );
 
       Geolocator.getPositionStream(locationSettings: locationSettings).listen(
-            (Position position) {
+        (Position position) {
           setState(() async {
             String lat = position.latitude.toString();
             String long = position.longitude.toString();
             User? user = FirebaseAuth.instance.currentUser;
 
-            await FirebaseFirestore.instance.collection('user').doc(user?.uid).update({
-              'lat' : lat,
-              'long' : long,
+            await FirebaseFirestore.instance
+                .collection('user')
+                .doc(user?.uid)
+                .update({
+              'lat': lat,
+              'long': long,
             });
           });
         },
       );
-    };
+    }
+
+    ;
     _liveLocation();
   }
 
@@ -96,7 +102,7 @@ class _ClientNotificationPageState extends State<ClientNotificationPage> {
                               Padding(
                                 padding: const EdgeInsets.all(10.0),
                                 child: Container(
-                                  height: screenHeight * 0.62,
+                                  height: screenHeight * 0.63,
                                   width: screenWidth * 0.9,
                                   decoration: BoxDecoration(
                                     color: Colors.white,
@@ -210,20 +216,28 @@ class _ClientNotificationPageState extends State<ClientNotificationPage> {
                                       Row(
                                         children: [
                                           Padding(
-                                            padding: const EdgeInsets.only(left: 25, top: 5, bottom: 5),
+                                            padding: const EdgeInsets.only(
+                                                left: 25, top: 5, bottom: 5),
                                             child: Container(
                                               height: 30,
                                               width: screenWidth * 0.25,
                                               decoration: BoxDecoration(
                                                   color: Colors.white,
-                                                  borderRadius: BorderRadius.circular(5),
-                                                  boxShadow: [BoxShadow(
-                                                      color: Colors.black26,
-                                                      blurRadius: 1,
-                                                      spreadRadius: 1
-                                                  )]
-                                              ),
-                                              child: Center(child: Text("Hour base", style: TextStyle(fontWeight: FontWeight.bold),)),
+                                                  borderRadius:
+                                                      BorderRadius.circular(5),
+                                                  boxShadow: [
+                                                    BoxShadow(
+                                                        color: Colors.black26,
+                                                        blurRadius: 1,
+                                                        spreadRadius: 1)
+                                                  ]),
+                                              child: Center(
+                                                  child: Text(
+                                                user['ServiceBase'],
+                                                style: TextStyle(
+                                                    fontWeight:
+                                                        FontWeight.bold),
+                                              )),
                                             ),
                                           ),
                                         ],
@@ -239,7 +253,8 @@ class _ClientNotificationPageState extends State<ClientNotificationPage> {
                                               child: Row(
                                                 children: [
                                                   Expanded(
-                                                      child: Text("Hours")),
+                                                      child: Text(
+                                                          user['ServiceBase'])),
                                                   Text("${user['hours']}"),
                                                 ],
                                               ),
@@ -255,13 +270,18 @@ class _ClientNotificationPageState extends State<ClientNotificationPage> {
                                                           fontWeight:
                                                               FontWeight.bold)),
                                                   Padding(
-                                                    padding: const EdgeInsets.only(left: 10),
+                                                    padding:
+                                                        const EdgeInsets.only(
+                                                            left: 10),
                                                     child: Text("Know more",
                                                         style: TextStyle(
-                                                            color: Colors.green)),
+                                                            color:
+                                                                Colors.green)),
                                                   ),
                                                   Spacer(),
-                                                  Text("145",
+                                                  Text(
+                                                      user['totalcost']
+                                                          .toString(),
                                                       style: TextStyle(
                                                           fontWeight:
                                                               FontWeight.bold)),
@@ -296,7 +316,7 @@ class _ClientNotificationPageState extends State<ClientNotificationPage> {
                                             width: screenWidth * 0.3,
                                             child: Center(
                                               child: Text(
-                                                "21/09/2024 06:00 PM",
+                                                "${user['ScheduledDate']} ${user['ScheduledTime']}",
                                                 style: TextStyle(fontSize: 9),
                                               ),
                                             ),
@@ -316,7 +336,7 @@ class _ClientNotificationPageState extends State<ClientNotificationPage> {
                                             width: screenWidth * 0.3,
                                             child: Center(
                                               child: Text(
-                                                "21/09/2024 07:00 PM",
+                                                "${user['ScheduledDateEnd']} ${user['ScheduledTimeEnd']}",
                                                 style: TextStyle(fontSize: 9),
                                               ),
                                             ),
@@ -340,42 +360,58 @@ class _ClientNotificationPageState extends State<ClientNotificationPage> {
                                       Padding(
                                         padding:
                                             const EdgeInsets.only(left: 25),
-                                        child: Row(children: [
-                                          Container(
-                                            width: screenWidth * 0.8,
-                                            child: Center(
+                                        child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.start,
+                                            children: [
+                                              Container(
+                                                width: screenWidth * 0.8,
                                                 child: Text(
-                                              "06, Appashree complex, Awhalwadi, Wagholi, Pune, Maharashtra, 412207",
-                                              style: TextStyle(fontSize: 10),
-                                            )),
-                                          ),
-                                        ]),
+                                                  "${user['Scheduled_Sub_Address']}, ${user['Scheduled_Address']}, ${user['Scheduled_City']}",
+                                                  style:
+                                                      TextStyle(fontSize: 10),
+                                                ),
+                                              ),
+                                            ]),
                                       ),
                                       Padding(
                                         padding: const EdgeInsets.only(
                                             left: 25, top: 10),
                                         child: Row(
                                           children: [
-                                            Container(
-                                              height: 30,
-                                              width: screenWidth * 0.3,
-                                              decoration: BoxDecoration(
-                                                borderRadius:
-                                                    BorderRadius.circular(8),
-                                                color: Colors.white,
-                                                boxShadow: [
-                                                  BoxShadow(
-                                                    color: Colors.black26,
-                                                    spreadRadius: 1,
-                                                    blurRadius: 1,
-                                                  )
-                                                ],
-                                              ),
-                                              child: Center(
-                                                child: Text(
-                                                  "Check Map",
-                                                  style:
-                                                      TextStyle(fontSize: 13),
+                                            InkWell(
+                                              onTap: () {
+                                                if(user['Client_Coordinates_lat']!= "" && user['Client_Coordinates_long']!=""){
+                                                  Navigator.push(context, MaterialPageRoute(builder: (context) => TempMap(lat: user['Client_Coordinates_lat'], long: user['Client_Coordinates_long'],),));
+                                                }else{
+                                                  Fluttertoast.showToast(
+                                                    msg: 'Not Available',
+                                                    gravity: ToastGravity.BOTTOM,
+                                                    toastLength: Toast.LENGTH_SHORT,
+                                                  );
+                                                }
+                                              },
+                                              child: Container(
+                                                height: 30,
+                                                width: screenWidth * 0.3,
+                                                decoration: BoxDecoration(
+                                                  borderRadius:
+                                                      BorderRadius.circular(8),
+                                                  color: Colors.white,
+                                                  boxShadow: [
+                                                    BoxShadow(
+                                                      color: Colors.black26,
+                                                      spreadRadius: 1,
+                                                      blurRadius: 1,
+                                                    )
+                                                  ],
+                                                ),
+                                                child: Center(
+                                                  child: Text(
+                                                    "Check Map",
+                                                    style:
+                                                        TextStyle(fontSize: 13),
+                                                  ),
                                                 ),
                                               ),
                                             ),
@@ -383,12 +419,24 @@ class _ClientNotificationPageState extends State<ClientNotificationPage> {
                                         ),
                                       ),
                                       Padding(
-                                        padding: const EdgeInsets.all(15.0),
+                                        padding: const EdgeInsets.all(5.0),
                                         child: Text(
                                           "${user['status']}",
                                           style: TextStyle(fontSize: 20),
                                         ),
-                                      )
+                                      ),
+                                      (user['status'] == "Accepted")
+                                          ? ElevatedButton(
+                                            onPressed: () async {
+                                              await FirebaseFirestore.instance.collection("NotificationForStaff").doc(user['DocUID']).update({
+                                                'status': "Completed",
+                                              });
+                                              await FirebaseFirestore.instance.collection("NotificationForUser").doc(user.id).update({
+                                                'status': "Completed",
+                                              });
+                                            },
+                                            child: Text("Completed"))
+                                          : Container(),
                                     ],
                                   ),
                                 ),
