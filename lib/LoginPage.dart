@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:carehub/RegisterPage.dart';
 import 'package:carehub/StaffPage.dart';
 import 'package:carehub/StaffProfileHome.dart';
@@ -20,11 +22,31 @@ class _LoginPage extends State<LoginPage>{
   String long = '';
   String locationMessage = "Check current location";
   bool LoaderCheck = false;
+  String LoadingText = 'Getting to you';
+
+
 
   late LocationPermission permission;
+  List<String> loadingMessages = [
+    'Getting things ready...',
+    'Hang tight, almost there...',
+    'Just a moment...',
+    'Loading your personalized experience...',
+    'Setting things up for you...',
+    'Making sure everything is perfect...',
+  ];
+
+  Timer? timer;
+  int index = 0;
   @override
   void initState() {
     super.initState();
+    timer = Timer.periodic(Duration(seconds: 5), (Timer t) {
+      setState(() {
+        LoadingText = loadingMessages[index];
+        index = (index + 1) % loadingMessages.length;
+      });
+    });
     Getpermission();
     _getCurrentLocation();
     void _liveLocation() {
@@ -156,7 +178,21 @@ class _LoginPage extends State<LoginPage>{
 
     return Scaffold(
       backgroundColor: Colors.white,
-      body: LoaderCheck? Center(child: CircularProgressIndicator()) : isWeb? WebView() : AndroidView(lat: lat,long: long,)
+      body: LoaderCheck? Center(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(10.0),
+              child: CircularProgressIndicator(),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(10.0),
+              child: Text(LoadingText, style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold),),
+            )
+          ],
+      )) : isWeb? WebView() : AndroidView(lat: lat,long: long,)
     );
   }
 }

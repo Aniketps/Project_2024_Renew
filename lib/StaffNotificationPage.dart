@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:geolocator/geolocator.dart';
 
+import 'TempMap.dart';
+
 class StaffNotificationPage extends StatefulWidget {
   @override
   State<StatefulWidget> createState() => _StaffNotificationPage();
@@ -219,7 +221,7 @@ class _StaffNotificationPage extends State<StaffNotificationPage> {
                                                       spreadRadius: 1
                                                   )]
                                               ),
-                                              child: Center(child: Text("Hour base", style: TextStyle(fontWeight: FontWeight.bold),)),
+                                              child: Center(child: Text("${user['ServiceBase']} base", style: TextStyle(fontWeight: FontWeight.bold),)),
                                             ),
                                           ),
                                         ],
@@ -235,7 +237,7 @@ class _StaffNotificationPage extends State<StaffNotificationPage> {
                                               child: Row(
                                                 children: [
                                                   Expanded(
-                                                      child: Text("Hours")),
+                                                      child: Text(user['ServiceBase'])),
                                                   Text("${user['hours']}"),
                                                 ],
                                               ),
@@ -257,7 +259,8 @@ class _StaffNotificationPage extends State<StaffNotificationPage> {
                                                             color: Colors.green)),
                                                   ),
                                                   Spacer(),
-                                                  Text("145",
+                                                  Text(user['totalcost']
+                                                      .toString(),
                                                       style: TextStyle(
                                                           fontWeight:
                                                           FontWeight.bold)),
@@ -292,7 +295,7 @@ class _StaffNotificationPage extends State<StaffNotificationPage> {
                                             width: screenWidth * 0.3,
                                             child: Center(
                                               child: Text(
-                                                "21/09/2024 06:00 PM",
+                                                "${user['ScheduledDate']} ${user['ScheduledTime']}",
                                                 style: TextStyle(fontSize: 9),
                                               ),
                                             ),
@@ -312,7 +315,7 @@ class _StaffNotificationPage extends State<StaffNotificationPage> {
                                             width: screenWidth * 0.3,
                                             child: Center(
                                               child: Text(
-                                                "21/09/2024 07:00 PM",
+                                                "${user['ScheduledDateEnd']} ${user['ScheduledTimeEnd']}",
                                                 style: TextStyle(fontSize: 9),
                                               ),
                                             ),
@@ -336,42 +339,50 @@ class _StaffNotificationPage extends State<StaffNotificationPage> {
                                       Padding(
                                         padding:
                                         const EdgeInsets.only(left: 25),
-                                        child: Row(children: [
-                                          Container(
-                                            width: screenWidth * 0.8,
-                                            child: Center(
+                                        child: Row(
+                                            mainAxisAlignment:
+                                            MainAxisAlignment.start,
+                                            children: [
+                                              Container(
+                                                width: screenWidth * 0.8,
                                                 child: Text(
-                                                  "06, Appashree complex, Awhalwadi, Wagholi, Pune, Maharashtra, 412207",
-                                                  style: TextStyle(fontSize: 10),
-                                                )),
-                                          ),
-                                        ]),
+                                                  "${user['Scheduled_Sub_Address']}, ${user['Scheduled_Address']}, ${user['Scheduled_City']}",
+                                                  style:
+                                                  TextStyle(fontSize: 10),
+                                                ),
+                                              ),
+                                            ]),
                                       ),
                                       Padding(
                                         padding: const EdgeInsets.only(
                                             left: 25, top: 10),
                                         child: Row(
                                           children: [
-                                            Container(
-                                              height: 30,
-                                              width: screenWidth * 0.3,
-                                              decoration: BoxDecoration(
-                                                borderRadius:
-                                                BorderRadius.circular(8),
-                                                color: Colors.white,
-                                                boxShadow: [
-                                                  BoxShadow(
-                                                    color: Colors.black26,
-                                                    spreadRadius: 1,
-                                                    blurRadius: 1,
-                                                  )
-                                                ],
-                                              ),
-                                              child: Center(
-                                                child: Text(
-                                                  "Check Map",
-                                                  style:
-                                                  TextStyle(fontSize: 13),
+                                            InkWell(
+                                              onTap: () {
+                                                Navigator.push(context, MaterialPageRoute(builder: (context) => TempMap(lat: user['Client_Coordinates_lat'], long: user['Client_Coordinates_long'],),));
+                                              },
+                                              child: Container(
+                                                height: 30,
+                                                width: screenWidth * 0.3,
+                                                decoration: BoxDecoration(
+                                                  borderRadius:
+                                                  BorderRadius.circular(8),
+                                                  color: Colors.white,
+                                                  boxShadow: [
+                                                    BoxShadow(
+                                                      color: Colors.black26,
+                                                      spreadRadius: 1,
+                                                      blurRadius: 1,
+                                                    )
+                                                  ],
+                                                ),
+                                                child: Center(
+                                                  child: Text(
+                                                    "Check Map",
+                                                    style:
+                                                    TextStyle(fontSize: 13),
+                                                  ),
                                                 ),
                                               ),
                                             ),
