@@ -175,7 +175,6 @@ class FeedbackItem extends StatelessWidget {
   }
 }
 
-
 class BlankPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
