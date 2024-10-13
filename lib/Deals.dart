@@ -34,9 +34,23 @@ class _Deals extends State<Deals> {
         },
       );
     };
+    checkUserid();
     _liveLocation();
   }
 
+  Future<void> checkUserid() async {
+    User? user = FirebaseAuth.instance.currentUser;
+
+    var currentUserData = await FirebaseFirestore.instance.collection('user').doc(user?.uid).get();
+    if(currentUserData['professionOfStaff'] == null){
+      setState(() {
+        isStaff = true;
+        print(isStaff);
+      });
+    }
+  }
+
+  bool isStaff = false;
   User? currentUser = FirebaseAuth.instance.currentUser;
   String? uid = FirebaseAuth.instance.currentUser?.uid;
 
@@ -288,18 +302,20 @@ class _Deals extends State<Deals> {
                                                 ),
                                               ],
                                             ),
-                                            Padding(
-                                              padding: const EdgeInsets.only(right: 25),
-                                              child: ElevatedButton(onPressed: () {
-                                                Navigator.push(context, MaterialPageRoute(builder: (context) => StaffProfilePage(StaffID: user['staffUID'], Skill: currentStaffData['professionOfStaff']),));
-                                              },style:  ElevatedButton.styleFrom(
-                                                backgroundColor: Colors.green,
-                                                shape: RoundedRectangleBorder(
-                                                  borderRadius: BorderRadius.circular(10)
+                                            isStaff
+                                                ? Padding(
+                                                  padding: const EdgeInsets.only(right: 25),
+                                                  child: ElevatedButton(onPressed: () {
+                                                    Navigator.push(context, MaterialPageRoute(builder: (context) => StaffProfilePage(StaffID: user['staffUID'], Skill: currentStaffData['professionOfStaff']),));
+                                                  },style:  ElevatedButton.styleFrom(
+                                                    backgroundColor: Colors.green,
+                                                    shape: RoundedRectangleBorder(
+                                                      borderRadius: BorderRadius.circular(10)
+                                                    )
+                                                  ),
+                                                      child: Text("Deal Again", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),)),
                                                 )
-                                              ),
-                                                  child: Text("Deal Again", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),)),
-                                            )
+                                                : Container(),
                                           ],
                                         ),
                                       ),
