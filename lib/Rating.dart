@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 
+<<<<<<< HEAD
 class Ratings extends StatefulWidget {
   @override
   State<StatefulWidget> createState() => _Ratings();
@@ -36,10 +37,47 @@ class _Ratings extends State<Ratings> {
     );
   }
 
+=======
+class Rating extends StatefulWidget{
+  @override
+  State<StatefulWidget> createState() => _Rating();
+}
+
+class _Rating extends State<Rating>{
+
+  @override
+  void initState() {
+    super.initState();
+    void _liveLocation() {
+      LocationSettings locationSettings = LocationSettings(
+        accuracy: LocationAccuracy.high,
+        distanceFilter: 100,
+      );
+
+      Geolocator.getPositionStream(locationSettings: locationSettings).listen(
+            (Position position) {
+          setState(() async {
+            String lat = position.latitude.toString();
+            String long = position.longitude.toString();
+            User? user = FirebaseAuth.instance.currentUser;
+
+            await FirebaseFirestore.instance.collection('user').doc(user?.uid).update({
+              'lat' : lat,
+              'long' : long,
+            });
+          });
+        },
+      );
+    };
+    _liveLocation();
+  }
+
+>>>>>>> a750008f3d69684e8cdd6eedb3f37c1704cf23f1
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+<<<<<<< HEAD
         title: Text("Feedbacks"),
         backgroundColor: Colors.blue,
       ),
@@ -173,4 +211,13 @@ class FeedbackItem extends StatelessWidget {
       ),
     );
   }
+=======
+        title: Text("Rating"),
+        backgroundColor: Colors.red,
+      ),
+      body: Center(child: Text("Empty")),
+    );
+  }
+
+>>>>>>> a750008f3d69684e8cdd6eedb3f37c1704cf23f1
 }

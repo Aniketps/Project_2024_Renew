@@ -2,6 +2,8 @@ import 'package:carehub/BookingScheduleAndPayment.dart';
 import 'package:carehub/ClientNotificationPage.dart';
 import 'package:carehub/EContact.dart';
 import 'package:carehub/EPersonal.dart';
+import 'package:carehub/EServiceRate.dart';
+import 'package:carehub/Rating.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -189,26 +191,31 @@ class _UserView extends State<UserView>{
                                         Text(StaffData["City"], style: TextStyle(color: Colors.green, fontSize: 12)),
                                       ],
                                     ),
-                                    Container(
-                                      height: 45,
-                                      margin: EdgeInsets.only(top: 10),
-                                      width: screenHeight * 0.27,
-                                      decoration: BoxDecoration(
-                                        color: Color(0xff00008B),
-                                        borderRadius: BorderRadius.circular(10),
-                                      ),
-                                      child: Row(
-                                        crossAxisAlignment: CrossAxisAlignment.center,
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: [
-                                          Icon(Icons.star, color: Color(0xffFFD700),),
-                                          Padding(
-                                            padding: const EdgeInsets.only(right: 10, left: 5),
-                                            child: Text("${StaffData["Rating"]}/5.0", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),),
-                                          ),
-                                          Text("Check",style: TextStyle(fontSize: 12, color: Colors.white),),
-                                          Icon(Icons.play_arrow, color: Colors.white,)
-                                        ],
+                                    InkWell(
+                                      onTap: () {
+                                        Navigator.push(context, MaterialPageRoute(builder: (context) => Rating(),));
+                                      },
+                                      child: Container(
+                                        height: 45,
+                                        margin: EdgeInsets.only(top: 10),
+                                        width: screenHeight * 0.27,
+                                        decoration: BoxDecoration(
+                                          color: Color(0xff00008B),
+                                          borderRadius: BorderRadius.circular(10),
+                                        ),
+                                        child: Row(
+                                          crossAxisAlignment: CrossAxisAlignment.center,
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            Icon(Icons.star, color: Color(0xffFFD700),),
+                                            Padding(
+                                              padding: const EdgeInsets.only(right: 10, left: 5),
+                                              child: Text("${StaffData["Rating"]}/5.0", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),),
+                                            ),
+                                            Text("Check",style: TextStyle(fontSize: 12, color: Colors.white),),
+                                            Icon(Icons.play_arrow, color: Colors.white,)
+                                          ],
+                                        ),
                                       ),
                                     )
                                   ],
@@ -481,7 +488,7 @@ class _UserView extends State<UserView>{
                                 Container(
                                     width: screenWidth * 0.5,
                                     child: Text("Hour based")),
-                                Text("100"),
+                                Text((StaffData['Hour_Rate'].toString())?? '--'),
                               ],
                             ),
                           ),
@@ -492,7 +499,7 @@ class _UserView extends State<UserView>{
                                 Container(
                                     width: screenWidth * 0.5,
                                     child: Text("Day based")),
-                                Text("700"),
+                                Text((StaffData['Day_Rate'].toString())?? '--'),
                               ],
                             ),
                           ),
@@ -502,7 +509,7 @@ class _UserView extends State<UserView>{
                               children: [
                                 Container(
                                     width: screenWidth * 0.5,
-                                    child: Text("Day service shift 8", style: TextStyle(fontSize: 12, color: Colors.blue),)),
+                                    child: Text("Day service shift ${StaffData['Day_Shift']?? '--'} hours", style: TextStyle(fontSize: 12, color: Colors.blue),)),
                               ],
                             ),
                           ),
@@ -962,7 +969,17 @@ class _StaffView extends State<StaffView>{
                         children: [
                           Padding(
                             padding: const EdgeInsets.only(left: 20, top: 10, bottom: 5),
-                            child: Text("Service Rate", style: TextStyle(fontSize: 18,fontWeight: FontWeight.bold),),
+                            child: Row(
+                              children: [
+                                Text("Service Rate", style: TextStyle(fontSize: 18,fontWeight: FontWeight.bold),),
+                                Padding(
+                                  padding: const EdgeInsets.only(left: 20),
+                                  child: InkWell(onTap: () {
+                                    Navigator.push(context, MaterialPageRoute(builder: (context) => EServiceRate(Skill: Skill),));
+                                  },child: Text("Edit", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold),)),
+                                )
+                              ],
+                            ),
                           ),
                           Divider(),
                           Padding(
@@ -972,7 +989,7 @@ class _StaffView extends State<StaffView>{
                                 Container(
                                     width: screenWidth * 0.5,
                                     child: Text("Hour based")),
-                                Text("100"),
+                                Text("${StaffData['Hour_Rate']?? '--'} ₹"),
                               ],
                             ),
                           ),
@@ -983,7 +1000,7 @@ class _StaffView extends State<StaffView>{
                                 Container(
                                     width: screenWidth * 0.5,
                                     child: Text("Day based")),
-                                Text("700"),
+                                Text("${StaffData['Day_Rate']?? '--'} ₹"),
                               ],
                             ),
                           ),
@@ -993,7 +1010,7 @@ class _StaffView extends State<StaffView>{
                               children: [
                                 Container(
                                     width: screenWidth * 0.5,
-                                    child: Text("Day service shift 8", style: TextStyle(fontSize: 12, color: Colors.blue),)),
+                                    child: Text("Day service shift ${StaffData['Day_Shift']?? '--'} hours", style: TextStyle(fontSize: 12, color: Colors.blue),)),
                               ],
                             ),
                           ),
