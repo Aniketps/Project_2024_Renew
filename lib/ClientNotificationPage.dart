@@ -426,16 +426,7 @@ class _ClientNotificationPageState extends State<ClientNotificationPage> {
                                         ),
                                       ),
                                       (user['status'] == "Accepted")
-                                          ? ElevatedButton(
-                                            onPressed: () async {
-                                              await FirebaseFirestore.instance.collection("NotificationForStaff").doc(user['DocUID']).update({
-                                                'status': "Completed",
-                                              });
-                                              await FirebaseFirestore.instance.collection("NotificationForUser").doc(user.id).update({
-                                                'status': "Completed",
-                                              });
-                                            },
-                                            child: Text("Completed"))
+                                          ? Text("${user['OTP']?? 'Invalid'}", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),)
                                           : Container(),
                                     ],
                                   ),

@@ -334,7 +334,7 @@ class _AndroidUserPage extends State<AndroidUserPage>{
                     children: [
                       InkWell(
                           onTap: () {
-
+                            Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => LoginPage(),));
                           },
                           child: Text("Already have an account", style: TextStyle(fontSize: 12, color: Colors.blue, fontWeight: FontWeight.bold),)
                       ),

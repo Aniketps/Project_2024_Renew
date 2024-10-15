@@ -40,9 +40,11 @@ class _LoginPage extends State<LoginPage>{
   int index = 0;
   @override
   void initState() {
+
     super.initState();
     timer = Timer.periodic(Duration(seconds: 5), (Timer t) {
       setState(() {
+
         LoadingText = loadingMessages[index];
         index = (index + 1) % loadingMessages.length;
       });
@@ -71,8 +73,15 @@ class _LoginPage extends State<LoginPage>{
       );
     }
     LoaderCheck = !LoaderCheck;
+    checkLogin();
   }
 
+  Future<void> checkLogin() async {
+    User? user = await FirebaseAuth.instance.currentUser;
+    if(user?.uid != null){
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => MyHomePage(),));
+    }
+  }
   void _liveLocation() {
     LocationSettings locationSettings = LocationSettings(
       accuracy: LocationAccuracy.high,
@@ -394,6 +403,8 @@ class _AndroidUserPage extends State<AndroidUserPage>{
   TextEditingController Email = TextEditingController();
   TextEditingController Password = TextEditingController();
 
+  bool isPasswordcurrect = true;
+  bool isEmailcurrect = true;
   @override
   Widget build(BuildContext context) {
 
@@ -440,10 +451,18 @@ class _AndroidUserPage extends State<AndroidUserPage>{
                       controller: Email,
                       decoration: InputDecoration(
                           labelText: "Email", // Placeholder text
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(50),
-                          ),
-                          contentPadding: EdgeInsets.fromLTRB(20, 16, 16, 16)// Adds border around the text field
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(50),
+                        ),
+                        contentPadding: EdgeInsets.fromLTRB(20, 16, 16, 16),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(50),
+                          borderSide: BorderSide(color: isEmailcurrect? Colors.grey : Colors.red, width: isEmailcurrect? 1 : 1.5), // Normal grey border
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(50),
+                          borderSide: BorderSide(color: Colors.blue, width: 2), // Border when focused
+                        ),
                       ),
                     ),
                   ),
@@ -472,6 +491,14 @@ class _AndroidUserPage extends State<AndroidUserPage>{
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(50),
 
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(50),
+                            borderSide: BorderSide(color: isPasswordcurrect? Colors.grey : Colors.red, width: isPasswordcurrect? 1 : 1.5), // Normal grey border
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(50),
+                            borderSide: BorderSide(color: Colors.blue, width: 2), // Border when focused
                           ),
                           contentPadding: EdgeInsets.fromLTRB(20, 16, 16, 16)// Adds border around the text field
                       ),
@@ -508,10 +535,35 @@ class _AndroidUserPage extends State<AndroidUserPage>{
                             });
                             Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => MyHomePage(),));
                           } on FirebaseAuthException catch (e) {
-                            print("Error: ${e.message}");
+                            var CheckEmailOrPass = 'The supplied auth credential is incorrect, malformed or has expired.';
+                            var EmailIsWrong = 'The email address is badly formatted.';
+                            if('${e.message}' == CheckEmailOrPass){
+                              setState(() {
+                                isEmailcurrect = false;
+                                isPasswordcurrect = false;
+                              });
+                              Fluttertoast.showToast(
+                                  msg: "Invalid Email or Password"
+                              );
+                            }else if('${e.message}' == EmailIsWrong){
+                              setState(() {
+                                isEmailcurrect = false;
+                                isPasswordcurrect = true;
+                              });
+                              Fluttertoast.showToast(
+                                  msg: "Invalid Email"
+                              );
+                            }
+
                           } catch (e) {
-                            print("An unexpected error occurred: $e");
+                            Fluttertoast.showToast(
+                                msg: "Invalid data"
+                            );
                           }
+                        }else{
+                          Fluttertoast.showToast(
+                              msg: "Invalid data"
+                          );
                         }
                       },
                       child: Text("Submit")),

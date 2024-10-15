@@ -335,7 +335,7 @@ class _AndroidStaffPage extends State<AndroidStaffPage>{
                               "City":city,
                               "Profile_Pic":profileURL,
                             });
-                            Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => MyHomePage(),));
+                            Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => LoginPage(),));
                           } on FirebaseAuthException catch (e) {
                             setState(() {
                               ErrorData = e.message!;
