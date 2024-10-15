@@ -13,6 +13,8 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import 'MainMap.dart';
+
 class StaffProfilePage extends StatefulWidget {
   final String StaffID;
   final String Skill;
@@ -103,21 +105,53 @@ class _StaffProfilePage extends State<StaffProfilePage> {
     }
 
     return Scaffold(
-        appBar: AppBar(
-          title: Text("Profile"),
-          backgroundColor: Colors.blue,
-        ),
-        body: (StaffID == currentUserID)
-            ? StaffView(
-                StaffData: StaffData,
-                Skill: Skill,
-                StaffID: StaffID,
-              )
-            : UserView(
-                StaffData: StaffData,
-                Skill: Skill,
-                StaffID: StaffID,
-              ));
+      body: Stack(
+        children: [
+          // App bar section
+          Container(
+            height: 150,
+            color: Colors.red,
+            child: AppBar(
+              title: Center(
+                child: Text(
+                    "Profile",
+                    style: TextStyle(
+                        fontSize: 20, fontWeight: FontWeight.bold)),
+              ),
+              backgroundColor: Colors.red,
+              automaticallyImplyLeading: false,
+            ),
+          ),
+          Stack(
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(top: 100),
+                child: Container(
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.vertical,
+                    child: Column(
+                      children: [
+                        (StaffID == currentUserID)
+                            ? StaffView(
+                                StaffData: StaffData,
+                                Skill: Skill,
+                                StaffID: StaffID,
+                              )
+                            : UserView(
+                                StaffData: StaffData,
+                                Skill: Skill,
+                                StaffID: StaffID,
+                              )
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          )
+        ],
+      ),
+    );
   }
 }
 
@@ -1331,7 +1365,9 @@ class _ActualUser extends State<ActualUser> {
                                 borderRadius: BorderRadius.circular(80),
                                 boxShadow: [
                                   BoxShadow(
-                                      color: Colors.black26, spreadRadius: 1, blurRadius: 1)
+                                      color: Colors.black26,
+                                      spreadRadius: 1,
+                                      blurRadius: 1)
                                 ]),
                           ),
                         )
@@ -1342,7 +1378,11 @@ class _ActualUser extends State<ActualUser> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text("${userData['First_name']} ${userData['Last_name']}", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),),
+                        Text(
+                          "${userData['First_name']} ${userData['Last_name']}",
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 16),
+                        ),
                       ],
                     ),
 
@@ -1352,7 +1392,12 @@ class _ActualUser extends State<ActualUser> {
                       children: [
                         InkWell(
                             onTap: () {
-                              Navigator.push(context, MaterialPageRoute(builder: (context) => ClientNotificationPage(),));
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        ClientNotificationPage(),
+                                  ));
                             },
                             child: Icon(Icons.notifications))
                       ],
