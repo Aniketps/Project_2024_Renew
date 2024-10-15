@@ -23,12 +23,15 @@ class _Feedbacks extends State<Feedbacks> {
     );
 
     Geolocator.getPositionStream(locationSettings: locationSettings).listen(
-          (Position position) async {
+      (Position position) async {
         String lat = position.latitude.toString();
         String long = position.longitude.toString();
         User? user = FirebaseAuth.instance.currentUser;
 
-        await FirebaseFirestore.instance.collection('user').doc(user?.uid).update({
+        await FirebaseFirestore.instance
+            .collection('user')
+            .doc(user?.uid)
+            .update({
           'lat': lat,
           'long': long,
         });
@@ -38,85 +41,180 @@ class _Feedbacks extends State<Feedbacks> {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+
     return Scaffold(
-      appBar: AppBar(
-        title: Text("Feedbacks"),
-        backgroundColor: Colors.blue,
-      ),
-      body: Align(
-        alignment: Alignment.topCenter,
-        child: Column(
-          children: [
-            Container(
-              height: 280,
-              width: 470,
-              padding: EdgeInsets.all(5),
-              margin: EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.white24,
-                borderRadius: BorderRadius.circular(5),
-                border: Border.all(
-                  color: Colors.grey,
-                  width: 1.0,
+      body: Stack(
+        children: [
+          // App bar section
+          Container(
+            height: 150,
+            color: Colors.red,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                AppBar(
+                  title: Center(
+                    child: Text("Feedbacks",
+                        style: TextStyle(
+                            fontSize: 20, fontWeight: FontWeight.bold)),
+                  ),
+                  backgroundColor: Colors.red,
+                  automaticallyImplyLeading: false,
                 ),
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Recent Feedbacks',
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 25,
+              ],
+            ),
+          ),
+          Stack(
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(top: 150),
+                child: Container(
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.vertical,
+                    child: Column(
+                      children: [
+                        Column(
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Container(
+                                height: screenHeight * 0.6,
+                                width: screenWidth,
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(10),
+                                  boxShadow: [BoxShadow(
+                                    spreadRadius: 1,
+                                    blurRadius: 1,
+                                    color: Colors.black26
+                                  )]
+                                ),
+                                child: Column(
+                                  children: [
+                                    Padding(
+                                      padding: const EdgeInsets.only(left: 15, top: 5),
+                                      child: Row(
+                                        children: [
+                                          Text(
+                                            'Recent Feedbacks',
+                                            style: TextStyle(
+                                              color: Colors.black,
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 18,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.only(left: 15, top: 5, right: 15),
+                                      child: Divider(color: Colors.black),
+                                    ),
+                                    Expanded(
+                                      child: ListView.builder(
+                                        padding: EdgeInsets.zero,
+                                        itemCount: 2,
+                                          itemBuilder: (context, index) {
+                                            return Padding(
+                                              padding: const EdgeInsets.only(right: 15, left: 15, bottom: 8),
+                                              child: Container(
+                                                height: 50,
+                                                decoration: BoxDecoration(
+                                                  color: Colors.white,
+                                                  borderRadius: BorderRadius.circular(15),
+                                                  boxShadow: [BoxShadow(
+                                                    color: Colors.black26,
+                                                    blurRadius: 1,
+                                                    spreadRadius: 1
+                                                  )]
+                                                ),
+                                                child: Padding(
+                                                  padding: const EdgeInsets.only(right: 15, left: 15),
+                                                  child: Row(
+                                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                    children: [
+                                                      Row(
+                                                        children: [
+                                                          Padding(
+                                                            padding: const EdgeInsets.only(right: 25),
+                                                            child: Container(
+                                                              height: 20,
+                                                              width: 20,
+                                                              decoration: BoxDecoration(
+                                                                  color: Colors.green,
+                                                                  borderRadius: BorderRadius.circular(20),
+                                                                  boxShadow: [BoxShadow(
+                                                                      color: Colors.black26,
+                                                                      blurRadius: 1,
+                                                                      spreadRadius: 1
+                                                                  )]
+                                                              ),
+                                                            ),
+                                                          ),
+                                                          Text("Subject"),
+                                                        ],
+                                                      ),
+                                                      Text("-- abc ---- --:-- ab")
+                                                    ],
+                                                  ),
+                                                ),
+                                              ),
+                                            );
+                                          },
+                                      ),
+                                    ),
+
+                                    // FeedbackItem(
+                                    //   imageUrl:
+                                    //       'https://thumbs.dreamstime.com/b/check-mark-icon-checked-right-click-icon-vector-check-mark-icon-checked-right-click-icon-vector-164317123.jpg',
+                                    //   title: 'Suggestion',
+                                    //   time: '05 sep 2024 09:15 PM',
+                                    // ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            ElevatedButton(
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => BlankPage()),
+                                );
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.red,
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 40, vertical: 5),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(5),
+                                ),
+                              ),
+                              child: Text(
+                                "New",
+                                style: TextStyle(
+                                    color: Colors.white, fontSize: 20),
+                              ),
+                            ),
+                            SizedBox(height: 260),
+                            Container(
+                              width: double.infinity,
+                              child: AppBar(
+                                backgroundColor: Colors.lightGreen,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
                   ),
-                  SizedBox(height: 10),
-                  Divider(color: Colors.grey),
-                  SizedBox(height: 10),
-                  FeedbackItem(
-                    imageUrl: 'https://www.iconsdb.com/icons/preview/green/circle-xxl.png',
-                    title: 'Argument',
-                    time: '12 sep 2024 05:15 PM',
-                  ),
-                  SizedBox(height: 10),
-                  FeedbackItem(
-                    imageUrl: 'https://thumbs.dreamstime.com/b/check-mark-icon-checked-right-click-icon-vector-check-mark-icon-checked-right-click-icon-vector-164317123.jpg',
-                    title: 'Suggestion',
-                    time: '05 sep 2024 09:15 PM',
-                  ),
-                ],
-              ),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => BlankPage()),
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red,
-                padding: EdgeInsets.symmetric(horizontal: 40, vertical: 5),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(5),
                 ),
               ),
-              child: Text(
-                "New",
-                style: TextStyle(color: Colors.white, fontSize: 20),
-              ),
-            ),
-            SizedBox(height: 260),
-            Container(
-              width: double.infinity,
-              child: AppBar(
-                backgroundColor: Colors.lightGreen,
-              ),
-            ),
-          ],
-        ),
+            ],
+          )
+        ],
       ),
     );
   }
@@ -235,14 +333,17 @@ class BlankPage extends StatelessWidget {
                           print('Clear Button Pressed');
                         },
                         child: Container(
-                          padding: EdgeInsets.symmetric(horizontal: 30, vertical: 5),
+                          padding:
+                              EdgeInsets.symmetric(horizontal: 30, vertical: 5),
                           decoration: BoxDecoration(
                             color: Colors.greenAccent,
                             borderRadius: BorderRadius.circular(5),
                           ),
                           child: Text(
                             "Clear All ",
-                            style: TextStyle(color: Colors.black,fontWeight: FontWeight.bold),
+                            style: TextStyle(
+                                color: Colors.black,
+                                fontWeight: FontWeight.bold),
                           ),
                         ),
                       ),
@@ -252,7 +353,8 @@ class BlankPage extends StatelessWidget {
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.greenAccent,
-                          padding: EdgeInsets.symmetric(horizontal: 30, vertical: 5),
+                          padding:
+                              EdgeInsets.symmetric(horizontal: 30, vertical: 5),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(5),
                           ),
@@ -262,32 +364,20 @@ class BlankPage extends StatelessWidget {
                           style: TextStyle(color: Colors.black),
                         ),
                       ),
-
-
-
-
-
                     ],
                   ),
-
-
                 ],
-
-
               ),
-
-
             ),
-
-
-          SizedBox(height: 45,),
+            SizedBox(
+              height: 45,
+            ),
             Container(
               width: double.infinity,
               child: AppBar(
                 backgroundColor: Colors.lightGreen,
               ),
             ),
-
           ],
         ),
       ),
