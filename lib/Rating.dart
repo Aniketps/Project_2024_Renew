@@ -24,8 +24,8 @@ class _RatingState extends State<Rating> {
                 AppBar(
                   title: Center(
                     child: Text("Rating",
-                        style:
-                        TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                        style: TextStyle(
+                            fontSize: 20, fontWeight: FontWeight.bold)),
                   ),
                   backgroundColor: Colors.red,
                   automaticallyImplyLeading: false,
@@ -41,17 +41,17 @@ class _RatingState extends State<Rating> {
                   child: SingleChildScrollView(
                     scrollDirection: Axis.vertical,
                     child: Column(
-                      children: [Text("Empty"),
-      ],
-    ),
-    ),
-    ),
-    ),
-    ],
-    )
-    ],
-    ),
+                      children: [
+                        Text("Empty"),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          )
+        ],
+      ),
     );
   }
 }
-
