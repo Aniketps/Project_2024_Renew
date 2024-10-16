@@ -7,6 +7,8 @@ import 'package:latlong2/latlong.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
+import 'StaffProfilePage.dart';
+
 class MainMap extends StatefulWidget {
   const MainMap({super.key});
 
@@ -15,8 +17,6 @@ class MainMap extends StatefulWidget {
 }
 
 class _MainMapState extends State<MainMap> {
-
-
   List<LatLng> AvailableStaff = [];
 
   List<LatLng> RegisteredNurseMarker = [];
@@ -55,20 +55,25 @@ class _MainMapState extends State<MainMap> {
       );
 
       Geolocator.getPositionStream(locationSettings: locationSettings).listen(
-            (Position position) {
+        (Position position) {
           setState(() async {
             lat = position.latitude;
             long = position.longitude;
             User? user = FirebaseAuth.instance.currentUser;
 
-            await FirebaseFirestore.instance.collection('user').doc(user?.uid).update({
-              'lat' : position.latitude.toString(),
-              'long' : position.longitude.toString(),
+            await FirebaseFirestore.instance
+                .collection('user')
+                .doc(user?.uid)
+                .update({
+              'lat': position.latitude.toString(),
+              'long': position.longitude.toString(),
             });
           });
         },
       );
-    };
+    }
+
+    ;
     _liveLocation();
     getStaffLocation();
     LoaderCheck = !LoaderCheck;
@@ -77,19 +82,26 @@ class _MainMapState extends State<MainMap> {
   // skill[0].toLowerCase()+skill.substring(1)
 
   Future<void> getStaffLocation() async {
-    Stream<QuerySnapshot<Map<String, dynamic>>> querySnapshot = FirebaseFirestore.instance.collection("user").snapshots();
+    Stream<QuerySnapshot<Map<String, dynamic>>> querySnapshot =
+        FirebaseFirestore.instance.collection("user").snapshots();
 
     querySnapshot.listen((snapshot) async {
       for (var doc in snapshot.docs) {
         var data = doc.data();
-        if(data['lat'] != null && data['long'] != null && data['professionOfStaff'] != null){
-          DocumentSnapshot<Map<String, dynamic>> documentReference = await FirebaseFirestore.instance.collection(data['professionOfStaff']).doc(doc.id).get();
+        if (data['lat'] != null &&
+            data['long'] != null &&
+            data['professionOfStaff'] != null) {
+          DocumentSnapshot<Map<String, dynamic>> documentReference =
+              await FirebaseFirestore.instance
+                  .collection(data['professionOfStaff'])
+                  .doc(doc.id)
+                  .get();
           var StatffsData = documentReference.data();
-          if(StatffsData?['Status']==true){
+          if (StatffsData?['Status'] == true) {
             double p1 = double.parse(data['lat']);
             double p2 = double.parse(data['long']);
             setState(() {
-              switch(data['professionOfStaff']){
+              switch (data['professionOfStaff']) {
                 case 'chef':
                   chefmarker.add(LatLng(p1, p2));
                   break;
@@ -150,312 +162,671 @@ class _MainMapState extends State<MainMap> {
       }
     });
   }
+  String SearchGlobal = '';
 
   @override
   Widget build(BuildContext context) {
-    final mediaquery = MediaQuery.of(context);
-    final screenwidth = mediaquery.size.width;
-    final screenheight = mediaquery.size.height;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Set current Location Check nearest Available Staff", style: TextStyle(fontSize: 15, ),),
+      body: Stack(
+        children: [
+          // App bar section
+          Container(
+            height: 150,
+            color: Colors.red,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                AppBar(
+                  title: Padding(
+                    padding: const EdgeInsets.only(bottom: 25),
+                    child: Center(
+                      child: Text("Map",
+                          style: TextStyle(
+                              fontSize: 20, fontWeight: FontWeight.bold)),
+                    ),
+                  ),
+                  backgroundColor: Colors.red,
+                  automaticallyImplyLeading: false,
+                ),
+              ],
+            ),
+          ),
+          Stack(
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(top: 125),
+                child: Stack(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(top: 25),
+                      child: Container(
+                        child: LoaderCheck
+                            ? Center(child: CircularProgressIndicator())
+                            : FlutterMap(
+                                options: MapOptions(
+                                  initialZoom: 14,
+                                  maxZoom: 18,
+                                  minZoom: 3,
+                                  center: LatLng(18.577401, 73.9774084),
+                                ),
+                                children: [
+                                    TileLayer(
+                                      urlTemplate:
+                                          'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                                      fallbackUrl:
+                                          'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                                    ),
+                                    MarkerLayer(
+                                      markers:
+                                          AvailableStaff.map((item) => Marker(
+                                              point: item,
+                                              width: 80,
+                                              height: 80,
+                                              child: Icon(
+                                                Icons.location_history,
+                                                size: 30,
+                                                color: Colors.red,
+                                              ))).toList(),
+                                    ),
+
+                                    // New data
+
+                                    // Chef
+                                    MarkerLayer(
+                                      markers: chefmarker
+                                          .map(
+                                            (point) => Marker(
+                                              point: point,
+                                              width: 80.0,
+                                              height: 80.0,
+                                              child: Icon(
+                                                Icons.person_pin,
+                                                color: Colors.yellow,
+                                                size: 30.0,
+                                              ),
+                                            ),
+                                          )
+                                          .toList(),
+                                    ),
+
+                                    // Licenade Practical Nurse
+                                    MarkerLayer(
+                                      markers: LicensdePracticalNurseMarker.map(
+                                        (point) => Marker(
+                                          point: point,
+                                          width: 80.0,
+                                          height: 80.0,
+                                          child: Icon(
+                                            Icons.person_pin,
+                                            color: const Color.fromARGB(
+                                                255, 3, 94, 230),
+                                            size: 30.0,
+                                          ),
+                                        ),
+                                      ).toList(),
+                                    ),
+
+                                    // Certified Nurse Assistant
+                                    MarkerLayer(
+                                      markers: CertifiedNursAssistentMarker.map(
+                                        (point) => Marker(
+                                          point: point,
+                                          width: 80.0,
+                                          height: 80.0,
+                                          child: Icon(
+                                            Icons.person_pin,
+                                            color: Colors.purple,
+                                            size: 30.0,
+                                          ),
+                                        ),
+                                      ).toList(),
+                                    ),
+
+                                    // Home Health Aides
+                                    MarkerLayer(
+                                      markers: HomeHealthAidesMarker.map(
+                                        (point) => Marker(
+                                          point: point,
+                                          width: 80.0,
+                                          height: 80.0,
+                                          child: Icon(
+                                            Icons.person_pin,
+                                            color: Colors.blue,
+                                            size: 30.0,
+                                          ),
+                                        ),
+                                      ).toList(),
+                                    ),
+
+                                    // Physiotherapists
+                                    MarkerLayer(
+                                      markers: PhysiotherapistsMarker.map(
+                                        (point) => Marker(
+                                          point: point,
+                                          width: 80.0,
+                                          height: 80.0,
+                                          child: Icon(
+                                            Icons.person_pin,
+                                            color: Colors.black,
+                                            size: 30.0,
+                                          ),
+                                        ),
+                                      ).toList(),
+                                    ),
+
+                                    // Occupational Therapists
+                                    MarkerLayer(
+                                      markers: OccupationalTherapistsMarker.map(
+                                        (point) => Marker(
+                                          point: point,
+                                          width: 80.0,
+                                          height: 80.0,
+                                          child: Icon(
+                                            Icons.person_pin,
+                                            color: Colors.green,
+                                            size: 30.0,
+                                          ),
+                                        ),
+                                      ).toList(),
+                                    ),
+
+                                    // Paramedics
+                                    MarkerLayer(
+                                      markers: ParamedicsMarker.map(
+                                        (point) => Marker(
+                                          point: point,
+                                          width: 80.0,
+                                          height: 80.0,
+                                          child: Icon(
+                                            Icons.person_pin,
+                                            color: Colors.brown,
+                                            size: 30.0,
+                                          ),
+                                        ),
+                                      ).toList(),
+                                    ),
+
+                                    MarkerLayer(
+                                      markers: DisabledCaregiversMarker.map(
+                                        (point) => Marker(
+                                          point: point,
+                                          width: 80.0,
+                                          height: 80.0,
+                                          child: Icon(
+                                            Icons.person_pin,
+                                            color: Colors.pink,
+                                            size: 30.0,
+                                          ),
+                                        ),
+                                      ).toList(),
+                                    ),
+                                    MarkerLayer(
+                                      markers: CooksMarker.map(
+                                        (point) => Marker(
+                                          point: point,
+                                          width: 80.0,
+                                          height: 80.0,
+                                          child: Icon(
+                                            Icons.person_pin,
+                                            color: const Color.fromRGBO(
+                                                240, 181, 177, 1),
+                                            size: 30.0,
+                                          ),
+                                        ),
+                                      ).toList(),
+                                    ),
+                                    MarkerLayer(
+                                      markers: HousekeepersMarker.map(
+                                        (point) => Marker(
+                                          point: point,
+                                          width: 80.0,
+                                          height: 80.0,
+                                          child: Icon(
+                                            Icons.person_pin,
+                                            color: const Color.fromARGB(
+                                                255, 234, 132, 132),
+                                            size: 30.0,
+                                          ),
+                                        ),
+                                      ).toList(),
+                                    ),
+                                    MarkerLayer(
+                                      markers: CleaningStaffMarker.map(
+                                        (point) => Marker(
+                                          point: point,
+                                          width: 80.0,
+                                          height: 80.0,
+                                          child: Icon(
+                                            Icons.person_pin,
+                                            color: const Color.fromARGB(
+                                                183, 226, 43, 30),
+                                            size: 30.0,
+                                          ),
+                                        ),
+                                      ).toList(),
+                                    ),
+                                    MarkerLayer(
+                                      markers: BabysittersMarker.map(
+                                        (point) => Marker(
+                                          point: point,
+                                          width: 80.0,
+                                          height: 80.0,
+                                          child: Icon(
+                                            Icons.person_pin,
+                                            color: const Color.fromARGB(
+                                                255, 2, 242, 10),
+                                            size: 30.0,
+                                          ),
+                                        ),
+                                      ).toList(),
+                                    ),
+                                    MarkerLayer(
+                                      markers: ElderCompanionsMarker.map(
+                                        (point) => Marker(
+                                          point: point,
+                                          width: 80.0,
+                                          height: 80.0,
+                                          child: Icon(
+                                            Icons.person_pin,
+                                            color: const Color.fromARGB(
+                                                255, 3, 86, 153),
+                                            size: 30.0,
+                                          ),
+                                        ),
+                                      ).toList(),
+                                    ),
+                                    MarkerLayer(
+                                      markers: HomeGuardsMarker.map(
+                                        (point) => Marker(
+                                          point: point,
+                                          width: 80.0,
+                                          height: 80.0,
+                                          child: Icon(
+                                            Icons.person_pin,
+                                            color: Colors.red,
+                                            size: 30.0,
+                                          ),
+                                        ),
+                                      ).toList(),
+                                    ),
+                                    MarkerLayer(
+                                      markers: SecurityGuardsMarker.map(
+                                        (point) => Marker(
+                                          point: point,
+                                          width: 80.0,
+                                          height: 80.0,
+                                          child: Icon(
+                                            Icons.person_pin,
+                                            color: Colors.blueGrey,
+                                            size: 30.0,
+                                          ),
+                                        ),
+                                      ).toList(),
+                                    ),
+                                    MarkerLayer(
+                                      markers: PersonalCareAssistantsMarker.map(
+                                        (point) => Marker(
+                                          point: point,
+                                          width: 80.0,
+                                          height: 80.0,
+                                          child: Icon(
+                                            Icons.person_pin,
+                                            color: Colors.white,
+                                            size: 30.0,
+                                          ),
+                                        ),
+                                      ).toList(),
+                                    ),
+                                    MarkerLayer(
+                                      markers: DriverMarker.map(
+                                        (point) => Marker(
+                                          point: point,
+                                          width: 80.0,
+                                          height: 80.0,
+                                          child: Icon(
+                                            Icons.person_pin,
+                                            color: const Color.fromARGB(
+                                                255, 119, 2, 41),
+                                            size: 30.0,
+                                          ),
+                                        ),
+                                      ).toList(),
+                                    ),
+                                    MarkerLayer(
+                                      markers:
+                                          AdministrativeAssistantsMarker.map(
+                                        (point) => Marker(
+                                          point: point,
+                                          width: 80.0,
+                                          height: 80.0,
+                                          child: Icon(
+                                            Icons.person_pin,
+                                            color: const Color.fromARGB(
+                                                255, 25, 0, 29),
+                                            size: 30.0,
+                                          ),
+                                        ),
+                                      ).toList(),
+                                    ),
+                                  ]),
+                      ),
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 5),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: screenWidth * 0.7,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(50),
+                                  color: Colors.white,
+                                  boxShadow: [
+                                    BoxShadow(
+                                        spreadRadius: 1,
+                                        color: Colors.black26,
+                                        blurRadius: 1)
+                                  ],
+                                ),
+                                child: Row(
+                                  children: [
+                                    Padding(
+                                      padding: const EdgeInsets.only(left: 10),
+                                      child: Icon(Icons.search,
+                                          color: Colors.blue, size: 25),
+                                    ),
+                                    Expanded(
+                                      child: TextField(
+                                        onChanged: (value) {
+                                          setState(() {
+                                            SearchGlobal = value;
+                                          });
+                                        },
+                                        decoration: InputDecoration(
+                                          border: InputBorder.none,
+                                          hintText: 'Search...',
+                                          contentPadding:
+                                          const EdgeInsets.symmetric(
+                                              horizontal: 10),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(left: 5),
+                                child: Container(
+                                  height: 50,
+                                  width: screenWidth * 0.18,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(20),
+                                    color: Colors.white,
+                                    boxShadow: [
+                                      BoxShadow(
+                                          spreadRadius: 1,
+                                          color: Colors.black26,
+                                          blurRadius: 1),
+                                    ],
+                                  ),
+                                  child: Icon(Icons.filter_list_sharp,
+                                      size: 30, color: Colors.blue),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              SearchGlobal == ''
+                  ? Container()
+                  : Padding(
+                padding: const EdgeInsets.only(
+                  top: 180,
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                        height: screenHeight * 0.5,
+                        width: screenWidth * 0.85,
+                        decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(20),
+                            boxShadow: [
+                              BoxShadow(
+                                  color: Colors.black26,
+                                  spreadRadius: 1,
+                                  blurRadius: 2)
+                            ]),
+                        child: StreamBuilder<QuerySnapshot>(
+                          stream: FirebaseFirestore.instance
+                              .collection('user')
+                              .snapshots(),
+                          builder: (context, snapshot) {
+                            if (snapshot.connectionState ==
+                                ConnectionState.waiting) {
+                              return Center(
+                                child: CircularProgressIndicator(),
+                              );
+                            }
+
+                            if (!snapshot.hasData ||
+                                snapshot.data!.docs.isEmpty) {
+                              return Center(
+                                child: Text("No Users Found"),
+                              );
+                            }
+
+                            if (SearchGlobal.isEmpty) {
+                              return Center(child: Text("Empty"));
+                            }
+
+                            return ListView.builder(
+                              padding: EdgeInsets.zero,
+                              itemCount: snapshot.data!.docs.length,
+                              itemBuilder: (context, index) {
+                                var data = snapshot.data!.docs[index]
+                                    .data() as Map<String, dynamic>;
+                                var UID = snapshot.data!.docs[index].id;
+                                if (data['professionOfStaff'] != null &&
+                                    data['First_name'] != null &&
+                                    data['First_name']
+                                        .toString()
+                                        .toLowerCase()
+                                        .startsWith(
+                                        SearchGlobal.toLowerCase())) {
+                                  return Padding(
+                                    padding: const EdgeInsets.all(5.0),
+                                    child: InkWell(
+                                      onTap: () {
+                                        Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) =>
+                                                  StaffProfilePage(
+                                                      StaffID: UID,
+                                                      Skill: data[
+                                                      'professionOfStaff']),
+                                            ));
+                                      },
+                                      child: Container(
+                                        height: 50,
+                                        width: 200,
+                                        decoration: BoxDecoration(
+                                            color: Colors.white,
+                                            borderRadius:
+                                            BorderRadius.circular(15),
+                                            boxShadow: [
+                                              BoxShadow(
+                                                  color: Colors.black26,
+                                                  spreadRadius: 1,
+                                                  blurRadius: 1)
+                                            ]),
+                                        child: Row(
+                                          children: [
+                                            Padding(
+                                              padding:
+                                              const EdgeInsets.only(
+                                                  left: 10),
+                                              child: Container(
+                                                height: 40,
+                                                width: 40,
+                                                decoration: BoxDecoration(
+                                                    borderRadius:
+                                                    BorderRadius
+                                                        .circular(40),
+                                                    image: DecorationImage(
+                                                        image: NetworkImage(
+                                                            data[
+                                                            'Profile_Pic']),
+                                                        fit: BoxFit
+                                                            .cover)),
+                                              ),
+                                            ),
+                                            Padding(
+                                              padding:
+                                              const EdgeInsets.only(
+                                                  left: 10),
+                                              child: Container(
+                                                  width: 150,
+                                                  child: Text(
+                                                    "${data['First_name']} ${data['Last_name']}",
+                                                    overflow: TextOverflow
+                                                        .ellipsis,
+                                                    maxLines: 1,
+                                                  )),
+                                            ),
+                                            Padding(
+                                              padding:
+                                              const EdgeInsets.only(
+                                                  left: 10),
+                                              child: Text(
+                                                data['City'][0]
+                                                    .toUpperCase() +
+                                                    data['City']
+                                                        .substring(1),
+                                                style: TextStyle(
+                                                    color: Colors.green,
+                                                    fontWeight:
+                                                    FontWeight.bold),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                } else if (data['professionOfStaff'] !=
+                                    null &&
+                                    data['First_name'] != null &&
+                                    data['City']
+                                        .toString()
+                                        .toLowerCase()
+                                        .startsWith(
+                                        SearchGlobal.toLowerCase())) {
+                                  return Padding(
+                                    padding: const EdgeInsets.all(5.0),
+                                    child: InkWell(
+                                      onTap: () {
+                                        Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) =>
+                                                  StaffProfilePage(
+                                                      StaffID: UID,
+                                                      Skill: data[
+                                                      'professionOfStaff']),
+                                            ));
+                                      },
+                                      child: Container(
+                                        height: 50,
+                                        width: 200,
+                                        decoration: BoxDecoration(
+                                            color: Colors.white,
+                                            borderRadius:
+                                            BorderRadius.circular(15),
+                                            boxShadow: [
+                                              BoxShadow(
+                                                  color: Colors.black26,
+                                                  spreadRadius: 1,
+                                                  blurRadius: 1)
+                                            ]),
+                                        child: Row(
+                                          children: [
+                                            Padding(
+                                              padding:
+                                              const EdgeInsets.only(
+                                                  left: 10),
+                                              child: Container(
+                                                height: 40,
+                                                width: 40,
+                                                decoration: BoxDecoration(
+                                                    borderRadius:
+                                                    BorderRadius
+                                                        .circular(40),
+                                                    image: DecorationImage(
+                                                        image: NetworkImage(
+                                                            data[
+                                                            'Profile_Pic']),
+                                                        fit: BoxFit
+                                                            .cover)),
+                                              ),
+                                            ),
+                                            Padding(
+                                              padding:
+                                              const EdgeInsets.only(
+                                                  left: 10),
+                                              child: Container(
+                                                  width: 150,
+                                                  child: Text(
+                                                    "${data['First_name']} ${data['Last_name']}",
+                                                    overflow: TextOverflow
+                                                        .ellipsis,
+                                                    maxLines: 1,
+                                                  )),
+                                            ),
+                                            Padding(
+                                              padding:
+                                              const EdgeInsets.only(
+                                                  left: 10),
+                                              child: Text(
+                                                data['City'][0]
+                                                    .toUpperCase() +
+                                                    data['City']
+                                                        .substring(1),
+                                                style: TextStyle(
+                                                    color: Colors.green,
+                                                    fontWeight:
+                                                    FontWeight.bold),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                }
+                                return Container();
+                              },
+                            );
+                          },
+                        )),
+                  ],
+                ),
+              ),
+            ],
+          )
+        ],
       ),
-      body: LoaderCheck? Center(child: CircularProgressIndicator()) : FlutterMap(
-          options: MapOptions(
-            initialZoom: 14,
-            maxZoom: 18,
-            minZoom: 3,
-            center: LatLng(18.577401, 73.9774084),
-          ), children: [
-        TileLayer(
-          urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-          fallbackUrl: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-        ),
-        MarkerLayer(
-            markers: AvailableStaff.map(
-                (item)=> Marker(
-                    point: item,
-                    width: 80,
-                    height: 80,
-                    child: Icon(
-                      Icons.location_history,
-                      size: 30,
-                      color: Colors.red,)
-        )
-            ).toList(),
-        ),
-
-        // New data
-
-        // Chef
-        MarkerLayer(
-          markers: chefmarker.map(
-                (point) => Marker(
-              point: point,
-              width: 80.0,
-              height: 80.0,
-              child: Icon(
-                Icons.person_pin,
-                color: Colors.yellow,
-                size: 30.0,
-              ),
-            ),
-          ).toList(),
-        ),
-
-        // Licenade Practical Nurse
-        MarkerLayer(
-          markers: LicensdePracticalNurseMarker.map(
-                (point) => Marker(
-              point: point,
-              width: 80.0,
-              height: 80.0,
-              child: Icon(
-                Icons.person_pin,
-                color: const Color.fromARGB(255, 3, 94, 230),
-                size: 30.0,
-              ),
-            ),
-          ).toList(),
-        ),
-
-        // Certified Nurse Assistant
-        MarkerLayer(
-          markers: CertifiedNursAssistentMarker.map(
-                (point) => Marker(
-              point: point,
-              width: 80.0,
-              height: 80.0,
-              child: Icon(
-                Icons.person_pin,
-                color: Colors.purple,
-                size: 30.0,
-              ),
-            ),
-          ).toList(),
-        ),
-
-        // Home Health Aides
-        MarkerLayer(
-          markers: HomeHealthAidesMarker.map(
-                (point) => Marker(
-              point: point,
-              width: 80.0,
-              height: 80.0,
-              child: Icon(
-                Icons.person_pin,
-                color: Colors.blue,
-                size: 30.0,
-              ),
-            ),
-          ).toList(),
-        ),
-
-        // Physiotherapists
-        MarkerLayer(
-          markers: PhysiotherapistsMarker.map(
-                (point) => Marker(
-              point: point,
-              width: 80.0,
-              height: 80.0,
-              child: Icon(
-                Icons.person_pin,
-                color: Colors.black,
-                size: 30.0,
-              ),
-            ),
-          ).toList(),
-        ),
-
-        // Occupational Therapists
-        MarkerLayer(
-          markers: OccupationalTherapistsMarker.map(
-                (point) => Marker(
-              point: point,
-              width: 80.0,
-              height: 80.0,
-              child: Icon(
-                Icons.person_pin,
-                color: Colors.green,
-                size: 30.0,
-              ),
-            ),
-          ).toList(),
-        ),
-
-        // Paramedics
-        MarkerLayer(
-          markers: ParamedicsMarker.map(
-                (point) => Marker(
-              point: point,
-              width: 80.0,
-              height: 80.0,
-              child: Icon(
-                Icons.person_pin,
-                color: Colors.brown,
-                size: 30.0,
-              ),
-            ),
-          ).toList(),
-        ),
-
-
-        MarkerLayer(
-          markers: DisabledCaregiversMarker.map(
-                (point) => Marker(
-              point: point,
-              width: 80.0,
-              height: 80.0,
-              child: Icon(
-                Icons.person_pin,
-                color: Colors.pink,
-                size: 30.0,
-              ),
-            ),
-          ).toList(),
-        ),
-        MarkerLayer(
-          markers: CooksMarker.map(
-                (point) => Marker(
-              point: point,
-              width: 80.0,
-              height: 80.0,
-              child: Icon(
-                Icons.person_pin,
-                color: const Color.fromRGBO(240, 181, 177, 1),
-                size: 30.0,
-              ),
-            ),
-          ).toList(),
-        ),
-        MarkerLayer(
-          markers: HousekeepersMarker.map(
-                (point) => Marker(
-              point: point,
-              width: 80.0,
-              height: 80.0,
-              child: Icon(
-                Icons.person_pin,
-                color: const Color.fromARGB(255, 234, 132, 132),
-                size: 30.0,
-              ),
-            ),
-          ).toList(),
-        ),
-        MarkerLayer(
-          markers: CleaningStaffMarker.map(
-                (point) => Marker(
-              point: point,
-              width: 80.0,
-              height: 80.0,
-              child: Icon(
-                Icons.person_pin,
-                color: const Color.fromARGB(183, 226, 43, 30),
-                size: 30.0,
-              ),
-            ),
-          ).toList(),
-        ),
-        MarkerLayer(
-          markers: BabysittersMarker.map(
-                (point) => Marker(
-              point: point,
-              width: 80.0,
-              height: 80.0,
-              child: Icon(
-                Icons.person_pin,
-                color: const Color.fromARGB(255, 2, 242, 10),
-                size: 30.0,
-              ),
-            ),
-          ).toList(),
-        ),
-        MarkerLayer(
-          markers: ElderCompanionsMarker.map(
-                (point) => Marker(
-              point: point,
-              width: 80.0,
-              height: 80.0,
-              child: Icon(
-                Icons.person_pin,
-                color: const Color.fromARGB(255, 3, 86, 153),
-                size: 30.0,
-              ),
-            ),
-          ).toList(),
-        ),
-        MarkerLayer(
-          markers: HomeGuardsMarker.map(
-                (point) => Marker(
-              point: point,
-              width: 80.0,
-              height: 80.0,
-              child: Icon(
-                Icons.person_pin,
-                color: Colors.red,
-                size: 30.0,
-              ),
-            ),
-          ).toList(),
-        ),
-        MarkerLayer(
-          markers: SecurityGuardsMarker.map(
-                (point) => Marker(
-              point: point,
-              width: 80.0,
-              height: 80.0,
-              child: Icon(
-                Icons.person_pin,
-                color: Colors.blueGrey,
-                size: 30.0,
-              ),
-            ),
-          ).toList(),
-        ),
-        MarkerLayer(
-          markers: PersonalCareAssistantsMarker.map(
-                (point) => Marker(
-              point: point,
-              width: 80.0,
-              height: 80.0,
-              child: Icon(
-                Icons.person_pin,
-                color: Colors.white,
-                size: 30.0,
-              ),
-            ),
-          ).toList(),
-        ),
-        MarkerLayer(
-          markers: DriverMarker.map(
-                (point) => Marker(
-              point: point,
-              width: 80.0,
-              height: 80.0,
-              child: Icon(
-                Icons.person_pin,
-                color: const Color.fromARGB(255, 119, 2, 41),
-                size: 30.0,
-              ),
-            ),
-          ).toList(),
-        ),
-        MarkerLayer(
-          markers: AdministrativeAssistantsMarker.map(
-                (point) => Marker(
-              point: point,
-              width: 80.0,
-              height: 80.0,
-              child: Icon(
-                Icons.person_pin,
-                color: const Color.fromARGB(255, 25, 0, 29),
-                size: 30.0,
-              ),
-            ),
-          ).toList(),
-        ),
-      ]),
     );
   }
 }

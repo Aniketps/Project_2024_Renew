@@ -27,6 +27,7 @@ void main() async {
 }
 
 class MyApp extends StatelessWidget {
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -99,6 +100,26 @@ class _MyHomePageState extends State<MyHomePage> {
     "Certified Nursing Assistants",
     "Licensed Practical Nurses",
     "Registered Nurses"
+  ];
+  List<String> ProfessionBack = [
+    "chef.png",
+    "personalCareAssistance.png",
+    "driver.png",
+    "securityG.png",
+    "img.png",
+    "img.png",
+    "img.png",
+    "img.png",
+    "img.png",
+    "img.png",
+    "img.png",
+    "img.png",
+    "img.png",
+    "img.png",
+    "img.png",
+    "img.png",
+    "img.png",
+    "img.png",
   ];
 
   var StaffData;
@@ -469,11 +490,19 @@ class _MyHomePageState extends State<MyHomePage> {
                                           blurRadius: 1,
                                           spreadRadius: 1),
                                     ],
+                                    image: DecorationImage(
+                                      image: AssetImage("assets/images/${ProfessionBack[index]}"),
+                                      fit: BoxFit.cover, // Adjust the fit if necessary
+                                    ),
                                   ),
                                   child: Padding(
                                     padding: const EdgeInsets.all(10.0),
                                     child: Text(Profession[index],
-                                        style: TextStyle(fontSize: 18)),
+                                        style: TextStyle(fontSize: 18,color: Colors.white, fontWeight: FontWeight.bold, shadows: [Shadow(
+                                          blurRadius: 1,
+                                          color: Colors.black,
+                                          offset: Offset(1, 1)
+                                        )])),
                                   ),
                                 ),
                               ),
@@ -540,11 +569,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                       var UID = snapshot.data!.docs[index].id;
                                       if (data['professionOfStaff'] != null &&
                                           data['First_name'] != null &&
-                                          data['First_name']
-                                              .toString()
-                                              .toLowerCase()
-                                              .startsWith(
-                                                  SearchGlobal.toLowerCase())) {
+                                          data['First_name'].toString().toLowerCase().startsWith(SearchGlobal.toLowerCase())) {
                                         return Padding(
                                           padding: const EdgeInsets.all(5.0),
                                           child: InkWell(
@@ -626,14 +651,8 @@ class _MyHomePageState extends State<MyHomePage> {
                                             ),
                                           ),
                                         );
-                                      } else if (data['professionOfStaff'] !=
-                                              null &&
-                                          data['First_name'] != null &&
-                                          data['City']
-                                              .toString()
-                                              .toLowerCase()
-                                              .startsWith(
-                                                  SearchGlobal.toLowerCase())) {
+                                      }
+                                      else if (data['professionOfStaff'] != null && data['First_name'] != null && data['City'].toString().toLowerCase().startsWith(SearchGlobal.toLowerCase())) {
                                         return Padding(
                                           padding: const EdgeInsets.all(5.0),
                                           child: InkWell(

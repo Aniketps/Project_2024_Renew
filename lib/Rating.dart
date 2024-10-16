@@ -1,14 +1,14 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-class Rating extends StatefulWidget {
-  const Rating({super.key});
+class RatingState extends StatefulWidget {
+  const RatingState({super.key});
 
   @override
-  State<Rating> createState() => _RatingState();
+  State<RatingState> createState() => _RatingStateState();
 }
 
-class _RatingState extends State<Rating> {
+class _RatingStateState extends State<RatingState> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -29,14 +29,14 @@ class _RatingState extends State<Rating> {
               margin: EdgeInsets.all(15),
               padding: EdgeInsets.all(5),
               decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(15),
-                boxShadow: [
-                  BoxShadow(color: Colors.black26,
-                  spreadRadius: 1,
-                    blurRadius: 1,
-                  )
-                ]
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(15),
+                  boxShadow: [
+                    BoxShadow(color: Colors.black26,
+                      spreadRadius: 1,
+                      blurRadius: 1,
+                    )
+                  ]
 
               ),
               child: Column(
@@ -396,9 +396,6 @@ class _RatingState extends State<Rating> {
           ],
         ),
       ),
-
-
-
 
     );
   }
