@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 import 'StaffDetailInputPage.dart';
 
@@ -39,160 +40,184 @@ class _AndroidStaffPage extends State<AndroidStaffPage>{
   TextEditingController Email = TextEditingController();
   TextEditingController Password1 = TextEditingController();
   TextEditingController Password2 = TextEditingController();
+  bool isLoading = false;
 
   @override
   Widget build(BuildContext context) {
-    return Column(
+    final screenHeight = MediaQuery.of(context).size.height;
+
+    return Stack(
       children: [
-        Container(
-          height: 80,
-          width: 80,
-          margin: EdgeInsets.only(bottom: 40),
-          decoration: BoxDecoration(
-            color: Colors.black,
-            borderRadius: BorderRadius.circular(80),
-            boxShadow: [
-              BoxShadow(color: Colors.black12, spreadRadius: 2, blurRadius: 1),
-            ],
-            image: DecorationImage(
-              image: AssetImage("assets/images/logo.png"),
-              fit: BoxFit.cover, // Adjust the fit if necessary
-            ),
-          ),
-        ),
-        Center(
-          child: Container(
-            height: 500,
-            width: 300,
+        Column(
+        children: [
+          Container(
+            height: 80,
+            width: 80,
+            margin: EdgeInsets.only(bottom: 40),
             decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(30),
-                boxShadow: [
-                  BoxShadow(color: Colors.black12, spreadRadius: 2, blurRadius: 1)
-                ]
-            ),
-            child: Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(30.0),
-                  child: Text("Staff Registration", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(right: 30, left: 30, top: 10),
-                  child: Container(
-                    height: 50,
-                    child: TextField(
-                      controller: FirstName,
-                      decoration: InputDecoration(
-                          labelText: "First name", // Placeholder text
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(50),
-                          ),
-                          contentPadding: EdgeInsets.fromLTRB(20, 16, 16, 16)// Adds border around the text field
-                      ),
-                    ),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(right: 30, left: 30, top: 10),
-                  child: Container(
-                    height: 50,
-                    child: TextField(
-                      controller: LastName,
-                      decoration: InputDecoration(
-                          labelText: "Last name", // Placeholder text
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(50),
-                          ),
-                          contentPadding: EdgeInsets.fromLTRB(20, 16, 16, 16)// Adds border around the text field
-                      ),
-                    ),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(right: 30, left: 30, top: 10),
-                  child: Container(
-                    height: 50,
-                    child: TextField(
-                      controller: Email,
-                      decoration: InputDecoration(
-                          labelText: "Email", // Placeholder text
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(50),
-                          ),
-                          contentPadding: EdgeInsets.fromLTRB(20, 16, 16, 16)// Adds border around the text field
-                      ),
-                    ),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(right: 30, left: 30, top: 10),
-                  child: Container(
-                    height: 50,
-                    child: TextField(
-                      controller: Password1,
-                      decoration: InputDecoration(
-                          labelText: "Password", // Placeholder text
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(50),
-
-                          ),
-                          contentPadding: EdgeInsets.fromLTRB(20, 16, 16, 16)// Adds border around the text field
-                      ),
-                    ),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(right: 30, left: 30, top: 10),
-                  child: Container(
-                    height: 50,
-                    child: TextField(
-                      controller: Password2,
-                      decoration: InputDecoration(
-                          labelText: "Confirm password", // Placeholder text
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(50),
-
-                          ),
-                          contentPadding: EdgeInsets.fromLTRB(20, 16, 16, 16)// Adds border around the text field
-                      ),
-                    ),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(top: 2, bottom: 5, left: 50),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      InkWell(
-                          onTap: () {
-                            Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => LoginPage(),));
-                          },
-                          child: Text("Already have an account", style: TextStyle(fontSize: 12, color: Colors.blue, fontWeight: FontWeight.bold),)
-                      ),
-                    ],
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(top: 15),
-                  child: ElevatedButton(
-                      onPressed: () {
-                        String firstName = FirstName.text;
-                        String lastName = LastName.text;
-                        String email = Email.text;
-                        String password1 = Password1.text;
-                        String password2 = Password2.text;
-                        if(firstName.isNotEmpty && lastName.isNotEmpty && email.isNotEmpty && password1.isNotEmpty && password2.isNotEmpty){
-                          Navigator.push(context, MaterialPageRoute(builder: (context) => StaffDetailInputPage(Email: email, FirstName: firstName, Password: password1, LastName: lastName,),));
-                        }
-                      },
-                      child: Text("Next")),
-                )
+              color: Colors.black,
+              borderRadius: BorderRadius.circular(80),
+              boxShadow: [
+                BoxShadow(color: Colors.black12, spreadRadius: 2, blurRadius: 1),
               ],
+              image: DecorationImage(
+                image: AssetImage("assets/images/logo.png"),
+                fit: BoxFit.cover, // Adjust the fit if necessary
+              ),
             ),
           ),
-        ),
-      ],
+          Center(
+            child: Container(
+              height: 500,
+              width: 300,
+              decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(30),
+                  boxShadow: [
+                    BoxShadow(color: Colors.black12, spreadRadius: 2, blurRadius: 1)
+                  ]
+              ),
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(30.0),
+                    child: Text("Staff Registration", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(right: 30, left: 30, top: 10),
+                    child: Container(
+                      height: 50,
+                      child: TextField(
+                        controller: FirstName,
+                        decoration: InputDecoration(
+                            labelText: "First name", // Placeholder text
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(50),
+                            ),
+                            contentPadding: EdgeInsets.fromLTRB(20, 16, 16, 16)// Adds border around the text field
+                        ),
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(right: 30, left: 30, top: 10),
+                    child: Container(
+                      height: 50,
+                      child: TextField(
+                        controller: LastName,
+                        decoration: InputDecoration(
+                            labelText: "Last name", // Placeholder text
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(50),
+                            ),
+                            contentPadding: EdgeInsets.fromLTRB(20, 16, 16, 16)// Adds border around the text field
+                        ),
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(right: 30, left: 30, top: 10),
+                    child: Container(
+                      height: 50,
+                      child: TextField(
+                        controller: Email,
+                        decoration: InputDecoration(
+                            labelText: "Email", // Placeholder text
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(50),
+                            ),
+                            contentPadding: EdgeInsets.fromLTRB(20, 16, 16, 16)// Adds border around the text field
+                        ),
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(right: 30, left: 30, top: 10),
+                    child: Container(
+                      height: 50,
+                      child: TextField(
+                        controller: Password1,
+                        decoration: InputDecoration(
+                            labelText: "Password", // Placeholder text
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(50),
+
+                            ),
+                            contentPadding: EdgeInsets.fromLTRB(20, 16, 16, 16)// Adds border around the text field
+                        ),
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(right: 30, left: 30, top: 10),
+                    child: Container(
+                      height: 50,
+                      child: TextField(
+                        controller: Password2,
+                        decoration: InputDecoration(
+                            labelText: "Confirm password", // Placeholder text
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(50),
+
+                            ),
+                            contentPadding: EdgeInsets.fromLTRB(20, 16, 16, 16)// Adds border around the text field
+                        ),
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 2, bottom: 5, left: 50),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        InkWell(
+                            onTap: () {
+                              Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => LoginPage(),));
+                            },
+                            child: Text("Already have an account", style: TextStyle(fontSize: 12, color: Colors.blue, fontWeight: FontWeight.bold),)
+                        ),
+                      ],
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 15),
+                    child: ElevatedButton(
+                        onPressed: () {
+                          setState(() {
+                            isLoading = true;
+                          });
+                          String firstName = FirstName.text;
+                          String lastName = LastName.text;
+                          String email = Email.text;
+                          String password1 = Password1.text;
+                          String password2 = Password2.text;
+                          if(firstName.isNotEmpty && lastName.isNotEmpty && email.isNotEmpty && password1.isNotEmpty && password2.isNotEmpty){
+                            Navigator.push(context, MaterialPageRoute(builder: (context) => StaffDetailInputPage(Email: email, FirstName: firstName, Password: password1, LastName: lastName,),));
+                            setState(() {
+                              isLoading = false;
+                            });
+                          }else{
+                            setState(() {
+                              isLoading = false;
+                            });
+                            Fluttertoast.showToast(msg: "Fill the blanks");
+                          }
+                        },
+                        child: Text("Next")),
+                  )
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+        isLoading? Center(
+          child: Padding(
+            padding: EdgeInsets.only(top: screenHeight * 0.35),
+            child: CircularProgressIndicator(),
+          ),
+        ) : Container(),
+      ]
     );
   }
 }
@@ -208,172 +233,201 @@ class _AndroidUserPage extends State<AndroidUserPage>{
   TextEditingController Email = TextEditingController();
   TextEditingController Password1 = TextEditingController();
   TextEditingController Password2 = TextEditingController();
+  bool isLoading = false;
   @override
   Widget build(BuildContext context) {
-    return Column(
+    final screenHeight = MediaQuery.of(context).size.height;
+
+    return Stack(
       children: [
-        Container(
-          height: 80,
-          width: 80,
-          margin: EdgeInsets.only(bottom: 40),
-          decoration: BoxDecoration(
-            color: Colors.black,
-            borderRadius: BorderRadius.circular(80),
-            boxShadow: [
-              BoxShadow(color: Colors.black12, spreadRadius: 2, blurRadius: 1),
-            ],
-            image: DecorationImage(
-              image: AssetImage("assets/images/logo.png"),
-              fit: BoxFit.cover, // Adjust the fit if necessary
-            ),
-          ),
-        ),
-        Center(
-          child: Container(
-            height: 500,
-            width: 300,
+        Column(
+        children: [
+          Container(
+            height: 80,
+            width: 80,
+            margin: EdgeInsets.only(bottom: 40),
             decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(30),
-                boxShadow: [
-                  BoxShadow(color: Colors.black12, spreadRadius: 2, blurRadius: 1)
-                ]
-            ),
-            child: Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(30.0),
-                  child: Text("User Registration", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(right: 30, left: 30, top: 10),
-                  child: Container(
-                    height: 50,
-                    child: TextField(
-                      controller: FirstName,
-                      decoration: InputDecoration(
-                          labelText: "First name", // Placeholder text
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(50),
-                          ),
-                          contentPadding: EdgeInsets.fromLTRB(20, 16, 16, 16)// Adds border around the text field
-                      ),
-                    ),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(right: 30, left: 30, top: 10),
-                  child: Container(
-                    height: 50,
-                    child: TextField(
-                      controller: LastName,
-                      decoration: InputDecoration(
-                          labelText: "Last name", // Placeholder text
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(50),
-                          ),
-                          contentPadding: EdgeInsets.fromLTRB(20, 16, 16, 16)// Adds border around the text field
-                      ),
-                    ),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(right: 30, left: 30, top: 10),
-                  child: Container(
-                    height: 50,
-                    child: TextField(
-                      controller: Email,
-                      decoration: InputDecoration(
-                          labelText: "Email", // Placeholder text
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(50),
-                          ),
-                          contentPadding: EdgeInsets.fromLTRB(20, 16, 16, 16)// Adds border around the text field
-                      ),
-                    ),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(right: 30, left: 30, top: 10),
-                  child: Container(
-                    height: 50,
-                    child: TextField(
-                      controller: Password1,
-                      decoration: InputDecoration(
-                          labelText: "Password", // Placeholder text
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(50),
-
-                          ),
-                          contentPadding: EdgeInsets.fromLTRB(20, 16, 16, 16)// Adds border around the text field
-                      ),
-                    ),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(right: 30, left: 30, top: 10),
-                  child: Container(
-                    height: 50,
-                    child: TextField(
-                      controller: Password2,
-                      decoration: InputDecoration(
-                          labelText: "Confirm password", // Placeholder text
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(50),
-
-                          ),
-                          contentPadding: EdgeInsets.fromLTRB(20, 16, 16, 16)// Adds border around the text field
-                      ),
-                    ),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(top: 2, bottom: 5, left: 50),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      InkWell(
-                          onTap: () {
-
-                          },
-                          child: Text("Already have an account", style: TextStyle(fontSize: 12, color: Colors.blue, fontWeight: FontWeight.bold),)
-                      ),
-                    ],
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(top: 20),
-                  child: ElevatedButton(
-                      onPressed: () async {
-                        String firstname = FirstName.text;
-                        String lastname = LastName.text;
-                        String email = Email.text;
-                        String password1 = Password1.text;
-                        String password2 = Password2.text;
-                        if(firstname.isNotEmpty && lastname.isNotEmpty && email.isNotEmpty && password1.isNotEmpty && password2.isNotEmpty){
-                          if(password1 == password2){
-                            UserCredential usercredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(email: email, password: password1);
-                            User? user = usercredential.user;
-                            await FirebaseFirestore.instance.collection("user").doc(user?.uid).set({
-                              'Email': email,
-                              'Password': password1,
-                              'First_name': firstname,
-                              'Last_name': lastname,
-                            });
-
-                            Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => LoginPage(),));
-                          }
-                        }else{
-                          print("Error");
-                        }
-                      },
-                      child: Text("Submit")),
-                )
+              color: Colors.black,
+              borderRadius: BorderRadius.circular(80),
+              boxShadow: [
+                BoxShadow(color: Colors.black12, spreadRadius: 2, blurRadius: 1),
               ],
+              image: DecorationImage(
+                image: AssetImage("assets/images/logo.png"),
+                fit: BoxFit.cover, // Adjust the fit if necessary
+              ),
             ),
           ),
-        ),
-      ],
+          Center(
+            child: Container(
+              height: 500,
+              width: 300,
+              decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(30),
+                  boxShadow: [
+                    BoxShadow(color: Colors.black12, spreadRadius: 2, blurRadius: 1)
+                  ]
+              ),
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(30.0),
+                    child: Text("User Registration", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(right: 30, left: 30, top: 10),
+                    child: Container(
+                      height: 50,
+                      child: TextField(
+                        controller: FirstName,
+                        decoration: InputDecoration(
+                            labelText: "First name", // Placeholder text
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(50),
+                            ),
+                            contentPadding: EdgeInsets.fromLTRB(20, 16, 16, 16)// Adds border around the text field
+                        ),
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(right: 30, left: 30, top: 10),
+                    child: Container(
+                      height: 50,
+                      child: TextField(
+                        controller: LastName,
+                        decoration: InputDecoration(
+                            labelText: "Last name", // Placeholder text
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(50),
+                            ),
+                            contentPadding: EdgeInsets.fromLTRB(20, 16, 16, 16)// Adds border around the text field
+                        ),
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(right: 30, left: 30, top: 10),
+                    child: Container(
+                      height: 50,
+                      child: TextField(
+                        controller: Email,
+                        decoration: InputDecoration(
+                            labelText: "Email", // Placeholder text
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(50),
+                            ),
+                            contentPadding: EdgeInsets.fromLTRB(20, 16, 16, 16)// Adds border around the text field
+                        ),
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(right: 30, left: 30, top: 10),
+                    child: Container(
+                      height: 50,
+                      child: TextField(
+                        controller: Password1,
+                        decoration: InputDecoration(
+                            labelText: "Password", // Placeholder text
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(50),
+
+                            ),
+                            contentPadding: EdgeInsets.fromLTRB(20, 16, 16, 16)// Adds border around the text field
+                        ),
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(right: 30, left: 30, top: 10),
+                    child: Container(
+                      height: 50,
+                      child: TextField(
+                        controller: Password2,
+                        decoration: InputDecoration(
+                            labelText: "Confirm password", // Placeholder text
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(50),
+
+                            ),
+                            contentPadding: EdgeInsets.fromLTRB(20, 16, 16, 16)// Adds border around the text field
+                        ),
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 2, bottom: 5, left: 50),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        InkWell(
+                            onTap: () {
+                              Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => LoginPage(),));
+                            },
+                            child: Text("Already have an account", style: TextStyle(fontSize: 12, color: Colors.blue, fontWeight: FontWeight.bold),)
+                        ),
+                      ],
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 20),
+                    child: ElevatedButton(
+                        onPressed: () async {
+                          setState(() {
+                            isLoading = true;
+                          });
+                          String firstname = FirstName.text;
+                          String lastname = LastName.text;
+                          String email = Email.text;
+                          String password1 = Password1.text;
+                          String password2 = Password2.text;
+                          if(firstname.isNotEmpty && lastname.isNotEmpty && email.isNotEmpty && password1.isNotEmpty && password2.isNotEmpty){
+                            
+                            
+                            if(password1 == password2){
+                              UserCredential usercredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(email: email, password: password1);
+                              User? user = usercredential.user;
+                              await FirebaseFirestore.instance.collection("user").doc(user?.uid).set({
+                                'Email': email,
+                                'Password': password1,
+                                'First_name': firstname,
+                                'Last_name': lastname,
+                              });
+                              user?.sendEmailVerification();
+                              Fluttertoast.showToast(msg: "Link send, A link has been send to your email");
+                              await FirebaseAuth.instance.signOut();
+                              
+                              Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => LoginPage(),));
+                              setState(() {
+                                isLoading = false;
+                              });
+                            }
+                          }else{
+                            setState(() {
+                              isLoading = false;
+                            });
+                            Fluttertoast.showToast(
+                                toastLength: Toast.LENGTH_LONG,
+                                msg: "Fill the blanks");
+                          }
+                        },
+                        child: Text("Submit")),
+                  )
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+        isLoading? Center(
+          child: Padding(
+            padding: EdgeInsets.only(top: screenHeight * 0.35),
+            child: CircularProgressIndicator(),
+          ),
+        ) : Container(),
+      ]
     );
   }
 }
