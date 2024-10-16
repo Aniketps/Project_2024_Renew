@@ -8,6 +8,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
@@ -106,259 +107,296 @@ class _AndroidStaffPage extends State<AndroidStaffPage>{
   String ErrorData = "";
 
   TextEditingController PhoneNo = TextEditingController();
+  TextEditingController OTP = TextEditingController();
   TextEditingController City = TextEditingController();
   TextEditingController ProfilePic = TextEditingController();
+  bool isLoading = false;
 
   File? imagePath;
 
   @override
   Widget build(BuildContext context) {
-    return Column(
+    final screenHeight = MediaQuery.of(context).size.height;
+
+    return Stack(
       children: [
-        Container(
-          height: 80,
-          width: 80,
-          margin: EdgeInsets.only(bottom: 40, top: 50),
-          decoration: BoxDecoration(
-            color: Colors.black,
-            borderRadius: BorderRadius.circular(80),
-            boxShadow: [
-              BoxShadow(color: Colors.black12, spreadRadius: 2, blurRadius: 1),
-            ],
-            image: DecorationImage(
-              image: AssetImage("assets/images/logo.png"),
-              fit: BoxFit.cover, // Adjust the fit if necessary
+        Column(
+        children: [
+          Container(
+            height: 80,
+            width: 80,
+            margin: EdgeInsets.only(bottom: 40, top: 50),
+            decoration: BoxDecoration(
+              color: Colors.black,
+              borderRadius: BorderRadius.circular(80),
+              boxShadow: [
+                BoxShadow(color: Colors.black12, spreadRadius: 2, blurRadius: 1),
+              ],
+              image: DecorationImage(
+                image: AssetImage("assets/images/logo.png"),
+                fit: BoxFit.cover, // Adjust the fit if necessary
+              ),
             ),
           ),
-        ),
-        Center(
-          child: Container(
-            height: 520,
-            width: 300,
-            decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(30),
-                boxShadow: [
-                  BoxShadow(color: Colors.black12, spreadRadius: 2, blurRadius: 1)
-                ]
-            ),
-            child: Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(30.0),
-                  child: Text("Details", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(right: 15, left: 15, top: 10),
-                  child: Row(
-                    children: [
-                      Container(
-                        padding: EdgeInsets.symmetric(horizontal: 20),
-                        width: 265,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(12),
-                          boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 6)],
-                        ),
-                        child: DropdownButton<String>(
-                          value: selectedValue,
-                          hint: Text("Select an option"),
-                          items: items.map((String item) {
-                            return DropdownMenuItem<String>(
-                              value: item,
-                              child: Container(
-                                constraints: BoxConstraints(
-                                  maxWidth: 200,
-                                ),
-                                child: Text(
-                                  item,
-                                  overflow: TextOverflow.ellipsis,
-                                  maxLines: 1, // Limit to 1 line
-                                ),
-                              ),
-                            );
-                          }).toList(),
-                          onChanged: (newValue) {
-                            setState(() {
-                              selectedValue = newValue;
-                            });
-                          },
-                        ),
-                      ),
-                    ],
+          Center(
+            child: Container(
+              height: 520,
+              width: 300,
+              decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(30),
+                  boxShadow: [
+                    BoxShadow(color: Colors.black12, spreadRadius: 2, blurRadius: 1)
+                  ]
+              ),
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(30.0),
+                    child: Text("Details", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),),
                   ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(right: 15, left: 15, top: 10),
-                  child: Row(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.only(right: 5),
-                        child: Container(
-                          height: 50,
-                          width: 175,
-                          child: TextField(
-                            controller: PhoneNo,
-                            decoration: InputDecoration(
-                                labelText: "Phone no.", // Placeholder text
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(50),
+                  Padding(
+                    padding: const EdgeInsets.only(right: 15, left: 15, top: 10),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: EdgeInsets.symmetric(horizontal: 20),
+                          width: 265,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                            boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 6)],
+                          ),
+                          child: DropdownButton<String>(
+                            value: selectedValue,
+                            hint: Text("Select an option"),
+                            items: items.map((String item) {
+                              return DropdownMenuItem<String>(
+                                value: item,
+                                child: Container(
+                                  constraints: BoxConstraints(
+                                    maxWidth: 200,
+                                  ),
+                                  child: Text(
+                                    item,
+                                    overflow: TextOverflow.ellipsis,
+                                    maxLines: 1, // Limit to 1 line
+                                  ),
                                 ),
-                                contentPadding: EdgeInsets.fromLTRB(20, 16, 16, 16)// Adds border around the text field
+                              );
+                            }).toList(),
+                            onChanged: (newValue) {
+                              setState(() {
+                                selectedValue = newValue;
+                              });
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(right: 15, left: 15, top: 10),
+                    child: Row(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(right: 5),
+                          child: Container(
+                            height: 50,
+                            width: 175,
+                            child: TextField(
+                              controller: PhoneNo,
+                              decoration: InputDecoration(
+                                  labelText: "Phone no.", // Placeholder text
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(50),
+                                  ),
+                                  contentPadding: EdgeInsets.fromLTRB(20, 16, 16, 16)// Adds border around the text field
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                      Container(
-                        height: 50,
-                        width: 90,
-                        child: ElevatedButton(
-                          onPressed: () {
-
-                          },
-                          child: Text("Send", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.red,
-                          ),
-                        )
-                      ),
-                    ],
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(right: 15, left: 15, top: 10),
-                  child: Row(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.only(right: 270 * 0.05),
-                        child: Container(
+                        Container(
                           height: 50,
-                          width: (270 * 0.45),
+                          width: 90,
                           child: ElevatedButton(
-                            onPressed: () async {
+                            onPressed: () {
 
                             },
-                            child: Text("Resend", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),),
+                            child: Text("Send", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.red,
                             ),
                           )
                         ),
-                      ),
-                      Container(
-                        height: 50,
-                        width: (270 * 0.5),
-                        child: TextField(
-                          decoration: InputDecoration(
-                              labelText: "OTP", // Placeholder text
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(50),
+                      ],
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(right: 15, left: 15, top: 10),
+                    child: Row(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(right: 270 * 0.05),
+                          child: Container(
+                            height: 50,
+                            width: (270 * 0.45),
+                            child: ElevatedButton(
+                              onPressed: () async {
 
+                              },
+                              child: Text("Resend", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.red,
                               ),
-                              contentPadding: EdgeInsets.fromLTRB(20, 16, 16, 16)// Adds border around the text field
+                            )
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(right: 15, left: 15, top: 10),
-                  child: Container(
-                    height: 50,
-                    child: TextField(
-                      controller: City,
-                      decoration: InputDecoration(
-                          labelText: "City", // Placeholder text
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(50),
+                        Container(
+                          height: 50,
+                          width: (270 * 0.5),
+                          child: TextField(
+                            controller: OTP,
+                            decoration: InputDecoration(
+                                labelText: "OTP", // Placeholder text
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(50),
+
+                                ),
+                                contentPadding: EdgeInsets.fromLTRB(20, 16, 16, 16)// Adds border around the text field
+                            ),
                           ),
-                          contentPadding: EdgeInsets.fromLTRB(20, 16, 16, 16)// Adds border around the text field
+                        ),
+                      ],
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(right: 15, left: 15, top: 10),
+                    child: Container(
+                      height: 50,
+                      child: TextField(
+                        controller: City,
+                        decoration: InputDecoration(
+                            labelText: "City", // Placeholder text
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(50),
+                            ),
+                            contentPadding: EdgeInsets.fromLTRB(20, 16, 16, 16)// Adds border around the text field
+                        ),
                       ),
                     ),
                   ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(right: 15, left: 15, top: 10),
-                  child: Container(
-                    height: 50,
-                    child: ElevatedButton(onPressed: () async {
-                      final pickedImage = await ImagePicker().pickImage(source: ImageSource.gallery);
-                      if(pickedImage!=null){
-                        setState(() {
-                          imagePath = File(pickedImage.path);
-                        });
-                      }
-                    },
-                        child: Text("Select Image")
-                    )
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(top: 15),
-                  child: ElevatedButton(
-                      onPressed: () async {
-                        String phone = PhoneNo.text;
-                        String city = City.text;
-                        String skill = selectedValue.toString();
-                        if(phone.isNotEmpty && city.isNotEmpty && skill.isNotEmpty){
-                          try {
-                            UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(email: Email, password: Password);
-                            User? user = userCredential.user;
-                            String? fileName = imagePath?.path.split('/').last;
-                            UploadTask uploadTask = FirebaseStorage.instance.ref().child("${user?.uid}/${fileName}").putFile(imagePath!);
-                            TaskSnapshot snapshot = await uploadTask;
-                            Reference ref = snapshot.ref;
-                            String profileURL = await ref.getDownloadURL();
-                            await FirebaseFirestore.instance.collection(skill.toLowerCase()).doc(user?.uid).set({
-                              'Email':Email,
-                              'City':city,
-                              'First_name':FirstName,
-                              'professionOfStaff': skill[0].toLowerCase()+skill.substring(1),
-                              'Password':Password,
-                              'Phone_Number1':phone,
-                              'Profile_Pic':profileURL,
-                              'Last_name':LastName,
-                              'Rating': 0,
-                              'Status':false,
-                              'Date_of_registered': DateFormat("dd/MM/yyyy").format(DateTime.now()),
-                              'Verified_status' : false,
-                            });
-                            print("Test case 8 Passed");
-                            await FirebaseFirestore.instance.collection('user').doc(user?.uid).set({
-                              "Email":Email,
-                              "First_name":FirstName,
-                              'professionOfStaff': skill[0].toLowerCase()+skill.substring(1),
-                              "Last_name":LastName,
-                              "Password":Password,
-                              "Phone_Number1":phone,
-                              "City":city,
-                              "Profile_Pic":profileURL,
-                            });
-                            Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => LoginPage(),));
-                          } on FirebaseAuthException catch (e) {
-                            setState(() {
-                              ErrorData = e.message!;
-                            });
-                          } catch (e) {
-                            setState(() {
-                              ErrorData = "$e";
-                            });
-                          }
-                        }else{
+                  Padding(
+                    padding: const EdgeInsets.only(right: 15, left: 15, top: 10),
+                    child: Container(
+                      height: 50,
+                      child: ElevatedButton(onPressed: () async {
+                        final pickedImage = await ImagePicker().pickImage(source: ImageSource.gallery);
+                        if(pickedImage!=null){
                           setState(() {
-                            ErrorData ="Fill all the blanks";
+                            imagePath = File(pickedImage.path);
                           });
                         }
                       },
-                      child: Text("Submit")),
-                ),
-                Text(ErrorData),
-              ],
+                          child: Text("Select Image")
+                      )
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 15),
+                    child: ElevatedButton(
+                        onPressed: () async {
+                          setState(() {
+                            isLoading = true;
+                          });
+                          String phone = PhoneNo.text;
+                          String otp = OTP.text;
+                          String city = City.text;
+                          String skill = selectedValue.toString();
+                          if(phone.isNotEmpty && city.isNotEmpty && skill.isNotEmpty){
+                            try {
+                              UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(email: Email, password: Password);
+                              User? user = userCredential.user;
+
+                              String? fileName = imagePath?.path.split('/').last;
+                              UploadTask uploadTask = FirebaseStorage.instance.ref().child("${user?.uid}/${fileName}").putFile(imagePath!);
+                              TaskSnapshot snapshot = await uploadTask;
+                              Reference ref = snapshot.ref;
+                              String profileURL = await ref.getDownloadURL();
+                              await FirebaseFirestore.instance.collection(skill.toLowerCase()).doc(user?.uid).set({
+                                'Email':Email,
+                                'City':city,
+                                'First_name':FirstName,
+                                'professionOfStaff': skill[0].toLowerCase()+skill.substring(1),
+                                'Password':Password,
+                                'Phone_Number1':phone,
+                                'Profile_Pic':profileURL,
+                                'Last_name':LastName,
+                                'Rating': 0,
+                                'Status':false,
+                                'Date_of_registered': DateFormat("dd/MM/yyyy").format(DateTime.now()),
+                                'Verified_status' : false,
+                              });
+                              await FirebaseFirestore.instance.collection('user').doc(user?.uid).set({
+                                "Email":Email,
+                                "First_name":FirstName,
+                                'professionOfStaff': skill[0].toLowerCase()+skill.substring(1),
+                                "Last_name":LastName,
+                                "Password":Password,
+                                "Phone_Number1":phone,
+                                "City":city,
+                                "Profile_Pic":profileURL,
+                              });
+                              user?.sendEmailVerification();
+                              await FirebaseAuth.instance.signOut();
+                              Fluttertoast.showToast(msg: "Link send, A link has been send to your email", toastLength: Toast.LENGTH_LONG);
+                              Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => LoginPage(),));
+                              setState(() {
+                                isLoading = false;
+                              });
+                            } on FirebaseAuthException catch (e) {
+                              setState(() {
+                                isLoading = false;
+                              });
+                              Fluttertoast.showToast(msg: e.message!);
+                              setState(() {
+                                ErrorData = e.message!;
+                              });
+                            } catch (e) {
+                              setState(() {
+                                isLoading = false;
+                              });
+                              Fluttertoast.showToast(msg: "$e");
+                              setState(() {
+                                ErrorData = "$e";
+                              });
+                            }
+                          }else{
+                            setState(() {
+                              isLoading = false;
+                            });
+                            Fluttertoast.showToast(msg: "Fill all the blanks");
+                            setState(() {
+                              ErrorData ="Fill all the blanks";
+                            });
+                          }
+                        },
+                        child: Text("Submit")),
+                  ),
+                  Text(ErrorData),
+                ],
+              ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
+        isLoading? Center(
+          child: Padding(
+            padding: EdgeInsets.only(top: screenHeight * 0.35),
+            child: CircularProgressIndicator(),
+          ),
+        ) : Container(),
+      ]
     );
   }
 }

@@ -230,8 +230,8 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                 AppBar(
                   title: Center(
                     child: Text("Hiring And Payment",
-                        style:
-                            TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                        style: TextStyle(
+                            fontSize: 20, fontWeight: FontWeight.bold)),
                   ),
                   backgroundColor: Colors.red,
                   automaticallyImplyLeading: false,

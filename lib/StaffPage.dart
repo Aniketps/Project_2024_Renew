@@ -251,12 +251,15 @@ class _StaffPage extends State<StaffPage> {
                           builder: (context) => MainMap(),
                         ));
                   },
-                  child: Text(
-                      (StaffData != null && StaffData['City'] != null)
-                          ? StaffData['City']
-                          : "Location...",
-                      style: TextStyle(
-                          fontSize: 18, fontWeight: FontWeight.bold))),
+                  child: Container(
+                    width: screenWidth * 0.6,
+                    child: Text(
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
+                        "${Skill[0].toUpperCase() + Skill.substring(1)}",
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold)),
+                  )),
               backgroundColor: Colors.red,
               automaticallyImplyLeading: true,
             ),
@@ -337,7 +340,8 @@ class _StaffPage extends State<StaffPage> {
                         child: Row(
                           children: [
                             Container(
-                              margin: EdgeInsets.symmetric(horizontal: screenWidth * 0.03),
+                              margin: EdgeInsets.symmetric(
+                                  horizontal: screenWidth * 0.03),
                               width: screenWidth * 0.7,
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(50),
@@ -438,8 +442,8 @@ class _StaffPage extends State<StaffPage> {
                                                     spreadRadius: 1)
                                               ]),
                                           child: Padding(
-                                            padding: const EdgeInsets.only(
-                                                top: 20),
+                                            padding:
+                                                const EdgeInsets.only(top: 20),
                                             child: Container(
                                               child: Row(
                                                 crossAxisAlignment:
@@ -452,14 +456,12 @@ class _StaffPage extends State<StaffPage> {
                                                     child: Container(
                                                       height: 75,
                                                       width: 75,
-                                                      decoration:
-                                                          BoxDecoration(
+                                                      decoration: BoxDecoration(
                                                         borderRadius:
                                                             BorderRadius
                                                                 .circular(50),
                                                         color: Colors.orange,
-                                                        image:
-                                                            DecorationImage(
+                                                        image: DecorationImage(
                                                           image: NetworkImage(
                                                               chef[
                                                                   'Profile_Pic']),
@@ -515,8 +517,7 @@ class _StaffPage extends State<StaffPage> {
                                                   ),
                                                   Container(
                                                     width: screenWidth * 0.3,
-                                                    height:
-                                                        screenHeight * 0.2,
+                                                    height: screenHeight * 0.2,
                                                     child: Column(
                                                       crossAxisAlignment:
                                                           CrossAxisAlignment
@@ -544,7 +545,8 @@ class _StaffPage extends State<StaffPage> {
                                                                   BorderRadius
                                                                       .circular(
                                                                           15),
-                                                              color: Colors.white,
+                                                              color:
+                                                                  Colors.white,
                                                               boxShadow: [
                                                                 BoxShadow(
                                                                     color: Colors
@@ -555,15 +557,24 @@ class _StaffPage extends State<StaffPage> {
                                                                         1)
                                                               ]),
                                                           child: Center(
-                                                              child: Text(
-                                                            Skill,
-                                                            style: TextStyle(
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold,
-                                                                color: Colors
-                                                                    .green,
-                                                                fontSize: 15),
+                                                              child: Padding(
+                                                            padding:
+                                                                const EdgeInsets
+                                                                    .all(3.0),
+                                                            child: Text(
+                                                              "${Skill[0].toUpperCase() + Skill.substring(1)}",
+                                                              overflow:
+                                                                  TextOverflow
+                                                                      .ellipsis,
+                                                              maxLines: 1,
+                                                              style: TextStyle(
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .bold,
+                                                                  color: Colors
+                                                                      .green,
+                                                                  fontSize: 15),
+                                                            ),
                                                           )),
                                                         )
                                                       ],
