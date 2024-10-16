@@ -257,7 +257,7 @@ class _UserView extends State<UserView> {
                                         Navigator.push(
                                             context,
                                             MaterialPageRoute(
-                                              builder: (context) => Rating(),
+                                              builder: (context) => RatingState(),
                                             ));
                                       },
                                       child: Container(
