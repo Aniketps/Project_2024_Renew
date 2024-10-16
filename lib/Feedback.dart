@@ -53,12 +53,20 @@ class _Feedbacks extends State<Feedbacks> {
               padding: EdgeInsets.all(5),
               margin: EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: Colors.white24,
+                color: Colors.white,
                 borderRadius: BorderRadius.circular(5),
-                border: Border.all(
-                  color: Colors.grey,
-                  width: 1.0,
-                ),
+                // border: Border.all(
+                //   color: Colors.grey,
+                //   width: 1.0,
+                // ),
+
+                  boxShadow: [
+                    BoxShadow(color: Colors.black26,
+                      spreadRadius: 1,
+                      blurRadius: 1,
+                    )
+                  ]
+
               ),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.start,
@@ -73,7 +81,7 @@ class _Feedbacks extends State<Feedbacks> {
                     ),
                   ),
                   SizedBox(height: 10),
-                  Divider(color: Colors.grey),
+                  Divider(color: Colors.redAccent),
                   SizedBox(height: 10),
                   FeedbackItem(
                     imageUrl: 'https://www.iconsdb.com/icons/preview/green/circle-xxl.png',
@@ -140,12 +148,16 @@ class FeedbackItem extends StatelessWidget {
       height: 50,
       width: 300,
       decoration: BoxDecoration(
-        color: Colors.white24,
+        color: Colors.white,
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(
-          color: Colors.grey,
-          width: 1.0,
-        ),
+
+
+          boxShadow: [
+            BoxShadow(color: Colors.black26,
+              spreadRadius: 2,
+              blurRadius: 2,
+            )
+          ]
       ),
       child: Row(
         children: [
@@ -193,12 +205,14 @@ class BlankPage extends StatelessWidget {
               padding: EdgeInsets.all(5),
               margin: EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: Colors.white24,
+                color: Colors.white,
                 borderRadius: BorderRadius.circular(5),
-                border: Border.all(
-                  color: Colors.grey,
-                  width: 1.0,
-                ),
+                  boxShadow: [
+                    BoxShadow(color: Colors.black26,
+                      spreadRadius: 1,
+                      blurRadius: 1,
+                    )
+                  ]
               ),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.start,
@@ -219,12 +233,14 @@ class BlankPage extends StatelessWidget {
                     padding: EdgeInsets.all(5),
                     margin: EdgeInsets.all(3),
                     decoration: BoxDecoration(
-                      color: Colors.white24,
+                      color: Colors.white,
                       borderRadius: BorderRadius.circular(5),
-                      border: Border.all(
-                        color: Colors.black,
-                        width: 1.0,
-                      ),
+                        boxShadow: [
+                          BoxShadow(color: Colors.black,
+                            spreadRadius: 1,
+                            blurRadius: 1,
+                          )
+                        ]
                     ),
                   ),
                   Row(
