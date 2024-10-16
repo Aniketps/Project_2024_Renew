@@ -40,9 +40,11 @@ class _LoginPage extends State<LoginPage>{
   int index = 0;
   @override
   void initState() {
+
     super.initState();
     timer = Timer.periodic(Duration(seconds: 5), (Timer t) {
       setState(() {
+
         LoadingText = loadingMessages[index];
         index = (index + 1) % loadingMessages.length;
       });
@@ -71,8 +73,15 @@ class _LoginPage extends State<LoginPage>{
       );
     }
     LoaderCheck = !LoaderCheck;
+    checkLogin();
   }
 
+  Future<void> checkLogin() async {
+    User? user = await FirebaseAuth.instance.currentUser;
+    if(user?.uid != null){
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => MyHomePage(),));
+    }
+  }
   void _liveLocation() {
     LocationSettings locationSettings = LocationSettings(
       accuracy: LocationAccuracy.high,
@@ -213,165 +222,203 @@ class _AndroidStaffPage extends State<AndroidStaffPage>{
 
   TextEditingController Email = TextEditingController();
   TextEditingController Password = TextEditingController();
+  bool isLoading = false;
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Container(
-          height: 80,
-          width: 80,
-          margin: EdgeInsets.only(bottom: 40),
-          decoration: BoxDecoration(
-            color: Colors.black,
-            borderRadius: BorderRadius.circular(80),
-            boxShadow: [
-              BoxShadow(color: Colors.black12, spreadRadius: 2, blurRadius: 1),
-            ],
-            image: DecorationImage(
-              image: AssetImage("assets/images/logo.png"),
-              fit: BoxFit.cover, // Adjust the fit if necessary
+    final screenHeight = MediaQuery.of(context).size.height;
+
+    return Stack(
+      children:[
+        Column(
+        children: [
+          Container(
+            height: 80,
+            width: 80,
+            margin: EdgeInsets.only(bottom: 40),
+            decoration: BoxDecoration(
+              color: Colors.black,
+              borderRadius: BorderRadius.circular(80),
+              boxShadow: [
+                BoxShadow(color: Colors.black12, spreadRadius: 2, blurRadius: 1),
+              ],
+              image: DecorationImage(
+                image: AssetImage("assets/images/logo.png"),
+                fit: BoxFit.cover, // Adjust the fit if necessary
+              ),
             ),
           ),
-        ),
-        Center(
-          child: Container(
-            height: 400,
-            width: 300,
-            decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(30),
-                boxShadow: [
-                  BoxShadow(color: Colors.black12, spreadRadius: 2, blurRadius: 1)
-                ]
-            ),
-            child: Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(top: 20, bottom: 10),
-                  child: Text("Staft Login", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(right: 30, left: 30, top: 30),
-                  child: Container(
-                    height: 50,
-                    child: TextField(
-                      controller: Email,
-                      decoration: InputDecoration(
-                          labelText: "Email", // Placeholder text
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(50),
-                          ),
-                          contentPadding: EdgeInsets.fromLTRB(20, 16, 16, 16)// Adds border around the text field
+          Center(
+            child: Container(
+              height: 400,
+              width: 300,
+              decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(30),
+                  boxShadow: [
+                    BoxShadow(color: Colors.black12, spreadRadius: 2, blurRadius: 1)
+                  ]
+              ),
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(top: 20, bottom: 10),
+                    child: Text("Staft Login", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(right: 30, left: 30, top: 30),
+                    child: Container(
+                      height: 50,
+                      child: TextField(
+                        controller: Email,
+                        decoration: InputDecoration(
+                            labelText: "Email", // Placeholder text
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(50),
+                            ),
+                            contentPadding: EdgeInsets.fromLTRB(20, 16, 16, 16)// Adds border around the text field
+                        ),
                       ),
                     ),
                   ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(top: 2, bottom: 5, left: 50),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      InkWell(
-                          onTap: () {
-                          },
-                          child: Text("Forgot email?", style: TextStyle(fontSize: 12, color: Colors.blue, fontWeight: FontWeight.bold),)
-                      ),
-                    ],
+                  Padding(
+                    padding: const EdgeInsets.only(top: 2, bottom: 5, left: 50),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        InkWell(
+                            onTap: () {
+                            },
+                            child: Text("Forgot email?", style: TextStyle(fontSize: 12, color: Colors.blue, fontWeight: FontWeight.bold),)
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(right: 30, left: 30, top: 20),
-                  child: Container(
-                    height: 50,
-                    child: TextField(
-                      controller: Password,
-                      decoration: InputDecoration(
-                          labelText: "Password", // Placeholder text
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(50),
+                  Padding(
+                    padding: const EdgeInsets.only(right: 30, left: 30, top: 20),
+                    child: Container(
+                      height: 50,
+                      child: TextField(
+                        controller: Password,
+                        decoration: InputDecoration(
+                            labelText: "Password", // Placeholder text
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(50),
 
-                          ),
-                          contentPadding: EdgeInsets.fromLTRB(20, 16, 16, 16)// Adds border around the text field
+                            ),
+                            contentPadding: EdgeInsets.fromLTRB(20, 16, 16, 16)// Adds border around the text field
+                        ),
                       ),
                     ),
                   ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(top: 2, bottom: 5, left: 50),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      InkWell(
-                          onTap: () {
-                          },
-                          child: Text("Forgot password?", style: TextStyle(fontSize: 12, color: Colors.blue, fontWeight: FontWeight.bold),)
-                      ),
-                    ],
+                  Padding(
+                    padding: const EdgeInsets.only(top: 2, bottom: 5, left: 50),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        InkWell(
+                            onTap: () {
+                            },
+                            child: Text("Forgot password?", style: TextStyle(fontSize: 12, color: Colors.blue, fontWeight: FontWeight.bold),)
+                        ),
+                      ],
+                    ),
                   ),
-                ),
 
-                Padding(
-                  padding: const EdgeInsets.only(top: 15),
-                  child: ElevatedButton(
-                      onPressed: () async {
-                        String email = Email.text;
-                        String password = Password.text;
-                        if(email.isNotEmpty && password.isNotEmpty){
-                          try{
-                            UserCredential usercredential = await FirebaseAuth.instance.signInWithEmailAndPassword(email: email, password: password);
-                            User? user = usercredential.user;
-                            DocumentSnapshot documentSnapshot = await FirebaseFirestore.instance.collection('user').doc(user?.uid).get();
-                            if(documentSnapshot.exists){
-                              var StaffData = documentSnapshot.data() as Map<String, dynamic>?;
-                              if(StaffData!= null && StaffData['professionOfStaff']!=null){
-                                await FirebaseFirestore.instance.collection("user").doc(user?.uid).update({
-                                  'lat' : lat,
-                                  'long' : long,
-                                });
-                                await FirebaseFirestore.instance.collection(StaffData['professionOfStaff']).doc(user?.uid).update({
-                                  'lat' : lat,
-                                  'long' : long,
-                                });
-                                Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => StaffProfileHome(),));
-                              }else{
-                                Fluttertoast.showToast(
-                                  msg: "Use staff account information",
-                                  toastLength: Toast.LENGTH_SHORT,
-                                  gravity: ToastGravity.BOTTOM,
-                                );
+                  Padding(
+                    padding: const EdgeInsets.only(top: 15),
+                    child: ElevatedButton(
+                        onPressed: () async {
+                          setState(() {
+                            isLoading = true;
+                          });
+                          String email = Email.text;
+                          String password = Password.text;
+                          if(email.isNotEmpty && password.isNotEmpty){
+                            try{
+                              UserCredential usercredential = await FirebaseAuth.instance.signInWithEmailAndPassword(email: email, password: password);
+                              User? user = usercredential.user;
+                              DocumentSnapshot documentSnapshot = await FirebaseFirestore.instance.collection('user').doc(user?.uid).get();
+                              if(documentSnapshot.exists){
+                                var StaffData = documentSnapshot.data() as Map<String, dynamic>?;
+                                if(StaffData!= null && StaffData['professionOfStaff']!=null){
+                                  await FirebaseFirestore.instance.collection("user").doc(user?.uid).update({
+                                    'lat' : lat,
+                                    'long' : long,
+                                  });
+                                  await FirebaseFirestore.instance.collection(StaffData['professionOfStaff']).doc(user?.uid).update({
+                                    'lat' : lat,
+                                    'long' : long,
+                                  });
+                                  if(user!.emailVerified){
+                                    Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => StaffProfileHome(),));
+                                    setState(() {
+                                      isLoading = false;
+                                    });
+                                  }else{
+                                    Fluttertoast.showToast(
+                                      toastLength: Toast.LENGTH_SHORT,
+                                      msg: "Please check your mailbox to verify email",);
+                                    await FirebaseAuth.instance.signOut();
+                                    setState(() {
+                                      isLoading = false;
+                                    });
+                                  }
+                                }else{
+                                  setState(() {
+                                    isLoading = false;
+                                  });
+                                  Fluttertoast.showToast(
+                                    msg: "Use staff account information",
+                                    toastLength: Toast.LENGTH_SHORT,
+                                    gravity: ToastGravity.BOTTOM,
+                                  );
+                                }
                               }
+                            }catch (e){
+                              setState(() {
+                                isLoading = false;
+                              });
+                              Fluttertoast.showToast(
+                                msg: "$e",
+                                toastLength: Toast.LENGTH_SHORT,
+                                gravity: ToastGravity.BOTTOM,
+                              );
                             }
-                          }catch (e){
+                          }else{
+                            setState(() {
+                              isLoading = false;
+                            });
                             Fluttertoast.showToast(
-                              msg: "$e",
+                              msg: "Fill in the blanks",
                               toastLength: Toast.LENGTH_SHORT,
                               gravity: ToastGravity.BOTTOM,
                             );
                           }
-                        }else{
-                          Fluttertoast.showToast(
-                            msg: "Fill in the blanks",
-                            toastLength: Toast.LENGTH_SHORT,
-                            gravity: ToastGravity.BOTTOM,
-                          );
-                        }
-                      },
-                      child: Text("Submit")),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(top: 15, bottom: 5),
-                  child: InkWell(
-                      onTap: () {
-                        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => RegisterPage(),));
-                      },
-                      child: Text("Dont have an account", style: TextStyle(fontSize: 12, color: Colors.blue, fontWeight: FontWeight.bold),)
+                        },
+                        child: Text("Submit")),
                   ),
-                ),
-              ],
+                  Padding(
+                    padding: const EdgeInsets.only(top: 15, bottom: 5),
+                    child: InkWell(
+                        onTap: () {
+                          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => RegisterPage(),));
+                        },
+                        child: Text("Dont have an account", style: TextStyle(fontSize: 12, color: Colors.blue, fontWeight: FontWeight.bold),)
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
+        isLoading? Center(
+          child: Padding(
+            padding: EdgeInsets.only(top: screenHeight * 0.35),
+            child: CircularProgressIndicator(),
+          ),
+        ) : Container(),
+      ]
     );
   }
 }
@@ -394,142 +441,225 @@ class _AndroidUserPage extends State<AndroidUserPage>{
   TextEditingController Email = TextEditingController();
   TextEditingController Password = TextEditingController();
 
+  bool isPasswordcurrect = true;
+  bool isEmailcurrect = true;
+  bool isLoading = false;
   @override
   Widget build(BuildContext context) {
+    final screenHeight = MediaQuery.of(context).size.height;
 
-    return Column(
+    return Stack(
       children: [
-        Container(
-          height: 80,
-          width: 80,
-          margin: EdgeInsets.only(bottom: 40),
-          decoration: BoxDecoration(
-            color: Colors.black,
-            borderRadius: BorderRadius.circular(80),
-            boxShadow: [
-              BoxShadow(color: Colors.black12, spreadRadius: 2, blurRadius: 1),
-            ],
-            image: DecorationImage(
-              image: AssetImage("assets/images/logo.png"),
-              fit: BoxFit.cover, // Adjust the fit if necessary
-            ),
-          ),
-        ),
-        Center(
-          child: Container(
-            height: 400,
-            width: 300,
-            decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(30),
+        Column(
+          children: [
+            Container(
+              height: 80,
+              width: 80,
+              margin: EdgeInsets.only(bottom: 40),
+              decoration: BoxDecoration(
+                color: Colors.black,
+                borderRadius: BorderRadius.circular(80),
                 boxShadow: [
-                  BoxShadow(color: Colors.black12, spreadRadius: 2, blurRadius: 1)
-                ]
+                  BoxShadow(color: Colors.black12, spreadRadius: 2, blurRadius: 1),
+                ],
+                image: DecorationImage(
+                  image: AssetImage("assets/images/logo.png"),
+                  fit: BoxFit.cover, // Adjust the fit if necessary
+                ),
+              ),
             ),
-            child: Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(top: 20, bottom: 10),
-                  child: Text("User Login", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),),
+            Center(
+              child: Container(
+                height: 400,
+                width: 300,
+                decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(30),
+                    boxShadow: [
+                      BoxShadow(color: Colors.black12, spreadRadius: 2, blurRadius: 1)
+                    ]
                 ),
-                Padding(
-                  padding: const EdgeInsets.only(right: 30, left: 30, top: 30),
-                  child: Container(
-                    height: 50,
-                    child: TextField(
-                      controller: Email,
-                      decoration: InputDecoration(
-                          labelText: "Email", // Placeholder text
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(50),
+                child: Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(top: 20, bottom: 10),
+                      child: Text("User Login", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(right: 30, left: 30, top: 30),
+                      child: Container(
+                        height: 50,
+                        child: TextField(
+                          controller: Email,
+                          decoration: InputDecoration(
+                            labelText: "Email", // Placeholder text
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(50),
+                            ),
+                            contentPadding: EdgeInsets.fromLTRB(20, 16, 16, 16),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(50),
+                              borderSide: BorderSide(color: isEmailcurrect? Colors.grey : Colors.red, width: isEmailcurrect? 1 : 1.5), // Normal grey border
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(50),
+                              borderSide: BorderSide(color: Colors.blue, width: 2), // Border when focused
+                            ),
                           ),
-                          contentPadding: EdgeInsets.fromLTRB(20, 16, 16, 16)// Adds border around the text field
+                        ),
                       ),
                     ),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(top: 2, bottom: 5, left: 50),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      InkWell(
-                          onTap: () {
-                          },
-                          child: Text("Forgot email?", style: TextStyle(fontSize: 12, color: Colors.blue, fontWeight: FontWeight.bold),)
-                      ),
-                    ],
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(right: 30, left: 30, top: 20),
-                  child: Container(
-                    height: 50,
-                    child: TextField(
-                      controller: Password,
-                      decoration: InputDecoration(
-                          labelText: "Password", // Placeholder text
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(50),
-
+                    Padding(
+                      padding: const EdgeInsets.only(top: 2, bottom: 5, left: 50),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          InkWell(
+                              onTap: () {
+                              },
+                              child: Text("Forgot email?", style: TextStyle(fontSize: 12, color: Colors.blue, fontWeight: FontWeight.bold),)
                           ),
-                          contentPadding: EdgeInsets.fromLTRB(20, 16, 16, 16)// Adds border around the text field
+                        ],
                       ),
                     ),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(top: 2, bottom: 5, left: 50),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      InkWell(
-                          onTap: () {
-                          },
-                          child: Text("Forgot password?", style: TextStyle(fontSize: 12, color: Colors.blue, fontWeight: FontWeight.bold),)
-                      ),
-                    ],
-                  ),
-                ),
+                    Padding(
+                      padding: const EdgeInsets.only(right: 30, left: 30, top: 20),
+                      child: Container(
+                        height: 50,
+                        child: TextField(
+                          controller: Password,
+                          decoration: InputDecoration(
+                              labelText: "Password", // Placeholder text
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(50),
 
-                Padding(
-                  padding: const EdgeInsets.only(top: 15),
-                  child: ElevatedButton(
-                      onPressed: () async {
-                        String email = Email.text;
-                        String password = Password.text;
-                        if(email.isNotEmpty && password.isNotEmpty){
-                          try {
-                            UserCredential userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(email: email, password: password);
-                            User? user = userCredential.user;
-                            await FirebaseFirestore.instance.collection("user").doc(user?.uid).update({
-                              'lat' : lat,
-                              'long' : long,
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(50),
+                                borderSide: BorderSide(color: isPasswordcurrect? Colors.grey : Colors.red, width: isPasswordcurrect? 1 : 1.5), // Normal grey border
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(50),
+                                borderSide: BorderSide(color: Colors.blue, width: 2), // Border when focused
+                              ),
+                              contentPadding: EdgeInsets.fromLTRB(20, 16, 16, 16)// Adds border around the text field
+                          ),
+                        ),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 2, bottom: 5, left: 50),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          InkWell(
+                              onTap: () {
+                              },
+                              child: Text("Forgot password?", style: TextStyle(fontSize: 12, color: Colors.blue, fontWeight: FontWeight.bold),)
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    Padding(
+                      padding: const EdgeInsets.only(top: 15),
+                      child: ElevatedButton(
+                          onPressed: () async {
+                            setState(() {
+                              isLoading = true;
                             });
-                            Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => MyHomePage(),));
-                          } on FirebaseAuthException catch (e) {
-                            print("Error: ${e.message}");
-                          } catch (e) {
-                            print("An unexpected error occurred: $e");
-                          }
-                        }
-                      },
-                      child: Text("Submit")),
+                            String email = Email.text;
+                            String password = Password.text;
+                            if(email.isNotEmpty && password.isNotEmpty){
+                              try {
+                                UserCredential userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(email: email, password: password);
+                                User? user = userCredential.user;
+                                if(user!.emailVerified){
+                                  await FirebaseFirestore.instance.collection("user").doc(user?.uid).update({
+                                    'lat' : lat,
+                                    'long' : long,
+                                  });
+                                  Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => MyHomePage(),));
+                                  setState(() {
+                                    isLoading = false;
+                                  });
+                                }else{
+                                  setState(() {
+                                    isLoading = false;
+                                  });
+                                  await FirebaseAuth.instance.signOut();
+                                  Fluttertoast.showToast(
+                                      toastLength: Toast.LENGTH_LONG,
+                                      msg: "Please Check your mailbox to verify email");
+                                }
+                              } on FirebaseAuthException catch (e) {
+                                setState(() {
+                                  isLoading = false;
+                                });
+                                var CheckEmailOrPass = 'The supplied auth credential is incorrect, malformed or has expired.';
+                                var EmailIsWrong = 'The email address is badly formatted.';
+                                if('${e.message}' == CheckEmailOrPass){
+                                  setState(() {
+                                    isEmailcurrect = false;
+                                    isPasswordcurrect = false;
+                                  });
+                                  Fluttertoast.showToast(
+                                      msg: "Invalid Email or Password"
+                                  );
+                                }else if('${e.message}' == EmailIsWrong){
+                                  setState(() {
+                                    isLoading = false;
+                                  });
+                                  setState(() {
+                                    isEmailcurrect = false;
+                                    isPasswordcurrect = true;
+                                  });
+                                  Fluttertoast.showToast(
+                                      msg: "Invalid Email"
+                                  );
+                                }
+
+                              } catch (e) {
+                                setState(() {
+                                  isLoading = false;
+                                });
+                                Fluttertoast.showToast(
+                                    msg: "Invalid data"
+                                );
+                              }
+                            }else{
+                              setState(() {
+                                isLoading = false;
+                              });
+                              Fluttertoast.showToast(
+                                  msg: "Invalid data"
+                              );
+                            }
+                          },
+                          child: Text("Submit")),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 15, bottom: 5),
+                      child: InkWell(
+                          onTap: () {
+                            Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => RegisterPage(),));
+                          },
+                          child: Text("Dont have an account", style: TextStyle(fontSize: 12, color: Colors.blue, fontWeight: FontWeight.bold),)
+                      ),
+                    ),
+                  ],
                 ),
-                Padding(
-                  padding: const EdgeInsets.only(top: 15, bottom: 5),
-                  child: InkWell(
-                      onTap: () {
-                        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => RegisterPage(),));
-                      },
-                      child: Text("Dont have an account", style: TextStyle(fontSize: 12, color: Colors.blue, fontWeight: FontWeight.bold),)
-                  ),
-                ),
-              ],
+              ),
             ),
-          ),
+          ],
         ),
-      ],
+        isLoading? Center(
+          child: Padding(
+            padding: EdgeInsets.only(top: screenHeight * 0.35),
+            child: CircularProgressIndicator(),
+          ),
+        ) : Container(),
+      ]
     );
   }
 }
@@ -906,7 +1036,7 @@ class _AndroidView extends State<AndroidView>{
                         children: [
                           ElevatedButton(onPressed: () {
                             setState(() {
-                              StaffPressed = !StaffPressed;
+                              StaffPressed = true;
                               if(StaffPressed){
                                 StaffColor = StaffColorTrue;
                                 UserColor = UserColorFalse;
@@ -929,7 +1059,7 @@ class _AndroidView extends State<AndroidView>{
                               child: Text("Staff", style: TextStyle(color: Color(0xff013220), fontWeight: FontWeight.bold),)),
                           ElevatedButton(onPressed: () {
                             setState(() {
-                              UserPressed = !UserPressed;
+                              UserPressed = true;
                               if(UserPressed){
                                 StaffColor = StaffColorFalse;
                                 UserColor = UserColorTrue;
@@ -1017,7 +1147,7 @@ class _WebView extends State<WebView>{
                         children: [
                           ElevatedButton(onPressed: () {
                             setState(() {
-                              StaffPressed = !StaffPressed;
+                              StaffPressed = true;
                               if(StaffPressed){
                                 StaffColor = StaffColorTrue;
                                 UserColor = UserColorFalse;
@@ -1041,7 +1171,7 @@ class _WebView extends State<WebView>{
                               child: Text("Staff", style: TextStyle(color: Color(0xff013220), fontWeight: FontWeight.bold),)),
                           ElevatedButton(onPressed: () {
                             setState(() {
-                              UserPressed = !UserPressed;
+                              UserPressed = true;
                               if(UserPressed){
                                 StaffColor = StaffColorFalse;
                                 UserColor = UserColorTrue;
