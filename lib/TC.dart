@@ -24,25 +24,32 @@ class _TC extends State<TC> {
       );
 
       Geolocator.getPositionStream(locationSettings: locationSettings).listen(
-            (Position position) {
+        (Position position) {
           setState(() async {
             String lat = position.latitude.toString();
             String long = position.longitude.toString();
             User? user = FirebaseAuth.instance.currentUser;
 
-            await FirebaseFirestore.instance.collection('user').doc(user?.uid).update({
-              'lat' : lat,
-              'long' : long,
+            await FirebaseFirestore.instance
+                .collection('user')
+                .doc(user?.uid)
+                .update({
+              'lat': lat,
+              'long': long,
             });
           });
         },
       );
-    };
+    }
+
+    ;
     _liveLocation();
   }
 
   Future<void> searchTermsAndConditions() async {
-    QuerySnapshot querySnapshot = await FirebaseFirestore.instance.collection("Terms and Conditions").get();
+    QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+        .collection("Terms and Conditions")
+        .get();
     setState(() {
       documents = querySnapshot.docs;
       _expandedList = List<bool>.filled(documents.length, false);
@@ -56,92 +63,140 @@ class _TC extends State<TC> {
     final screenHeight = mediaquery.size.height;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text("Terms & Conditions"),
-        backgroundColor: Colors.red,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Container(
-          height: screenHeight,
-          width: screenWidth,
-          decoration: BoxDecoration(
-              color: Colors.white,
-              boxShadow: [
-                BoxShadow(
-                    color: Colors.black26,
-                    blurRadius: 1,
-                    spreadRadius: 1
-                )
+      body: Stack(
+        children: [
+          // App bar section
+          Container(
+            height: 150,
+            color: Colors.red,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                AppBar(
+                  title: Center(
+                    child: Text("Terms & Conditions",
+                        style: TextStyle(
+                            fontSize: 20, fontWeight: FontWeight.bold)),
+                  ),
+                  backgroundColor: Colors.red,
+                  automaticallyImplyLeading: false,
+                ),
               ],
-              borderRadius: BorderRadius.circular(10)
+            ),
           ),
-          child: Column(
+          Stack(
             children: [
               Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text("Discaimer", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(right: 15, left: 15),
-                child: Divider(),
-              ),
-              Container(
-                height: screenHeight * 0.78,
-                width: screenWidth * 0.9,
-                child: ListView.builder(
-                  itemCount: documents.length,
-                  itemBuilder: (context, index) {
-                    return Container(
-                      width: screenWidth * 0.85,
-                      margin: EdgeInsets.all(5),
-                      decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(10),
-                          boxShadow: [
-                            BoxShadow(
-                                color: Colors.black26,
-                                spreadRadius: 1,
-                                blurRadius: 1
-                            )
-                          ]
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                padding: const EdgeInsets.only(top: 150),
+                child: Container(
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.vertical,
+                    child: Column(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Container(
+                            height: screenHeight,
+                            width: screenWidth,
+                            decoration: BoxDecoration(
+                                color: Colors.white,
+                                boxShadow: [
+                                  BoxShadow(
+                                      color: Colors.black26,
+                                      blurRadius: 1,
+                                      spreadRadius: 1)
+                                ],
+                                borderRadius: BorderRadius.circular(10)),
+                            child: Column(
                               children: [
-                                Text(documents[index]['Term'], style: TextStyle(fontSize: 16)),
-                                InkWell(
-                                  onTap: () {
-                                    setState(() {
-                                      _expandedList[index] = !_expandedList[index];
-                                    });
-                                  },
-                                  child: Icon(CupertinoIcons.plus),
+                                Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Text("Discaimer",
+                                      style: TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold)),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.only(
+                                      right: 15, left: 15),
+                                  child: Divider(),
+                                ),
+                                Container(
+                                  height: screenHeight * 0.78,
+                                  width: screenWidth * 0.9,
+                                  child: ListView.builder(
+                                    itemCount: documents.length,
+                                    itemBuilder: (context, index) {
+                                      return Container(
+                                        width: screenWidth * 0.85,
+                                        margin: EdgeInsets.all(5),
+                                        decoration: BoxDecoration(
+                                            color: Colors.white,
+                                            borderRadius:
+                                                BorderRadius.circular(10),
+                                            boxShadow: [
+                                              BoxShadow(
+                                                  color: Colors.black26,
+                                                  spreadRadius: 1,
+                                                  blurRadius: 1)
+                                            ]),
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment
+                                                        .spaceBetween,
+                                                children: [
+                                                  Text(documents[index]['Term'],
+                                                      style: TextStyle(
+                                                          fontSize: 16)),
+                                                  InkWell(
+                                                    onTap: () {
+                                                      setState(() {
+                                                        _expandedList[index] =
+                                                            !_expandedList[
+                                                                index];
+                                                      });
+                                                    },
+                                                    child: Icon(
+                                                        CupertinoIcons.plus),
+                                                  ),
+                                                ],
+                                              ),
+                                              if (_expandedList[index])
+                                                Column(
+                                                  children: [
+                                                    Divider(),
+                                                    Text(
+                                                        documents[index]
+                                                            ['Condition'],
+                                                        style: TextStyle(
+                                                            fontSize: 14)),
+                                                  ],
+                                                )
+                                            ],
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  ),
                                 ),
                               ],
                             ),
-                            if (_expandedList[index])
-                              Column(
-                                children: [
-                                  Divider(),
-                                  Text(documents[index]['Condition'], style: TextStyle(fontSize: 14)),
-                                ],
-                              )
-                          ],
-                        ),
-                      ),
-                    );
-                  },
+                          ),
+                        )
+                      ],
+                    ),
+                  ),
                 ),
               ),
             ],
-          ),
-        ),
+          )
+        ],
       ),
     );
   }
