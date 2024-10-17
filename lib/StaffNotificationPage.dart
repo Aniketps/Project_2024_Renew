@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -43,6 +45,7 @@ class _StaffNotificationPage extends State<StaffNotificationPage> {
 
   User? currentUser = FirebaseAuth.instance.currentUser;
   String? uid = FirebaseAuth.instance.currentUser?.uid;
+  String? OTP;
 
   var NotificationForStaffUID;
   var NotificationForUserUID;
@@ -100,7 +103,7 @@ class _StaffNotificationPage extends State<StaffNotificationPage> {
                               Padding(
                                 padding: const EdgeInsets.all(10.0),
                                 child: Container(
-                                  height: screenHeight * 0.62,
+                                  height: screenHeight * 0.64,
                                   width: screenWidth * 0.9,
                                   decoration: BoxDecoration(
                                     color: Colors.white,
@@ -419,11 +422,17 @@ class _StaffNotificationPage extends State<StaffNotificationPage> {
                                           Padding(
                                             padding: const EdgeInsets.all(5.0),
                                             child: ElevatedButton(onPressed: () async {
+
+                                              Random random = new Random();
+                                              int genOPT = random.nextInt(10000);
+
                                               await FirebaseFirestore.instance.collection("NotificationForStaff").doc(user.id).update({
                                                 'status': "Accepted",
+                                                'OTP' : genOPT,
                                               });
                                               await FirebaseFirestore.instance.collection("NotificationForUser").doc(user['DocUID']).update({
                                                 'status': "Accepted",
+                                                'OTP' : genOPT,
                                               });
                                             },style:ElevatedButton.styleFrom(
                                                 backgroundColor: Colors.green,
@@ -433,9 +442,61 @@ class _StaffNotificationPage extends State<StaffNotificationPage> {
                                             )
                                                 ,child: Text('Accept')),
                                           ),
-
                                         ],
                                       ),
+                                      (user['status'] == "Accepted")
+                                          ? Center(
+                                            child: Container(
+                                              height: 50,
+                                              width: 120,
+                                              // decoration: BoxDecoration(
+                                              //   color: Colors.white,
+                                              //   borderRadius: BorderRadius.circular(15),
+                                              //   boxShadow: [BoxShadow(
+                                              //     color: Colors.black26,
+                                              //     blurRadius: 1,
+                                              //     spreadRadius: 1
+                                              //   )]
+                                              // ),
+                                              child: TextField(
+
+                                                onChanged: (value) async {
+                                                  setState(() {
+                                                    OTP = value; // Store the entered OTP in the state
+                                                  });
+
+                                                  // Automatically check OTP when it's fully entered (assuming OTP is 4 digits)
+                                                  if (OTP?.length == 4) {
+                                                    if (OTP == user['OTP'].toString()) {
+                                                      // OTP is correct, update the status to 'Completed'
+                                                      await FirebaseFirestore.instance.collection("NotificationForStaff").doc(user.id).update({
+                                                        "status": 'Completed',
+                                                      });
+                                                      await FirebaseFirestore.instance.collection("NotificationForUser").doc(user['DocUID']).update({
+                                                        "status": 'Completed',
+                                                      });
+                                                      ScaffoldMessenger.of(context).showSnackBar(
+                                                        SnackBar(content: Text("OTP Verified!")),
+                                                      );
+                                                    } else {
+                                                      // OTP is incorrect, show error message
+                                                      ScaffoldMessenger.of(context).showSnackBar(
+                                                        SnackBar(content: Text("Invalid OTP!")),
+                                                      );
+                                                    }
+                                                  }
+                                                },
+                                                decoration: InputDecoration(
+                                                    hintText: "OTP", // Placeholder text
+                                                    border: OutlineInputBorder(
+                                                      borderRadius: BorderRadius.circular(15),
+                                                    ),
+                                                    contentPadding: EdgeInsets.fromLTRB(20, 16, 16, 16)// Adds border around the text field
+                                                ),
+                                              ),
+                                            ),
+                                          )
+                                          : Container(),
                                     ],
                                   ),
                                 ),
