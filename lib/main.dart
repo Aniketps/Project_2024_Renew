@@ -17,7 +17,6 @@ import 'client.dart';
 import 'firebase_options.dart';
 import 'LoginPage.dart';
 
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
@@ -28,7 +27,6 @@ void main() async {
 }
 
 class MyApp extends StatelessWidget {
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -133,8 +131,6 @@ class _MyHomePageState extends State<MyHomePage> {
     CollectionReference user = FirebaseFirestore.instance.collection('user');
     try {
       DocumentSnapshot documentSnapshot = await user.doc(currentUserID).get();
-      CollectionReference documentSnapshotDish =
-          await user.doc(currentUserID).collection("dishes");
 
       if (documentSnapshot.exists) {
         setState(() {
@@ -163,7 +159,7 @@ class _MyHomePageState extends State<MyHomePage> {
             DrawerHeader(
                 decoration: BoxDecoration(color: Colors.red),
                 child: Column(children: [
-                  (StaffData != null && StaffData['Profile_Pic'] != null)
+                  (StaffData != null && StaffData['professionOfStaff'] != null)
                       ? InkWell(
                           onTap: () {
                             Navigator.push(
@@ -215,6 +211,14 @@ class _MyHomePageState extends State<MyHomePage> {
                                   color: Colors.black26,
                                 ),
                               ],
+                              image: StaffData['Profile_Pic'] == null
+                                  ? null
+                                  : DecorationImage(
+                                      image: NetworkImage(
+                                          StaffData['Profile_Pic']),
+                                      fit: BoxFit
+                                          .cover, // Adjust the fit if necessary
+                                    ),
                             ),
                           ),
                         ),
@@ -331,7 +335,7 @@ class _MyHomePageState extends State<MyHomePage> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                (StaffData != null && StaffData['Profile_Pic'] != null)
+                (StaffData != null && StaffData['professionOfStaff'] != null)
                     ? InkWell(
                         onTap: () {
                           Navigator.push(
@@ -373,6 +377,14 @@ class _MyHomePageState extends State<MyHomePage> {
                           height: 50,
                           width: 50,
                           decoration: BoxDecoration(
+                            image: StaffData['Profile_Pic'] == null
+                                ? null
+                                : DecorationImage(
+                                    image:
+                                        NetworkImage(StaffData['Profile_Pic']),
+                                    fit: BoxFit
+                                        .cover, // Adjust the fit if necessary
+                                  ),
                             borderRadius: BorderRadius.circular(50),
                             boxShadow: [
                               BoxShadow(
@@ -492,18 +504,25 @@ class _MyHomePageState extends State<MyHomePage> {
                                           spreadRadius: 1),
                                     ],
                                     image: DecorationImage(
-                                      image: AssetImage("assets/images/${ProfessionBack[index]}"),
-                                      fit: BoxFit.cover, // Adjust the fit if necessary
+                                      image: AssetImage(
+                                          "assets/images/${ProfessionBack[index]}"),
+                                      fit: BoxFit
+                                          .cover, // Adjust the fit if necessary
                                     ),
                                   ),
                                   child: Padding(
                                     padding: const EdgeInsets.all(10.0),
                                     child: Text(Profession[index],
-                                        style: TextStyle(fontSize: 18,color: Colors.white, fontWeight: FontWeight.bold, shadows: [Shadow(
-                                          blurRadius: 1,
-                                          color: Colors.black,
-                                          offset: Offset(1, 1)
-                                        )])),
+                                        style: TextStyle(
+                                            fontSize: 18,
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.bold,
+                                            shadows: [
+                                              Shadow(
+                                                  blurRadius: 1,
+                                                  color: Colors.black,
+                                                  offset: Offset(1, 1))
+                                            ])),
                                   ),
                                 ),
                               ),
@@ -570,7 +589,11 @@ class _MyHomePageState extends State<MyHomePage> {
                                       var UID = snapshot.data!.docs[index].id;
                                       if (data['professionOfStaff'] != null &&
                                           data['First_name'] != null &&
-                                          data['First_name'].toString().toLowerCase().startsWith(SearchGlobal.toLowerCase())) {
+                                          data['First_name']
+                                              .toString()
+                                              .toLowerCase()
+                                              .startsWith(
+                                                  SearchGlobal.toLowerCase())) {
                                         return Padding(
                                           padding: const EdgeInsets.all(5.0),
                                           child: InkWell(
@@ -652,8 +675,14 @@ class _MyHomePageState extends State<MyHomePage> {
                                             ),
                                           ),
                                         );
-                                      }
-                                      else if (data['professionOfStaff'] != null && data['First_name'] != null && data['City'].toString().toLowerCase().startsWith(SearchGlobal.toLowerCase())) {
+                                      } else if (data['professionOfStaff'] !=
+                                              null &&
+                                          data['First_name'] != null &&
+                                          data['City']
+                                              .toString()
+                                              .toLowerCase()
+                                              .startsWith(
+                                                  SearchGlobal.toLowerCase())) {
                                         return Padding(
                                           padding: const EdgeInsets.all(5.0),
                                           child: InkWell(
