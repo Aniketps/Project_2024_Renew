@@ -125,6 +125,7 @@ class _TC extends State<TC> {
                                   height: screenHeight * 0.78,
                                   width: screenWidth * 0.9,
                                   child: ListView.builder(
+                                    padding: EdgeInsets.zero,
                                     itemCount: documents.length,
                                     itemBuilder: (context, index) {
                                       return Container(
