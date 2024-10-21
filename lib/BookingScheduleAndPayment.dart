@@ -1,7 +1,5 @@
 import 'dart:async';
-import 'dart:async';
-import 'dart:async';
-
+import 'package:razorpay_flutter/razorpay_flutter.dart';
 import 'package:carehub/ClientNotificationPage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -10,7 +8,6 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:intl/intl.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 class BookingScheduleAndPayment extends StatefulWidget {
   var StaffData;
@@ -36,9 +33,16 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
 
   Timer? timer;
   int index = 0;
+  late Razorpay _razorpay;
+  Completer<bool> paymentCompleter = Completer<bool>(); // Declare the Completer
   @override
   void initState() {
     super.initState();
+    _razorpay = Razorpay();
+
+    _razorpay.on(Razorpay.EVENT_PAYMENT_SUCCESS, _handlePaymentSuccess);
+    _razorpay.on(Razorpay.EVENT_PAYMENT_ERROR, _handlePaymentError);
+    _razorpay.on(Razorpay.EVENT_EXTERNAL_WALLET, _handleExternalWallet);
     timer = Timer.periodic(Duration(seconds: 1), (Timer t) {
       setState(() {
         LoadingText = loadingMessages[index];
@@ -69,9 +73,7 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
           });
         },
       );
-    }
-
-    ;
+    };
     Loader = true;
     _liveLocation();
     _getCurrentLocation();
@@ -115,6 +117,43 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
       lat = '${position.latitude}';
       long = '${position.longitude}';
     });
+  }
+
+  // Handle successful payment
+  void _handlePaymentSuccess(PaymentSuccessResponse response) {
+    print("Payment Success: ${response.paymentId}");
+    paymentCompleter.complete(true); // Complete the Future with true on success
+  }
+
+// Handle failed payment
+  void _handlePaymentError(PaymentFailureResponse response) {
+    print("Payment Error: ${response.code} - ${response.message}");
+    paymentCompleter.complete(false); // Complete the Future with false on failure
+  }
+
+  void _handleExternalWallet(ExternalWalletResponse response) {
+    // Handle external wallet payment
+    print("External Wallet: ${response.walletName}");
+  }
+
+  Future<bool> startPayment(contact, email, amount, skill) async {
+    var options = {
+      'key': 'rzp_test_c7rQLdaD7nvgQe', // Replace with your Razorpay API key
+      'amount': amount, // Amount in paise (100 paise = 1 INR)
+      'currency': 'INR',
+      'name': 'CareNest',
+      'description': 'Payment for $skill',
+      'prefill': {'contact': contact, 'email': email},
+      'theme': {'color': '#F37254'}
+    };
+
+    try {
+      _razorpay.open(options); // Open Razorpay payment form
+      return await paymentCompleter.future; // Wait for the payment status
+    } catch (e) {
+      print(e.toString());
+      return false; // Return false if payment initiation fails
+    }
   }
 
   var StaffData;
@@ -1208,104 +1247,24 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                                           child: InkWell(
                                                             onTap: () async {
                                                               var UID =
-                                                                  FirebaseAuth
-                                                                      .instance
-                                                                      .currentUser
-                                                                      ?.uid;
-                                                              String city =
-                                                                  City.text;
-                                                              String address =
-                                                                  Address.text;
-                                                              String
-                                                                  subAddress =
-                                                                  SubAddress
-                                                                      .text;
-                                                              String place =
-                                                                  Place;
+                                                                  FirebaseAuth.instance.currentUser?.uid;
+                                                              String city = City.text;
+                                                              String address = Address.text;
+                                                              String subAddress = SubAddress.text;
+                                                              String place = Place;
 
-                                                              if (price != 0 &&
-                                                                  WorkDate !=
-                                                                      '--/--/----' &&
-                                                                  WorkTime !=
-                                                                      '--:--' &&
-                                                                  city
-                                                                      .isNotEmpty &&
-                                                                  address
-                                                                      .isNotEmpty &&
-                                                                  subAddress
-                                                                      .isNotEmpty &&
-                                                                  place
-                                                                      .isNotEmpty) {
-                                                                try {
-                                                                  // Add data to 'NotificationForStaff' collection
-                                                                  FirebaseFirestore
-                                                                      .instance
-                                                                      .collection(
-                                                                          'NotificationForStaff')
-                                                                      .add({
-                                                                    'userUID':
-                                                                        UID,
-                                                                    'Scheduled_City':
-                                                                        city,
-                                                                    'Scheduled_Address':
-                                                                        address,
-                                                                    'Scheduled_Sub_Address':
-                                                                        subAddress,
-                                                                    'Scheduled_Place':
-                                                                        place,
-                                                                    "Client_Coordinates_lat":
-                                                                        ShareCoordinates
-                                                                            ? lat
-                                                                            : "",
-                                                                    "Client_Coordinates_long":
-                                                                        ShareCoordinates
-                                                                            ? long
-                                                                            : "",
-                                                                    'staffUID':
-                                                                        StaffID,
-                                                                    'professionOfStaff':
-                                                                        Skill,
-                                                                    'status':
-                                                                        'Received a Request',
-                                                                    'timeofdeal':
-                                                                        "${DateTime.now().day} ${DateFormat.MMM().format(DateTime.now())} ${DateTime.now().year} ${DateFormat.jm().format(DateTime.now())}",
-                                                                    'totalcost':
-                                                                        total,
-                                                                    'ServiceBase':
-                                                                        HourBased
-                                                                            ? 'Hour'
-                                                                            : 'Day',
-                                                                    'hours':
-                                                                        "${count}",
-                                                                    'ScheduledDate':
-                                                                        WorkDate,
-                                                                    'ScheduledTime':
-                                                                        WorkTime,
-                                                                    'PlatformTax':
-                                                                        '15%',
-                                                                    'ScheduledDateEnd':
-                                                                        WorkDateEnd,
-                                                                    'ScheduledTimeEnd':
-                                                                        WorkTimeEnd,
-                                                                  }).then(
-                                                                          (staffDocRef) {
-                                                                    String
-                                                                        staffDocUID =
-                                                                        staffDocRef
-                                                                            .id;
-
-                                                                    // Add data to 'NotificationForUser' collection
+                                                              if (price != 0 && WorkDate != '--/--/----' && WorkTime != '--:--' && city.isNotEmpty && address.isNotEmpty && subAddress.isNotEmpty && place.isNotEmpty) {
+                                                                bool isComplete = await startPayment("9022270236", "ani@gmail.com", total*100, "Chef");
+                                                                if(isComplete) {
+                                                                  try {
+                                                                    // Add data to 'NotificationForStaff' collection
                                                                     FirebaseFirestore
                                                                         .instance
                                                                         .collection(
-                                                                            'NotificationForUser')
+                                                                            'NotificationForStaff')
                                                                         .add({
                                                                       'userUID':
                                                                           UID,
-                                                                      'staffUID':
-                                                                          StaffID,
-                                                                      'status':
-                                                                          'Request sent',
                                                                       'Scheduled_City':
                                                                           city,
                                                                       'Scheduled_Address':
@@ -1321,12 +1280,14 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                                                       "Client_Coordinates_long": ShareCoordinates
                                                                           ? long
                                                                           : "",
+                                                                      'staffUID':
+                                                                          StaffID,
                                                                       'professionOfStaff':
                                                                           Skill,
+                                                                      'status':
+                                                                          'Received a Request',
                                                                       'timeofdeal':
                                                                           "${DateTime.now().day} ${DateFormat.MMM().format(DateTime.now())} ${DateTime.now().year} ${DateFormat.jm().format(DateTime.now())}",
-                                                                      'DocUID':
-                                                                          staffDocUID,
                                                                       'totalcost':
                                                                           total,
                                                                       'ServiceBase': HourBased
@@ -1345,73 +1306,125 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                                                       'ScheduledTimeEnd':
                                                                           WorkTimeEnd,
                                                                     }).then(
-                                                                            (userDocRef) {
+                                                                            (staffDocRef) {
                                                                       String
-                                                                          userDocUID =
-                                                                          userDocRef
+                                                                          staffDocUID =
+                                                                          staffDocRef
                                                                               .id;
 
-                                                                      // Update 'NotificationForStaff' with the 'DocUID' from 'NotificationForUser'
+                                                                      // Add data to 'NotificationForUser' collection
                                                                       FirebaseFirestore
                                                                           .instance
                                                                           .collection(
-                                                                              'NotificationForStaff')
-                                                                          .doc(
-                                                                              staffDocUID)
-                                                                          .update({
+                                                                              'NotificationForUser')
+                                                                          .add({
+                                                                        'userUID':
+                                                                            UID,
+                                                                        'staffUID':
+                                                                            StaffID,
+                                                                        'status':
+                                                                            'Request sent',
+                                                                        'Scheduled_City':
+                                                                            city,
+                                                                        'Scheduled_Address':
+                                                                            address,
+                                                                        'Scheduled_Sub_Address':
+                                                                            subAddress,
+                                                                        'Scheduled_Place':
+                                                                            place,
+                                                                        "Client_Coordinates_lat": ShareCoordinates
+                                                                            ? lat
+                                                                            : "",
+                                                                        "Client_Coordinates_long": ShareCoordinates
+                                                                            ? long
+                                                                            : "",
+                                                                        'professionOfStaff':
+                                                                            Skill,
+                                                                        'timeofdeal':
+                                                                            "${DateTime.now().day} ${DateFormat.MMM().format(DateTime.now())} ${DateTime.now().year} ${DateFormat.jm().format(DateTime.now())}",
                                                                         'DocUID':
-                                                                            userDocUID,
+                                                                            staffDocUID,
+                                                                        'totalcost':
+                                                                            total,
+                                                                        'ServiceBase': HourBased
+                                                                            ? 'Hour'
+                                                                            : 'Day',
+                                                                        'hours':
+                                                                            "${count}",
+                                                                        'ScheduledDate':
+                                                                            WorkDate,
+                                                                        'ScheduledTime':
+                                                                            WorkTime,
+                                                                        'PlatformTax':
+                                                                            '15%',
+                                                                        'ScheduledDateEnd':
+                                                                            WorkDateEnd,
+                                                                        'ScheduledTimeEnd':
+                                                                            WorkTimeEnd,
+                                                                      }).then(
+                                                                              (userDocRef) {
+                                                                        String
+                                                                            userDocUID =
+                                                                            userDocRef.id;
+
+                                                                        // Update 'NotificationForStaff' with the 'DocUID' from 'NotificationForUser'
+                                                                        FirebaseFirestore
+                                                                            .instance
+                                                                            .collection('NotificationForStaff')
+                                                                            .doc(staffDocUID)
+                                                                            .update({
+                                                                          'DocUID':
+                                                                              userDocUID,
+                                                                        });
+                                                                      }).catchError(
+                                                                              (error) {
+                                                                        print(
+                                                                            "Error adding document to NotificationForUser: $error");
                                                                       });
                                                                     }).catchError(
                                                                             (error) {
                                                                       print(
-                                                                          "Error adding document to NotificationForUser: $error");
+                                                                          "Error adding document to NotificationForStaff: $error");
                                                                     });
-                                                                  }).catchError(
-                                                                          (error) {
-                                                                    print(
-                                                                        "Error adding document to NotificationForStaff: $error");
-                                                                  });
 
-                                                                  // Navigate to the next screen
-                                                                  Navigator
-                                                                      .push(
-                                                                    context,
-                                                                    MaterialPageRoute(
-                                                                      builder:
-                                                                          (context) =>
-                                                                              ClientNotificationPage(),
-                                                                    ),
-                                                                  );
-                                                                } catch (e) {
-                                                                  Fluttertoast
-                                                                      .showToast(
-                                                                    msg: "$e",
-                                                                    toastLength:
-                                                                        Toast
-                                                                            .LENGTH_SHORT,
-                                                                    gravity:
-                                                                        ToastGravity
-                                                                            .BOTTOM,
+                                                                    // Navigate to the next screen
+                                                                    Navigator
+                                                                        .push(
+                                                                      context,
+                                                                      MaterialPageRoute(
+                                                                        builder:
+                                                                            (context) =>
+                                                                                ClientNotificationPage(),
+                                                                      ),
+                                                                    );
+                                                                    Fluttertoast.showToast(msg: "Payment Done");
+                                                                  } catch (e) {
+                                                                    Fluttertoast
+                                                                        .showToast(
+                                                                      msg: "$e",
+                                                                      toastLength:
+                                                                          Toast
+                                                                              .LENGTH_SHORT,
+                                                                      gravity:
+                                                                          ToastGravity
+                                                                              .BOTTOM,
+                                                                    );
+                                                                  }
+                                                                }
+                                                                else{
+                                                                  Fluttertoast.showToast(msg: "Failed");
+                                                                }
+                                                              }
+                                                              else {
+                                                                // Handle validation errors
+                                                                if (price == 0) {
+                                                                  Fluttertoast.showToast(
+                                                                    msg: "User did not set service rate",
+                                                                    toastLength: Toast.LENGTH_SHORT,
+                                                                    gravity: ToastGravity.BOTTOM,
                                                                   );
                                                                 }
-                                                              } else {
-                                                                // Handle validation errors
-                                                                if (price ==
-                                                                    0) {
-                                                                  Fluttertoast
-                                                                      .showToast(
-                                                                    msg:
-                                                                        "User did not set service rate",
-                                                                    toastLength:
-                                                                        Toast
-                                                                            .LENGTH_SHORT,
-                                                                    gravity:
-                                                                        ToastGravity
-                                                                            .BOTTOM,
-                                                                  );
-                                                                } else if (WorkDate ==
-                                                                    '--/--/----') {
+                                                                else if (WorkDate == '--/--/----') {
                                                                   Fluttertoast
                                                                       .showToast(
                                                                     msg:
@@ -1423,8 +1436,8 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                                                         ToastGravity
                                                                             .BOTTOM,
                                                                   );
-                                                                } else if (WorkTime ==
-                                                                    '--:--') {
+                                                                }
+                                                                else if (WorkTime == '--:--') {
                                                                   Fluttertoast
                                                                       .showToast(
                                                                     msg:
@@ -1436,8 +1449,8 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                                                         ToastGravity
                                                                             .BOTTOM,
                                                                   );
-                                                                } else if (city
-                                                                    .isEmpty) {
+                                                                }
+                                                                else if (city.isEmpty) {
                                                                   Fluttertoast
                                                                       .showToast(
                                                                     msg:
@@ -1449,8 +1462,8 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                                                         ToastGravity
                                                                             .BOTTOM,
                                                                   );
-                                                                } else if (address
-                                                                    .isEmpty) {
+                                                                }
+                                                                else if (address.isEmpty) {
                                                                   Fluttertoast
                                                                       .showToast(
                                                                     msg:
@@ -1462,8 +1475,8 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                                                         ToastGravity
                                                                             .BOTTOM,
                                                                   );
-                                                                } else if (subAddress
-                                                                    .isEmpty) {
+                                                                }
+                                                                else if (subAddress.isEmpty) {
                                                                   Fluttertoast
                                                                       .showToast(
                                                                     msg:
@@ -1475,17 +1488,12 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                                                         ToastGravity
                                                                             .BOTTOM,
                                                                   );
-                                                                } else {
-                                                                  Fluttertoast
-                                                                      .showToast(
-                                                                    msg:
-                                                                        "Invalid Place",
-                                                                    toastLength:
-                                                                        Toast
-                                                                            .LENGTH_SHORT,
-                                                                    gravity:
-                                                                        ToastGravity
-                                                                            .BOTTOM,
+                                                                }
+                                                                else {
+                                                                  Fluttertoast.showToast(
+                                                                    msg: "Invalid Place",
+                                                                    toastLength: Toast.LENGTH_SHORT,
+                                                                    gravity: ToastGravity.BOTTOM,
                                                                   );
                                                                 }
                                                               }
