@@ -12,6 +12,7 @@ import 'Deals.dart';
 import 'Feedback.dart';
 import 'MainMap.dart';
 import 'TC.dart';
+import 'client.dart';
 import 'main.dart';
 
 class StaffPage extends StatefulWidget {
