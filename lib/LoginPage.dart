@@ -10,6 +10,17 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
 
+class UserData {
+  static final UserData _instance = UserData._internal();
+  bool isStaff = false;
+
+  factory UserData() {
+    return _instance;
+  }
+
+  UserData._internal();
+}
+
 class LoginPage extends StatefulWidget{
 
   @override
@@ -40,7 +51,6 @@ class _LoginPage extends State<LoginPage>{
   int index = 0;
   @override
   void initState() {
-
     super.initState();
     timer = Timer.periodic(Duration(seconds: 5), (Timer t) {
       setState(() {
@@ -73,13 +83,20 @@ class _LoginPage extends State<LoginPage>{
       );
     }
     LoaderCheck = !LoaderCheck;
-    checkLogin();
+    bool staffStatus = UserData().isStaff;
+    checkLogin(staffStatus);
   }
 
-  Future<void> checkLogin() async {
+  Future<void> checkLogin(isStaff) async {
     User? user = await FirebaseAuth.instance.currentUser;
     if(user?.uid != null){
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => MyHomePage(),));
+      if(isStaff) {
+        Navigator.pushReplacement(
+            context, MaterialPageRoute(builder: (context) => StaffProfileHome(),));
+      }else{
+        Navigator.pushReplacement(
+            context, MaterialPageRoute(builder: (context) => MyHomePage(),));
+      }
     }
   }
   void _liveLocation() {
@@ -995,6 +1012,8 @@ class _AndroidView extends State<AndroidView>{
   String lat;
   String long;
 
+  bool isStaff = false;
+
   _AndroidView({required this.lat, required this.long});
 
   Color StaffColorTrue = Colors.blueAccent;
@@ -1007,6 +1026,9 @@ class _AndroidView extends State<AndroidView>{
   Color UserColor = Colors.blueAccent;
   @override
   Widget build(BuildContext context) {
+
+    UserData().isStaff = StaffPressed? true : false;
+
     return Stack(
       children: [
         Container(
