@@ -387,22 +387,38 @@ class _AndroidUserPage extends State<AndroidUserPage>{
                             
                             
                             if(password1 == password2){
-                              UserCredential usercredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(email: email, password: password1);
-                              User? user = usercredential.user;
-                              await FirebaseFirestore.instance.collection("user").doc(user?.uid).set({
-                                'Email': email,
-                                'Password': password1,
-                                'First_name': firstname,
-                                'Last_name': lastname,
-                              });
-                              user?.sendEmailVerification();
-                              Fluttertoast.showToast(msg: "Link send, A link has been send to your email");
-                              await FirebaseAuth.instance.signOut();
-                              
-                              Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => LoginPage(),));
+                              try{
+                                UserCredential usercredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(email: email, password: password1);
+                                User? user = usercredential.user;
+                                await FirebaseFirestore.instance.collection("user").doc(user?.uid).set({
+                                  'Email': email,
+                                  'Password': password1,
+                                  'First_name': firstname,
+                                  'Last_name': lastname,
+                                });
+                                user?.sendEmailVerification();
+                                Fluttertoast.showToast(msg: "Link send, A link has been send to your email");
+                                await FirebaseAuth.instance.signOut();
+
+                                Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => LoginPage(),));
+                                setState(() {
+                                  isLoading = false;
+                                });
+                              }catch (e){
+                                setState(() {
+                                  isLoading = false;
+                                });
+                                Fluttertoast.showToast(
+                                    toastLength: Toast.LENGTH_LONG,
+                                    msg: "${e}");
+                              };
+                            }else{
                               setState(() {
                                 isLoading = false;
                               });
+                              Fluttertoast.showToast(
+                                  toastLength: Toast.LENGTH_LONG,
+                                  msg: "Password not matching");
                             }
                           }else{
                             setState(() {
