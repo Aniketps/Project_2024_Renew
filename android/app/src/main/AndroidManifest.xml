@@ -8,7 +8,7 @@
     <application
         android:label="CareNest"
         android:name="${applicationName}"
-        android:icon="@mipmap/carenest">
+        android:icon="@mipmap/ic_launcher">
         <activity
             android:name=".MainActivity"
             android:exported="true"

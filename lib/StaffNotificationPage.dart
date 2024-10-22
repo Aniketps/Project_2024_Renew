@@ -69,7 +69,7 @@ class _StaffNotificationPage extends State<StaffNotificationPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text("Notifications"),
-        backgroundColor: Colors.red,
+        backgroundColor: Color(0xffbef0ff),
       ),
       body: SingleChildScrollView(
         scrollDirection: Axis.vertical,

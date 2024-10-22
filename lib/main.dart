@@ -157,7 +157,7 @@ class _MyHomePageState extends State<MyHomePage> {
           padding: EdgeInsets.zero,
           children: [
             DrawerHeader(
-                decoration: BoxDecoration(color: Colors.red),
+                decoration: BoxDecoration(color: Color(0xfffffcc9)),
                 child: Column(children: [
                   (StaffData != null && StaffData['professionOfStaff'] != null)
                       ? InkWell(
@@ -308,7 +308,7 @@ class _MyHomePageState extends State<MyHomePage> {
           // App bar section
           Container(
             height: 150,
-            color: Colors.red,
+            color: Color(0xfffffcc9),
             child: AppBar(
               title: InkWell(
                   onTap: () {
@@ -324,7 +324,7 @@ class _MyHomePageState extends State<MyHomePage> {
                           : "Location...",
                       style: TextStyle(
                           fontSize: 18, fontWeight: FontWeight.bold))),
-              backgroundColor: Colors.red,
+              backgroundColor: Color(0xfffffcc9),
               automaticallyImplyLeading: true,
             ),
           ),

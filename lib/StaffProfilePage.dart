@@ -96,11 +96,43 @@ class _StaffProfilePage extends State<StaffProfilePage> {
 
     if ((StaffData == null) || (StaffID == null)) {
       return Scaffold(
-        appBar: AppBar(
-          title: Text("Profile"),
-          backgroundColor: Colors.blue,
+        body: Stack(
+          children: [
+            // App bar section
+            Container(
+              height: 150,
+              color: Color(0xfffffcc9),
+              child: AppBar(
+                title: Center(
+                  child: Text("Profile",
+                      style:
+                          TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                ),
+                backgroundColor: Color(0xfffffcc9),
+                automaticallyImplyLeading: false,
+              ),
+            ),
+            Stack(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(top: 100),
+                  child: Container(
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.vertical,
+                      child: Column(
+                        children: [
+                          Center(
+                              child:
+                                  CircularProgressIndicator()), // Loading indicator
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            )
+          ],
         ),
-        body: Center(child: CircularProgressIndicator()), // Loading indicator
       );
     }
 
@@ -110,15 +142,14 @@ class _StaffProfilePage extends State<StaffProfilePage> {
           // App bar section
           Container(
             height: 150,
-            color: Colors.red,
+            color: Color(0xfffffcc9),
             child: AppBar(
               title: Center(
-                child: Text(
-                    "Profile",
-                    style: TextStyle(
-                        fontSize: 20, fontWeight: FontWeight.bold)),
+                child: Text("Profile",
+                    style:
+                        TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
               ),
-              backgroundColor: Colors.red,
+              backgroundColor: Color(0xfffffcc9),
               automaticallyImplyLeading: false,
             ),
           ),
@@ -257,7 +288,8 @@ class _UserView extends State<UserView> {
                                         Navigator.push(
                                             context,
                                             MaterialPageRoute(
-                                              builder: (context) => RatingState(),
+                                              builder: (context) =>
+                                                  RatingState(),
                                             ));
                                       },
                                       child: Container(

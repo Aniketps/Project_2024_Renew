@@ -99,9 +99,9 @@ class _StaffPage extends State<StaffPage> {
           padding: EdgeInsets.zero,
           children: [
             DrawerHeader(
-                decoration: BoxDecoration(color: Colors.red),
+                decoration: BoxDecoration(color: Color(0xfffffcc9)),
                 child: Column(children: [
-                  (StaffData != null && StaffData['Profile_Pic'] != null)
+                  (StaffData != null && StaffData['professionOfStaff'] != null)
                       ? InkWell(
                           onTap: () {
                             Navigator.push(
@@ -141,20 +141,41 @@ class _StaffPage extends State<StaffPage> {
                                   builder: (context) => ActualUser(),
                                 ));
                           },
-                          child: Container(
-                            height: 80,
-                            width: 80,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(80),
-                              boxShadow: [
-                                BoxShadow(
-                                  blurRadius: 1,
-                                  spreadRadius: 1,
-                                  color: Colors.black26,
+                          child: StaffData['Profile_Pic'] == null
+                              ? Container(
+                                  height: 80,
+                                  width: 80,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(80),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        blurRadius: 1,
+                                        spreadRadius: 1,
+                                        color: Colors.black26,
+                                      ),
+                                    ],
+                                  ),
+                                )
+                              : Container(
+                                  height: 80,
+                                  width: 80,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(80),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        blurRadius: 1,
+                                        spreadRadius: 1,
+                                        color: Colors.black26,
+                                      ),
+                                    ],
+                                    image: DecorationImage(
+                                      image: NetworkImage(
+                                          StaffData['Profile_Pic']),
+                                      fit: BoxFit
+                                          .cover, // Adjust the fit if necessary
+                                    ),
+                                  ),
                                 ),
-                              ],
-                            ),
-                          ),
                         ),
                   (StaffData == null)
                       ? Text(
@@ -242,7 +263,7 @@ class _StaffPage extends State<StaffPage> {
           // App bar section
           Container(
             height: 150,
-            color: Colors.red,
+            color: Color(0xfffffcc9),
             child: AppBar(
               title: InkWell(
                   onTap: () {
@@ -261,7 +282,7 @@ class _StaffPage extends State<StaffPage> {
                         style: TextStyle(
                             fontSize: 18, fontWeight: FontWeight.bold)),
                   )),
-              backgroundColor: Colors.red,
+              backgroundColor: Color(0xfffffcc9),
               automaticallyImplyLeading: true,
             ),
           ),
@@ -272,7 +293,7 @@ class _StaffPage extends State<StaffPage> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                (StaffData != null && StaffData['Profile_Pic'] != null)
+                (StaffData != null && StaffData['professionOfStaff'] != null)
                     ? InkWell(
                         onTap: () {
                           Navigator.push(
@@ -310,19 +331,39 @@ class _StaffPage extends State<StaffPage> {
                                 builder: (context) => ActualUser(),
                               ));
                         },
-                        child: Container(
-                          height: 50,
-                          width: 50,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(50),
-                            boxShadow: [
-                              BoxShadow(
-                                  color: Colors.black26,
-                                  spreadRadius: 1,
-                                  blurRadius: 1),
-                            ],
-                          ),
-                        ),
+                        child: StaffData['Profile_Pic'] != null
+                            ? Container(
+                                height: 50,
+                                width: 50,
+                                decoration: BoxDecoration(
+                                  image: DecorationImage(
+                                    image:
+                                        NetworkImage(StaffData['Profile_Pic']),
+                                    fit: BoxFit
+                                        .cover, // Adjust the fit if necessary
+                                  ),
+                                  borderRadius: BorderRadius.circular(50),
+                                  boxShadow: [
+                                    BoxShadow(
+                                        color: Colors.black26,
+                                        spreadRadius: 1,
+                                        blurRadius: 1),
+                                  ],
+                                ),
+                              )
+                            : Container(
+                                height: 50,
+                                width: 50,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(50),
+                                  boxShadow: [
+                                    BoxShadow(
+                                        color: Colors.black26,
+                                        spreadRadius: 1,
+                                        blurRadius: 1),
+                                  ],
+                                ),
+                              ),
                       ),
               ],
             ),

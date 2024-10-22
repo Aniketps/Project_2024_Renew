@@ -584,7 +584,7 @@ class _AndroidView extends State<AndroidView>{
     return Stack(
       children: [
         Container(
-          color: Color(0xff2020b7),
+          color: Color(0xffbef0ff),
           height: 320,
           width: double.maxFinite,
         ),
@@ -628,7 +628,7 @@ class _WebView extends State<WebView>{
           child: Container(
             height: screenHeight,
             width: screenWidth,// Adjust the height accordingly
-            color: Color(0xff2020b7),
+            color: Color(0xffbef0ff),
           ),
         ),
         SingleChildScrollView(
