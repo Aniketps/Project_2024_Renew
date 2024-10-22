@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:razorpay_flutter/razorpay_flutter.dart';
 import 'package:carehub/ClientNotificationPage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -33,16 +32,9 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
 
   Timer? timer;
   int index = 0;
-  late Razorpay _razorpay;
-  Completer<bool> paymentCompleter = Completer<bool>(); // Declare the Completer
   @override
   void initState() {
     super.initState();
-    _razorpay = Razorpay();
-
-    _razorpay.on(Razorpay.EVENT_PAYMENT_SUCCESS, _handlePaymentSuccess);
-    _razorpay.on(Razorpay.EVENT_PAYMENT_ERROR, _handlePaymentError);
-    _razorpay.on(Razorpay.EVENT_EXTERNAL_WALLET, _handleExternalWallet);
     timer = Timer.periodic(Duration(seconds: 1), (Timer t) {
       setState(() {
         LoadingText = loadingMessages[index];
@@ -117,43 +109,6 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
       lat = '${position.latitude}';
       long = '${position.longitude}';
     });
-  }
-
-  // Handle successful payment
-  void _handlePaymentSuccess(PaymentSuccessResponse response) {
-    print("Payment Success: ${response.paymentId}");
-    paymentCompleter.complete(true); // Complete the Future with true on success
-  }
-
-// Handle failed payment
-  void _handlePaymentError(PaymentFailureResponse response) {
-    print("Payment Error: ${response.code} - ${response.message}");
-    paymentCompleter.complete(false); // Complete the Future with false on failure
-  }
-
-  void _handleExternalWallet(ExternalWalletResponse response) {
-    // Handle external wallet payment
-    print("External Wallet: ${response.walletName}");
-  }
-
-  Future<bool> startPayment(contact, email, amount, skill) async {
-    var options = {
-      'key': 'rzp_test_c7rQLdaD7nvgQe', // Replace with your Razorpay API key
-      'amount': amount, // Amount in paise (100 paise = 1 INR)
-      'currency': 'INR',
-      'name': 'CareNest',
-      'description': 'Payment for $skill',
-      'prefill': {'contact': contact, 'email': email},
-      'theme': {'color': '#F37254'}
-    };
-
-    try {
-      _razorpay.open(options); // Open Razorpay payment form
-      return await paymentCompleter.future; // Wait for the payment status
-    } catch (e) {
-      print(e.toString());
-      return false; // Return false if payment initiation fails
-    }
   }
 
   var StaffData;
@@ -262,7 +217,7 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
           // App bar section
           Container(
             height: 150,
-            color: Colors.red,
+            color: Color(0xfffffcc9),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
@@ -272,7 +227,7 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                         style: TextStyle(
                             fontSize: 20, fontWeight: FontWeight.bold)),
                   ),
-                  backgroundColor: Colors.red,
+                  backgroundColor: Color(0xfffffcc9),
                   automaticallyImplyLeading: false,
                 ),
               ],
@@ -1254,8 +1209,6 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                                               String place = Place;
 
                                                               if (price != 0 && WorkDate != '--/--/----' && WorkTime != '--:--' && city.isNotEmpty && address.isNotEmpty && subAddress.isNotEmpty && place.isNotEmpty) {
-                                                                bool isComplete = await startPayment("9022270236", "ani@gmail.com", total*100, "Chef");
-                                                                if(isComplete) {
                                                                   try {
                                                                     // Add data to 'NotificationForStaff' collection
                                                                     FirebaseFirestore
@@ -1410,10 +1363,6 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                                                               .BOTTOM,
                                                                     );
                                                                   }
-                                                                }
-                                                                else{
-                                                                  Fluttertoast.showToast(msg: "Failed");
-                                                                }
                                                               }
                                                               else {
                                                                 // Handle validation errors

@@ -83,7 +83,7 @@ class _ContactUs extends State<ContactUs> {
           // App bar section
           Container(
             height: 150,
-            color: Colors.blueAccent,
+            color: Color(0xfffffcc9),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
@@ -95,7 +95,7 @@ class _ContactUs extends State<ContactUs> {
                           TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                     ),
                   ),
-                  backgroundColor: Colors.blueAccent,
+                  backgroundColor: Color(0xfffffcc9),
                   automaticallyImplyLeading: false,
                 ),
               ],
@@ -323,7 +323,7 @@ class _ContactUs extends State<ContactUs> {
                               style: TextStyle(color: Colors.black),
                             ),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.lightBlue,
+                              backgroundColor: Colors.greenAccent,
                               padding: EdgeInsets.symmetric(
                                   horizontal: 50, vertical: 15),
                               textStyle: TextStyle(

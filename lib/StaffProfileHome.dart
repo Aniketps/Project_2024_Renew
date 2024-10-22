@@ -15,16 +15,17 @@ import 'ContactUs.dart';
 import 'Deals.dart';
 import 'Feedback.dart';
 import 'LoginPage.dart';
+import 'MainMap.dart';
 import 'StaffNotificationPage.dart';
 import 'TC.dart';
+import 'client.dart';
 
-class StaffProfileHome extends StatefulWidget{
+class StaffProfileHome extends StatefulWidget {
   @override
   State<StatefulWidget> createState() => _StaffProfileHome();
 }
 
-class _StaffProfileHome extends State<StaffProfileHome>{
-
+class _StaffProfileHome extends State<StaffProfileHome> {
   @override
   void initState() {
     super.initState();
@@ -36,20 +37,25 @@ class _StaffProfileHome extends State<StaffProfileHome>{
       );
 
       Geolocator.getPositionStream(locationSettings: locationSettings).listen(
-            (Position position) {
+        (Position position) {
           setState(() async {
             String lat = position.latitude.toString();
             String long = position.longitude.toString();
             User? user = FirebaseAuth.instance.currentUser;
 
-            await FirebaseFirestore.instance.collection('user').doc(user?.uid).update({
-              'lat' : lat,
-              'long' : long,
+            await FirebaseFirestore.instance
+                .collection('user')
+                .doc(user?.uid)
+                .update({
+              'lat': lat,
+              'long': long,
             });
           });
         },
       );
-    };
+    }
+
+    ;
     _liveLocation();
   }
 
@@ -60,14 +66,20 @@ class _StaffProfileHome extends State<StaffProfileHome>{
   Future<void> SearchStaff() async {
     User? user1 = await FirebaseAuth.instance.currentUser;
     currentUserID = user1?.uid ?? '';
-    DocumentSnapshot documentSnapshot1 = await FirebaseFirestore.instance.collection("user").doc(currentUserID).get();
+    DocumentSnapshot documentSnapshot1 = await FirebaseFirestore.instance
+        .collection("user")
+        .doc(currentUserID)
+        .get();
     StaffData1 = documentSnapshot1.data() as Map<String, dynamic>?;
 
-    DocumentSnapshot documentSnapshot = await FirebaseFirestore.instance.collection("${StaffData1["professionOfStaff"]}").doc(currentUserID).get();
+    DocumentSnapshot documentSnapshot = await FirebaseFirestore.instance
+        .collection("${StaffData1["professionOfStaff"]}")
+        .doc(currentUserID)
+        .get();
     if (documentSnapshot.exists) {
       setState(() {
         StaffData = documentSnapshot.data() as Map<String, dynamic>?;
-        if(StaffData['professionOfStaff']==null){
+        if (StaffData['professionOfStaff'] == null) {
           print(StaffData);
         }
       });
@@ -80,7 +92,7 @@ class _StaffProfileHome extends State<StaffProfileHome>{
     final screenWidth = mediaquery.size.width;
     final screenHeight = mediaquery.size.height;
 
-    if (StaffData  == null) {
+    if (StaffData == null) {
       return Scaffold(
         appBar: AppBar(
           title: Text("Profile"),
@@ -91,124 +103,228 @@ class _StaffProfileHome extends State<StaffProfileHome>{
     }
 
     return Scaffold(
-        appBar: AppBar(
-          title: Text("Profile"),
-          backgroundColor: Colors.blue,
-        ),
-        drawer: Drawer(
-          width: screenWidth * 0.7,
-          child: ListView(
-            padding: EdgeInsets.zero,
-            children: [
-              DrawerHeader(
-                  decoration: BoxDecoration(color: Colors.red),
-                  child: Column(
-                      children: [
-                        (StaffData != null && StaffData['Profile_Pic'] != null)
-                            ? Container(
-                          height: 80,
-                          width: 80,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(80),
-                            boxShadow: [
-                              BoxShadow(
-                                blurRadius: 1,
-                                spreadRadius: 1,
-                                color: Colors.black26,
+      drawer: Drawer(
+        width: screenWidth * 0.7,
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            DrawerHeader(
+                decoration: BoxDecoration(color: Color(0xffbef0ff)),
+                child: Column(children: [
+                  (StaffData != null && StaffData['professionOfStaff'] != null)
+                      ? InkWell(
+                          onTap: () {
+                            // Navigator.push(
+                            //     context,
+                            //     MaterialPageRoute(
+                            //       builder: (context) => StaffProfileHome(
+                            //           StaffID: currentUserID,
+                            //           Skill: StaffData['professionOfStaff'] ??
+                            //               'user'),
+                            //     ));
+                          },
+                          child: Container(
+                            height: 80,
+                            width: 80,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(80),
+                              boxShadow: [
+                                BoxShadow(
+                                  blurRadius: 1,
+                                  spreadRadius: 1,
+                                  color: Colors.black26,
+                                ),
+                              ],
+                              image: DecorationImage(
+                                image: NetworkImage(StaffData['Profile_Pic']),
+                                fit:
+                                    BoxFit.cover, // Adjust the fit if necessary
                               ),
-                            ],
-                            image: DecorationImage(
-                              image: NetworkImage(StaffData['Profile_Pic']),
-                              fit: BoxFit.cover, // Adjust the fit if necessary
                             ),
                           ),
                         )
-                            : Container(
-                          height: 80,
-                          width: 80,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(80),
-                            boxShadow: [
-                              BoxShadow(
-                                blurRadius: 1,
-                                spreadRadius: 1,
-                                color: Colors.black26,
-                              ),
-                            ],
-                          ),
+                      : InkWell(
+                          onTap: () {
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => ActualUser(),
+                                ));
+                          },
+                          child: StaffData['Profile_Pic'] == null
+                              ? Container(
+                                  height: 80,
+                                  width: 80,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(80),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        blurRadius: 1,
+                                        spreadRadius: 1,
+                                        color: Colors.black26,
+                                      ),
+                                    ],
+                                  ),
+                                )
+                              : Container(
+                                  height: 80,
+                                  width: 80,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(80),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        blurRadius: 1,
+                                        spreadRadius: 1,
+                                        color: Colors.black26,
+                                      ),
+                                    ],
+                                    image: DecorationImage(
+                                      image: NetworkImage(
+                                          StaffData['Profile_Pic']),
+                                      fit: BoxFit
+                                          .cover, // Adjust the fit if necessary
+                                    ),
+                                  ),
+                                ),
                         ),
-                        (StaffData == null)?Text(
+                  (StaffData == null)
+                      ? Text(
                           "Empty",
-                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-                        ):Text(
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 18),
+                        )
+                      : Text(
                           "${StaffData['First_name']} ${StaffData['Last_name']}",
-                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 18),
                         ),
-                      ]
-                  )
+                ])),
+            ListTile(
+              leading: Icon(Icons.home),
+              title: Text('Home'),
+              onTap: () {
+                Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => StaffProfileHome(),
+                    ));
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.history),
+              title: Text('Deals'),
+              onTap: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => Deals(),
+                    ));
+              },
+            ),
+            Divider(),
+            ListTile(
+              leading: Icon(Icons.headset_mic),
+              title: Text('Contact Us'),
+              onTap: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ContactUs(),
+                    ));
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.library_books),
+              title: Text('Terms and Conditions'),
+              onTap: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => TC(),
+                    ));
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.feedback),
+              title: Text('Feedback'),
+              onTap: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => Feedbacks(),
+                    ));
+              },
+            ),
+            Divider(),
+            ListTile(
+              leading: Icon(Icons.logout),
+              title: Text('Logout'),
+              onTap: () {
+                FirebaseAuth.instance.signOut();
+                Navigator.pushReplacement(context,
+                    MaterialPageRoute(builder: (context) => LoginPage()));
+              },
+            ),
+          ],
+        ),
+      ),
+      body: Stack(
+        children: [
+          // App bar section
+          Container(
+            height: 150,
+            color: Color(0xffbef0ff),
+            child: AppBar(
+              title: Container(
+                width: screenWidth * 0.6,
+                child: Text(
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                    "Pune",
+                    style: TextStyle(
+                        fontSize: 18, fontWeight: FontWeight.bold)),
               ),
-              ListTile(
-                leading: Icon(Icons.home),
-                title: Text('Home'),
-                onTap: () {
-                  Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => StaffProfileHome(),));
-                },
-              ),
-              ListTile(
-                leading: Icon(Icons.history),
-                title: Text('Deals'),
-                onTap: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => Deals(),));
-                },
-              ),
-              Divider(),
-              ListTile(
-                leading: Icon(Icons.headset_mic),
-                title: Text('Contact Us'),
-                onTap: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => ContactUs(),));
-                },
-              ),
-              ListTile(
-                leading: Icon(Icons.library_books),
-                title: Text('Terms and Conditions'),
-                onTap: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => TC(),));
-                },
-              ),
-              ListTile(
-                leading: Icon(Icons.feedback),
-                title: Text('Feedback'),
-                onTap: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => Feedbacks(),));
-                },
-              ),
-              Divider(),
-              ListTile(
-                leading: Icon(Icons.logout),
-                title: Text('Logout'),
-                onTap: () {
-                  FirebaseAuth.instance.signOut();
-                  Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => LoginPage()));
-                },
+              backgroundColor: Color(0xffbef0ff),
+              automaticallyImplyLeading: true,
+            ),
+          ),
+
+          Stack(
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(top: 125),
+                child: Container(
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.vertical,
+                    child: Column(
+                      children: [
+                        StaffView(
+                          StaffData: StaffData,
+                          UID: currentUserID,
+                        )
+                      ],
+                    ),
+                  ),
+                ),
               ),
             ],
-          ),
-        ),
-        body: StaffView(StaffData: StaffData, UID: currentUserID,)
+          )
+        ],
+      ),
     );
   }
 }
 
-class StaffView extends StatefulWidget{
+class StaffView extends StatefulWidget {
   final StaffData;
   final UID;
   StaffView({required this.StaffData, required this.UID});
   @override
-  State<StatefulWidget> createState() => _StaffView(StaffData: StaffData, UID: UID);
+  State<StatefulWidget> createState() =>
+      _StaffView(StaffData: StaffData, UID: UID);
 }
 
-class _StaffView extends State<StaffView>{
+class _StaffView extends State<StaffView> {
   final StaffData;
   final UID;
   _StaffView({required this.StaffData, required this.UID});
@@ -229,15 +345,12 @@ class _StaffView extends State<StaffView>{
               decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(30),
-                  boxShadow: [BoxShadow(
-                      color: Colors.black26,
-                      spreadRadius: 1,
-                      blurRadius: 1
-                  )]
-              ),
+                  boxShadow: [
+                    BoxShadow(
+                        color: Colors.black26, spreadRadius: 1, blurRadius: 1)
+                  ]),
               child: Column(
                 children: [
-
                   // Profile Actual details
                   Padding(
                     padding: const EdgeInsets.all(6.0),
@@ -257,8 +370,10 @@ class _StaffView extends State<StaffView>{
                                       borderRadius: BorderRadius.circular(80),
                                       color: Colors.green,
                                       image: DecorationImage(
-                                        image: NetworkImage(StaffData['Profile_Pic']),
-                                        fit: BoxFit.cover, // Adjust the fit if necessary
+                                        image: NetworkImage(
+                                            StaffData['Profile_Pic']),
+                                        fit: BoxFit
+                                            .cover, // Adjust the fit if necessary
                                       ),
                                     ),
                                   )
@@ -271,20 +386,52 @@ class _StaffView extends State<StaffView>{
                                   children: [
                                     Row(
                                       children: [
-                                        Text("${StaffData['First_name']} ${StaffData['Last_name']}", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                                        Text(
+                                            "${StaffData['First_name']} ${StaffData['Last_name']}",
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 16)),
                                         Padding(
-                                          padding: const EdgeInsets.only(left: 20),
-                                          child: InkWell(onTap: () {
-                                            Navigator.push(context, MaterialPageRoute(builder: (context) => EPersonal(Skill: StaffData['professionOfStaff']),));
-                                          },child: Text("Edit", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold),)),
+                                          padding:
+                                              const EdgeInsets.only(left: 20),
+                                          child: InkWell(
+                                              onTap: () {
+                                                Navigator.push(
+                                                    context,
+                                                    MaterialPageRoute(
+                                                      builder: (context) =>
+                                                          EPersonal(
+                                                              Skill: StaffData[
+                                                                  'professionOfStaff']),
+                                                    ));
+                                              },
+                                              child: Text(
+                                                "Edit",
+                                                style: TextStyle(
+                                                    fontSize: 10,
+                                                    fontWeight:
+                                                        FontWeight.bold),
+                                              )),
                                         )
                                       ],
                                     ),
                                     Row(
                                       children: [
-                                        Text(StaffData["Status"]? "Available" : "Busy", style: TextStyle(color: Colors.blue, fontSize: 12)),
-                                        Text(" | ", style: TextStyle( fontSize: 16),),
-                                        Text(StaffData["City"], style: TextStyle(color: Colors.green, fontSize: 12)),
+                                        Text(
+                                            StaffData["Status"]
+                                                ? "Available"
+                                                : "Busy",
+                                            style: TextStyle(
+                                                color: Colors.blue,
+                                                fontSize: 12)),
+                                        Text(
+                                          " | ",
+                                          style: TextStyle(fontSize: 16),
+                                        ),
+                                        Text(StaffData["City"],
+                                            style: TextStyle(
+                                                color: Colors.green,
+                                                fontSize: 12)),
                                       ],
                                     ),
                                     Container(
@@ -296,16 +443,35 @@ class _StaffView extends State<StaffView>{
                                         borderRadius: BorderRadius.circular(10),
                                       ),
                                       child: Row(
-                                        crossAxisAlignment: CrossAxisAlignment.center,
-                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
                                         children: [
-                                          Icon(Icons.star, color: Color(0xffFFD700),),
-                                          Padding(
-                                            padding: const EdgeInsets.only(right: 10, left: 5),
-                                            child: Text("${StaffData["Rating"]}/5.0", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),),
+                                          Icon(
+                                            Icons.star,
+                                            color: Color(0xffFFD700),
                                           ),
-                                          Text("Check",style: TextStyle(fontSize: 12, color: Colors.white),),
-                                          Icon(Icons.play_arrow, color: Colors.white,)
+                                          Padding(
+                                            padding: const EdgeInsets.only(
+                                                right: 10, left: 5),
+                                            child: Text(
+                                              "${StaffData["Rating"]}/5.0",
+                                              style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontWeight: FontWeight.bold),
+                                            ),
+                                          ),
+                                          Text(
+                                            "Check",
+                                            style: TextStyle(
+                                                fontSize: 12,
+                                                color: Colors.white),
+                                          ),
+                                          Icon(
+                                            Icons.play_arrow,
+                                            color: Colors.white,
+                                          )
                                         ],
                                       ),
                                     )
@@ -322,23 +488,30 @@ class _StaffView extends State<StaffView>{
                                 width: 110,
                                 decoration: BoxDecoration(
                                     color: Colors.white,
-                                    boxShadow: [BoxShadow(
-                                        color: Colors.black26,
-                                        spreadRadius: 1,
-                                        blurRadius: 1
-                                    )],
-                                    borderRadius: BorderRadius.circular(10)
-                                ),
+                                    boxShadow: [
+                                      BoxShadow(
+                                          color: Colors.black26,
+                                          spreadRadius: 1,
+                                          blurRadius: 1)
+                                    ],
+                                    borderRadius: BorderRadius.circular(10)),
                                 child: Padding(
-                                  padding: const EdgeInsets.only(left: 10, right: 10),
-                                  child: Center(child: Text(StaffData['professionOfStaff'][0].toUpperCase()+StaffData['professionOfStaff'].substring(1),
+                                  padding: const EdgeInsets.only(
+                                      left: 10, right: 10),
+                                  child: Center(
+                                      child: Text(
+                                    StaffData['professionOfStaff'][0]
+                                            .toUpperCase() +
+                                        StaffData['professionOfStaff']
+                                            .substring(1),
                                     overflow: TextOverflow.ellipsis,
                                     maxLines: 1,
                                     style: TextStyle(
                                       color: Color(0xff089000),
                                       fontWeight: FontWeight.bold,
                                       fontSize: 18,
-                                    ),)),
+                                    ),
+                                  )),
                                 ),
                               ),
                               Row(
@@ -346,7 +519,11 @@ class _StaffView extends State<StaffView>{
                                   InkWell(
                                       onTap: () async {
                                         try {
-                                          await FirebaseFirestore.instance.collection(StaffData['professionOfStaff']).doc(UID).update({
+                                          await FirebaseFirestore.instance
+                                              .collection(StaffData[
+                                                  'professionOfStaff'])
+                                              .doc(UID)
+                                              .update({
                                             "Status": true,
                                           });
                                           print("Status updated successfully");
@@ -364,15 +541,23 @@ class _StaffView extends State<StaffView>{
                                             color: Colors.red,
                                           ),
                                           child: Padding(
-                                            padding: const EdgeInsets.only(left: 15,right: 5),
-                                            child: Center(child: Text("Available", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold,),)),
-                                          ))
-                                  ),
+                                            padding: const EdgeInsets.only(
+                                                left: 15, right: 5),
+                                            child: Center(
+                                                child: Text(
+                                              "Available",
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            )),
+                                          ))),
                                   InkWell(
                                       onTap: () async {
                                         try {
                                           await FirebaseFirestore.instance
-                                              .collection(StaffData["professionOfStaff"])
+                                              .collection(StaffData[
+                                                  "professionOfStaff"])
                                               .doc(UID)
                                               .update({
                                             "Status": false,
@@ -392,15 +577,27 @@ class _StaffView extends State<StaffView>{
                                             color: Colors.red,
                                           ),
                                           child: Padding(
-                                            padding: const EdgeInsets.only(right: 15, left: 5),
-                                            child: Center(child: Text("Busy", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold,),)),
-                                          ))
-                                  ),
+                                            padding: const EdgeInsets.only(
+                                                right: 15, left: 5),
+                                            child: Center(
+                                                child: Text(
+                                              "Busy",
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            )),
+                                          ))),
                                 ],
                               ),
                               InkWell(
                                 onTap: () {
-                                  Navigator.push(context, MaterialPageRoute(builder: (context) => StaffNotificationPage(),));
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            StaffNotificationPage(),
+                                      ));
                                 },
                                 child: Container(
                                   height: 40,
@@ -427,12 +624,12 @@ class _StaffView extends State<StaffView>{
                       decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(15),
-                          boxShadow: [BoxShadow(
-                              color: Colors.black26,
-                              spreadRadius: 1,
-                              blurRadius: 1
-                          )]
-                      ),
+                          boxShadow: [
+                            BoxShadow(
+                                color: Colors.black26,
+                                spreadRadius: 1,
+                                blurRadius: 1)
+                          ]),
                       child: Column(
                         children: [
                           Text("Data"),
@@ -452,25 +649,44 @@ class _StaffView extends State<StaffView>{
                       decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(15),
-                          boxShadow: [BoxShadow(
-                              color: Colors.black26,
-                              spreadRadius: 1,
-                              blurRadius: 1
-                          )]
-                      ),
+                          boxShadow: [
+                            BoxShadow(
+                                color: Colors.black26,
+                                spreadRadius: 1,
+                                blurRadius: 1)
+                          ]),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Padding(
-                            padding: const EdgeInsets.only(left: 20, top: 10, bottom: 5),
+                            padding: const EdgeInsets.only(
+                                left: 20, top: 10, bottom: 5),
                             child: Row(
                               children: [
-                                Text("Contact Information", style: TextStyle(fontSize: 18,fontWeight: FontWeight.bold),),
+                                Text(
+                                  "Contact Information",
+                                  style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold),
+                                ),
                                 Padding(
                                   padding: const EdgeInsets.only(left: 20),
-                                  child: InkWell(onTap: () {
-                                    Navigator.push(context, MaterialPageRoute(builder: (context) => EContact(Skill: StaffData['professionOfStaff']),));
-                                  },child: Text("Edit", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold),)),
+                                  child: InkWell(
+                                      onTap: () {
+                                        Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) => EContact(
+                                                  Skill: StaffData[
+                                                      'professionOfStaff']),
+                                            ));
+                                      },
+                                      child: Text(
+                                        "Edit",
+                                        style: TextStyle(
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.bold),
+                                      )),
                                 )
                               ],
                             ),
@@ -484,14 +700,15 @@ class _StaffView extends State<StaffView>{
                                 padding: const EdgeInsets.all(5.0),
                                 child: InkWell(
                                   onTap: () async {
-                                    var phoneNumber = StaffData['Phone_Number1'];
+                                    var phoneNumber =
+                                        StaffData['Phone_Number1'];
                                     final Uri phoneUri = Uri(
                                       scheme: 'tel',
                                       path: phoneNumber,
                                     );
-                                    if(await canLaunchUrl(phoneUri)){
+                                    if (await canLaunchUrl(phoneUri)) {
                                       await launchUrl(phoneUri);
-                                    }else{
+                                    } else {
                                       throw "Could not lounch phone dialer";
                                     }
                                   },
@@ -501,13 +718,16 @@ class _StaffView extends State<StaffView>{
                                     decoration: BoxDecoration(
                                         borderRadius: BorderRadius.circular(60),
                                         color: Colors.white,
-                                        boxShadow: [BoxShadow(
-                                            color: Colors.blueAccent,
-                                            blurRadius: 1,
-                                            spreadRadius: 1
-                                        )]
+                                        boxShadow: [
+                                          BoxShadow(
+                                              color: Colors.blueAccent,
+                                              blurRadius: 1,
+                                              spreadRadius: 1)
+                                        ]),
+                                    child: Icon(
+                                      Icons.call,
+                                      color: Colors.blue,
                                     ),
-                                    child: Icon(Icons.call, color: Colors.blue,),
                                   ),
                                 ),
                               ),
@@ -515,22 +735,23 @@ class _StaffView extends State<StaffView>{
                                 padding: const EdgeInsets.all(5.0),
                                 child: InkWell(
                                   onTap: () async {
-                                    var phonenumber01 = StaffData["Phone_Number2"];
+                                    var phonenumber01 =
+                                        StaffData["Phone_Number2"];
                                     final Uri phoneUri01 = Uri(
                                       scheme: 'tel',
                                       path: phonenumber01,
                                     );
-                                    if(phonenumber01!=null) {
-                                      if(await canLaunchUrl(phoneUri01)){
+                                    if (phonenumber01 != null) {
+                                      if (await canLaunchUrl(phoneUri01)) {
                                         launchUrl(phoneUri01);
-                                      }else{
+                                      } else {
                                         Fluttertoast.showToast(
                                           msg: "Empty",
                                           toastLength: Toast.LENGTH_SHORT,
                                           gravity: ToastGravity.BOTTOM,
                                         );
                                       }
-                                    }else{
+                                    } else {
                                       Fluttertoast.showToast(
                                         msg: "Empty",
                                         toastLength: Toast.LENGTH_SHORT,
@@ -544,13 +765,16 @@ class _StaffView extends State<StaffView>{
                                     decoration: BoxDecoration(
                                         borderRadius: BorderRadius.circular(60),
                                         color: Colors.white,
-                                        boxShadow: [BoxShadow(
-                                            color: Colors.greenAccent,
-                                            blurRadius: 1,
-                                            spreadRadius: 1
-                                        )]
+                                        boxShadow: [
+                                          BoxShadow(
+                                              color: Colors.greenAccent,
+                                              blurRadius: 1,
+                                              spreadRadius: 1)
+                                        ]),
+                                    child: Icon(
+                                      Icons.call,
+                                      color: Colors.green,
                                     ),
-                                    child: Icon(Icons.call, color: Colors.green,),
                                   ),
                                 ),
                               ),
@@ -558,7 +782,8 @@ class _StaffView extends State<StaffView>{
                                 padding: const EdgeInsets.all(5.0),
                                 child: InkWell(
                                   onTap: () async {
-                                    String subject = "Hiring for work from CareHub";
+                                    String subject =
+                                        "Hiring for work from CareHub";
                                     var Gmaildata = StaffData["Email"];
                                     final Uri emailUri = Uri(
                                       scheme: 'mailto',
@@ -567,9 +792,9 @@ class _StaffView extends State<StaffView>{
                                         'subject': subject,
                                       },
                                     );
-                                    if(await canLaunchUrl(emailUri)){
+                                    if (await canLaunchUrl(emailUri)) {
                                       launchUrl(emailUri);
-                                    }else{
+                                    } else {
                                       Fluttertoast.showToast(
                                         msg: "Empty",
                                         toastLength: Toast.LENGTH_SHORT,
@@ -583,13 +808,16 @@ class _StaffView extends State<StaffView>{
                                     decoration: BoxDecoration(
                                         borderRadius: BorderRadius.circular(60),
                                         color: Colors.white,
-                                        boxShadow: [BoxShadow(
-                                            color: Colors.redAccent,
-                                            blurRadius: 1,
-                                            spreadRadius: 1
-                                        )]
+                                        boxShadow: [
+                                          BoxShadow(
+                                              color: Colors.redAccent,
+                                              blurRadius: 1,
+                                              spreadRadius: 1)
+                                        ]),
+                                    child: Icon(
+                                      Icons.mail,
+                                      color: Colors.red,
                                     ),
-                                    child: Icon(Icons.mail, color: Colors.red,),
                                   ),
                                 ),
                               ),
@@ -601,13 +829,16 @@ class _StaffView extends State<StaffView>{
                                   decoration: BoxDecoration(
                                       borderRadius: BorderRadius.circular(60),
                                       color: Colors.white,
-                                      boxShadow: [BoxShadow(
-                                          color: Colors.yellowAccent,
-                                          blurRadius: 1,
-                                          spreadRadius: 1
-                                      )]
+                                      boxShadow: [
+                                        BoxShadow(
+                                            color: Colors.yellowAccent,
+                                            blurRadius: 1,
+                                            spreadRadius: 1)
+                                      ]),
+                                  child: Icon(
+                                    Icons.message,
+                                    color: Colors.yellow,
                                   ),
-                                  child: Icon(Icons.message, color: Colors.yellow,),
                                 ),
                               ),
                             ],
@@ -626,18 +857,23 @@ class _StaffView extends State<StaffView>{
                       decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(15),
-                          boxShadow: [BoxShadow(
-                              color: Colors.black26,
-                              spreadRadius: 1,
-                              blurRadius: 1
-                          )]
-                      ),
+                          boxShadow: [
+                            BoxShadow(
+                                color: Colors.black26,
+                                spreadRadius: 1,
+                                blurRadius: 1)
+                          ]),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Padding(
-                            padding: const EdgeInsets.only(left: 20, top: 10, bottom: 5),
-                            child: Text("Service Rate", style: TextStyle(fontSize: 18,fontWeight: FontWeight.bold),),
+                            padding: const EdgeInsets.only(
+                                left: 20, top: 10, bottom: 5),
+                            child: Text(
+                              "Service Rate",
+                              style: TextStyle(
+                                  fontSize: 18, fontWeight: FontWeight.bold),
+                            ),
                           ),
                           Divider(),
                           Padding(
@@ -668,7 +904,11 @@ class _StaffView extends State<StaffView>{
                               children: [
                                 Container(
                                     width: screenWidth * 0.5,
-                                    child: Text("Day service shift 8", style: TextStyle(fontSize: 12, color: Colors.blue),)),
+                                    child: Text(
+                                      "Day service shift 8",
+                                      style: TextStyle(
+                                          fontSize: 12, color: Colors.blue),
+                                    )),
                               ],
                             ),
                           ),
@@ -684,5 +924,4 @@ class _StaffView extends State<StaffView>{
       ),
     );
   }
-
 }

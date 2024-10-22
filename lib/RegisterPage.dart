@@ -119,14 +119,15 @@ class _AndroidStaffPage extends State<AndroidStaffPage>{
                     padding: const EdgeInsets.only(right: 30, left: 30, top: 10),
                     child: Container(
                       height: 50,
-                      child: TextField(
-                        controller: Email,
+                      child:TextField(
+                        controller: Email, // Controller for the email input
+                        keyboardType: TextInputType.emailAddress, // Optimizes keyboard for email input
                         decoration: InputDecoration(
-                            labelText: "Email", // Placeholder text
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(50),
-                            ),
-                            contentPadding: EdgeInsets.fromLTRB(20, 16, 16, 16)// Adds border around the text field
+                          labelText: "Email", // Label for the TextField
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(50), // Rounded border
+                          ),
+                          contentPadding: EdgeInsets.fromLTRB(20, 16, 16, 16), // Adds padding inside the TextField
                         ),
                       ),
                     ),
@@ -137,13 +138,21 @@ class _AndroidStaffPage extends State<AndroidStaffPage>{
                       height: 50,
                       child: TextField(
                         controller: Password1,
+                        obscureText: true, // Hides the text for password fields
                         decoration: InputDecoration(
-                            labelText: "Password", // Placeholder text
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(50),
-
-                            ),
-                            contentPadding: EdgeInsets.fromLTRB(20, 16, 16, 16)// Adds border around the text field
+                          labelText: "Password", // Label for the field
+                          hintText: "Enter your password", // Placeholder text
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(50),
+                            borderSide: BorderSide(color: Colors.grey, width: 1), // Border color
+                          ),
+                          contentPadding: EdgeInsets.fromLTRB(20, 16, 16, 16), // Padding inside the field
+                          // suffixIcon: IconButton(
+                          //   icon: Icon(Icons.visibility), // Icon to toggle password visibility
+                          //   onPressed: () {
+                          //
+                          //   },
+                          // ),
                         ),
                       ),
                     ),
@@ -154,15 +163,17 @@ class _AndroidStaffPage extends State<AndroidStaffPage>{
                       height: 50,
                       child: TextField(
                         controller: Password2,
+                        obscureText: true, // Hides the text for password fields
                         decoration: InputDecoration(
-                            labelText: "Confirm password", // Placeholder text
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(50),
-
-                            ),
-                            contentPadding: EdgeInsets.fromLTRB(20, 16, 16, 16)// Adds border around the text field
+                          labelText: "Confirm Password", // Label text
+                          hintText: "Re-enter your password", // Hint text for better guidance
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(50), // Rounded border
+                          ),
+                          contentPadding: EdgeInsets.fromLTRB(20, 16, 16, 16), // Padding inside the text field
                         ),
                       ),
+
                     ),
                   ),
                   Padding(
@@ -312,13 +323,14 @@ class _AndroidUserPage extends State<AndroidUserPage>{
                     child: Container(
                       height: 50,
                       child: TextField(
-                        controller: Email,
+                        controller: Email, // Controller for the email input
+                        keyboardType: TextInputType.emailAddress, // Optimizes keyboard for email input
                         decoration: InputDecoration(
-                            labelText: "Email", // Placeholder text
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(50),
-                            ),
-                            contentPadding: EdgeInsets.fromLTRB(20, 16, 16, 16)// Adds border around the text field
+                          labelText: "Email", // Label for the TextField
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(50), // Rounded border
+                          ),
+                          contentPadding: EdgeInsets.fromLTRB(20, 16, 16, 16), // Adds padding inside the TextField
                         ),
                       ),
                     ),
@@ -329,13 +341,14 @@ class _AndroidUserPage extends State<AndroidUserPage>{
                       height: 50,
                       child: TextField(
                         controller: Password1,
+                        obscureText: true, // Hides the text for password fields
                         decoration: InputDecoration(
-                            labelText: "Password", // Placeholder text
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(50),
-
-                            ),
-                            contentPadding: EdgeInsets.fromLTRB(20, 16, 16, 16)// Adds border around the text field
+                          labelText: "Password", // Label text
+                          hintText: "Enter your password", // Hint text for better guidance
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(50), // Rounded border
+                          ),
+                          contentPadding: EdgeInsets.fromLTRB(20, 16, 16, 16), // Padding inside the text field
                         ),
                       ),
                     ),
@@ -346,13 +359,14 @@ class _AndroidUserPage extends State<AndroidUserPage>{
                       height: 50,
                       child: TextField(
                         controller: Password2,
+                        obscureText: true, // Hides the text for password fields
                         decoration: InputDecoration(
-                            labelText: "Confirm password", // Placeholder text
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(50),
-
-                            ),
-                            contentPadding: EdgeInsets.fromLTRB(20, 16, 16, 16)// Adds border around the text field
+                          labelText: "Confirm Password", // Label text
+                          hintText: "Re-enter your password", // Hint text for better guidance
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(50), // Rounded border
+                          ),
+                          contentPadding: EdgeInsets.fromLTRB(20, 16, 16, 16), // Padding inside the text field
                         ),
                       ),
                     ),
@@ -771,20 +785,20 @@ class AndroidView extends StatefulWidget{
 }
 
 class _AndroidView extends State<AndroidView>{
-  Color StaffColorTrue = Colors.blueAccent;
+  Color StaffColorTrue = Color(0xffbef0ff);
   Color StaffColorFalse = Colors.white;
   bool StaffPressed = false;
   Color StaffColor = Colors.white;
-  Color UserColorTrue = Colors.blueAccent;
+  Color UserColorTrue = Color(0xfffffcc9);
   Color UserColorFalse = Colors.white;
   bool UserPressed = true;
-  Color UserColor = Colors.blueAccent;
+  Color UserColor = Color(0xfffffcc9);
   @override
   Widget build(BuildContext context) {
     return Stack(
       children: [
         Container(
-          color: Color(0xff2020b7),
+          color: UserPressed? Color(0xfffffcc9) : Color(0xffbef0ff),
           height: 320,
           width: double.maxFinite,
         ),

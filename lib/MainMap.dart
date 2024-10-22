@@ -175,7 +175,7 @@ class _MainMapState extends State<MainMap> {
           // App bar section
           Container(
             height: 150,
-            color: Colors.red,
+            color: Color(0xfffffcc9),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
@@ -188,7 +188,7 @@ class _MainMapState extends State<MainMap> {
                               fontSize: 20, fontWeight: FontWeight.bold)),
                     ),
                   ),
-                  backgroundColor: Colors.red,
+                  backgroundColor: Color(0xfffffcc9),
                   automaticallyImplyLeading: false,
                 ),
               ],
