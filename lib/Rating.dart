@@ -414,13 +414,7 @@ class _RatingStateState extends State<RatingState> {
 
 
 
-            // SizedBox(height: 215),
-            // Container(
-            //   width: double.infinity,
-            //   child: AppBar(
-            //     backgroundColor: Colors.lightGreen,
-            //   ),
-            // ),
+
           ],
         ),
       ),
