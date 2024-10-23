@@ -385,36 +385,25 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                           String password = Password.text;
                           if (email.isNotEmpty && password.isNotEmpty) {
                             try {
-                              UserCredential usercredential = await FirebaseAuth
-                                  .instance
-                                  .signInWithEmailAndPassword(
-                                      email: email, password: password);
+                              UserCredential usercredential = await FirebaseAuth.instance.signInWithEmailAndPassword(email: email, password: password);
                               User? user = usercredential.user;
-                              DocumentSnapshot documentSnapshot =
-                                  await FirebaseFirestore.instance
-                                      .collection('user')
-                                      .doc(user?.uid)
-                                      .get();
+                              DocumentSnapshot documentSnapshot = await FirebaseFirestore.instance.collection('user').doc(user?.uid).get();
                               if (documentSnapshot.exists) {
-                                var StaffData = documentSnapshot.data()
-                                    as Map<String, dynamic>?;
-                                if (StaffData != null &&
-                                    StaffData['professionOfStaff'] != null) {
-                                  await FirebaseFirestore.instance
-                                      .collection("user")
-                                      .doc(user?.uid)
-                                      .update({
+                                var StaffData = documentSnapshot.data() as Map<String, dynamic>?;
+                                if (StaffData != null && StaffData['professionOfStaff'] != null) {
+
+                                  print("passed 1");
+                                  await FirebaseFirestore.instance.collection("user").doc(user?.uid).update({
                                     'lat': lat,
                                     'long': long,
                                   });
-                                  await FirebaseFirestore.instance
-                                      .collection(
-                                          StaffData['professionOfStaff'])
-                                      .doc(user?.uid)
-                                      .update({
+                                  print("passed 2");
+                                  await FirebaseFirestore.instance.collection(StaffData['professionOfStaff']).doc(user?.uid).update({
                                     'lat': lat,
                                     'long': long,
                                   });
+                                  print("passed 3");
+
                                   if (user!.emailVerified) {
                                     Navigator.pushReplacement(
                                         context,
@@ -689,16 +678,10 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                           String password = Password.text;
                           if (email.isNotEmpty && password.isNotEmpty) {
                             try {
-                              UserCredential userCredential = await FirebaseAuth
-                                  .instance
-                                  .signInWithEmailAndPassword(
-                                      email: email, password: password);
+                              UserCredential userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(email: email, password: password);
                               User? user = userCredential.user;
                               if (user!.emailVerified) {
-                                await FirebaseFirestore.instance
-                                    .collection("user")
-                                    .doc(user?.uid)
-                                    .update({
+                                await FirebaseFirestore.instance.collection("user").doc(user?.uid).update({
                                   'lat': lat,
                                   'long': long,
                                 });

@@ -122,7 +122,7 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
   bool Loader = true;
   bool DayBased = false;
   bool HourBased = true;
-  bool ShareCoordinates = false;
+  bool ShareCoordinates = true;
   int count = 1;
   DateTime? pickedDate;
   TimeOfDay? pickedTime;
@@ -355,7 +355,7 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                                                       .green,
                                                                 )),
                                                             Text(
-                                                                "Current time is ${TimeOfDay.now().hour}:${TimeOfDay.now().minute}",
+                                                                "Current time is ${TimeOfDay.now().hourOfPeriod == 0 ? 12 : TimeOfDay.now().hourOfPeriod}:${TimeOfDay.now().minute.toString().padLeft(2, '0')} ${TimeOfDay.now().period == DayPeriod.am ? 'AM' : 'PM'}",
                                                                 style:
                                                                     TextStyle(
                                                                   fontSize: 10,
@@ -390,8 +390,7 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                                                       .only(
                                                                       left: 5),
                                                               child: Text(
-                                                                StaffData[
-                                                                    "professionOfStaff"],
+                                                                "${StaffData['professionOfStaff'][0].toUpperCase()}${StaffData['professionOfStaff'].substring(1)}",
                                                                 overflow:
                                                                     TextOverflow
                                                                         .ellipsis,
@@ -1899,7 +1898,7 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                                             const EdgeInsets
                                                                 .all(8.0),
                                                         child: Text(
-                                                          "Share Current Location",
+                                                          ShareCoordinates? "Sharing Current Location" : "Share Current Location",
                                                           style: TextStyle(
                                                               fontWeight:
                                                                   FontWeight
@@ -1910,8 +1909,7 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                                       InkWell(
                                                         onTap: () {
                                                           setState(() {
-                                                            ShareCoordinates =
-                                                                !ShareCoordinates;
+                                                            ShareCoordinates = !ShareCoordinates;
                                                           });
                                                         },
                                                         child: Container(

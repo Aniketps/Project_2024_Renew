@@ -141,41 +141,41 @@ class _StaffPage extends State<StaffPage> {
                                   builder: (context) => ActualUser(),
                                 ));
                           },
-                          child: StaffData['Profile_Pic'] == null
+                          child: StaffData != null && StaffData['Profile_Pic'] != null
                               ? Container(
-                                  height: 80,
-                                  width: 80,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(80),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        blurRadius: 1,
-                                        spreadRadius: 1,
-                                        color: Colors.black26,
-                                      ),
-                                    ],
-                                  ),
-                                )
-                              : Container(
-                                  height: 80,
-                                  width: 80,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(80),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        blurRadius: 1,
-                                        spreadRadius: 1,
-                                        color: Colors.black26,
-                                      ),
-                                    ],
-                                    image: DecorationImage(
-                                      image: NetworkImage(
-                                          StaffData['Profile_Pic']),
-                                      fit: BoxFit
-                                          .cover, // Adjust the fit if necessary
-                                    ),
-                                  ),
+                            height: 80,
+                            width: 80,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(80),
+                              boxShadow: [
+                                BoxShadow(
+                                  blurRadius: 1,
+                                  spreadRadius: 1,
+                                  color: Colors.black26,
                                 ),
+                              ],
+                              image: DecorationImage(
+                                image: NetworkImage(
+                                    StaffData['Profile_Pic']),
+                                fit: BoxFit
+                                    .cover, // Adjust the fit if necessary
+                              ),
+                            ),
+                          )
+                              : Container(
+                            height: 80,
+                            width: 80,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(80),
+                              boxShadow: [
+                                BoxShadow(
+                                  blurRadius: 1,
+                                  spreadRadius: 1,
+                                  color: Colors.black26,
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
                   (StaffData == null)
                       ? Text(
@@ -331,7 +331,7 @@ class _StaffPage extends State<StaffPage> {
                                 builder: (context) => ActualUser(),
                               ));
                         },
-                        child: StaffData['Profile_Pic'] != null
+                        child: StaffData != null && StaffData['Profile_Pic'] != null
                             ? Container(
                                 height: 50,
                                 width: 50,
@@ -698,13 +698,7 @@ class _StaffPage extends State<StaffPage> {
                                       var data = snapshot.data!.docs[index]
                                           .data() as Map<String, dynamic>;
                                       var UID = snapshot.data!.docs[index].id;
-                                      if (data['professionOfStaff'] != null &&
-                                          data['First_name'] != null &&
-                                          data['First_name']
-                                              .toString()
-                                              .toLowerCase()
-                                              .startsWith(
-                                                  SearchGlobal.toLowerCase())) {
+                                      if (data['professionOfStaff'] != null && Skill == data['professionOfStaff'] && data['First_name'] != null && data['First_name'].toString().toLowerCase().startsWith(SearchGlobal.toLowerCase())) {
                                         return Padding(
                                           padding: const EdgeInsets.all(5.0),
                                           child: InkWell(
@@ -786,14 +780,7 @@ class _StaffPage extends State<StaffPage> {
                                             ),
                                           ),
                                         );
-                                      } else if (data['professionOfStaff'] !=
-                                              null &&
-                                          data['First_name'] != null &&
-                                          data['City']
-                                              .toString()
-                                              .toLowerCase()
-                                              .startsWith(
-                                                  SearchGlobal.toLowerCase())) {
+                                      } else if (data['professionOfStaff'] != null && Skill == data['professionOfStaff'] && data['First_name'] != null && data['City'].toString().toLowerCase().startsWith(SearchGlobal.toLowerCase())) {
                                         return Padding(
                                           padding: const EdgeInsets.all(5.0),
                                           child: InkWell(

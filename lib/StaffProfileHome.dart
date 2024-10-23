@@ -94,11 +94,215 @@ class _StaffProfileHome extends State<StaffProfileHome> {
 
     if (StaffData == null) {
       return Scaffold(
-        appBar: AppBar(
-          title: Text("Profile"),
-          backgroundColor: Colors.blue,
+        drawer: Drawer(
+          width: screenWidth * 0.7,
+          child: ListView(
+            padding: EdgeInsets.zero,
+            children: [
+              DrawerHeader(
+                  decoration: BoxDecoration(color: Color(0xffbef0ff)),
+                  child: Column(children: [
+                    (StaffData != null &&
+                            StaffData['professionOfStaff'] != null)
+                        ? InkWell(
+                            onTap: () {
+                              // Navigator.push(
+                              //     context,
+                              //     MaterialPageRoute(
+                              //       builder: (context) => StaffProfileHome(
+                              //           StaffID: currentUserID,
+                              //           Skill: StaffData['professionOfStaff'] ??
+                              //               'user'),
+                              //     ));
+                            },
+                            child: Container(
+                              height: 80,
+                              width: 80,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(80),
+                                boxShadow: [
+                                  BoxShadow(
+                                    blurRadius: 1,
+                                    spreadRadius: 1,
+                                    color: Colors.black26,
+                                  ),
+                                ],
+                                image: DecorationImage(
+                                  image: NetworkImage(StaffData['Profile_Pic']),
+                                  fit: BoxFit
+                                      .cover, // Adjust the fit if necessary
+                                ),
+                              ),
+                            ),
+                          )
+                        : InkWell(
+                            onTap: () {
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => ActualUser(),
+                                  ));
+                            },
+                            child: StaffData != null &&
+                                    StaffData['Profile_Pic'] != null
+                                ? Container(
+                                    height: 80,
+                                    width: 80,
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(80),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          blurRadius: 1,
+                                          spreadRadius: 1,
+                                          color: Colors.black26,
+                                        ),
+                                      ],
+                                      image: DecorationImage(
+                                        image: NetworkImage(
+                                            StaffData['Profile_Pic']),
+                                        fit: BoxFit
+                                            .cover, // Adjust the fit if necessary
+                                      ),
+                                    ),
+                                  )
+                                : Container(
+                                    height: 80,
+                                    width: 80,
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(80),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          blurRadius: 1,
+                                          spreadRadius: 1,
+                                          color: Colors.black26,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                          ),
+                    (StaffData == null)
+                        ? Text(
+                            "Empty",
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 18),
+                          )
+                        : Text(
+                            "${StaffData['First_name']} ${StaffData['Last_name']}",
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 18),
+                          ),
+                  ])),
+              ListTile(
+                leading: Icon(Icons.home),
+                title: Text('Home'),
+                onTap: () {
+                  Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => StaffProfileHome(),
+                      ));
+                },
+              ),
+              ListTile(
+                leading: Icon(Icons.history),
+                title: Text('Deals'),
+                onTap: () {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => DealsForStaff(),
+                      ));
+                },
+              ),
+              Divider(),
+              ListTile(
+                leading: Icon(Icons.headset_mic),
+                title: Text('Contact Us'),
+                onTap: () {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ContactUs(),
+                      ));
+                },
+              ),
+              ListTile(
+                leading: Icon(Icons.library_books),
+                title: Text('Terms and Conditions'),
+                onTap: () {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => TC(),
+                      ));
+                },
+              ),
+              ListTile(
+                leading: Icon(Icons.feedback),
+                title: Text('Feedback'),
+                onTap: () {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => Feedbacks(),
+                      ));
+                },
+              ),
+              Divider(),
+              ListTile(
+                leading: Icon(Icons.logout),
+                title: Text('Logout'),
+                onTap: () async {
+                  await FirebaseAuth.instance.signOut();
+                  Navigator.pushReplacement(context,
+                      MaterialPageRoute(builder: (context) => LoginPage()));
+                },
+              ),
+            ],
+          ),
         ),
-        body: Center(child: CircularProgressIndicator()), // Loading indicator
+        body: Stack(
+          children: [
+            // App bar section
+            Container(
+              height: 150,
+              color: Color(0xffbef0ff),
+              child: AppBar(
+                title: Container(
+                  width: screenWidth * 0.6,
+                  child: Text(
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                      "City",
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                ),
+                backgroundColor: Color(0xffbef0ff),
+                automaticallyImplyLeading: true,
+              ),
+            ),
+
+            Stack(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(top: 125),
+                  child: Container(
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.vertical,
+                      child: Column(
+                        children: [
+                          Center(
+                              child:
+                                  CircularProgressIndicator()), // Loading indicator
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            )
+          ],
+        ),
       );
     }
 
@@ -217,7 +421,7 @@ class _StaffProfileHome extends State<StaffProfileHome> {
                 Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => Deals(),
+                      builder: (context) => DealsForStaff(),
                     ));
               },
             ),
@@ -259,8 +463,8 @@ class _StaffProfileHome extends State<StaffProfileHome> {
             ListTile(
               leading: Icon(Icons.logout),
               title: Text('Logout'),
-              onTap: () {
-                FirebaseAuth.instance.signOut();
+              onTap: () async {
+                await FirebaseAuth.instance.signOut();
                 Navigator.pushReplacement(context,
                     MaterialPageRoute(builder: (context) => LoginPage()));
               },
@@ -280,9 +484,9 @@ class _StaffProfileHome extends State<StaffProfileHome> {
                 child: Text(
                     overflow: TextOverflow.ellipsis,
                     maxLines: 1,
-                    "Pune",
-                    style: TextStyle(
-                        fontSize: 18, fontWeight: FontWeight.bold)),
+                    "${StaffData1['City']}",
+                    style:
+                        TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               ),
               backgroundColor: Color(0xffbef0ff),
               automaticallyImplyLeading: true,

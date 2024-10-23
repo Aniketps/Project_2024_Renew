@@ -211,14 +211,12 @@ class _MyHomePageState extends State<MyHomePage> {
                                   color: Colors.black26,
                                 ),
                               ],
-                              image: StaffData['Profile_Pic'] == null
-                                  ? null
-                                  : DecorationImage(
-                                      image: NetworkImage(
-                                          StaffData['Profile_Pic']),
-                                      fit: BoxFit
-                                          .cover, // Adjust the fit if necessary
-                                    ),
+                              image: StaffData != null && StaffData['Profile_Pic'] != null
+                                  ? DecorationImage(
+                                image: NetworkImage(StaffData['Profile_Pic']),
+                                fit: BoxFit.cover, // Adjust the fit if necessary
+                              )
+                                  : null,
                             ),
                           ),
                         ),
@@ -377,14 +375,12 @@ class _MyHomePageState extends State<MyHomePage> {
                           height: 50,
                           width: 50,
                           decoration: BoxDecoration(
-                            image: StaffData['Profile_Pic'] == null
-                                ? null
-                                : DecorationImage(
-                                    image:
-                                        NetworkImage(StaffData['Profile_Pic']),
-                                    fit: BoxFit
-                                        .cover, // Adjust the fit if necessary
-                                  ),
+                            image: StaffData != null && StaffData['Profile_Pic'] != null
+                                ? DecorationImage(
+                              image: NetworkImage(StaffData['Profile_Pic']),
+                              fit: BoxFit.cover, // Adjust the fit if necessary
+                            )
+                                : null,
                             borderRadius: BorderRadius.circular(50),
                             boxShadow: [
                               BoxShadow(
