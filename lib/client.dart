@@ -86,7 +86,7 @@ class _ActualUser extends State<ActualUser> {
 
   Future<void> _logout() async {
     await FirebaseAuth.instance.signOut();
-    Navigator.of(context).pop();
+    Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => LoginPage(),));
   }
 
   @override
