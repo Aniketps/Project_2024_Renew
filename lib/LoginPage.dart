@@ -6,6 +6,7 @@ import 'package:carehub/StaffProfileHome.dart';
 import 'package:carehub/main.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
@@ -392,17 +393,16 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                                 var StaffData = documentSnapshot.data() as Map<String, dynamic>?;
                                 if (StaffData != null && StaffData['professionOfStaff'] != null) {
 
-                                  print("passed 1");
+                                  String? fcmToken = await FirebaseMessaging.instance.getToken();
                                   await FirebaseFirestore.instance.collection("user").doc(user?.uid).update({
                                     'lat': lat,
                                     'long': long,
+                                    'token': fcmToken,
                                   });
-                                  print("passed 2");
                                   await FirebaseFirestore.instance.collection(StaffData['professionOfStaff']).doc(user?.uid).update({
                                     'lat': lat,
                                     'long': long,
                                   });
-                                  print("passed 3");
 
                                   if (user!.emailVerified) {
                                     Navigator.pushReplacement(
@@ -681,9 +681,12 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                               UserCredential userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(email: email, password: password);
                               User? user = userCredential.user;
                               if (user!.emailVerified) {
+
+                                String? fcmToken = await FirebaseMessaging.instance.getToken();
                                 await FirebaseFirestore.instance.collection("user").doc(user?.uid).update({
                                   'lat': lat,
                                   'long': long,
+                                  'token': fcmToken,
                                 });
                                 Navigator.pushReplacement(
                                     context,

@@ -28,8 +28,9 @@ dependencies:
   geolocator: ^9.0.2
   flutter_map: ^6.1.0
   latlong2: ^0.9.0
-  flutter_local_notifications: ^17.2.3
-#  phonepe_payment_sdk: ^2.0.3
+  flutter_local_notifications: ^17.2.4
+  googleapis_auth: ^1.6.0
+  app_settings: ^5.1.1
 
 dev_dependencies:
   flutter_test:
