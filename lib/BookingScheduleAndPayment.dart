@@ -1,9 +1,13 @@
 import 'dart:async';
 import 'package:carehub/ClientNotificationPage.dart';
+import 'package:carehub/services/getServerKey.dart';
+import 'package:carehub/services/sendNotificationService.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:intl/intl.dart';
@@ -101,6 +105,21 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
       });
       return;
     }
+
+    // void sendNotificationToStaff() async {
+    //   FirebaseMessaging messaging = FirebaseMessaging.instance;
+    //
+    //   // Sample payload for staff notification
+    //   await messaging.send(
+    //     Message(
+    //       token: staffDeviceToken,  // Get staff device tokens here
+    //       notification: Notification(
+    //         title: 'New Payment Received',
+    //         body: 'A user has completed a payment.',
+    //       ),
+    //     ),
+    //   );
+    // }
 
     Position position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high);
@@ -1339,16 +1358,52 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                                                           "Error adding document to NotificationForStaff: $error");
                                                                     });
 
-                                                                    // Navigate to the next screen
+
+                                                                    User? user = await FirebaseAuth.instance.currentUser;
+                                                                    var userDoc = await FirebaseFirestore.instance.collection("user").doc(user?.uid).get();
+                                                                    var staffDoc = await FirebaseFirestore.instance.collection("user").doc(StaffID).get();
+                                                                    var usertoken = userDoc.data()?['token'];
+                                                                    var stafftoken = staffDoc.data()?['token'];
+
+                                                                    print(stafftoken);
+
+                                                                    GetServerKey getServerKey = GetServerKey();
+                                                                    String accessToken = await getServerKey.getServerKeyToken();
+
+// Generate unique IDs for the notifications
+                                                                    int notificationId1 = DateTime.now().millisecondsSinceEpoch; // Unique ID based on timestamp
+                                                                    int notificationId2 = notificationId1 + 1; // Increment to ensure uniqueness for the second notification
+
+// Send first notification
+                                                                    sendNotificationService.sendNotificationUsingApi(
+                                                                        body: 'Send Successful',
+                                                                        data: {
+                                                                          "screen" : "booked",
+                                                                          "notificationId" : notificationId1.toString(), // Include notification ID in the data if needed
+                                                                        },
+                                                                        title: "Booking",
+                                                                        token: usertoken
+                                                                    );
+
+// Send second notification
+                                                                    sendNotificationService.sendNotificationUsingApi(
+                                                                        body: 'You have a new request',
+                                                                        data: {
+                                                                          "screen" : "booked",
+                                                                          "notificationId" : notificationId2.toString(), // Include notification ID in the data if needed
+                                                                        },
+                                                                        title: "Hiring",
+                                                                        token: stafftoken
+                                                                    );
+
+
                                                                     Navigator
                                                                         .push(
                                                                       context,
-                                                                      MaterialPageRoute(
-                                                                        builder:
-                                                                            (context) =>
-                                                                                ClientNotificationPage(),
+                                                                      MaterialPageRoute(builder: (context) => ClientNotificationPage(),
                                                                       ),
                                                                     );
+                                                                    // sendNotificationToStaff();
                                                                     Fluttertoast.showToast(msg: "Payment Done");
                                                                   } catch (e) {
                                                                     Fluttertoast
