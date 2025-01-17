@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:carehub/services/sendNotificationService.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -69,7 +70,7 @@ class _StaffNotificationPage extends State<StaffNotificationPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text("Notifications"),
-        backgroundColor: Colors.red,
+        backgroundColor: Color(0xffbef0ff),
       ),
       body: SingleChildScrollView(
         scrollDirection: Axis.vertical,
@@ -411,6 +412,19 @@ class _StaffNotificationPage extends State<StaffNotificationPage> {
                                               await FirebaseFirestore.instance.collection("NotificationForUser").doc(user['DocUID']).update({
                                                 'status': "Rejected",
                                               });
+                                              var userDoc = await FirebaseFirestore.instance.collection("user").doc(user['userUID']).get();
+                                              var usertoken = userDoc.data()?['token'];
+                                              int notificationId1 = DateTime.now().millisecondsSinceEpoch; // Unique ID based on timestamp
+                                              int notificationId2 = notificationId1 + 1;
+                                              sendNotificationService.sendNotificationUsingApi(
+                                                  body: 'Your request is accepted by ${currentUserData?['First_name']} ${currentUserData?['Last_name']}',
+                                                  data: {
+                                                    "screen" : "ClientNotificationPage",
+                                                    "notificationId" : notificationId2.toString(), // Include notification ID in the data if needed
+                                                  },
+                                                  title: "Request Status",
+                                                  token: usertoken
+                                              );
                                             },style:ElevatedButton.styleFrom(
                                               backgroundColor: Colors.red,
                                               shape:RoundedRectangleBorder(
@@ -434,6 +448,20 @@ class _StaffNotificationPage extends State<StaffNotificationPage> {
                                                 'status': "Accepted",
                                                 'OTP' : genOPT,
                                               });
+
+                                              var userDoc = await FirebaseFirestore.instance.collection("user").doc(user['userUID']).get();
+                                              var usertoken = userDoc.data()?['token'];
+                                              int notificationId1 = DateTime.now().millisecondsSinceEpoch; // Unique ID based on timestamp
+                                              int notificationId2 = notificationId1 + 1;
+                                              sendNotificationService.sendNotificationUsingApi(
+                                                  body: 'Your request is accepted by ${currentUserData?['First_name']} ${currentUserData?['Last_name']}',
+                                                  data: {
+                                                    "screen" : "ClientNotificationPage",
+                                                    "notificationId" : notificationId2.toString(), // Include notification ID in the data if needed
+                                                  },
+                                                  title: "Request Status",
+                                                  token: usertoken
+                                              );
                                             },style:ElevatedButton.styleFrom(
                                                 backgroundColor: Colors.green,
                                                 shape:RoundedRectangleBorder(
@@ -475,6 +503,19 @@ class _StaffNotificationPage extends State<StaffNotificationPage> {
                                                       await FirebaseFirestore.instance.collection("NotificationForUser").doc(user['DocUID']).update({
                                                         "status": 'Completed',
                                                       });
+                                                      var userDoc = await FirebaseFirestore.instance.collection("user").doc(user['userUID']).get();
+                                                      var usertoken = userDoc.data()?['token'];
+                                                      int notificationId1 = DateTime.now().millisecondsSinceEpoch; // Unique ID based on timestamp
+                                                      int notificationId2 = notificationId1 + 1;
+                                                      sendNotificationService.sendNotificationUsingApi(
+                                                          body: 'Your work has been successfully completed by ${currentUserData?['First_name']} ${currentUserData?['Last_name']}',
+                                                          data: {
+                                                            "screen" : "ClientNotificationPage",
+                                                            "notificationId" : notificationId2.toString(), // Include notification ID in the data if needed
+                                                          },
+                                                          title: "Staff Status",
+                                                          token: usertoken
+                                                      );
                                                       ScaffoldMessenger.of(context).showSnackBar(
                                                         SnackBar(content: Text("OTP Verified!")),
                                                       );

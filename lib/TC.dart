@@ -68,7 +68,7 @@ class _TC extends State<TC> {
           // App bar section
           Container(
             height: 150,
-            color: Colors.red,
+            color: Color(0xfffffcc9),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
@@ -78,7 +78,7 @@ class _TC extends State<TC> {
                         style: TextStyle(
                             fontSize: 20, fontWeight: FontWeight.bold)),
                   ),
-                  backgroundColor: Colors.red,
+                  backgroundColor: Color(0xfffffcc9),
                   automaticallyImplyLeading: false,
                 ),
               ],
@@ -125,6 +125,7 @@ class _TC extends State<TC> {
                                   height: screenHeight * 0.78,
                                   width: screenWidth * 0.9,
                                   child: ListView.builder(
+                                    padding: EdgeInsets.zero,
                                     itemCount: documents.length,
                                     itemBuilder: (context, index) {
                                       return Container(

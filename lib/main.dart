@@ -1,6 +1,8 @@
 import 'package:carehub/Deals.dart';
 import 'package:carehub/StaffPage.dart';
 import 'package:carehub/Feedback.dart';
+import 'package:carehub/services/NotificationService.dart';
+import 'package:carehub/services/fcm_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
@@ -17,18 +19,24 @@ import 'client.dart';
 import 'firebase_options.dart';
 import 'LoginPage.dart';
 
+@pragma('vm:entry-point')
+Future<void> _firebasebackgroundhandler(RemoteMessage message)async{
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+}
 
-void main() async {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
   await FirebaseApi().initNotifications();
+  FirebaseMessaging.onBackgroundMessage(_firebasebackgroundhandler);
   runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -49,10 +57,18 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   String SearchGlobal = '';
+  NotificationService notificationService = NotificationService();
 
   @override
   void initState() {
     super.initState();
+
+    notificationService.requestNotificationPermission();
+    notificationService.getDeviceToken();
+    notificationService.firebaseInit(context);
+    notificationService.setupInteractMessage(context);
+    FcmService.FirebaseInit();
+
     SearchStaff();
     void _liveLocation() {
       LocationSettings locationSettings = LocationSettings(
@@ -77,9 +93,7 @@ class _MyHomePageState extends State<MyHomePage> {
           });
         },
       );
-    }
-
-    ;
+    };
     _liveLocation();
   }
 
@@ -103,23 +117,23 @@ class _MyHomePageState extends State<MyHomePage> {
     "Registered Nurses"
   ];
   List<String> ProfessionBack = [
-    "chef.png",
-    "personalCareAssistance.png",
-    "driver.png",
-    "securityG.png",
-    "img.png",
-    "img.png",
-    "img.png",
-    "img.png",
-    "img.png",
-    "img.png",
-    "img.png",
-    "img.png",
-    "img.png",
-    "img.png",
-    "img.png",
-    "img.png",
-    "img.png",
+    "https://firebasestorage.googleapis.com/v0/b/carehub-af7ec.appspot.com/o/professions%2FchefCopy.png?alt=media&token=b113a356-5c87-42dc-b065-e6f5651a1c41", // Chef
+    "https://firebasestorage.googleapis.com/v0/b/carehub-af7ec.appspot.com/o/professions%2FPersonal%20Care%20AssistanceCopy.png?alt=media&token=b3df3960-b715-437d-b148-db4d714b4f4e", // Personal Care Assistance
+    "https://firebasestorage.googleapis.com/v0/b/carehub-af7ec.appspot.com/o/professions%2FdriverCopy.png?alt=media&token=7730141d-fa41-4850-8e68-95abb24c43bc", // Driver
+    "https://firebasestorage.googleapis.com/v0/b/carehub-af7ec.appspot.com/o/professions%2FsecuritygaurdCopy.jpeg?alt=media&token=7c735015-46d0-4597-9b5a-2438b1ea8b00", // securitygaurd
+    "https://firebasestorage.googleapis.com/v0/b/carehub-af7ec.appspot.com/o/professions%2Fhouse%20gaurdCopy.jpeg?alt=media&token=9b68bdc2-de10-49cc-ae03-8d5eff2a0be9", // house gaurd
+    "https://firebasestorage.googleapis.com/v0/b/carehub-af7ec.appspot.com/o/professions%2FederlyCopy.png?alt=media&token=1658de86-60a9-459a-9c5a-7a7f5dec9ddd", // ederly
+    "https://firebasestorage.googleapis.com/v0/b/carehub-af7ec.appspot.com/o/professions%2Fbabysitter.jpeg?alt=media&token=20d5015d-8cab-4b31-b0a7-0d4b6b4f9fc5",  // babysitter
+    "https://firebasestorage.googleapis.com/v0/b/carehub-af7ec.appspot.com/o/professions%2FhousekeeperSecondCopy.png?alt=media&token=5e321338-0f59-475c-8be9-265d6eb0d501",  // housekeeperSecond
+    "https://firebasestorage.googleapis.com/v0/b/carehub-af7ec.appspot.com/o/professions%2Fhouse%20keeper.jpeg?alt=media&token=7cf2f100-eb3e-411a-bbd2-2fac52507203",  // house keeper
+    "https://firebasestorage.googleapis.com/v0/b/carehub-af7ec.appspot.com/o/professions%2Felderly%20individualSecondCopy.png?alt=media&token=e3728928-d889-48d8-b244-ad387109ddb0", // elderly individualSecond
+    "https://firebasestorage.googleapis.com/v0/b/carehub-af7ec.appspot.com/o/professions%2FPeramedicCopy.png?alt=media&token=c4edb732-7cab-4b80-b47b-174c930fca9d", // Peramedic
+    "https://firebasestorage.googleapis.com/v0/b/carehub-af7ec.appspot.com/o/professions%2FtherapistCopy.png?alt=media&token=2e2245fd-4e2a-49ed-9787-6304e0a11870", // therapist
+    "https://firebasestorage.googleapis.com/v0/b/carehub-af7ec.appspot.com/o/professions%2FPhysiotherepistCopy.png?alt=media&token=2efdc94a-757e-4254-afdb-cb3d5dbc02ed",  // Physiotherepist
+    "https://firebasestorage.googleapis.com/v0/b/carehub-af7ec.appspot.com/o/professions%2FaidesCopy.png?alt=media&token=f6a0f694-5386-4f49-8cb5-6e314e08883a",  // aides
+    "https://firebasestorage.googleapis.com/v0/b/carehub-af7ec.appspot.com/o/professions%2FCNACopy.png?alt=media&token=62dc91c0-af85-454c-817f-4f5011cd6fe8",  // CNA
+    "https://firebasestorage.googleapis.com/v0/b/carehub-af7ec.appspot.com/o/professions%2FLPN%20Copy.png?alt=media&token=015f4636-9dbc-4208-adc4-f458d98b3d7b", // LPN
+    "https://firebasestorage.googleapis.com/v0/b/carehub-af7ec.appspot.com/o/professions%2FLastnurseCopy.png?alt=media&token=569f22c3-722d-49eb-b40f-bfb291367b1f",
     "img.png",
   ];
 
@@ -133,8 +147,6 @@ class _MyHomePageState extends State<MyHomePage> {
     CollectionReference user = FirebaseFirestore.instance.collection('user');
     try {
       DocumentSnapshot documentSnapshot = await user.doc(currentUserID).get();
-      CollectionReference documentSnapshotDish =
-          await user.doc(currentUserID).collection("dishes");
 
       if (documentSnapshot.exists) {
         setState(() {
@@ -161,9 +173,9 @@ class _MyHomePageState extends State<MyHomePage> {
           padding: EdgeInsets.zero,
           children: [
             DrawerHeader(
-                decoration: BoxDecoration(color: Colors.red),
+                decoration: BoxDecoration(color: Color(0xfffffcc9)),
                 child: Column(children: [
-                  (StaffData != null && StaffData['Profile_Pic'] != null)
+                  (StaffData != null && StaffData['professionOfStaff'] != null)
                       ? InkWell(
                           onTap: () {
                             Navigator.push(
@@ -215,6 +227,12 @@ class _MyHomePageState extends State<MyHomePage> {
                                   color: Colors.black26,
                                 ),
                               ],
+                              image: StaffData != null && StaffData['Profile_Pic'] != null
+                                  ? DecorationImage(
+                                image: NetworkImage(StaffData['Profile_Pic']),
+                                fit: BoxFit.cover, // Adjust the fit if necessary
+                              )
+                                  : null,
                             ),
                           ),
                         ),
@@ -304,7 +322,7 @@ class _MyHomePageState extends State<MyHomePage> {
           // App bar section
           Container(
             height: 150,
-            color: Colors.red,
+            color: Color(0xfffffcc9),
             child: AppBar(
               title: InkWell(
                   onTap: () {
@@ -320,7 +338,7 @@ class _MyHomePageState extends State<MyHomePage> {
                           : "Location...",
                       style: TextStyle(
                           fontSize: 18, fontWeight: FontWeight.bold))),
-              backgroundColor: Colors.red,
+              backgroundColor: Color(0xfffffcc9),
               automaticallyImplyLeading: true,
             ),
           ),
@@ -331,7 +349,7 @@ class _MyHomePageState extends State<MyHomePage> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                (StaffData != null && StaffData['Profile_Pic'] != null)
+                (StaffData != null && StaffData['professionOfStaff'] != null)
                     ? InkWell(
                         onTap: () {
                           Navigator.push(
@@ -373,6 +391,12 @@ class _MyHomePageState extends State<MyHomePage> {
                           height: 50,
                           width: 50,
                           decoration: BoxDecoration(
+                            image: StaffData != null && StaffData['Profile_Pic'] != null
+                                ? DecorationImage(
+                              image: NetworkImage(StaffData['Profile_Pic']),
+                              fit: BoxFit.cover, // Adjust the fit if necessary
+                            )
+                                : null,
                             borderRadius: BorderRadius.circular(50),
                             boxShadow: [
                               BoxShadow(
@@ -492,18 +516,24 @@ class _MyHomePageState extends State<MyHomePage> {
                                           spreadRadius: 1),
                                     ],
                                     image: DecorationImage(
-                                      image: AssetImage("assets/images/${ProfessionBack[index]}"),
-                                      fit: BoxFit.cover, // Adjust the fit if necessary
+                                      image: NetworkImage("${ProfessionBack[index]}"),
+                                      fit: BoxFit
+                                          .cover, // Adjust the fit if necessary
                                     ),
                                   ),
                                   child: Padding(
                                     padding: const EdgeInsets.all(10.0),
                                     child: Text(Profession[index],
-                                        style: TextStyle(fontSize: 18,color: Colors.white, fontWeight: FontWeight.bold, shadows: [Shadow(
-                                          blurRadius: 1,
-                                          color: Colors.black,
-                                          offset: Offset(1, 1)
-                                        )])),
+                                        style: TextStyle(
+                                            fontSize: 18,
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.bold,
+                                            shadows: [
+                                              Shadow(
+                                                  blurRadius: 1,
+                                                  color: Colors.black,
+                                                  offset: Offset(1, 1))
+                                            ])),
                                   ),
                                 ),
                               ),
@@ -568,9 +598,13 @@ class _MyHomePageState extends State<MyHomePage> {
                                       var data = snapshot.data!.docs[index]
                                           .data() as Map<String, dynamic>;
                                       var UID = snapshot.data!.docs[index].id;
-                                      if (data['professionOfStaff'] != null &&
+                                      if (data['professionOfStaff'] != null && data["Verified"] == "verified" &&
                                           data['First_name'] != null &&
-                                          data['First_name'].toString().toLowerCase().startsWith(SearchGlobal.toLowerCase())) {
+                                          data['First_name']
+                                              .toString()
+                                              .toLowerCase()
+                                              .startsWith(
+                                                  SearchGlobal.toLowerCase())) {
                                         return Padding(
                                           padding: const EdgeInsets.all(5.0),
                                           child: InkWell(
@@ -652,8 +686,14 @@ class _MyHomePageState extends State<MyHomePage> {
                                             ),
                                           ),
                                         );
-                                      }
-                                      else if (data['professionOfStaff'] != null && data['First_name'] != null && data['City'].toString().toLowerCase().startsWith(SearchGlobal.toLowerCase())) {
+                                      } else if (data['professionOfStaff'] !=
+                                              null && data["Verified"] == "verified" &&
+                                          data['First_name'] != null &&
+                                          data['City']
+                                              .toString()
+                                              .toLowerCase()
+                                              .startsWith(
+                                                  SearchGlobal.toLowerCase())) {
                                         return Padding(
                                           padding: const EdgeInsets.all(5.0),
                                           child: InkWell(

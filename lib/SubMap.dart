@@ -77,7 +77,7 @@ class _SubMapState extends State<SubMap> {
                     height: 80.0,
                     child: Icon(
                       Icons.location_history_outlined,
-                      color: Colors.red,
+                      color: Color(0xfffffcc9),
                       size: 25.0,
                     ),
                   ),
