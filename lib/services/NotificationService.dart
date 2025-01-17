@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:app_settings/app_settings.dart';
+import 'package:carehub/ClientNotificationPage.dart';
 import 'package:carehub/main.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
@@ -8,6 +9,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+
+import '../StaffNotificationPage.dart';
 
 class NotificationService{
   FirebaseMessaging messaging = FirebaseMessaging.instance;
@@ -100,13 +103,19 @@ class NotificationService{
         playSound: true
     );
     AndroidNotificationDetails androidNotificationDetails = AndroidNotificationDetails(
-        channel.id.toString(),
-        channel.name.toString(),
-      channelDescription: "Channel Descripation",
+      channel.id.toString(),
+      channel.name.toString(),
+      channelDescription: "Channel Description",
       importance: Importance.high,
       priority: Priority.high,
-      sound: channel.sound,
+      sound: channel.sound, // Add custom sound here
       playSound: true,
+      styleInformation: BigTextStyleInformation(
+        message.notification!.body ?? '', // Use body as the big text
+        contentTitle: message.notification!.title, // Set title
+      ),
+      // Add a custom icon
+      icon: '@mipmap/ic_launcher', // Change this to your custom icon
     );
 
     NotificationDetails notificationDetails = NotificationDetails(android: androidNotificationDetails);
@@ -134,8 +143,26 @@ class NotificationService{
     );
   }
 
-  Future<void> handleMessage(BuildContext context, RemoteMessage message) async{
-    Navigator.push(context, MaterialPageRoute(builder: (context) => MyHomePage(),));
+  Future<void> handleMessage(BuildContext context, RemoteMessage message) async {
+    // Check if the notification has data
+    if (message.data.isNotEmpty) {
+      // Retrieve the screen name from the notification data
+      String screen = message.data['screen'];
+
+      // Navigate to the appropriate page based on the screen name
+      if (screen == "StaffNotificationPage") {
+        Navigator.push(context, MaterialPageRoute(builder: (context) => StaffNotificationPage()));
+      } else if (screen == "ClientNotificationPage"){
+        // If you have other pages, handle those cases as well
+        Navigator.push(context, MaterialPageRoute(builder: (context) => ClientNotificationPage()));
+      }else{
+        Navigator.push(context, MaterialPageRoute(builder: (context) => MyHomePage()));
+      }
+    } else {
+      // Default action if no data is available
+      Navigator.push(context, MaterialPageRoute(builder: (context) => MyHomePage()));
+    }
   }
+
 
 }

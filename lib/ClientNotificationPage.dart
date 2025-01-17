@@ -37,9 +37,7 @@ class _ClientNotificationPageState extends State<ClientNotificationPage> {
           });
         },
       );
-    }
-
-    ;
+    };
     _liveLocation();
   }
 

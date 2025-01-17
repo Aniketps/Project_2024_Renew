@@ -205,6 +205,7 @@ class _AndroidStaffPage extends State<AndroidStaffPage>{
                             height: 50,
                             width: 175,
                             child: TextField(
+                              keyboardType: TextInputType.numberWithOptions(),
                               controller: PhoneNo,
                               decoration: InputDecoration(
                                   labelText: "Phone no.", // Placeholder text
@@ -221,7 +222,7 @@ class _AndroidStaffPage extends State<AndroidStaffPage>{
                           width: 90,
                           child: ElevatedButton(
                             onPressed: () {
-
+                              Fluttertoast.showToast(msg: "Feature Not Added");
                             },
                             child: Text("Send", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),),
                             style: ElevatedButton.styleFrom(
@@ -243,7 +244,7 @@ class _AndroidStaffPage extends State<AndroidStaffPage>{
                             width: (270 * 0.45),
                             child: ElevatedButton(
                               onPressed: () async {
-
+                                Fluttertoast.showToast(msg: "Feature Not Added");
                               },
                               child: Text("Resend", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),),
                               style: ElevatedButton.styleFrom(
@@ -256,6 +257,7 @@ class _AndroidStaffPage extends State<AndroidStaffPage>{
                           height: 50,
                           width: (270 * 0.5),
                           child: TextField(
+                            enabled: false,
                             controller: OTP,
                             decoration: InputDecoration(
                                 labelText: "OTP", // Placeholder text
@@ -334,6 +336,7 @@ class _AndroidStaffPage extends State<AndroidStaffPage>{
                                 'Last_name':LastName,
                                 'Rating': 0,
                                 'Status':false,
+                                'Verified' : 'unverified',
                                 'Date_of_registered': DateFormat("dd/MM/yyyy").format(DateTime.now()),
                                 'Verified_status' : false,
                               });
@@ -343,6 +346,7 @@ class _AndroidStaffPage extends State<AndroidStaffPage>{
                                 'professionOfStaff': skill[0].toLowerCase()+skill.substring(1),
                                 "Last_name":LastName,
                                 "Password":Password,
+                                'Verified' : 'unverified',
                                 "Phone_Number1":phone,
                                 "City":city,
                                 "Profile_Pic":profileURL,

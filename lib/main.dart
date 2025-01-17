@@ -117,23 +117,23 @@ class _MyHomePageState extends State<MyHomePage> {
     "Registered Nurses"
   ];
   List<String> ProfessionBack = [
-    "https://firebasestorage.googleapis.com/v0/b/carehub-af7ec.appspot.com/o/professions%2Fchef.png?alt=media&token=dc1537c3-7702-4e18-af59-52418a5b10f8",
-    "https://firebasestorage.googleapis.com/v0/b/carehub-af7ec.appspot.com/o/professions%2FPersonal%20Care%20Assistance.png?alt=media&token=72ff2a8b-7270-4599-bb4c-f915cdd362bb",
-    "https://firebasestorage.googleapis.com/v0/b/carehub-af7ec.appspot.com/o/professions%2Fdriver.png?alt=media&token=909ddaad-4d41-458c-a291-e38a1dc7a987",
-    "https://firebasestorage.googleapis.com/v0/b/carehub-af7ec.appspot.com/o/professions%2Fsecuritygaurd.jpeg?alt=media&token=36451ce8-f9df-4359-9d9c-1f7fd87a18e0",
-    "https://firebasestorage.googleapis.com/v0/b/carehub-af7ec.appspot.com/o/professions%2Fhouse%20gaurd.jpeg?alt=media&token=7a6bd94a-ff6b-45dc-8f67-2091f4521209",
-    "https://firebasestorage.googleapis.com/v0/b/carehub-af7ec.appspot.com/o/professions%2FDALL%C2%B7E%202024-10-24%2010.26.09%20-%20A%20professional%20banner%20showing%20an%20elderly%20individual%20receiving%20care%20from%20a%20single%20staff%20member.%20The%20caregiver%20is%20portrayed%20warmly%20assisting%20the%20senior%20.png?alt=media&token=7c74601b-a907-434c-ba74-13d95b6130e6",
-    "https://firebasestorage.googleapis.com/v0/b/carehub-af7ec.appspot.com/o/professions%2Fbabysitter.jpeg?alt=media&token=a627c925-57a4-4b5c-baed-13325fc3b081",
-    "https://firebasestorage.googleapis.com/v0/b/carehub-af7ec.appspot.com/o/professions%2FDALL%C2%B7E%202024-10-24%2010.30.13%20-%20A%20professional%20oil-painting-style%20background%20banner%20featuring%20a%20housekeeper%20in%20a%20modern%2C%20sophisticated%20home%20setting.%20The%20housekeeper%20is%20wearing%20a%20form.png?alt=media&token=91c66206-706d-450e-87d3-a38269599376",
-    "https://firebasestorage.googleapis.com/v0/b/carehub-af7ec.appspot.com/o/professions%2Fhouse%20keeper.jpeg?alt=media&token=ba8bafa1-e40b-442c-b3d9-9b4f484d8450",
-    "https://firebasestorage.googleapis.com/v0/b/carehub-af7ec.appspot.com/o/professions%2FDALL%C2%B7E%202024-10-24%2010.26.03%20-%20A%20professional%20banner%20showing%20an%20elderly%20individual%20being%20assisted%20by%20a%20single%20staff%20member%2C%20conveying%20warmth%2C%20empathy%2C%20and%20personalized%20care.%20The%20ima.png?alt=media&token=a44e5d9d-0a28-41a3-bf3e-d7958d72397f",
-    "https://firebasestorage.googleapis.com/v0/b/carehub-af7ec.appspot.com/o/professions%2FDALL%C2%B7E%202024-10-24%2010.19.17%20-%20A%20professional%20banner%20in%20an%20oil%20painting%20style%20featuring%20a%20paramedic%20in%20a%20modern%20uniform%20standing%20confidently%20with%20medical%20equipment.%20The%20paramedic%20is.png?alt=media&token=f3e70c44-cff8-4a31-b5e1-2f5058854503",
-    "https://firebasestorage.googleapis.com/v0/b/carehub-af7ec.appspot.com/o/professions%2FDALL%C2%B7E%202024-10-24%2010.15.14%20-%20A%20refined%20professional%20banner%20image%20featuring%20an%20occupational%20therapist%20in%20an%20oil%20paint%20style.%20The%20therapist%20is%20assisting%20a%20patient%20with%20exercises%20in%20.png?alt=media&token=f4a3c1fb-1e16-4e56-94f8-0c5d7a83ea9e",
-    "https://firebasestorage.googleapis.com/v0/b/carehub-af7ec.appspot.com/o/professions%2FDALL%C2%B7E%202024-10-24%2021.59.01%20-%20A%20professional%20oil%20painting%20style%20banner%20featuring%20a%20physiotherapist%20assisting%20a%20patient%20in%20a%20calm%2C%20modern%20clinic%20setting.%20The%20physiotherapist%20is%20demo.png?alt=media&token=26205d6e-bc64-4a41-abde-a21b9bf98a8d",
-    "https://firebasestorage.googleapis.com/v0/b/carehub-af7ec.appspot.com/o/professions%2FDALL%C2%B7E%202024-10-24%2010.10.17%20-%20A%20professional%20background%20banner%20image%20for%20a%20healthcare%20application%20featuring%20home%20health%20aides%20in%20an%20oil%20painting%20style%20with%20enhanced%20blue%20watercolor.png?alt=media&token=bc4d0507-cc70-4961-9616-73d1cfa77700",
-    "https://firebasestorage.googleapis.com/v0/b/carehub-af7ec.appspot.com/o/professions%2FDALL%C2%B7E%202024-10-24%2021.38.26%20-%20A%20professional%2C%20oil-paint%20style%20image%20of%20a%20Certified%20Nursing%20Assistant%20(CNA)%20providing%20care%20in%20a%20modern%20healthcare%20setting.%20The%20CNA%20is%20shown%20attending.png?alt=media&token=2021a3c7-fd31-4c8f-8a59-386fe8a557a5",
-    "https://firebasestorage.googleapis.com/v0/b/carehub-af7ec.appspot.com/o/professions%2FDALL%C2%B7E%202024-10-24%2021.47.57%20-%20A%20professional%20oil-paint-style%20banner%20image%20for%20a%20healthcare%20application%2C%20showing%20a%20Licensed%20Practical%20Nurse%20(LPN)%20providing%20one-on-one%20assistance%20to%20.png?alt=media&token=1341665f-1c3a-4a5a-8e04-442e5d38b6ea",
-    "https://firebasestorage.googleapis.com/v0/b/carehub-af7ec.appspot.com/o/professions%2FDALL%C2%B7E%202024-10-24%2021.52.06%20-%20A%20professional%20banner%20image%20with%20an%20oil%20painting%20style%20featuring%20a%20registered%20nurse.%20The%20nurse%20is%20wearing%20a%20neat%20uniform%20with%20a%20stethoscope%20around%20the.png?alt=media&token=a30a228b-88c5-485c-b98b-9546f93c9546",
+    "https://firebasestorage.googleapis.com/v0/b/carehub-af7ec.appspot.com/o/professions%2FchefCopy.png?alt=media&token=b113a356-5c87-42dc-b065-e6f5651a1c41", // Chef
+    "https://firebasestorage.googleapis.com/v0/b/carehub-af7ec.appspot.com/o/professions%2FPersonal%20Care%20AssistanceCopy.png?alt=media&token=b3df3960-b715-437d-b148-db4d714b4f4e", // Personal Care Assistance
+    "https://firebasestorage.googleapis.com/v0/b/carehub-af7ec.appspot.com/o/professions%2FdriverCopy.png?alt=media&token=7730141d-fa41-4850-8e68-95abb24c43bc", // Driver
+    "https://firebasestorage.googleapis.com/v0/b/carehub-af7ec.appspot.com/o/professions%2FsecuritygaurdCopy.jpeg?alt=media&token=7c735015-46d0-4597-9b5a-2438b1ea8b00", // securitygaurd
+    "https://firebasestorage.googleapis.com/v0/b/carehub-af7ec.appspot.com/o/professions%2Fhouse%20gaurdCopy.jpeg?alt=media&token=9b68bdc2-de10-49cc-ae03-8d5eff2a0be9", // house gaurd
+    "https://firebasestorage.googleapis.com/v0/b/carehub-af7ec.appspot.com/o/professions%2FederlyCopy.png?alt=media&token=1658de86-60a9-459a-9c5a-7a7f5dec9ddd", // ederly
+    "https://firebasestorage.googleapis.com/v0/b/carehub-af7ec.appspot.com/o/professions%2Fbabysitter.jpeg?alt=media&token=20d5015d-8cab-4b31-b0a7-0d4b6b4f9fc5",  // babysitter
+    "https://firebasestorage.googleapis.com/v0/b/carehub-af7ec.appspot.com/o/professions%2FhousekeeperSecondCopy.png?alt=media&token=5e321338-0f59-475c-8be9-265d6eb0d501",  // housekeeperSecond
+    "https://firebasestorage.googleapis.com/v0/b/carehub-af7ec.appspot.com/o/professions%2Fhouse%20keeper.jpeg?alt=media&token=7cf2f100-eb3e-411a-bbd2-2fac52507203",  // house keeper
+    "https://firebasestorage.googleapis.com/v0/b/carehub-af7ec.appspot.com/o/professions%2Felderly%20individualSecondCopy.png?alt=media&token=e3728928-d889-48d8-b244-ad387109ddb0", // elderly individualSecond
+    "https://firebasestorage.googleapis.com/v0/b/carehub-af7ec.appspot.com/o/professions%2FPeramedicCopy.png?alt=media&token=c4edb732-7cab-4b80-b47b-174c930fca9d", // Peramedic
+    "https://firebasestorage.googleapis.com/v0/b/carehub-af7ec.appspot.com/o/professions%2FtherapistCopy.png?alt=media&token=2e2245fd-4e2a-49ed-9787-6304e0a11870", // therapist
+    "https://firebasestorage.googleapis.com/v0/b/carehub-af7ec.appspot.com/o/professions%2FPhysiotherepistCopy.png?alt=media&token=2efdc94a-757e-4254-afdb-cb3d5dbc02ed",  // Physiotherepist
+    "https://firebasestorage.googleapis.com/v0/b/carehub-af7ec.appspot.com/o/professions%2FaidesCopy.png?alt=media&token=f6a0f694-5386-4f49-8cb5-6e314e08883a",  // aides
+    "https://firebasestorage.googleapis.com/v0/b/carehub-af7ec.appspot.com/o/professions%2FCNACopy.png?alt=media&token=62dc91c0-af85-454c-817f-4f5011cd6fe8",  // CNA
+    "https://firebasestorage.googleapis.com/v0/b/carehub-af7ec.appspot.com/o/professions%2FLPN%20Copy.png?alt=media&token=015f4636-9dbc-4208-adc4-f458d98b3d7b", // LPN
+    "https://firebasestorage.googleapis.com/v0/b/carehub-af7ec.appspot.com/o/professions%2FLastnurseCopy.png?alt=media&token=569f22c3-722d-49eb-b40f-bfb291367b1f",
     "img.png",
   ];
 
@@ -598,7 +598,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                       var data = snapshot.data!.docs[index]
                                           .data() as Map<String, dynamic>;
                                       var UID = snapshot.data!.docs[index].id;
-                                      if (data['professionOfStaff'] != null &&
+                                      if (data['professionOfStaff'] != null && data["Verified"] == "verified" &&
                                           data['First_name'] != null &&
                                           data['First_name']
                                               .toString()
@@ -687,7 +687,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                           ),
                                         );
                                       } else if (data['professionOfStaff'] !=
-                                              null &&
+                                              null && data["Verified"] == "verified" &&
                                           data['First_name'] != null &&
                                           data['City']
                                               .toString()

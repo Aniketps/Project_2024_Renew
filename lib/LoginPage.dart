@@ -308,7 +308,7 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                     padding:
                         const EdgeInsets.only(right: 30, left: 30, top: 30),
                     child: Container(
-                      height: 50,
+                      height: 60,
                       child: TextField(
                         controller: Email, // Controller for the email input
                         keyboardType: TextInputType
@@ -329,7 +329,7 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                     padding:
                         const EdgeInsets.only(right: 30, left: 30, top: 20),
                     child: Container(
-                      height: 50,
+                      height: 60,
                       child: TextField(
                         controller:
                             Password, // Controller for the password input
@@ -564,7 +564,7 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                     padding:
                         const EdgeInsets.only(right: 30, left: 30, top: 30),
                     child: Container(
-                      height: 50,
+                      height: 60,
                       child: TextField(
                         controller: Email, // Controller for the email input
                         keyboardType: TextInputType
@@ -606,7 +606,7 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                     padding:
                         const EdgeInsets.only(right: 30, left: 30, top: 20),
                     child: Container(
-                      height: 50,
+                      height: 60,
                       child: TextField(
                         controller: Password,
                         obscureText: true, // Hides the password input
