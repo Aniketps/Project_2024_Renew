@@ -1,10 +1,12 @@
 import 'dart:async';
+import 'dart:math';
 import 'package:carehub/ClientNotificationPage.dart';
 import 'package:carehub/services/getServerKey.dart';
 import 'package:carehub/services/sendNotificationService.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:paytm_allinonesdk/paytm_allinonesdk.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -33,6 +35,38 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
     'Locating..',
     'Locating...',
   ];
+
+  Future<String> initiatePaytmPayment(String mid, String orderId, String txnToken, String amount) async {
+    print("Initiating Payment...");
+    try {
+      var result = await AllInOneSdk.startTransaction(
+          mid =  mid,            // Merchant ID
+          orderId = orderId,        // Order ID
+          txnToken = txnToken,       // Transaction Token
+          amount,         // Transaction Amount
+          "https://securegw.paytm.in/theia/paytmCallback?ORDER_ID=<$orderId>",             // Callback URL (set if required)
+          true,           // isStaging: true for testing, false for production
+          true            // restrictAppInvoke: set to true or false based on your requirement
+      );
+      if (result != null) {
+        if (result['STATUS'] == 'TXN_SUCCESS') {
+          Fluttertoast.showToast(msg: "Payment Successful");
+          print("Payment Successful");
+          return "Payment Successful";
+        } else {
+          Fluttertoast.showToast(msg: "Payment Failed: ${result['RESPMSG']}");
+          print("Payment Failed: ${result['RESPMSG']}");
+          return "Payment Failed";
+        }
+      }
+    } catch (e) {
+      print("Error in payment initiation: $e");
+      Fluttertoast.showToast(msg: "Payment Error: ${e.toString()}");
+      return "Payment Failed";
+    }
+    return "Unknown Payment Status";
+  }
+
 
   Timer? timer;
   int index = 0;
@@ -870,6 +904,7 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                                               Text(
                                                                 "Know more",
                                                                 style: TextStyle(
+
                                                                     fontSize:
                                                                         11,
                                                                     color: Colors
@@ -1227,136 +1262,121 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                                               String place = Place;
 
                                                               if (price != 0 && WorkDate != '--/--/----' && WorkTime != '--:--' && city.isNotEmpty && address.isNotEmpty && subAddress.isNotEmpty && place.isNotEmpty) {
+
+                                                                String mid = "xxLLfG59346746519063";
+                                                                const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+                                                                Random random = Random();
+                                                                String orderIdx = 'ORDER'; // Prefix to indicate it's an order ID
+
+                                                                // Generate a random string of 8 characters
+                                                                for (int i = 0; i < 8; i++) {
+                                                                  orderIdx += chars[random.nextInt(chars.length)];
+                                                                }
+                                                                String orderId = orderIdx;
+
+                                                                const charsx = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+                                                                Random randomx = Random();
+                                                                String txnTokenx = 'TXN'; // Prefix to indicate it's a transaction token
+
+                                                                // Generate a random string of 10 characters
+                                                                for (int i = 0; i < 10; i++) {
+                                                                  txnTokenx += charsx[randomx.nextInt(charsx.length)];
+                                                                }
+
+                                                                String txnToken = txnTokenx;
+                                                                String amount = "1.00";
+
+                                                                // var paymentReult = initiatePaytmPayment(
+                                                                //     mid,
+                                                                //     orderId,
+                                                                //     txnToken,
+                                                                //     amount,
+                                                                // );
+                                                                if("Payment Successful" == "Payment Successful"){
                                                                   try {
                                                                     // Add data to 'NotificationForStaff' collection
-                                                                    FirebaseFirestore
-                                                                        .instance
-                                                                        .collection(
-                                                                            'NotificationForStaff')
-                                                                        .add({
-                                                                      'userUID':
-                                                                          UID,
-                                                                      'Scheduled_City':
-                                                                          city,
-                                                                      'Scheduled_Address':
-                                                                          address,
-                                                                      'Scheduled_Sub_Address':
-                                                                          subAddress,
-                                                                      'Scheduled_Place':
-                                                                          place,
-                                                                      "Client_Coordinates_lat":
-                                                                          ShareCoordinates
-                                                                              ? lat
-                                                                              : "",
+                                                                    FirebaseFirestore.instance.collection('NotificationForStaff').add({
+                                                                      'userUID': UID,
+                                                                      'Scheduled_City': city,
+                                                                      'Scheduled_Address': address,
+                                                                      'Scheduled_Sub_Address': subAddress,
+                                                                      'Scheduled_Place': place,
+                                                                      "Client_Coordinates_lat": ShareCoordinates
+                                                                          ? lat
+                                                                          : "",
                                                                       "Client_Coordinates_long": ShareCoordinates
                                                                           ? long
                                                                           : "",
-                                                                      'staffUID':
-                                                                          StaffID,
-                                                                      'professionOfStaff':
-                                                                          Skill,
-                                                                      'status':
-                                                                          'Received a Request',
-                                                                      'timeofdeal':
-                                                                          "${DateTime.now().day} ${DateFormat.MMM().format(DateTime.now())} ${DateTime.now().year} ${DateFormat.jm().format(DateTime.now())}",
-                                                                      'totalcost':
-                                                                          total,
+                                                                      'staffUID': StaffID,
+                                                                      'professionOfStaff': Skill,
+                                                                      'status': 'Received a Request',
+                                                                      'timeofdeal': "${DateTime.now().day} ${DateFormat.MMM().format(DateTime.now())} ${DateTime.now().year} ${DateFormat.jm().format(DateTime.now())}",
+                                                                      'totalcost': total,
                                                                       'ServiceBase': HourBased
                                                                           ? 'Hour'
                                                                           : 'Day',
                                                                       'hours':
-                                                                          "${count}",
-                                                                      'ScheduledDate':
-                                                                          WorkDate,
-                                                                      'ScheduledTime':
-                                                                          WorkTime,
-                                                                      'PlatformTax':
-                                                                          '15%',
-                                                                      'ScheduledDateEnd':
-                                                                          WorkDateEnd,
-                                                                      'ScheduledTimeEnd':
-                                                                          WorkTimeEnd,
+                                                                      "${count}",
+                                                                      'ScheduledDate': WorkDate,
+                                                                      'ScheduledTime': WorkTime,
+                                                                      'PlatformTax': '15%',
+                                                                      'ScheduledDateEnd': WorkDateEnd,
+                                                                      'ScheduledTimeEnd': WorkTimeEnd,
                                                                     }).then(
                                                                             (staffDocRef) {
-                                                                      String
-                                                                          staffDocUID =
-                                                                          staffDocRef
-                                                                              .id;
+                                                                          String staffDocUID = staffDocRef.id;
 
-                                                                      // Add data to 'NotificationForUser' collection
-                                                                      FirebaseFirestore
-                                                                          .instance
-                                                                          .collection(
-                                                                              'NotificationForUser')
-                                                                          .add({
-                                                                        'userUID':
-                                                                            UID,
-                                                                        'staffUID':
-                                                                            StaffID,
-                                                                        'status':
-                                                                            'Request sent',
-                                                                        'Scheduled_City':
-                                                                            city,
-                                                                        'Scheduled_Address':
-                                                                            address,
-                                                                        'Scheduled_Sub_Address':
-                                                                            subAddress,
-                                                                        'Scheduled_Place':
-                                                                            place,
-                                                                        "Client_Coordinates_lat": ShareCoordinates
-                                                                            ? lat
-                                                                            : "",
-                                                                        "Client_Coordinates_long": ShareCoordinates
-                                                                            ? long
-                                                                            : "",
-                                                                        'professionOfStaff':
-                                                                            Skill,
-                                                                        'timeofdeal':
-                                                                            "${DateTime.now().day} ${DateFormat.MMM().format(DateTime.now())} ${DateTime.now().year} ${DateFormat.jm().format(DateTime.now())}",
-                                                                        'DocUID':
-                                                                            staffDocUID,
-                                                                        'totalcost':
-                                                                            total,
-                                                                        'ServiceBase': HourBased
-                                                                            ? 'Hour'
-                                                                            : 'Day',
-                                                                        'hours':
-                                                                            "${count}",
-                                                                        'ScheduledDate':
-                                                                            WorkDate,
-                                                                        'ScheduledTime':
-                                                                            WorkTime,
-                                                                        'PlatformTax':
-                                                                            '15%',
-                                                                        'ScheduledDateEnd':
-                                                                            WorkDateEnd,
-                                                                        'ScheduledTimeEnd':
-                                                                            WorkTimeEnd,
-                                                                      }).then(
-                                                                              (userDocRef) {
-                                                                        String
-                                                                            userDocUID =
-                                                                            userDocRef.id;
+                                                                          // Add data to 'NotificationForUser' collection
+                                                                          FirebaseFirestore.instance.collection('NotificationForUser').add({
+                                                                            'userUID': UID,
+                                                                            'staffUID': StaffID,
+                                                                            'status': 'Request sent',
+                                                                            'Scheduled_City': city,
+                                                                            'Scheduled_Address': address,
+                                                                            'Scheduled_Sub_Address': subAddress,
+                                                                            'Scheduled_Place': place,
+                                                                            "Client_Coordinates_lat": ShareCoordinates
+                                                                                ? lat
+                                                                                : "",
+                                                                            "Client_Coordinates_long": ShareCoordinates
+                                                                                ? long
+                                                                                : "",
+                                                                            'professionOfStaff': Skill,
+                                                                            'timeofdeal': "${DateTime.now().day} ${DateFormat.MMM().format(DateTime.now())} ${DateTime.now().year} ${DateFormat.jm().format(DateTime.now())}",
+                                                                            'DocUID': staffDocUID,
+                                                                            'totalcost': total,
+                                                                            'ServiceBase': HourBased
+                                                                                ? 'Hour'
+                                                                                : 'Day',
+                                                                            'hours': "${count}",
+                                                                            'ScheduledDate': WorkDate,
+                                                                            'ScheduledTime': WorkTime,
+                                                                            'PlatformTax': '15%',
+                                                                            'ScheduledDateEnd': WorkDateEnd,
+                                                                            'ScheduledTimeEnd': WorkTimeEnd,
+                                                                          }).then(
+                                                                                  (userDocRef) {
+                                                                                String userDocUID = userDocRef.id;
 
-                                                                        // Update 'NotificationForStaff' with the 'DocUID' from 'NotificationForUser'
-                                                                        FirebaseFirestore
-                                                                            .instance
-                                                                            .collection('NotificationForStaff')
-                                                                            .doc(staffDocUID)
-                                                                            .update({
-                                                                          'DocUID':
-                                                                              userDocUID,
-                                                                        });
-                                                                      }).catchError(
-                                                                              (error) {
-                                                                        print(
-                                                                            "Error adding document to NotificationForUser: $error");
-                                                                      });
-                                                                    }).catchError(
+                                                                                // Update 'NotificationForStaff' with the 'DocUID' from 'NotificationForUser'
+                                                                                FirebaseFirestore
+                                                                                    .instance
+                                                                                    .collection('NotificationForStaff')
+                                                                                    .doc(staffDocUID)
+                                                                                    .update({
+                                                                                  'DocUID':
+                                                                                  userDocUID,
+                                                                                });
+                                                                              }).catchError(
+                                                                                  (error) {
+                                                                                print(
+                                                                                    "Error adding document to NotificationForUser: $error");
+                                                                              });
+                                                                        }).catchError(
                                                                             (error) {
-                                                                      print(
-                                                                          "Error adding document to NotificationForStaff: $error");
-                                                                    });
+                                                                          print(
+                                                                              "Error adding document to NotificationForStaff: $error");
+                                                                        });
 
 
                                                                     User? user = await FirebaseAuth.instance.currentUser;
@@ -1378,18 +1398,17 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                                                     sendNotificationService.sendNotificationUsingApi(
                                                                         body: 'Send Successful',
                                                                         data: {
-                                                                          "screen" : "booked",
+                                                                          "screen" : "ClientNotificationPage",
                                                                           "notificationId" : notificationId1.toString(), // Include notification ID in the data if needed
                                                                         },
                                                                         title: "Booking",
                                                                         token: usertoken
                                                                     );
-
 // Send second notification
                                                                     sendNotificationService.sendNotificationUsingApi(
                                                                         body: 'You have a new request',
                                                                         data: {
-                                                                          "screen" : "booked",
+                                                                          "screen" : "StaffNotificationPage",
                                                                           "notificationId" : notificationId2.toString(), // Include notification ID in the data if needed
                                                                         },
                                                                         title: "Hiring",
@@ -1403,20 +1422,25 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                                                       MaterialPageRoute(builder: (context) => ClientNotificationPage(),
                                                                       ),
                                                                     );
-                                                                    // sendNotificationToStaff();
+
+
+
                                                                     Fluttertoast.showToast(msg: "Payment Done");
                                                                   } catch (e) {
                                                                     Fluttertoast
                                                                         .showToast(
                                                                       msg: "$e",
                                                                       toastLength:
-                                                                          Toast
-                                                                              .LENGTH_SHORT,
+                                                                      Toast
+                                                                          .LENGTH_SHORT,
                                                                       gravity:
-                                                                          ToastGravity
-                                                                              .BOTTOM,
+                                                                      ToastGravity
+                                                                          .BOTTOM,
                                                                     );
                                                                   }
+                                                                }else{
+                                                                  Fluttertoast.showToast(msg: "Payment Failed");
+                                                                }
                                                               }
                                                               else {
                                                                 // Handle validation errors
