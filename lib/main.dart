@@ -20,7 +20,7 @@ import 'firebase_options.dart';
 import 'LoginPage.dart';
 
 @pragma('vm:entry-point')
-Future<void> _firebasebackgroundhandler(RemoteMessage message)async{
+Future<void> _firebasebackgroundhandler(RemoteMessage message) async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
@@ -33,10 +33,12 @@ Future<void> main() async {
   );
   await FirebaseApi().initNotifications();
   FirebaseMessaging.onBackgroundMessage(_firebasebackgroundhandler);
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -93,7 +95,9 @@ class _MyHomePageState extends State<MyHomePage> {
           });
         },
       );
-    };
+    }
+
+    ;
     _liveLocation();
   }
 
@@ -123,15 +127,15 @@ class _MyHomePageState extends State<MyHomePage> {
     "https://firebasestorage.googleapis.com/v0/b/carehub-af7ec.appspot.com/o/professions%2FsecuritygaurdCopy.jpeg?alt=media&token=7c735015-46d0-4597-9b5a-2438b1ea8b00", // securitygaurd
     "https://firebasestorage.googleapis.com/v0/b/carehub-af7ec.appspot.com/o/professions%2Fhouse%20gaurdCopy.jpeg?alt=media&token=9b68bdc2-de10-49cc-ae03-8d5eff2a0be9", // house gaurd
     "https://firebasestorage.googleapis.com/v0/b/carehub-af7ec.appspot.com/o/professions%2FederlyCopy.png?alt=media&token=1658de86-60a9-459a-9c5a-7a7f5dec9ddd", // ederly
-    "https://firebasestorage.googleapis.com/v0/b/carehub-af7ec.appspot.com/o/professions%2Fbabysitter.jpeg?alt=media&token=20d5015d-8cab-4b31-b0a7-0d4b6b4f9fc5",  // babysitter
-    "https://firebasestorage.googleapis.com/v0/b/carehub-af7ec.appspot.com/o/professions%2FhousekeeperSecondCopy.png?alt=media&token=5e321338-0f59-475c-8be9-265d6eb0d501",  // housekeeperSecond
-    "https://firebasestorage.googleapis.com/v0/b/carehub-af7ec.appspot.com/o/professions%2Fhouse%20keeper.jpeg?alt=media&token=7cf2f100-eb3e-411a-bbd2-2fac52507203",  // house keeper
+    "https://firebasestorage.googleapis.com/v0/b/carehub-af7ec.appspot.com/o/professions%2Fbabysitter.jpeg?alt=media&token=20d5015d-8cab-4b31-b0a7-0d4b6b4f9fc5", // babysitter
+    "https://firebasestorage.googleapis.com/v0/b/carehub-af7ec.appspot.com/o/professions%2FhousekeeperSecondCopy.png?alt=media&token=5e321338-0f59-475c-8be9-265d6eb0d501", // housekeeperSecond
+    "https://firebasestorage.googleapis.com/v0/b/carehub-af7ec.appspot.com/o/professions%2Fhouse%20keeper.jpeg?alt=media&token=7cf2f100-eb3e-411a-bbd2-2fac52507203", // house keeper
     "https://firebasestorage.googleapis.com/v0/b/carehub-af7ec.appspot.com/o/professions%2Felderly%20individualSecondCopy.png?alt=media&token=e3728928-d889-48d8-b244-ad387109ddb0", // elderly individualSecond
     "https://firebasestorage.googleapis.com/v0/b/carehub-af7ec.appspot.com/o/professions%2FPeramedicCopy.png?alt=media&token=c4edb732-7cab-4b80-b47b-174c930fca9d", // Peramedic
     "https://firebasestorage.googleapis.com/v0/b/carehub-af7ec.appspot.com/o/professions%2FtherapistCopy.png?alt=media&token=2e2245fd-4e2a-49ed-9787-6304e0a11870", // therapist
-    "https://firebasestorage.googleapis.com/v0/b/carehub-af7ec.appspot.com/o/professions%2FPhysiotherepistCopy.png?alt=media&token=2efdc94a-757e-4254-afdb-cb3d5dbc02ed",  // Physiotherepist
-    "https://firebasestorage.googleapis.com/v0/b/carehub-af7ec.appspot.com/o/professions%2FaidesCopy.png?alt=media&token=f6a0f694-5386-4f49-8cb5-6e314e08883a",  // aides
-    "https://firebasestorage.googleapis.com/v0/b/carehub-af7ec.appspot.com/o/professions%2FCNACopy.png?alt=media&token=62dc91c0-af85-454c-817f-4f5011cd6fe8",  // CNA
+    "https://firebasestorage.googleapis.com/v0/b/carehub-af7ec.appspot.com/o/professions%2FPhysiotherepistCopy.png?alt=media&token=2efdc94a-757e-4254-afdb-cb3d5dbc02ed", // Physiotherepist
+    "https://firebasestorage.googleapis.com/v0/b/carehub-af7ec.appspot.com/o/professions%2FaidesCopy.png?alt=media&token=f6a0f694-5386-4f49-8cb5-6e314e08883a", // aides
+    "https://firebasestorage.googleapis.com/v0/b/carehub-af7ec.appspot.com/o/professions%2FCNACopy.png?alt=media&token=62dc91c0-af85-454c-817f-4f5011cd6fe8", // CNA
     "https://firebasestorage.googleapis.com/v0/b/carehub-af7ec.appspot.com/o/professions%2FLPN%20Copy.png?alt=media&token=015f4636-9dbc-4208-adc4-f458d98b3d7b", // LPN
     "https://firebasestorage.googleapis.com/v0/b/carehub-af7ec.appspot.com/o/professions%2FLastnurseCopy.png?alt=media&token=569f22c3-722d-49eb-b40f-bfb291367b1f",
     "img.png",
@@ -227,11 +231,14 @@ class _MyHomePageState extends State<MyHomePage> {
                                   color: Colors.black26,
                                 ),
                               ],
-                              image: StaffData != null && StaffData['Profile_Pic'] != null
+                              image: StaffData != null &&
+                                      StaffData['Profile_Pic'] != null
                                   ? DecorationImage(
-                                image: NetworkImage(StaffData['Profile_Pic']),
-                                fit: BoxFit.cover, // Adjust the fit if necessary
-                              )
+                                      image: NetworkImage(
+                                          StaffData['Profile_Pic']),
+                                      fit: BoxFit
+                                          .cover, // Adjust the fit if necessary
+                                    )
                                   : null,
                             ),
                           ),
@@ -391,11 +398,14 @@ class _MyHomePageState extends State<MyHomePage> {
                           height: 50,
                           width: 50,
                           decoration: BoxDecoration(
-                            image: StaffData != null && StaffData['Profile_Pic'] != null
+                            image: StaffData != null &&
+                                    StaffData['Profile_Pic'] != null
                                 ? DecorationImage(
-                              image: NetworkImage(StaffData['Profile_Pic']),
-                              fit: BoxFit.cover, // Adjust the fit if necessary
-                            )
+                                    image:
+                                        NetworkImage(StaffData['Profile_Pic']),
+                                    fit: BoxFit
+                                        .cover, // Adjust the fit if necessary
+                                  )
                                 : null,
                             borderRadius: BorderRadius.circular(50),
                             boxShadow: [
@@ -516,7 +526,8 @@ class _MyHomePageState extends State<MyHomePage> {
                                           spreadRadius: 1),
                                     ],
                                     image: DecorationImage(
-                                      image: NetworkImage("${ProfessionBack[index]}"),
+                                      image: NetworkImage(
+                                          "${ProfessionBack[index]}"),
                                       fit: BoxFit
                                           .cover, // Adjust the fit if necessary
                                     ),
@@ -598,7 +609,8 @@ class _MyHomePageState extends State<MyHomePage> {
                                       var data = snapshot.data!.docs[index]
                                           .data() as Map<String, dynamic>;
                                       var UID = snapshot.data!.docs[index].id;
-                                      if (data['professionOfStaff'] != null && data["Verified"] == "verified" &&
+                                      if (data['professionOfStaff'] != null &&
+                                          data["Verified"] == "verified" &&
                                           data['First_name'] != null &&
                                           data['First_name']
                                               .toString()
@@ -687,7 +699,8 @@ class _MyHomePageState extends State<MyHomePage> {
                                           ),
                                         );
                                       } else if (data['professionOfStaff'] !=
-                                              null && data["Verified"] == "verified" &&
+                                              null &&
+                                          data["Verified"] == "verified" &&
                                           data['First_name'] != null &&
                                           data['City']
                                               .toString()

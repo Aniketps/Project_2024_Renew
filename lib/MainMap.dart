@@ -162,6 +162,7 @@ class _MainMapState extends State<MainMap> {
       }
     });
   }
+
   String SearchGlobal = '';
 
   @override
@@ -551,8 +552,8 @@ class _MainMapState extends State<MainMap> {
                                           border: InputBorder.none,
                                           hintText: 'Search...',
                                           contentPadding:
-                                          const EdgeInsets.symmetric(
-                                              horizontal: 10),
+                                              const EdgeInsets.symmetric(
+                                                  horizontal: 10),
                                         ),
                                       ),
                                     ),
@@ -589,240 +590,240 @@ class _MainMapState extends State<MainMap> {
               SearchGlobal == ''
                   ? Container()
                   : Padding(
-                padding: const EdgeInsets.only(
-                  top: 180,
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                        height: screenHeight * 0.5,
-                        width: screenWidth * 0.85,
-                        decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(20),
-                            boxShadow: [
-                              BoxShadow(
-                                  color: Colors.black26,
-                                  spreadRadius: 1,
-                                  blurRadius: 2)
-                            ]),
-                        child: StreamBuilder<QuerySnapshot>(
-                          stream: FirebaseFirestore.instance
-                              .collection('user')
-                              .snapshots(),
-                          builder: (context, snapshot) {
-                            if (snapshot.connectionState ==
-                                ConnectionState.waiting) {
-                              return Center(
-                                child: CircularProgressIndicator(),
-                              );
-                            }
+                      padding: const EdgeInsets.only(
+                        top: 180,
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Container(
+                              height: screenHeight * 0.5,
+                              width: screenWidth * 0.85,
+                              decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(20),
+                                  boxShadow: [
+                                    BoxShadow(
+                                        color: Colors.black26,
+                                        spreadRadius: 1,
+                                        blurRadius: 2)
+                                  ]),
+                              child: StreamBuilder<QuerySnapshot>(
+                                stream: FirebaseFirestore.instance
+                                    .collection('user')
+                                    .snapshots(),
+                                builder: (context, snapshot) {
+                                  if (snapshot.connectionState ==
+                                      ConnectionState.waiting) {
+                                    return Center(
+                                      child: CircularProgressIndicator(),
+                                    );
+                                  }
 
-                            if (!snapshot.hasData ||
-                                snapshot.data!.docs.isEmpty) {
-                              return Center(
-                                child: Text("No Users Found"),
-                              );
-                            }
+                                  if (!snapshot.hasData ||
+                                      snapshot.data!.docs.isEmpty) {
+                                    return Center(
+                                      child: Text("No Users Found"),
+                                    );
+                                  }
 
-                            if (SearchGlobal.isEmpty) {
-                              return Center(child: Text("Empty"));
-                            }
+                                  if (SearchGlobal.isEmpty) {
+                                    return Center(child: Text("Empty"));
+                                  }
 
-                            return ListView.builder(
-                              padding: EdgeInsets.zero,
-                              itemCount: snapshot.data!.docs.length,
-                              itemBuilder: (context, index) {
-                                var data = snapshot.data!.docs[index]
-                                    .data() as Map<String, dynamic>;
-                                var UID = snapshot.data!.docs[index].id;
-                                if (data['professionOfStaff'] != null &&
-                                    data['First_name'] != null &&
-                                    data['First_name']
-                                        .toString()
-                                        .toLowerCase()
-                                        .startsWith(
-                                        SearchGlobal.toLowerCase())) {
-                                  return Padding(
-                                    padding: const EdgeInsets.all(5.0),
-                                    child: InkWell(
-                                      onTap: () {
-                                        Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (context) =>
-                                                  StaffProfilePage(
-                                                      StaffID: UID,
-                                                      Skill: data[
-                                                      'professionOfStaff']),
-                                            ));
-                                      },
-                                      child: Container(
-                                        height: 50,
-                                        width: 200,
-                                        decoration: BoxDecoration(
-                                            color: Colors.white,
-                                            borderRadius:
-                                            BorderRadius.circular(15),
-                                            boxShadow: [
-                                              BoxShadow(
-                                                  color: Colors.black26,
-                                                  spreadRadius: 1,
-                                                  blurRadius: 1)
-                                            ]),
-                                        child: Row(
-                                          children: [
-                                            Padding(
-                                              padding:
-                                              const EdgeInsets.only(
-                                                  left: 10),
-                                              child: Container(
-                                                height: 40,
-                                                width: 40,
-                                                decoration: BoxDecoration(
-                                                    borderRadius:
-                                                    BorderRadius
-                                                        .circular(40),
-                                                    image: DecorationImage(
-                                                        image: NetworkImage(
-                                                            data[
-                                                            'Profile_Pic']),
-                                                        fit: BoxFit
-                                                            .cover)),
+                                  return ListView.builder(
+                                    padding: EdgeInsets.zero,
+                                    itemCount: snapshot.data!.docs.length,
+                                    itemBuilder: (context, index) {
+                                      var data = snapshot.data!.docs[index]
+                                          .data() as Map<String, dynamic>;
+                                      var UID = snapshot.data!.docs[index].id;
+                                      if (data['professionOfStaff'] != null &&
+                                          data['First_name'] != null &&
+                                          data['First_name']
+                                              .toString()
+                                              .toLowerCase()
+                                              .startsWith(
+                                                  SearchGlobal.toLowerCase())) {
+                                        return Padding(
+                                          padding: const EdgeInsets.all(5.0),
+                                          child: InkWell(
+                                            onTap: () {
+                                              Navigator.push(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                    builder: (context) =>
+                                                        StaffProfilePage(
+                                                            StaffID: UID,
+                                                            Skill: data[
+                                                                'professionOfStaff']),
+                                                  ));
+                                            },
+                                            child: Container(
+                                              height: 50,
+                                              width: 200,
+                                              decoration: BoxDecoration(
+                                                  color: Colors.white,
+                                                  borderRadius:
+                                                      BorderRadius.circular(15),
+                                                  boxShadow: [
+                                                    BoxShadow(
+                                                        color: Colors.black26,
+                                                        spreadRadius: 1,
+                                                        blurRadius: 1)
+                                                  ]),
+                                              child: Row(
+                                                children: [
+                                                  Padding(
+                                                    padding:
+                                                        const EdgeInsets.only(
+                                                            left: 10),
+                                                    child: Container(
+                                                      height: 40,
+                                                      width: 40,
+                                                      decoration: BoxDecoration(
+                                                          borderRadius:
+                                                              BorderRadius
+                                                                  .circular(40),
+                                                          image: DecorationImage(
+                                                              image: NetworkImage(
+                                                                  data[
+                                                                      'Profile_Pic']),
+                                                              fit: BoxFit
+                                                                  .cover)),
+                                                    ),
+                                                  ),
+                                                  Padding(
+                                                    padding:
+                                                        const EdgeInsets.only(
+                                                            left: 10),
+                                                    child: Container(
+                                                        width: 150,
+                                                        child: Text(
+                                                          "${data['First_name']} ${data['Last_name']}",
+                                                          overflow: TextOverflow
+                                                              .ellipsis,
+                                                          maxLines: 1,
+                                                        )),
+                                                  ),
+                                                  Padding(
+                                                    padding:
+                                                        const EdgeInsets.only(
+                                                            left: 10),
+                                                    child: Text(
+                                                      data['City'][0]
+                                                              .toUpperCase() +
+                                                          data['City']
+                                                              .substring(1),
+                                                      style: TextStyle(
+                                                          color: Colors.green,
+                                                          fontWeight:
+                                                              FontWeight.bold),
+                                                    ),
+                                                  ),
+                                                ],
                                               ),
                                             ),
-                                            Padding(
-                                              padding:
-                                              const EdgeInsets.only(
-                                                  left: 10),
-                                              child: Container(
-                                                  width: 150,
-                                                  child: Text(
-                                                    "${data['First_name']} ${data['Last_name']}",
-                                                    overflow: TextOverflow
-                                                        .ellipsis,
-                                                    maxLines: 1,
-                                                  )),
-                                            ),
-                                            Padding(
-                                              padding:
-                                              const EdgeInsets.only(
-                                                  left: 10),
-                                              child: Text(
-                                                data['City'][0]
-                                                    .toUpperCase() +
-                                                    data['City']
-                                                        .substring(1),
-                                                style: TextStyle(
-                                                    color: Colors.green,
-                                                    fontWeight:
-                                                    FontWeight.bold),
+                                          ),
+                                        );
+                                      } else if (data['professionOfStaff'] !=
+                                              null &&
+                                          data['First_name'] != null &&
+                                          data['City']
+                                              .toString()
+                                              .toLowerCase()
+                                              .startsWith(
+                                                  SearchGlobal.toLowerCase())) {
+                                        return Padding(
+                                          padding: const EdgeInsets.all(5.0),
+                                          child: InkWell(
+                                            onTap: () {
+                                              Navigator.push(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                    builder: (context) =>
+                                                        StaffProfilePage(
+                                                            StaffID: UID,
+                                                            Skill: data[
+                                                                'professionOfStaff']),
+                                                  ));
+                                            },
+                                            child: Container(
+                                              height: 50,
+                                              width: 200,
+                                              decoration: BoxDecoration(
+                                                  color: Colors.white,
+                                                  borderRadius:
+                                                      BorderRadius.circular(15),
+                                                  boxShadow: [
+                                                    BoxShadow(
+                                                        color: Colors.black26,
+                                                        spreadRadius: 1,
+                                                        blurRadius: 1)
+                                                  ]),
+                                              child: Row(
+                                                children: [
+                                                  Padding(
+                                                    padding:
+                                                        const EdgeInsets.only(
+                                                            left: 10),
+                                                    child: Container(
+                                                      height: 40,
+                                                      width: 40,
+                                                      decoration: BoxDecoration(
+                                                          borderRadius:
+                                                              BorderRadius
+                                                                  .circular(40),
+                                                          image: DecorationImage(
+                                                              image: NetworkImage(
+                                                                  data[
+                                                                      'Profile_Pic']),
+                                                              fit: BoxFit
+                                                                  .cover)),
+                                                    ),
+                                                  ),
+                                                  Padding(
+                                                    padding:
+                                                        const EdgeInsets.only(
+                                                            left: 10),
+                                                    child: Container(
+                                                        width: 150,
+                                                        child: Text(
+                                                          "${data['First_name']} ${data['Last_name']}",
+                                                          overflow: TextOverflow
+                                                              .ellipsis,
+                                                          maxLines: 1,
+                                                        )),
+                                                  ),
+                                                  Padding(
+                                                    padding:
+                                                        const EdgeInsets.only(
+                                                            left: 10),
+                                                    child: Text(
+                                                      data['City'][0]
+                                                              .toUpperCase() +
+                                                          data['City']
+                                                              .substring(1),
+                                                      style: TextStyle(
+                                                          color: Colors.green,
+                                                          fontWeight:
+                                                              FontWeight.bold),
+                                                    ),
+                                                  ),
+                                                ],
                                               ),
                                             ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
+                                          ),
+                                        );
+                                      }
+                                      return Container();
+                                    },
                                   );
-                                } else if (data['professionOfStaff'] !=
-                                    null &&
-                                    data['First_name'] != null &&
-                                    data['City']
-                                        .toString()
-                                        .toLowerCase()
-                                        .startsWith(
-                                        SearchGlobal.toLowerCase())) {
-                                  return Padding(
-                                    padding: const EdgeInsets.all(5.0),
-                                    child: InkWell(
-                                      onTap: () {
-                                        Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (context) =>
-                                                  StaffProfilePage(
-                                                      StaffID: UID,
-                                                      Skill: data[
-                                                      'professionOfStaff']),
-                                            ));
-                                      },
-                                      child: Container(
-                                        height: 50,
-                                        width: 200,
-                                        decoration: BoxDecoration(
-                                            color: Colors.white,
-                                            borderRadius:
-                                            BorderRadius.circular(15),
-                                            boxShadow: [
-                                              BoxShadow(
-                                                  color: Colors.black26,
-                                                  spreadRadius: 1,
-                                                  blurRadius: 1)
-                                            ]),
-                                        child: Row(
-                                          children: [
-                                            Padding(
-                                              padding:
-                                              const EdgeInsets.only(
-                                                  left: 10),
-                                              child: Container(
-                                                height: 40,
-                                                width: 40,
-                                                decoration: BoxDecoration(
-                                                    borderRadius:
-                                                    BorderRadius
-                                                        .circular(40),
-                                                    image: DecorationImage(
-                                                        image: NetworkImage(
-                                                            data[
-                                                            'Profile_Pic']),
-                                                        fit: BoxFit
-                                                            .cover)),
-                                              ),
-                                            ),
-                                            Padding(
-                                              padding:
-                                              const EdgeInsets.only(
-                                                  left: 10),
-                                              child: Container(
-                                                  width: 150,
-                                                  child: Text(
-                                                    "${data['First_name']} ${data['Last_name']}",
-                                                    overflow: TextOverflow
-                                                        .ellipsis,
-                                                    maxLines: 1,
-                                                  )),
-                                            ),
-                                            Padding(
-                                              padding:
-                                              const EdgeInsets.only(
-                                                  left: 10),
-                                              child: Text(
-                                                data['City'][0]
-                                                    .toUpperCase() +
-                                                    data['City']
-                                                        .substring(1),
-                                                style: TextStyle(
-                                                    color: Colors.green,
-                                                    fontWeight:
-                                                    FontWeight.bold),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  );
-                                }
-                                return Container();
-                              },
-                            );
-                          },
-                        )),
-                  ],
-                ),
-              ),
+                                },
+                              )),
+                        ],
+                      ),
+                    ),
             ],
           )
         ],

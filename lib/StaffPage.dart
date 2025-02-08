@@ -70,7 +70,8 @@ class _StaffPage extends State<StaffPage> {
     CollectionReference user = FirebaseFirestore.instance.collection('user');
     try {
       DocumentSnapshot documentSnapshot = await user.doc(currentUserID).get();
-      CollectionReference documentSnapshotDish = await user.doc(currentUserID).collection("dishes");
+      CollectionReference documentSnapshotDish =
+          await user.doc(currentUserID).collection("dishes");
 
       if (documentSnapshot.exists) {
         setState(() {
@@ -140,41 +141,42 @@ class _StaffPage extends State<StaffPage> {
                                   builder: (context) => ActualUser(),
                                 ));
                           },
-                          child: StaffData != null && StaffData['Profile_Pic'] != null
+                          child: StaffData != null &&
+                                  StaffData['Profile_Pic'] != null
                               ? Container(
-                            height: 80,
-                            width: 80,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(80),
-                              boxShadow: [
-                                BoxShadow(
-                                  blurRadius: 1,
-                                  spreadRadius: 1,
-                                  color: Colors.black26,
-                                ),
-                              ],
-                              image: DecorationImage(
-                                image: NetworkImage(
-                                    StaffData['Profile_Pic']),
-                                fit: BoxFit
-                                    .cover, // Adjust the fit if necessary
-                              ),
-                            ),
-                          )
+                                  height: 80,
+                                  width: 80,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(80),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        blurRadius: 1,
+                                        spreadRadius: 1,
+                                        color: Colors.black26,
+                                      ),
+                                    ],
+                                    image: DecorationImage(
+                                      image: NetworkImage(
+                                          StaffData['Profile_Pic']),
+                                      fit: BoxFit
+                                          .cover, // Adjust the fit if necessary
+                                    ),
+                                  ),
+                                )
                               : Container(
-                            height: 80,
-                            width: 80,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(80),
-                              boxShadow: [
-                                BoxShadow(
-                                  blurRadius: 1,
-                                  spreadRadius: 1,
-                                  color: Colors.black26,
+                                  height: 80,
+                                  width: 80,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(80),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        blurRadius: 1,
+                                        spreadRadius: 1,
+                                        color: Colors.black26,
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                              ],
-                            ),
-                          ),
                         ),
                   (StaffData == null)
                       ? Text(
@@ -330,7 +332,8 @@ class _StaffPage extends State<StaffPage> {
                                 builder: (context) => ActualUser(),
                               ));
                         },
-                        child: StaffData != null && StaffData['Profile_Pic'] != null
+                        child: StaffData != null &&
+                                StaffData['Profile_Pic'] != null
                             ? Container(
                                 height: 50,
                                 width: 50,
@@ -445,13 +448,16 @@ class _StaffPage extends State<StaffPage> {
 
                       Expanded(
                         child: StreamBuilder<QuerySnapshot>(
-                          stream: FirebaseFirestore.instance.collection(Skill).snapshots(),
+                          stream: FirebaseFirestore.instance
+                              .collection(Skill)
+                              .snapshots(),
                           builder: (context, snapshot) {
                             List<Row> chefViews = [];
                             if (snapshot.hasData) {
-                              final chefs = snapshot.data?.docs.reversed.toList();
+                              final chefs =
+                                  snapshot.data?.docs.reversed.toList();
                               for (var chef in chefs!) {
-                                if(chef["Verified"] == "verified") {
+                                if (chef["Verified"] == "verified") {
                                   final chefView = Row(
                                     children: [
                                       Padding(
@@ -699,7 +705,15 @@ class _StaffPage extends State<StaffPage> {
                                       var data = snapshot.data!.docs[index]
                                           .data() as Map<String, dynamic>;
                                       var UID = snapshot.data!.docs[index].id;
-                                      if (data['professionOfStaff'] != null && Skill == data['professionOfStaff'] && data['First_name'] != null && data["Verified"] == "verified" && data['First_name'].toString().toLowerCase().startsWith(SearchGlobal.toLowerCase())) {
+                                      if (data['professionOfStaff'] != null &&
+                                          Skill == data['professionOfStaff'] &&
+                                          data['First_name'] != null &&
+                                          data["Verified"] == "verified" &&
+                                          data['First_name']
+                                              .toString()
+                                              .toLowerCase()
+                                              .startsWith(
+                                                  SearchGlobal.toLowerCase())) {
                                         return Padding(
                                           padding: const EdgeInsets.all(5.0),
                                           child: InkWell(
@@ -781,7 +795,16 @@ class _StaffPage extends State<StaffPage> {
                                             ),
                                           ),
                                         );
-                                      } else if (data['professionOfStaff'] != null && Skill == data['professionOfStaff'] && data["Verified"] == "verified" && data['First_name'] != null && data['City'].toString().toLowerCase().startsWith(SearchGlobal.toLowerCase())) {
+                                      } else if (data['professionOfStaff'] !=
+                                              null &&
+                                          Skill == data['professionOfStaff'] &&
+                                          data["Verified"] == "verified" &&
+                                          data['First_name'] != null &&
+                                          data['City']
+                                              .toString()
+                                              .toLowerCase()
+                                              .startsWith(
+                                                  SearchGlobal.toLowerCase())) {
                                         return Padding(
                                           padding: const EdgeInsets.all(5.0),
                                           child: InkWell(
