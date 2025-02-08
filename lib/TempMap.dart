@@ -4,7 +4,6 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 
 class TempMap extends StatefulWidget {
-
   String lat;
   String long;
   TempMap({required this.lat, required this.long});
@@ -37,15 +36,16 @@ class _TempMapState extends State<TempMap> {
               urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
               fallbackUrl: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
             ),
-            MarkerLayer(
-                markers: [Marker(
-                    point: LatLng(double.parse(lat), double.parse(long)),
-                    child: Icon(
-                      Icons.location_history,
-                      color: Colors.red,
-                      size: 30.0,
-                    ),)]
-            ),
+            MarkerLayer(markers: [
+              Marker(
+                point: LatLng(double.parse(lat), double.parse(long)),
+                child: Icon(
+                  Icons.location_history,
+                  color: Colors.red,
+                  size: 30.0,
+                ),
+              )
+            ]),
           ]),
     );
   }

@@ -5,6 +5,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:geolocator/geolocator.dart';
 
 class Deals extends StatefulWidget {
+  const Deals({super.key});
+
   @override
   State<StatefulWidget> createState() => _Deals();
 }
@@ -13,8 +15,8 @@ class _Deals extends State<Deals> {
   @override
   void initState() {
     super.initState();
-    void _liveLocation() {
-      LocationSettings locationSettings = LocationSettings(
+    void liveLocation() {
+      LocationSettings locationSettings = const LocationSettings(
         accuracy: LocationAccuracy.high,
         distanceFilter: 100,
       );
@@ -38,9 +40,8 @@ class _Deals extends State<Deals> {
       );
     }
 
-    ;
     checkUserid();
-    _liveLocation();
+    liveLocation();
   }
 
   Future<void> checkUserid() async {
@@ -87,20 +88,20 @@ class _Deals extends State<Deals> {
           // App bar section
           Container(
             height: 150,
-            color: Color(0xfffffcc9),
+            color: const Color(0xfffffcc9),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 AppBar(
-                  title: Padding(
-                    padding: const EdgeInsets.only(bottom: 25),
+                  title: const Padding(
+                    padding: EdgeInsets.only(bottom: 25),
                     child: Center(
                       child: Text("Deals History",
                           style: TextStyle(
                               fontSize: 20, fontWeight: FontWeight.bold)),
                     ),
                   ),
-                  backgroundColor: Color(0xfffffcc9),
+                  backgroundColor: const Color(0xfffffcc9),
                   automaticallyImplyLeading: false,
                 ),
               ],
@@ -128,7 +129,7 @@ class _Deals extends State<Deals> {
                                     decoration: BoxDecoration(
                                       borderRadius: BorderRadius.circular(50),
                                       color: Colors.white,
-                                      boxShadow: [
+                                      boxShadow: const [
                                         BoxShadow(
                                             spreadRadius: 1,
                                             color: Colors.black26,
@@ -137,9 +138,8 @@ class _Deals extends State<Deals> {
                                     ),
                                     child: Row(
                                       children: [
-                                        Padding(
-                                          padding:
-                                              const EdgeInsets.only(left: 10),
+                                        const Padding(
+                                          padding: EdgeInsets.only(left: 10),
                                           child: Icon(Icons.search,
                                               color: Colors.blue, size: 25),
                                         ),
@@ -150,11 +150,11 @@ class _Deals extends State<Deals> {
                                                 SearchGlobal = value;
                                               });
                                             },
-                                            decoration: InputDecoration(
+                                            decoration: const InputDecoration(
                                               border: InputBorder.none,
                                               hintText: 'Search...',
                                               contentPadding:
-                                                  const EdgeInsets.symmetric(
+                                                  EdgeInsets.symmetric(
                                                       horizontal: 10),
                                             ),
                                           ),
@@ -170,14 +170,14 @@ class _Deals extends State<Deals> {
                                       decoration: BoxDecoration(
                                         borderRadius: BorderRadius.circular(20),
                                         color: Colors.white,
-                                        boxShadow: [
+                                        boxShadow: const [
                                           BoxShadow(
                                               spreadRadius: 1,
                                               color: Colors.black26,
                                               blurRadius: 1),
                                         ],
                                       ),
-                                      child: Icon(Icons.filter_list_sharp,
+                                      child: const Icon(Icons.filter_list_sharp,
                                           size: 30, color: Colors.blue),
                                     ),
                                   ),
@@ -194,9 +194,10 @@ class _Deals extends State<Deals> {
                                 .collection("NotificationForUser")
                                 .snapshots(),
                             builder: (context, snapshot) {
-                              if (!snapshot.hasData)
-                                return Center(
+                              if (!snapshot.hasData) {
+                                return const Center(
                                     child: CircularProgressIndicator());
+                              }
                               var users =
                                   snapshot.data?.docs.reversed.toList() ?? [];
                               List<Widget> userViews = [];
@@ -214,8 +215,9 @@ class _Deals extends State<Deals> {
                                       builder: (context,
                                           AsyncSnapshot<List<dynamic>>
                                               snapshot) {
-                                        if (!snapshot.hasData)
-                                          return CircularProgressIndicator();
+                                        if (!snapshot.hasData) {
+                                          return const CircularProgressIndicator();
+                                        }
 
                                         var currentUserData = snapshot.data?[0];
                                         var currentStaffData =
@@ -238,7 +240,7 @@ class _Deals extends State<Deals> {
                                                       borderRadius:
                                                           BorderRadius.circular(
                                                               10),
-                                                      boxShadow: [
+                                                      boxShadow: const [
                                                         BoxShadow(
                                                           color: Colors.black26,
                                                           spreadRadius: 1,
@@ -253,7 +255,7 @@ class _Deals extends State<Deals> {
                                                               const EdgeInsets
                                                                   .only(
                                                                   top: 20),
-                                                          child: Container(
+                                                          child: SizedBox(
                                                             height:
                                                                 screenHeight *
                                                                     0.1,
@@ -271,7 +273,7 @@ class _Deals extends State<Deals> {
                                                                     borderRadius:
                                                                         BorderRadius.circular(
                                                                             70),
-                                                                    boxShadow: [
+                                                                    boxShadow: const [
                                                                       BoxShadow(
                                                                         color: Colors
                                                                             .black26,
@@ -308,20 +310,22 @@ class _Deals extends State<Deals> {
                                                                             TextOverflow.ellipsis,
                                                                         maxLines:
                                                                             1,
-                                                                        style: TextStyle(
+                                                                        style: const TextStyle(
                                                                             fontWeight:
                                                                                 FontWeight.bold,
                                                                             fontSize: 16),
                                                                       ),
                                                                       Text(
-                                                                          "${currentStaffData['Status'] ? "Available" : "Busy"}",
-                                                                          style: TextStyle(
+                                                                          currentStaffData['Status']
+                                                                              ? "Available"
+                                                                              : "Busy",
+                                                                          style: const TextStyle(
                                                                               fontSize: 10,
                                                                               color: Colors.green)),
                                                                       Text(
                                                                           "${user['timeofdeal']}",
                                                                           style:
-                                                                              TextStyle(fontSize: 12)),
+                                                                              const TextStyle(fontSize: 12)),
                                                                     ],
                                                                   ),
                                                                 ),
@@ -334,19 +338,19 @@ class _Deals extends State<Deals> {
                                                                         MainAxisAlignment
                                                                             .center,
                                                                     children: [
-                                                                      Text(
+                                                                      const Text(
                                                                           "For",
                                                                           style: TextStyle(
                                                                               fontWeight: FontWeight.bold,
                                                                               fontSize: 12)),
-                                                                      Divider(),
+                                                                      const Divider(),
                                                                       Text(
                                                                         "${user['professionOfStaff']}",
                                                                         overflow:
                                                                             TextOverflow.ellipsis,
                                                                         maxLines:
                                                                             1,
-                                                                        style: TextStyle(
+                                                                        style: const TextStyle(
                                                                             fontWeight: FontWeight
                                                                                 .bold,
                                                                             fontSize:
@@ -380,7 +384,7 @@ class _Deals extends State<Deals> {
                                                                     color: Colors
                                                                         .white,
                                                                     borderRadius: BorderRadius.circular(5),
-                                                                    boxShadow: [
+                                                                    boxShadow: const [
                                                                       BoxShadow(
                                                                           color: Colors
                                                                               .black26,
@@ -392,7 +396,7 @@ class _Deals extends State<Deals> {
                                                                 child: Center(
                                                                     child: Text(
                                                                   "${user['ServiceBase']} base",
-                                                                  style: TextStyle(
+                                                                  style: const TextStyle(
                                                                       fontWeight:
                                                                           FontWeight
                                                                               .bold),
@@ -401,7 +405,7 @@ class _Deals extends State<Deals> {
                                                             ),
                                                           ],
                                                         ),
-                                                        Container(
+                                                        SizedBox(
                                                           height: 80,
                                                           width: screenWidth *
                                                               0.75,
@@ -423,7 +427,7 @@ class _Deals extends State<Deals> {
                                                                   ],
                                                                 ),
                                                               ),
-                                                              Divider(),
+                                                              const Divider(),
                                                               Padding(
                                                                 padding:
                                                                     const EdgeInsets
@@ -432,14 +436,13 @@ class _Deals extends State<Deals> {
                                                                             10),
                                                                 child: Row(
                                                                   children: [
-                                                                    Text(
+                                                                    const Text(
                                                                         "Total",
                                                                         style: TextStyle(
                                                                             fontWeight:
                                                                                 FontWeight.bold)),
-                                                                    Padding(
-                                                                      padding: const EdgeInsets
-                                                                          .only(
+                                                                    const Padding(
+                                                                      padding: EdgeInsets.only(
                                                                           left:
                                                                               10),
                                                                       child: Text(
@@ -447,16 +450,16 @@ class _Deals extends State<Deals> {
                                                                           style:
                                                                               TextStyle(color: Colors.green)),
                                                                     ),
-                                                                    Spacer(),
+                                                                    const Spacer(),
                                                                     Text(
                                                                         "${user['totalcost']}",
-                                                                        style: TextStyle(
+                                                                        style: const TextStyle(
                                                                             fontWeight:
                                                                                 FontWeight.bold)),
                                                                   ],
                                                                 ),
                                                               ),
-                                                              Divider(),
+                                                              const Divider(),
                                                             ],
                                                           ),
                                                         ),
@@ -470,7 +473,7 @@ class _Deals extends State<Deals> {
                                                                 MainAxisAlignment
                                                                     .spaceBetween,
                                                             children: [
-                                                              Column(
+                                                              const Column(
                                                                 crossAxisAlignment:
                                                                     CrossAxisAlignment
                                                                         .start,
@@ -537,7 +540,7 @@ class _Deals extends State<Deals> {
                                                                             backgroundColor:
                                                                                 Colors.green,
                                                                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
-                                                                        child: Text(
+                                                                        child: const Text(
                                                                           "Deal Again",
                                                                           style: TextStyle(
                                                                               color: Colors.white,
@@ -584,7 +587,7 @@ class _Deals extends State<Deals> {
                               decoration: BoxDecoration(
                                   color: Colors.white,
                                   borderRadius: BorderRadius.circular(20),
-                                  boxShadow: [
+                                  boxShadow: const [
                                     BoxShadow(
                                         color: Colors.black26,
                                         spreadRadius: 1,
@@ -597,20 +600,20 @@ class _Deals extends State<Deals> {
                                 builder: (context, snapshot) {
                                   if (snapshot.connectionState ==
                                       ConnectionState.waiting) {
-                                    return Center(
+                                    return const Center(
                                       child: CircularProgressIndicator(),
                                     );
                                   }
 
                                   if (!snapshot.hasData ||
                                       snapshot.data!.docs.isEmpty) {
-                                    return Center(
+                                    return const Center(
                                       child: Text("No Users Found"),
                                     );
                                   }
 
                                   if (SearchGlobal.isEmpty) {
-                                    return Center(child: Text("Empty"));
+                                    return const Center(child: Text("Empty"));
                                   }
 
                                   return ListView.builder(
@@ -648,7 +651,7 @@ class _Deals extends State<Deals> {
                                                   color: Colors.white,
                                                   borderRadius:
                                                       BorderRadius.circular(15),
-                                                  boxShadow: [
+                                                  boxShadow: const [
                                                     BoxShadow(
                                                         color: Colors.black26,
                                                         spreadRadius: 1,
@@ -679,7 +682,7 @@ class _Deals extends State<Deals> {
                                                     padding:
                                                         const EdgeInsets.only(
                                                             left: 10),
-                                                    child: Container(
+                                                    child: SizedBox(
                                                         width: 150,
                                                         child: Text(
                                                           "${data['First_name']} ${data['Last_name']}",
@@ -697,7 +700,7 @@ class _Deals extends State<Deals> {
                                                               .toUpperCase() +
                                                           data['City']
                                                               .substring(1),
-                                                      style: TextStyle(
+                                                      style: const TextStyle(
                                                           color: Colors.green,
                                                           fontWeight:
                                                               FontWeight.bold),
@@ -737,7 +740,7 @@ class _Deals extends State<Deals> {
                                                   color: Colors.white,
                                                   borderRadius:
                                                       BorderRadius.circular(15),
-                                                  boxShadow: [
+                                                  boxShadow: const [
                                                     BoxShadow(
                                                         color: Colors.black26,
                                                         spreadRadius: 1,
@@ -768,7 +771,7 @@ class _Deals extends State<Deals> {
                                                     padding:
                                                         const EdgeInsets.only(
                                                             left: 10),
-                                                    child: Container(
+                                                    child: SizedBox(
                                                         width: 150,
                                                         child: Text(
                                                           "${data['First_name']} ${data['Last_name']}",
@@ -786,7 +789,7 @@ class _Deals extends State<Deals> {
                                                               .toUpperCase() +
                                                           data['City']
                                                               .substring(1),
-                                                      style: TextStyle(
+                                                      style: const TextStyle(
                                                           color: Colors.green,
                                                           fontWeight:
                                                               FontWeight.bold),
@@ -815,6 +818,8 @@ class _Deals extends State<Deals> {
 }
 
 class DealsForStaff extends StatefulWidget {
+  const DealsForStaff({super.key});
+
   @override
   State<StatefulWidget> createState() => _DealsForStaff();
 }
@@ -823,8 +828,8 @@ class _DealsForStaff extends State<DealsForStaff> {
   @override
   void initState() {
     super.initState();
-    void _liveLocation() {
-      LocationSettings locationSettings = LocationSettings(
+    void liveLocation() {
+      LocationSettings locationSettings = const LocationSettings(
         accuracy: LocationAccuracy.high,
         distanceFilter: 100,
       );
@@ -848,9 +853,8 @@ class _DealsForStaff extends State<DealsForStaff> {
       );
     }
 
-    ;
     checkUserid();
-    _liveLocation();
+    liveLocation();
   }
 
   Future<void> checkUserid() async {
@@ -898,20 +902,20 @@ class _DealsForStaff extends State<DealsForStaff> {
           // App bar section
           Container(
             height: 150,
-            color: Color(0xfffffcc9),
+            color: const Color(0xfffffcc9),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 AppBar(
-                  title: Padding(
-                    padding: const EdgeInsets.only(bottom: 25),
+                  title: const Padding(
+                    padding: EdgeInsets.only(bottom: 25),
                     child: Center(
                       child: Text("Deals History",
                           style: TextStyle(
                               fontSize: 20, fontWeight: FontWeight.bold)),
                     ),
                   ),
-                  backgroundColor: Color(0xfffffcc9),
+                  backgroundColor: const Color(0xfffffcc9),
                   automaticallyImplyLeading: false,
                 ),
               ],
@@ -939,7 +943,7 @@ class _DealsForStaff extends State<DealsForStaff> {
                                     decoration: BoxDecoration(
                                       borderRadius: BorderRadius.circular(50),
                                       color: Colors.white,
-                                      boxShadow: [
+                                      boxShadow: const [
                                         BoxShadow(
                                             spreadRadius: 1,
                                             color: Colors.black26,
@@ -948,9 +952,8 @@ class _DealsForStaff extends State<DealsForStaff> {
                                     ),
                                     child: Row(
                                       children: [
-                                        Padding(
-                                          padding:
-                                              const EdgeInsets.only(left: 10),
+                                        const Padding(
+                                          padding: EdgeInsets.only(left: 10),
                                           child: Icon(Icons.search,
                                               color: Colors.blue, size: 25),
                                         ),
@@ -961,11 +964,11 @@ class _DealsForStaff extends State<DealsForStaff> {
                                                 SearchGlobal = value;
                                               });
                                             },
-                                            decoration: InputDecoration(
+                                            decoration: const InputDecoration(
                                               border: InputBorder.none,
                                               hintText: 'Search...',
                                               contentPadding:
-                                                  const EdgeInsets.symmetric(
+                                                  EdgeInsets.symmetric(
                                                       horizontal: 10),
                                             ),
                                           ),
@@ -981,14 +984,14 @@ class _DealsForStaff extends State<DealsForStaff> {
                                       decoration: BoxDecoration(
                                         borderRadius: BorderRadius.circular(20),
                                         color: Colors.white,
-                                        boxShadow: [
+                                        boxShadow: const [
                                           BoxShadow(
                                               spreadRadius: 1,
                                               color: Colors.black26,
                                               blurRadius: 1),
                                         ],
                                       ),
-                                      child: Icon(Icons.filter_list_sharp,
+                                      child: const Icon(Icons.filter_list_sharp,
                                           size: 30, color: Colors.blue),
                                     ),
                                   ),
@@ -1005,9 +1008,10 @@ class _DealsForStaff extends State<DealsForStaff> {
                                 .collection("NotificationForStaff")
                                 .snapshots(),
                             builder: (context, snapshot) {
-                              if (!snapshot.hasData)
-                                return Center(
+                              if (!snapshot.hasData) {
+                                return const Center(
                                     child: CircularProgressIndicator());
+                              }
                               var users =
                                   snapshot.data?.docs.reversed.toList() ?? [];
                               List<Widget> userViews = [];
@@ -1027,8 +1031,9 @@ class _DealsForStaff extends State<DealsForStaff> {
                                       builder: (context,
                                           AsyncSnapshot<List<dynamic>>
                                               snapshot) {
-                                        if (!snapshot.hasData)
-                                          return CircularProgressIndicator();
+                                        if (!snapshot.hasData) {
+                                          return const CircularProgressIndicator();
+                                        }
 
                                         var currentStaffData =
                                             snapshot.data?[0];
@@ -1051,7 +1056,7 @@ class _DealsForStaff extends State<DealsForStaff> {
                                                       borderRadius:
                                                           BorderRadius.circular(
                                                               10),
-                                                      boxShadow: [
+                                                      boxShadow: const [
                                                         BoxShadow(
                                                           color: Colors.black26,
                                                           spreadRadius: 1,
@@ -1066,7 +1071,7 @@ class _DealsForStaff extends State<DealsForStaff> {
                                                               const EdgeInsets
                                                                   .only(
                                                                   top: 20),
-                                                          child: Container(
+                                                          child: SizedBox(
                                                             height:
                                                                 screenHeight *
                                                                     0.1,
@@ -1084,7 +1089,7 @@ class _DealsForStaff extends State<DealsForStaff> {
                                                                     borderRadius:
                                                                         BorderRadius.circular(
                                                                             70),
-                                                                    boxShadow: [
+                                                                    boxShadow: const [
                                                                       BoxShadow(
                                                                         color: Colors
                                                                             .black26,
@@ -1100,7 +1105,7 @@ class _DealsForStaff extends State<DealsForStaff> {
                                                                                   null &&
                                                                               currentStaffData ==
                                                                                   null
-                                                                          ? NetworkImage(
+                                                                          ? const NetworkImage(
                                                                               "https://media.istockphoto.com/id/1300845620/vector/user-icon-flat-isolated-on-white-background-user-symbol-vector-illustration.jpg?s=612x612&w=0&k=20&c=yBeyba0hUkh14_jgv1OKqIH0CCSWU_4ckRkAoy2p73o=")
                                                                           : NetworkImage(
                                                                               currentStaffData['Profile_Pic']),
@@ -1126,7 +1131,7 @@ class _DealsForStaff extends State<DealsForStaff> {
                                                                             TextOverflow.ellipsis,
                                                                         maxLines:
                                                                             1,
-                                                                        style: TextStyle(
+                                                                        style: const TextStyle(
                                                                             fontWeight:
                                                                                 FontWeight.bold,
                                                                             fontSize: 16),
@@ -1134,7 +1139,7 @@ class _DealsForStaff extends State<DealsForStaff> {
                                                                       Text(
                                                                           "${user['timeofdeal']}",
                                                                           style:
-                                                                              TextStyle(fontSize: 12)),
+                                                                              const TextStyle(fontSize: 12)),
                                                                     ],
                                                                   ),
                                                                 ),
@@ -1147,19 +1152,19 @@ class _DealsForStaff extends State<DealsForStaff> {
                                                                         MainAxisAlignment
                                                                             .center,
                                                                     children: [
-                                                                      Text(
+                                                                      const Text(
                                                                           "For",
                                                                           style: TextStyle(
                                                                               fontWeight: FontWeight.bold,
                                                                               fontSize: 12)),
-                                                                      Divider(),
+                                                                      const Divider(),
                                                                       Text(
                                                                         "${user['professionOfStaff']}",
                                                                         overflow:
                                                                             TextOverflow.ellipsis,
                                                                         maxLines:
                                                                             1,
-                                                                        style: TextStyle(
+                                                                        style: const TextStyle(
                                                                             fontWeight: FontWeight
                                                                                 .bold,
                                                                             fontSize:
@@ -1193,7 +1198,7 @@ class _DealsForStaff extends State<DealsForStaff> {
                                                                     color: Colors
                                                                         .white,
                                                                     borderRadius: BorderRadius.circular(5),
-                                                                    boxShadow: [
+                                                                    boxShadow: const [
                                                                       BoxShadow(
                                                                           color: Colors
                                                                               .black26,
@@ -1205,7 +1210,7 @@ class _DealsForStaff extends State<DealsForStaff> {
                                                                 child: Center(
                                                                     child: Text(
                                                                   "${user['ServiceBase']} base",
-                                                                  style: TextStyle(
+                                                                  style: const TextStyle(
                                                                       fontWeight:
                                                                           FontWeight
                                                                               .bold),
@@ -1214,7 +1219,7 @@ class _DealsForStaff extends State<DealsForStaff> {
                                                             ),
                                                           ],
                                                         ),
-                                                        Container(
+                                                        SizedBox(
                                                           height: 80,
                                                           width: screenWidth *
                                                               0.75,
@@ -1236,7 +1241,7 @@ class _DealsForStaff extends State<DealsForStaff> {
                                                                   ],
                                                                 ),
                                                               ),
-                                                              Divider(),
+                                                              const Divider(),
                                                               Padding(
                                                                 padding:
                                                                     const EdgeInsets
@@ -1245,7 +1250,7 @@ class _DealsForStaff extends State<DealsForStaff> {
                                                                             10),
                                                                 child: Row(
                                                                   children: [
-                                                                    Text(
+                                                                    const Text(
                                                                         "Total",
                                                                         style: TextStyle(
                                                                             fontWeight:
@@ -1265,22 +1270,22 @@ class _DealsForStaff extends State<DealsForStaff> {
                                                                                 true;
                                                                           });
                                                                         },
-                                                                        child: Text(
+                                                                        child: const Text(
                                                                             "Know more",
                                                                             style:
                                                                                 TextStyle(color: Colors.green)),
                                                                       ),
                                                                     ),
-                                                                    Spacer(),
+                                                                    const Spacer(),
                                                                     Text(
                                                                         "${user['totalcost']}",
-                                                                        style: TextStyle(
+                                                                        style: const TextStyle(
                                                                             fontWeight:
                                                                                 FontWeight.bold)),
                                                                   ],
                                                                 ),
                                                               ),
-                                                              Divider(),
+                                                              const Divider(),
                                                             ],
                                                           ),
                                                         ),
@@ -1294,7 +1299,7 @@ class _DealsForStaff extends State<DealsForStaff> {
                                                                 MainAxisAlignment
                                                                     .spaceBetween,
                                                             children: [
-                                                              Column(
+                                                              const Column(
                                                                 crossAxisAlignment:
                                                                     CrossAxisAlignment
                                                                         .start,
@@ -1356,7 +1361,7 @@ class _DealsForStaff extends State<DealsForStaff> {
                                                                                 ));
                                                                           },
                                                                           style: ElevatedButton.styleFrom(backgroundColor: Colors.green, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
-                                                                          child: Text(
+                                                                          child: const Text(
                                                                             "Deal Again",
                                                                             style:
                                                                                 TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
@@ -1403,7 +1408,7 @@ class _DealsForStaff extends State<DealsForStaff> {
                               decoration: BoxDecoration(
                                   color: Colors.white,
                                   borderRadius: BorderRadius.circular(20),
-                                  boxShadow: [
+                                  boxShadow: const [
                                     BoxShadow(
                                         color: Colors.black26,
                                         spreadRadius: 1,
@@ -1416,20 +1421,20 @@ class _DealsForStaff extends State<DealsForStaff> {
                                 builder: (context, snapshot) {
                                   if (snapshot.connectionState ==
                                       ConnectionState.waiting) {
-                                    return Center(
+                                    return const Center(
                                       child: CircularProgressIndicator(),
                                     );
                                   }
 
                                   if (!snapshot.hasData ||
                                       snapshot.data!.docs.isEmpty) {
-                                    return Center(
+                                    return const Center(
                                       child: Text("No Users Found"),
                                     );
                                   }
 
                                   if (SearchGlobal.isEmpty) {
-                                    return Center(child: Text("Empty"));
+                                    return const Center(child: Text("Empty"));
                                   }
 
                                   return ListView.builder(
@@ -1467,7 +1472,7 @@ class _DealsForStaff extends State<DealsForStaff> {
                                                   color: Colors.white,
                                                   borderRadius:
                                                       BorderRadius.circular(15),
-                                                  boxShadow: [
+                                                  boxShadow: const [
                                                     BoxShadow(
                                                         color: Colors.black26,
                                                         spreadRadius: 1,
@@ -1498,7 +1503,7 @@ class _DealsForStaff extends State<DealsForStaff> {
                                                     padding:
                                                         const EdgeInsets.only(
                                                             left: 10),
-                                                    child: Container(
+                                                    child: SizedBox(
                                                         width: 150,
                                                         child: Text(
                                                           "${data['First_name']} ${data['Last_name']}",
@@ -1516,7 +1521,7 @@ class _DealsForStaff extends State<DealsForStaff> {
                                                               .toUpperCase() +
                                                           data['City']
                                                               .substring(1),
-                                                      style: TextStyle(
+                                                      style: const TextStyle(
                                                           color: Colors.green,
                                                           fontWeight:
                                                               FontWeight.bold),
@@ -1556,7 +1561,7 @@ class _DealsForStaff extends State<DealsForStaff> {
                                                   color: Colors.white,
                                                   borderRadius:
                                                       BorderRadius.circular(15),
-                                                  boxShadow: [
+                                                  boxShadow: const [
                                                     BoxShadow(
                                                         color: Colors.black26,
                                                         spreadRadius: 1,
@@ -1587,7 +1592,7 @@ class _DealsForStaff extends State<DealsForStaff> {
                                                     padding:
                                                         const EdgeInsets.only(
                                                             left: 10),
-                                                    child: Container(
+                                                    child: SizedBox(
                                                         width: 150,
                                                         child: Text(
                                                           "${data['First_name']} ${data['Last_name']}",
@@ -1605,7 +1610,7 @@ class _DealsForStaff extends State<DealsForStaff> {
                                                               .toUpperCase() +
                                                           data['City']
                                                               .substring(1),
-                                                      style: TextStyle(
+                                                      style: const TextStyle(
                                                           color: Colors.green,
                                                           fontWeight:
                                                               FontWeight.bold),
@@ -1636,9 +1641,7 @@ class _DealsForStaff extends State<DealsForStaff> {
                         child: Container(
                           height: screenHeight * 0.2,
                           width: screenWidth * 0.7,
-                          decoration: BoxDecoration(
-
-                          ),
+                          decoration: const BoxDecoration(),
                         ),
                       ),
                     )

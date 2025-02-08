@@ -56,13 +56,16 @@ class _ContactUs extends State<ContactUs> {
     String description = _descriptionController.text;
     String details = _detailsController.text;
 
-    if(fullName.isNotEmpty && email.isNotEmpty && details.isNotEmpty && description.isNotEmpty){
+    if (fullName.isNotEmpty &&
+        email.isNotEmpty &&
+        details.isNotEmpty &&
+        description.isNotEmpty) {
       await FirebaseFirestore.instance.collection("HelpCenter").add({
         "Email": email,
         "Name": fullName,
         "Query": details,
         "Title": description,
-        "Status" : false,
+        "Status": false,
       });
 
       // Clear the fields after sending
@@ -70,7 +73,7 @@ class _ContactUs extends State<ContactUs> {
       _emailController.clear();
       _descriptionController.clear();
       _detailsController.clear();
-    }else{
+    } else {
       Fluttertoast.showToast(msg: "Please fill details");
     }
   }
@@ -316,7 +319,6 @@ class _ContactUs extends State<ContactUs> {
                                 isLoading = false;
                                 Fluttertoast.showToast(msg: "Query Submited");
                               });
-
                             },
                             child: Text(
                               "Send Message",
