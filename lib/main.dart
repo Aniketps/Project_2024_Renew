@@ -12,7 +12,6 @@ import 'package:geolocator/geolocator.dart';
 import 'ContactUs.dart';
 import 'MainMap.dart';
 import 'StaffProfilePage.dart';
-import 'SubMap.dart';
 import 'TC.dart';
 import 'api/firebase_api.dart';
 import 'client.dart';
@@ -435,7 +434,7 @@ class _MyHomePageState extends State<MyHomePage> {
                         child: Row(
                           children: [
                             Container(
-                              width: screenWidth * 0.7,
+                              width: screenWidth * 0.88,
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(50),
                                 color: Colors.white,
@@ -470,25 +469,6 @@ class _MyHomePageState extends State<MyHomePage> {
                                     ),
                                   ),
                                 ],
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.only(left: 5),
-                              child: Container(
-                                height: 50,
-                                width: screenWidth * 0.18,
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(20),
-                                  color: Colors.white,
-                                  boxShadow: [
-                                    BoxShadow(
-                                        spreadRadius: 1,
-                                        color: Colors.black26,
-                                        blurRadius: 1),
-                                  ],
-                                ),
-                                child: Icon(Icons.filter_list_sharp,
-                                    size: 30, color: Colors.blue),
                               ),
                             ),
                           ],

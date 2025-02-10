@@ -819,7 +819,8 @@ class _UserView extends State<UserView> {
                                               width: screenWidth * 0.5,
                                               child: Text("Hour based")),
                                           Text((StaffData['Hour_Rate']
-                                                  .toString()) ??
+                                                      .toString() +
+                                                  "₹") ??
                                               '--'),
                                         ],
                                       ),
