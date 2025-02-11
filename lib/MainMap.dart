@@ -1,7 +1,13 @@
+import 'dart:async';
+import 'dart:math';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -16,28 +22,41 @@ class MainMap extends StatefulWidget {
   State<MainMap> createState() => _MainMapState();
 }
 
-class _MainMapState extends State<MainMap> {
-  List<LatLng> AvailableStaff = [];
+class StaffLocation {
+  final LatLng location;
+  final String staffID;
+  final String skill;
+  final String Profile_Pic;
 
-  List<LatLng> RegisteredNurseMarker = [];
-  List<LatLng> LicensdePracticalNurseMarker = [];
-  List<LatLng> CertifiedNursAssistentMarker = [];
-  List<LatLng> HomeHealthAidesMarker = [];
-  List<LatLng> PhysiotherapistsMarker = [];
-  List<LatLng> OccupationalTherapistsMarker = [];
-  List<LatLng> ParamedicsMarker = [];
-  List<LatLng> DisabledCaregiversMarker = [];
-  List<LatLng> CooksMarker = [];
-  List<LatLng> HousekeepersMarker = [];
-  List<LatLng> CleaningStaffMarker = [];
-  List<LatLng> BabysittersMarker = [];
-  List<LatLng> ElderCompanionsMarker = [];
-  List<LatLng> HomeGuardsMarker = [];
-  List<LatLng> SecurityGuardsMarker = [];
-  List<LatLng> PersonalCareAssistantsMarker = [];
-  List<LatLng> DriverMarker = [];
-  List<LatLng> AdministrativeAssistantsMarker = [];
-  List<LatLng> chefmarker = [];
+  StaffLocation(
+      {required this.location,
+      required this.staffID,
+      required this.skill,
+      required this.Profile_Pic});
+}
+
+class _MainMapState extends State<MainMap> {
+  List<StaffLocation> AvailableStaff = [];
+
+  List<StaffLocation> RegisteredNurseMarker = [];
+  List<StaffLocation> LicensdePracticalNurseMarker = [];
+  List<StaffLocation> CertifiedNursAssistentMarker = [];
+  List<StaffLocation> HomeHealthAidesMarker = [];
+  List<StaffLocation> PhysiotherapistsMarker = [];
+  List<StaffLocation> OccupationalTherapistsMarker = [];
+  List<StaffLocation> ParamedicsMarker = [];
+  List<StaffLocation> DisabledCaregiversMarker = [];
+  List<StaffLocation> CooksMarker = [];
+  List<StaffLocation> HousekeepersMarker = [];
+  List<StaffLocation> CleaningStaffMarker = [];
+  List<StaffLocation> BabysittersMarker = [];
+  List<StaffLocation> ElderCompanionsMarker = [];
+  List<StaffLocation> HomeGuardsMarker = [];
+  List<StaffLocation> SecurityGuardsMarker = [];
+  List<StaffLocation> PersonalCareAssistantsMarker = [];
+  List<StaffLocation> DriverMarker = [];
+  List<StaffLocation> AdministrativeAssistantsMarker = [];
+  List<StaffLocation> chefmarker = [];
 
   late double lat;
   late double long;
@@ -47,6 +66,7 @@ class _MainMapState extends State<MainMap> {
   @override
   void initState() {
     super.initState();
+    _mapController = MapController();
     LoaderCheck = !LoaderCheck;
     void _liveLocation() {
       LocationSettings locationSettings = LocationSettings(
@@ -77,9 +97,62 @@ class _MainMapState extends State<MainMap> {
     _liveLocation();
     getStaffLocation();
     LoaderCheck = !LoaderCheck;
+    UserCurrentLatLong();
   }
 
-  // skill[0].toLowerCase()+skill.substring(1)
+  late MapController _mapController;
+
+  double searchedlat = 0.0;
+  double searchedlong = 0.0;
+  Timer? _debounce;
+
+  Future<void> getCoordinatesFromName(String placeName) async {
+    try {
+      List<Location> locations = await locationFromAddress(placeName);
+      if (locations.isNotEmpty) {
+        setState(() {
+          searchedlat = locations.first.latitude;
+          searchedlong = locations.first.longitude;
+        });
+
+        // Move the map to new location
+        _mapController.move(LatLng(searchedlat, searchedlong), 14.0);
+      }
+    } catch (e) {
+      print("Error: $e");
+    }
+  }
+
+  late double currentUserlat;
+  late double currentUserlong;
+  bool isLoading = true;
+
+  void UserCurrentLatLong() async {
+    try {
+      User? user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        DocumentSnapshot data = await FirebaseFirestore.instance
+            .collection("user")
+            .doc(user.uid)
+            .get();
+
+        if (data.exists) {
+          setState(() {
+            currentUserlat = double.tryParse(data['lat'].toString()) ?? 0.0;
+            currentUserlong = double.tryParse(data['long'].toString()) ?? 0.0;
+            isLoading = false;
+          });
+        } else {
+          setState(() {
+            isLoading = false;
+          });
+          print("Document does not exist");
+        }
+      }
+    } catch (e) {
+      Fluttertoast.showToast(msg: "Error fetching user location: $e");
+    }
+  }
 
   Future<void> getStaffLocation() async {
     Stream<QuerySnapshot<Map<String, dynamic>>> querySnapshot =
@@ -91,79 +164,149 @@ class _MainMapState extends State<MainMap> {
         if (data['lat'] != null &&
             data['long'] != null &&
             data['professionOfStaff'] != null) {
-          DocumentSnapshot<Map<String, dynamic>> documentReference =
-              await FirebaseFirestore.instance
-                  .collection(data['professionOfStaff'])
-                  .doc(doc.id)
-                  .get();
-          var StatffsData = documentReference.data();
-          if (StatffsData?['Status'] == true) {
-            double p1 = double.parse(data['lat']);
-            double p2 = double.parse(data['long']);
-            setState(() {
-              switch (data['professionOfStaff']) {
-                case 'chef':
-                  chefmarker.add(LatLng(p1, p2));
-                  break;
-                case 'personal Care Assistants':
-                  PersonalCareAssistantsMarker.add(LatLng(p1, p2));
-                  break;
-                case 'driver':
-                  DriverMarker.add(LatLng(p1, p2));
-                  break;
-                case 'security Guards':
-                  SecurityGuardsMarker.add(LatLng(p1, p2));
-                  break;
-                case 'home Guards':
-                  HomeGuardsMarker.add(LatLng(p1, p2));
-                  break;
-                case 'elder Companions':
-                  ElderCompanionsMarker.add(LatLng(p1, p2));
-                  break;
-                case 'babysitters':
-                  BabysittersMarker.add(LatLng(p1, p2));
-                  break;
-                case 'cleaner':
-                  CleaningStaffMarker.add(LatLng(p1, p2));
-                  break;
-                case 'housekeepers':
-                  HousekeepersMarker.add(LatLng(p1, p2));
-                  break;
-                case 'elderly':
-                  ElderCompanionsMarker.add(LatLng(p1, p2));
-                  break;
-                case 'paramedics':
-                  ParamedicsMarker.add(LatLng(p1, p2));
-                  break;
-                case 'occupational Therapists':
-                  OccupationalTherapistsMarker.add(LatLng(p1, p2));
-                  break;
-                case 'physiotherapists':
-                  PhysiotherapistsMarker.add(LatLng(p1, p2));
-                  break;
-                case 'home Health Aides':
-                  HomeHealthAidesMarker.add(LatLng(p1, p2));
-                  break;
-                case 'certified Nursing Assistants':
-                  CertifiedNursAssistentMarker.add(LatLng(p1, p2));
-                  break;
-                case 'licensed Practical Nurses':
-                  LicensdePracticalNurseMarker.add(LatLng(p1, p2));
-                  break;
-                case 'registered Nurses':
-                  RegisteredNurseMarker.add(LatLng(p1, p2));
-                  break;
-              }
+          try {
+            // Safely get 'professionOfStaff', falling back to an empty string if null
+            String professionOfStaff = data['professionOfStaff'] ?? '';
 
-              AvailableStaff.add(LatLng(p1, p2));
-            });
+            // Check if professionOfStaff is empty
+            if (professionOfStaff.isEmpty) {
+              print('Invalid professionOfStaff for staff ID: ${doc.id}');
+              continue; // Skip this document if profession is empty
+            }
+
+            // Ensure 'lat' and 'long' are not null, and handle if they are.
+            double? lat = double.tryParse(data['lat'] ?? '');
+            double? long = double.tryParse(data['long'] ?? '');
+
+            if (lat != null && long != null) {
+              DocumentSnapshot<Map<String, dynamic>> documentReference =
+                  await FirebaseFirestore.instance
+                      .collection(professionOfStaff)
+                      .doc(doc.id)
+                      .get();
+
+              var StatffsData = documentReference.data();
+
+              if (StatffsData?['Status'] == true) {
+                String StaffID = doc.id;
+                print("The uid is : $StaffID");
+                String Skill = professionOfStaff;
+
+                setState(() {
+                  StaffLocation staffLocation = StaffLocation(
+                    location: LatLng(lat, long),
+                    staffID: StaffID,
+                    skill: Skill,
+                    Profile_Pic: StatffsData?['Profile_Pic'] ??
+                        "https://img.pikbest.com/png-images/qiantu/cute-cartoon-male-company-employee-happy-smiling-face-1_2659207.png!sw800",
+                  );
+
+                  // Add to corresponding markers list based on profession
+                  switch (professionOfStaff) {
+                    case 'chef':
+                      chefmarker.add(staffLocation);
+                      break;
+                    case 'personal Care Assistants':
+                      PersonalCareAssistantsMarker.add(staffLocation);
+                      break;
+                    case 'driver':
+                      DriverMarker.add(staffLocation);
+                      break;
+                    case 'security Guards':
+                      SecurityGuardsMarker.add(staffLocation);
+                      break;
+                    case 'home Guards':
+                      HomeGuardsMarker.add(staffLocation);
+                      break;
+                    case 'elder Companions':
+                      ElderCompanionsMarker.add(staffLocation);
+                      break;
+                    case 'babysitters':
+                      BabysittersMarker.add(staffLocation);
+                      break;
+                    case 'cleaner':
+                      CleaningStaffMarker.add(staffLocation);
+                      break;
+                    case 'housekeepers':
+                      HousekeepersMarker.add(staffLocation);
+                      break;
+                    case 'elderly':
+                      ElderCompanionsMarker.add(staffLocation);
+                      break;
+                    case 'paramedics':
+                      ParamedicsMarker.add(staffLocation);
+                      break;
+                    case 'occupational Therapists':
+                      OccupationalTherapistsMarker.add(staffLocation);
+                      break;
+                    case 'physiotherapists':
+                      PhysiotherapistsMarker.add(staffLocation);
+                      break;
+                    case 'home Health Aides':
+                      HomeHealthAidesMarker.add(staffLocation);
+                      break;
+                    case 'certified Nursing Assistants':
+                      CertifiedNursAssistentMarker.add(staffLocation);
+                      break;
+                    case 'licensed Practical Nurses':
+                      LicensdePracticalNurseMarker.add(staffLocation);
+                      break;
+                    case 'registered Nurses':
+                      RegisteredNurseMarker.add(staffLocation);
+                      break;
+                  }
+
+                  AvailableStaff.add(staffLocation);
+                });
+              }
+            }
+          } catch (e) {
+            print('Error fetching document for ${doc.id}: $e');
           }
         }
       }
     });
   }
 
-  String SearchGlobal = '';
+  @override
+  void dispose() {
+    _debounce?.cancel(); // Cancel debounce when widget is removed
+    super.dispose();
+  }
+
+  Widget createMarkerLayer(List<StaffLocation> markerData, Color color) {
+    return MarkerLayer(
+      markers: markerData
+          .map(
+            (staffLocation) => Marker(
+              point: staffLocation.location,
+              width: 40.0,
+              height: 40.0,
+              child: GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => StaffProfilePage(
+                        StaffID: staffLocation.staffID,
+                        Skill: staffLocation.skill,
+                      ),
+                    ),
+                  );
+                },
+                child: Container(
+                  child: CircleAvatar(
+                    radius: 15.0,
+                    backgroundImage: NetworkImage(staffLocation.Profile_Pic),
+                    backgroundColor: color,
+                  ),
+                ),
+              ),
+            ),
+          )
+          .toList(),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -195,637 +338,181 @@ class _MainMapState extends State<MainMap> {
               ],
             ),
           ),
-          Stack(
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(top: 125),
-                child: Stack(
+          isLoading
+              ? CircularProgressIndicator()
+              : Stack(
                   children: [
                     Padding(
-                      padding: const EdgeInsets.only(top: 25),
-                      child: Container(
-                        child: LoaderCheck
-                            ? Center(child: CircularProgressIndicator())
-                            : FlutterMap(
-                                options: MapOptions(
-                                  initialZoom: 14,
-                                  maxZoom: 18,
-                                  minZoom: 3,
-                                  center: LatLng(18.577401, 73.9774084),
-                                ),
-                                children: [
-                                    TileLayer(
-                                      urlTemplate:
-                                          'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                                      fallbackUrl:
-                                          'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                                    ),
-                                    MarkerLayer(
-                                      markers:
-                                          AvailableStaff.map((item) => Marker(
-                                              point: item,
-                                              width: 80,
-                                              height: 80,
-                                              child: Icon(
-                                                Icons.location_history,
-                                                size: 30,
-                                                color: Colors.red,
-                                              ))).toList(),
-                                    ),
+                      padding: const EdgeInsets.only(top: 125),
+                      child: Stack(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.only(top: 25),
+                            child: Container(
+                              child: LoaderCheck
+                                  ? Center(child: CircularProgressIndicator())
+                                  : FlutterMap(
+                                      mapController: _mapController,
+                                      options: MapOptions(
+                                        initialZoom: 14,
+                                        maxZoom: 18,
+                                        minZoom: 3,
+                                        center: (searchedlat == 0.0 &&
+                                                searchedlong == 0.0)
+                                            ? LatLng(
+                                                currentUserlat, currentUserlong)
+                                            : LatLng(searchedlat, searchedlong),
+                                      ),
+                                      children: [
+                                          TileLayer(
+                                            urlTemplate:
+                                                'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                                            fallbackUrl:
+                                                'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                                          ),
+                                          MarkerLayer(
+                                            markers: AvailableStaff.map(
+                                                (item) => Marker(
+                                                    point: item.location,
+                                                    width: 80,
+                                                    height: 80,
+                                                    child: Icon(
+                                                      Icons.location_history,
+                                                      size: 30,
+                                                      color: Colors.red,
+                                                    ))).toList(),
+                                          ),
 
-                                    // New data
-
-                                    // Chef
-                                    MarkerLayer(
-                                      markers: chefmarker
-                                          .map(
-                                            (point) => Marker(
-                                              point: point,
-                                              width: 80.0,
-                                              height: 80.0,
-                                              child: Icon(
-                                                Icons.person_pin,
-                                                color: Colors.yellow,
-                                                size: 30.0,
+                                          // Current User Location
+                                          MarkerLayer(
+                                            markers: [
+                                              Marker(
+                                                point: LatLng(currentUserlat,
+                                                    currentUserlong), // Corrected point format
+                                                width: 80.0,
+                                                height: 80.0,
+                                                child: Icon(
+                                                  Icons.location_history_sharp,
+                                                  color: Colors.green,
+                                                  size: 30.0,
+                                                ),
                                               ),
-                                            ),
-                                          )
-                                          .toList(),
-                                    ),
+                                            ],
+                                          ),
 
-                                    // Licenade Practical Nurse
-                                    MarkerLayer(
-                                      markers: LicensdePracticalNurseMarker.map(
-                                        (point) => Marker(
-                                          point: point,
-                                          width: 80.0,
-                                          height: 80.0,
-                                          child: Icon(
-                                            Icons.person_pin,
-                                            color: const Color.fromARGB(
-                                                255, 3, 94, 230),
-                                            size: 30.0,
-                                          ),
-                                        ),
-                                      ).toList(),
-                                    ),
-
-                                    // Certified Nurse Assistant
-                                    MarkerLayer(
-                                      markers: CertifiedNursAssistentMarker.map(
-                                        (point) => Marker(
-                                          point: point,
-                                          width: 80.0,
-                                          height: 80.0,
-                                          child: Icon(
-                                            Icons.person_pin,
-                                            color: Colors.purple,
-                                            size: 30.0,
-                                          ),
-                                        ),
-                                      ).toList(),
-                                    ),
-
-                                    // Home Health Aides
-                                    MarkerLayer(
-                                      markers: HomeHealthAidesMarker.map(
-                                        (point) => Marker(
-                                          point: point,
-                                          width: 80.0,
-                                          height: 80.0,
-                                          child: Icon(
-                                            Icons.person_pin,
-                                            color: Colors.blue,
-                                            size: 30.0,
-                                          ),
-                                        ),
-                                      ).toList(),
-                                    ),
-
-                                    // Physiotherapists
-                                    MarkerLayer(
-                                      markers: PhysiotherapistsMarker.map(
-                                        (point) => Marker(
-                                          point: point,
-                                          width: 80.0,
-                                          height: 80.0,
-                                          child: Icon(
-                                            Icons.person_pin,
-                                            color: Colors.black,
-                                            size: 30.0,
-                                          ),
-                                        ),
-                                      ).toList(),
-                                    ),
-
-                                    // Occupational Therapists
-                                    MarkerLayer(
-                                      markers: OccupationalTherapistsMarker.map(
-                                        (point) => Marker(
-                                          point: point,
-                                          width: 80.0,
-                                          height: 80.0,
-                                          child: Icon(
-                                            Icons.person_pin,
-                                            color: Colors.green,
-                                            size: 30.0,
-                                          ),
-                                        ),
-                                      ).toList(),
-                                    ),
-
-                                    // Paramedics
-                                    MarkerLayer(
-                                      markers: ParamedicsMarker.map(
-                                        (point) => Marker(
-                                          point: point,
-                                          width: 80.0,
-                                          height: 80.0,
-                                          child: Icon(
-                                            Icons.person_pin,
-                                            color: Colors.brown,
-                                            size: 30.0,
-                                          ),
-                                        ),
-                                      ).toList(),
-                                    ),
-
-                                    MarkerLayer(
-                                      markers: DisabledCaregiversMarker.map(
-                                        (point) => Marker(
-                                          point: point,
-                                          width: 80.0,
-                                          height: 80.0,
-                                          child: Icon(
-                                            Icons.person_pin,
-                                            color: Colors.pink,
-                                            size: 30.0,
-                                          ),
-                                        ),
-                                      ).toList(),
-                                    ),
-                                    MarkerLayer(
-                                      markers: CooksMarker.map(
-                                        (point) => Marker(
-                                          point: point,
-                                          width: 80.0,
-                                          height: 80.0,
-                                          child: Icon(
-                                            Icons.person_pin,
-                                            color: const Color.fromRGBO(
-                                                240, 181, 177, 1),
-                                            size: 30.0,
-                                          ),
-                                        ),
-                                      ).toList(),
-                                    ),
-                                    MarkerLayer(
-                                      markers: HousekeepersMarker.map(
-                                        (point) => Marker(
-                                          point: point,
-                                          width: 80.0,
-                                          height: 80.0,
-                                          child: Icon(
-                                            Icons.person_pin,
-                                            color: const Color.fromARGB(
-                                                255, 234, 132, 132),
-                                            size: 30.0,
-                                          ),
-                                        ),
-                                      ).toList(),
-                                    ),
-                                    MarkerLayer(
-                                      markers: CleaningStaffMarker.map(
-                                        (point) => Marker(
-                                          point: point,
-                                          width: 80.0,
-                                          height: 80.0,
-                                          child: Icon(
-                                            Icons.person_pin,
-                                            color: const Color.fromARGB(
-                                                183, 226, 43, 30),
-                                            size: 30.0,
-                                          ),
-                                        ),
-                                      ).toList(),
-                                    ),
-                                    MarkerLayer(
-                                      markers: BabysittersMarker.map(
-                                        (point) => Marker(
-                                          point: point,
-                                          width: 80.0,
-                                          height: 80.0,
-                                          child: Icon(
-                                            Icons.person_pin,
-                                            color: const Color.fromARGB(
-                                                255, 2, 242, 10),
-                                            size: 30.0,
-                                          ),
-                                        ),
-                                      ).toList(),
-                                    ),
-                                    MarkerLayer(
-                                      markers: ElderCompanionsMarker.map(
-                                        (point) => Marker(
-                                          point: point,
-                                          width: 80.0,
-                                          height: 80.0,
-                                          child: Icon(
-                                            Icons.person_pin,
-                                            color: const Color.fromARGB(
-                                                255, 3, 86, 153),
-                                            size: 30.0,
-                                          ),
-                                        ),
-                                      ).toList(),
-                                    ),
-                                    MarkerLayer(
-                                      markers: HomeGuardsMarker.map(
-                                        (point) => Marker(
-                                          point: point,
-                                          width: 80.0,
-                                          height: 80.0,
-                                          child: Icon(
-                                            Icons.person_pin,
-                                            color: Colors.red,
-                                            size: 30.0,
-                                          ),
-                                        ),
-                                      ).toList(),
-                                    ),
-                                    MarkerLayer(
-                                      markers: SecurityGuardsMarker.map(
-                                        (point) => Marker(
-                                          point: point,
-                                          width: 80.0,
-                                          height: 80.0,
-                                          child: Icon(
-                                            Icons.person_pin,
-                                            color: Colors.blueGrey,
-                                            size: 30.0,
-                                          ),
-                                        ),
-                                      ).toList(),
-                                    ),
-                                    MarkerLayer(
-                                      markers: PersonalCareAssistantsMarker.map(
-                                        (point) => Marker(
-                                          point: point,
-                                          width: 80.0,
-                                          height: 80.0,
-                                          child: Icon(
-                                            Icons.person_pin,
-                                            color: Colors.white,
-                                            size: 30.0,
-                                          ),
-                                        ),
-                                      ).toList(),
-                                    ),
-                                    MarkerLayer(
-                                      markers: DriverMarker.map(
-                                        (point) => Marker(
-                                          point: point,
-                                          width: 80.0,
-                                          height: 80.0,
-                                          child: Icon(
-                                            Icons.person_pin,
-                                            color: const Color.fromARGB(
-                                                255, 119, 2, 41),
-                                            size: 30.0,
-                                          ),
-                                        ),
-                                      ).toList(),
-                                    ),
-                                    MarkerLayer(
-                                      markers:
-                                          AdministrativeAssistantsMarker.map(
-                                        (point) => Marker(
-                                          point: point,
-                                          width: 80.0,
-                                          height: 80.0,
-                                          child: Icon(
-                                            Icons.person_pin,
-                                            color: const Color.fromARGB(
-                                                255, 25, 0, 29),
-                                            size: 30.0,
-                                          ),
-                                        ),
-                                      ).toList(),
-                                    ),
-                                  ]),
-                      ),
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 5),
-                          child: Row(
+                                          // New data
+                                          // Usage of the function for different staff
+                                          createMarkerLayer(
+                                              chefmarker, Colors.yellow),
+                                          createMarkerLayer(
+                                              LicensdePracticalNurseMarker,
+                                              Color.fromARGB(255, 3, 94, 230)),
+                                          createMarkerLayer(
+                                              CertifiedNursAssistentMarker,
+                                              Colors.purple),
+                                          createMarkerLayer(
+                                              HomeHealthAidesMarker,
+                                              Colors.blue),
+                                          createMarkerLayer(
+                                              PhysiotherapistsMarker,
+                                              Colors.black),
+                                          createMarkerLayer(
+                                              OccupationalTherapistsMarker,
+                                              Colors.green),
+                                          createMarkerLayer(
+                                              ParamedicsMarker, Colors.brown),
+                                          createMarkerLayer(
+                                              DisabledCaregiversMarker,
+                                              Colors.pink),
+                                          createMarkerLayer(CooksMarker,
+                                              Color.fromRGBO(240, 181, 177, 1)),
+                                          createMarkerLayer(
+                                              HousekeepersMarker,
+                                              Color.fromARGB(
+                                                  255, 234, 132, 132)),
+                                          createMarkerLayer(CleaningStaffMarker,
+                                              Color.fromARGB(183, 226, 43, 30)),
+                                          createMarkerLayer(BabysittersMarker,
+                                              Color.fromARGB(255, 2, 242, 10)),
+                                          createMarkerLayer(
+                                              ElderCompanionsMarker,
+                                              Color.fromARGB(255, 3, 86, 153)),
+                                          createMarkerLayer(
+                                              HomeGuardsMarker, Colors.red),
+                                          createMarkerLayer(
+                                              SecurityGuardsMarker,
+                                              Colors.blueGrey),
+                                          createMarkerLayer(
+                                              PersonalCareAssistantsMarker,
+                                              Colors.white),
+                                          createMarkerLayer(DriverMarker,
+                                              Color.fromARGB(255, 119, 2, 41)),
+                                          createMarkerLayer(
+                                              AdministrativeAssistantsMarker,
+                                              Color.fromARGB(255, 25, 0, 29)),
+                                        ]),
+                            ),
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Container(
-                                width: screenWidth * 0.7,
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(50),
-                                  color: Colors.white,
-                                  boxShadow: [
-                                    BoxShadow(
-                                        spreadRadius: 1,
-                                        color: Colors.black26,
-                                        blurRadius: 1)
-                                  ],
-                                ),
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 5),
                                 child: Row(
                                   children: [
-                                    Padding(
-                                      padding: const EdgeInsets.only(left: 10),
-                                      child: Icon(Icons.search,
-                                          color: Colors.blue, size: 25),
-                                    ),
-                                    Expanded(
-                                      child: TextField(
-                                        onChanged: (value) {
-                                          setState(() {
-                                            SearchGlobal = value;
-                                          });
-                                        },
-                                        decoration: InputDecoration(
-                                          border: InputBorder.none,
-                                          hintText: 'Search...',
-                                          contentPadding:
-                                              const EdgeInsets.symmetric(
-                                                  horizontal: 10),
-                                        ),
+                                    Container(
+                                      width: screenWidth * 0.88,
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(50),
+                                        color: Colors.white,
+                                        boxShadow: [
+                                          BoxShadow(
+                                              spreadRadius: 1,
+                                              color: Colors.black26,
+                                              blurRadius: 1)
+                                        ],
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          Padding(
+                                            padding:
+                                                const EdgeInsets.only(left: 10),
+                                            child: Icon(Icons.search,
+                                                color: Colors.blue, size: 25),
+                                          ),
+                                          Expanded(
+                                            child: TextField(
+                                              onChanged: (value) {
+                                                if (_debounce?.isActive ??
+                                                    false) _debounce!.cancel();
+                                                _debounce = Timer(
+                                                    Duration(milliseconds: 500),
+                                                    () {
+                                                  getCoordinatesFromName(value);
+                                                });
+                                              },
+                                              decoration: InputDecoration(
+                                                border: InputBorder.none,
+                                                hintText: 'Search...',
+                                                contentPadding:
+                                                    EdgeInsets.symmetric(
+                                                        horizontal: 10),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ),
                                   ],
                                 ),
                               ),
-                              Padding(
-                                padding: const EdgeInsets.only(left: 5),
-                                child: Container(
-                                  height: 50,
-                                  width: screenWidth * 0.18,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(20),
-                                    color: Colors.white,
-                                    boxShadow: [
-                                      BoxShadow(
-                                          spreadRadius: 1,
-                                          color: Colors.black26,
-                                          blurRadius: 1),
-                                    ],
-                                  ),
-                                  child: Icon(Icons.filter_list_sharp,
-                                      size: 30, color: Colors.blue),
-                                ),
-                              ),
                             ],
                           ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              SearchGlobal == ''
-                  ? Container()
-                  : Padding(
-                      padding: const EdgeInsets.only(
-                        top: 180,
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Container(
-                              height: screenHeight * 0.5,
-                              width: screenWidth * 0.85,
-                              decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(20),
-                                  boxShadow: [
-                                    BoxShadow(
-                                        color: Colors.black26,
-                                        spreadRadius: 1,
-                                        blurRadius: 2)
-                                  ]),
-                              child: StreamBuilder<QuerySnapshot>(
-                                stream: FirebaseFirestore.instance
-                                    .collection('user')
-                                    .snapshots(),
-                                builder: (context, snapshot) {
-                                  if (snapshot.connectionState ==
-                                      ConnectionState.waiting) {
-                                    return Center(
-                                      child: CircularProgressIndicator(),
-                                    );
-                                  }
-
-                                  if (!snapshot.hasData ||
-                                      snapshot.data!.docs.isEmpty) {
-                                    return Center(
-                                      child: Text("No Users Found"),
-                                    );
-                                  }
-
-                                  if (SearchGlobal.isEmpty) {
-                                    return Center(child: Text("Empty"));
-                                  }
-
-                                  return ListView.builder(
-                                    padding: EdgeInsets.zero,
-                                    itemCount: snapshot.data!.docs.length,
-                                    itemBuilder: (context, index) {
-                                      var data = snapshot.data!.docs[index]
-                                          .data() as Map<String, dynamic>;
-                                      var UID = snapshot.data!.docs[index].id;
-                                      if (data['professionOfStaff'] != null &&
-                                          data['First_name'] != null &&
-                                          data['First_name']
-                                              .toString()
-                                              .toLowerCase()
-                                              .startsWith(
-                                                  SearchGlobal.toLowerCase())) {
-                                        return Padding(
-                                          padding: const EdgeInsets.all(5.0),
-                                          child: InkWell(
-                                            onTap: () {
-                                              Navigator.push(
-                                                  context,
-                                                  MaterialPageRoute(
-                                                    builder: (context) =>
-                                                        StaffProfilePage(
-                                                            StaffID: UID,
-                                                            Skill: data[
-                                                                'professionOfStaff']),
-                                                  ));
-                                            },
-                                            child: Container(
-                                              height: 50,
-                                              width: 200,
-                                              decoration: BoxDecoration(
-                                                  color: Colors.white,
-                                                  borderRadius:
-                                                      BorderRadius.circular(15),
-                                                  boxShadow: [
-                                                    BoxShadow(
-                                                        color: Colors.black26,
-                                                        spreadRadius: 1,
-                                                        blurRadius: 1)
-                                                  ]),
-                                              child: Row(
-                                                children: [
-                                                  Padding(
-                                                    padding:
-                                                        const EdgeInsets.only(
-                                                            left: 10),
-                                                    child: Container(
-                                                      height: 40,
-                                                      width: 40,
-                                                      decoration: BoxDecoration(
-                                                          borderRadius:
-                                                              BorderRadius
-                                                                  .circular(40),
-                                                          image: DecorationImage(
-                                                              image: NetworkImage(
-                                                                  data[
-                                                                      'Profile_Pic']),
-                                                              fit: BoxFit
-                                                                  .cover)),
-                                                    ),
-                                                  ),
-                                                  Padding(
-                                                    padding:
-                                                        const EdgeInsets.only(
-                                                            left: 10),
-                                                    child: Container(
-                                                        width: 150,
-                                                        child: Text(
-                                                          "${data['First_name']} ${data['Last_name']}",
-                                                          overflow: TextOverflow
-                                                              .ellipsis,
-                                                          maxLines: 1,
-                                                        )),
-                                                  ),
-                                                  Padding(
-                                                    padding:
-                                                        const EdgeInsets.only(
-                                                            left: 10),
-                                                    child: Text(
-                                                      data['City'][0]
-                                                              .toUpperCase() +
-                                                          data['City']
-                                                              .substring(1),
-                                                      style: TextStyle(
-                                                          color: Colors.green,
-                                                          fontWeight:
-                                                              FontWeight.bold),
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          ),
-                                        );
-                                      } else if (data['professionOfStaff'] !=
-                                              null &&
-                                          data['First_name'] != null &&
-                                          data['City']
-                                              .toString()
-                                              .toLowerCase()
-                                              .startsWith(
-                                                  SearchGlobal.toLowerCase())) {
-                                        return Padding(
-                                          padding: const EdgeInsets.all(5.0),
-                                          child: InkWell(
-                                            onTap: () {
-                                              Navigator.push(
-                                                  context,
-                                                  MaterialPageRoute(
-                                                    builder: (context) =>
-                                                        StaffProfilePage(
-                                                            StaffID: UID,
-                                                            Skill: data[
-                                                                'professionOfStaff']),
-                                                  ));
-                                            },
-                                            child: Container(
-                                              height: 50,
-                                              width: 200,
-                                              decoration: BoxDecoration(
-                                                  color: Colors.white,
-                                                  borderRadius:
-                                                      BorderRadius.circular(15),
-                                                  boxShadow: [
-                                                    BoxShadow(
-                                                        color: Colors.black26,
-                                                        spreadRadius: 1,
-                                                        blurRadius: 1)
-                                                  ]),
-                                              child: Row(
-                                                children: [
-                                                  Padding(
-                                                    padding:
-                                                        const EdgeInsets.only(
-                                                            left: 10),
-                                                    child: Container(
-                                                      height: 40,
-                                                      width: 40,
-                                                      decoration: BoxDecoration(
-                                                          borderRadius:
-                                                              BorderRadius
-                                                                  .circular(40),
-                                                          image: DecorationImage(
-                                                              image: NetworkImage(
-                                                                  data[
-                                                                      'Profile_Pic']),
-                                                              fit: BoxFit
-                                                                  .cover)),
-                                                    ),
-                                                  ),
-                                                  Padding(
-                                                    padding:
-                                                        const EdgeInsets.only(
-                                                            left: 10),
-                                                    child: Container(
-                                                        width: 150,
-                                                        child: Text(
-                                                          "${data['First_name']} ${data['Last_name']}",
-                                                          overflow: TextOverflow
-                                                              .ellipsis,
-                                                          maxLines: 1,
-                                                        )),
-                                                  ),
-                                                  Padding(
-                                                    padding:
-                                                        const EdgeInsets.only(
-                                                            left: 10),
-                                                    child: Text(
-                                                      data['City'][0]
-                                                              .toUpperCase() +
-                                                          data['City']
-                                                              .substring(1),
-                                                      style: TextStyle(
-                                                          color: Colors.green,
-                                                          fontWeight:
-                                                              FontWeight.bold),
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          ),
-                                        );
-                                      }
-                                      return Container();
-                                    },
-                                  );
-                                },
-                              )),
                         ],
                       ),
                     ),
-            ],
-          )
+                  ],
+                )
         ],
       ),
     );

@@ -331,19 +331,25 @@ class _MyHomePageState extends State<MyHomePage> {
             color: Color(0xfffffcc9),
             child: AppBar(
               title: InkWell(
-                  onTap: () {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => MainMap(),
-                        ));
-                  },
-                  child: Text(
-                      (StaffData != null && StaffData['City'] != null)
-                          ? StaffData['City']
-                          : "Location...",
-                      style: TextStyle(
-                          fontSize: 18, fontWeight: FontWeight.bold))),
+                onTap: () {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => MainMap(),
+                      ));
+                },
+                child: Text(
+                  StaffData?['City'] ?? "Location...",
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    decoration: TextDecoration.underline, // Underline effect
+                    decorationThickness: 1.5, // Makes underline more visible
+                    decorationColor: Colors.blue, // Matches text color
+                    color: Colors.blue, // Standard clickable link color
+                  ),
+                ),
+              ),
               backgroundColor: Color(0xfffffcc9),
               automaticallyImplyLeading: true,
             ),
