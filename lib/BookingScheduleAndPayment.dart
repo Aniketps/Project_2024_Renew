@@ -156,6 +156,8 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
   TextEditingController City = TextEditingController();
   TextEditingController SubAddress = TextEditingController();
   TextEditingController Address = TextEditingController();
+  bool isAccepted = false;
+  bool isAcceptOpen = false;
 
   @override
   Widget build(BuildContext context) {
@@ -265,26 +267,29 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                     child: Column(
                       children: [
                         lat == ''
-                            ? Center(
-                                child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Padding(
-                                    padding: const EdgeInsets.all(10.0),
-                                    child: CircularProgressIndicator(),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.all(10.0),
-                                    child: Text(
-                                      LoadingText,
-                                      style: TextStyle(
-                                          color: Colors.green,
-                                          fontWeight: FontWeight.bold),
+                            ? Padding(
+                                padding: const EdgeInsets.only(top: 200.0),
+                                child: Center(
+                                    child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Padding(
+                                      padding: const EdgeInsets.all(10.0),
+                                      child: CircularProgressIndicator(),
                                     ),
-                                  )
-                                ],
-                              ))
+                                    Padding(
+                                      padding: const EdgeInsets.all(10.0),
+                                      child: Text(
+                                        LoadingText,
+                                        style: TextStyle(
+                                            color: Colors.green,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                    )
+                                  ],
+                                )),
+                              )
                             : Stack(
                                 children: [
                                   SingleChildScrollView(
@@ -1162,7 +1167,100 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                                             const EdgeInsets
                                                                 .all(5.0),
                                                         child: InkWell(
-                                                          onTap: () async {
+                                                          onTap: () {
+                                                            setState(() {
+                                                              isAcceptOpen =
+                                                                  true;
+                                                            });
+                                                          },
+                                                          child: Container(
+                                                            height: 50,
+                                                            width: screenWidth *
+                                                                0.9,
+                                                            decoration: BoxDecoration(
+                                                                color: Colors
+                                                                    .green,
+                                                                borderRadius:
+                                                                    BorderRadius
+                                                                        .circular(
+                                                                            10),
+                                                                boxShadow: [
+                                                                  BoxShadow(
+                                                                      color: Colors
+                                                                          .black26,
+                                                                      spreadRadius:
+                                                                          1,
+                                                                      blurRadius:
+                                                                          1)
+                                                                ]),
+                                                            child: Center(
+                                                                child: Text(
+                                                              "Secure Pay now ${total} ₹",
+                                                              style: TextStyle(
+                                                                  color: Colors
+                                                                      .white),
+                                                            )),
+                                                          ),
+                                                        ),
+                                                      )
+                                                    ],
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  (isAcceptOpen)
+                                      ? Positioned(
+                                          bottom: 150,
+                                          right: 0,
+                                          left: 0,
+                                          child: Center(
+                                            child: Container(
+                                              alignment: Alignment.center,
+                                              height: 160,
+                                              width: screenWidth * 0.9,
+                                              decoration: BoxDecoration(
+                                                color: Colors.white,
+                                                borderRadius:
+                                                    BorderRadius.circular(15),
+                                                border: Border.all(
+                                                    color: Colors.blue,
+                                                    width: 1),
+                                              ),
+                                              child: Column(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.center,
+                                                children: [
+                                                  Text(
+                                                    "Warning : Please make sure to call staff for the confirmation of availability before you hire for work and pay",
+                                                    textAlign: TextAlign.center,
+                                                    style: TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.bold),
+                                                  ),
+                                                  SizedBox(height: 10),
+                                                  Row(
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .spaceAround,
+                                                    children: [
+                                                      ElevatedButton(
+                                                          onPressed: () {
+                                                            isAcceptOpen =
+                                                                false;
+                                                          },
+                                                          child: Text(
+                                                              "I will call")),
+                                                      ElevatedButton(
+                                                          onPressed: () async {
+                                                            isAcceptOpen =
+                                                                false;
                                                             var UID =
                                                                 FirebaseAuth
                                                                     .instance
@@ -1190,6 +1288,8 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                                                     .isNotEmpty &&
                                                                 place
                                                                     .isNotEmpty) {
+                                                              // Payment logic
+
                                                               if ("Payment Successful" ==
                                                                   "Payment Successful") {
                                                                 try {
@@ -1523,46 +1623,16 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                                               }
                                                             }
                                                           },
-                                                          child: Container(
-                                                            height: 50,
-                                                            width: screenWidth *
-                                                                0.9,
-                                                            decoration: BoxDecoration(
-                                                                color: Colors
-                                                                    .green,
-                                                                borderRadius:
-                                                                    BorderRadius
-                                                                        .circular(
-                                                                            10),
-                                                                boxShadow: [
-                                                                  BoxShadow(
-                                                                      color: Colors
-                                                                          .black26,
-                                                                      spreadRadius:
-                                                                          1,
-                                                                      blurRadius:
-                                                                          1)
-                                                                ]),
-                                                            child: Center(
-                                                                child: Text(
-                                                              "Sucure Pay now ${total} ₹",
-                                                              style: TextStyle(
-                                                                  color: Colors
-                                                                      .white),
-                                                            )),
-                                                          ),
-                                                        ),
-                                                      )
+                                                          child: Text(
+                                                              "Already Called"))
                                                     ],
-                                                  ),
-                                                ),
-                                              ],
+                                                  )
+                                                ],
+                                              ),
                                             ),
                                           ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
+                                        )
+                                      : Container(),
                                   EnterAddress
                                       ? Center(
                                           child: Container(

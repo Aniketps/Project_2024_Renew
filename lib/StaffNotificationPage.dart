@@ -6,6 +6,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:intl/intl.dart';
 
 import 'TempMap.dart';
 
@@ -86,9 +87,25 @@ class _StaffNotificationPage extends State<StaffNotificationPage> {
               return Center(child: CircularProgressIndicator());
             var users = snapshot.data?.docs.reversed.toList() ?? [];
             List<Widget> userViews = [];
+            DateTime now = DateTime.now();
+            DateFormat dateFormat = DateFormat("d/M/yyyy");
+            DateFormat timeFormat = DateFormat("h:mm a");
 
             for (var user in users) {
-              if (user["staffUID"] == uid && user['status'] != "Completed") {
+              String scheduledDateEnd = user["ScheduledDateEnd"];
+              String scheduledTimeEnd = user["ScheduledTimeEnd"];
+              DateTime endDate = dateFormat.parse(scheduledDateEnd);
+              DateTime endTime = timeFormat.parse(scheduledTimeEnd);
+              DateTime combinedEndDateTime = DateTime(
+                endDate.year,
+                endDate.month,
+                endDate.day,
+                endTime.hour,
+                endTime.minute,
+              );
+              if (user["staffUID"] == uid &&
+                  user['status'] != "Completed" &&
+                  !combinedEndDateTime.isBefore(now)) {
                 userViews.add(
                   FutureBuilder(
                     future: Future.wait([
@@ -109,7 +126,7 @@ class _StaffNotificationPage extends State<StaffNotificationPage> {
                               Padding(
                                 padding: const EdgeInsets.all(10.0),
                                 child: Container(
-                                  height: screenHeight * 0.64,
+                                  height: screenHeight * 0.70,
                                   width: screenWidth * 0.9,
                                   decoration: BoxDecoration(
                                     color: Colors.white,
@@ -159,8 +176,42 @@ class _StaffNotificationPage extends State<StaffNotificationPage> {
                                                   )
                                                 ],
                                               ),
-                                              child: Icon(CupertinoIcons
-                                                  .profile_circled),
+                                              child: (currentUserData
+                                                          .containsKey(
+                                                              "Profile_Pic") &&
+                                                      currentUserData[
+                                                              "Profile_Pic"] !=
+                                                          null &&
+                                                      currentUserData[
+                                                              "Profile_Pic"]
+                                                          .isNotEmpty)
+                                                  ? Container(
+                                                      height: 70,
+                                                      width: 70,
+                                                      decoration: BoxDecoration(
+                                                        color: Colors.white,
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(70),
+                                                        boxShadow: const [
+                                                          BoxShadow(
+                                                            color:
+                                                                Colors.black26,
+                                                            blurRadius: 1,
+                                                            spreadRadius: 1,
+                                                          )
+                                                        ],
+                                                        image: DecorationImage(
+                                                          image: NetworkImage(
+                                                              currentUserData[
+                                                                  'Profile_Pic']),
+                                                          fit: BoxFit
+                                                              .cover, // Adjust the fit if necessary
+                                                        ),
+                                                      ),
+                                                    )
+                                                  : Icon(CupertinoIcons
+                                                      .profile_circled),
                                             ),
                                             Padding(
                                               padding: const EdgeInsets.only(
@@ -473,7 +524,7 @@ class _StaffNotificationPage extends State<StaffNotificationPage> {
                                                         sendNotificationService
                                                             .sendNotificationUsingApi(
                                                                 body:
-                                                                    'Your request is accepted by ${currentUserData?['First_name']} ${currentUserData?['Last_name']}',
+                                                                    'Your request is rejected by ${currentStaffData?['First_name']} ${currentStaffData?['Last_name']}',
                                                                 data: {
                                                                   "screen":
                                                                       "ClientNotificationPage",
@@ -514,6 +565,7 @@ class _StaffNotificationPage extends State<StaffNotificationPage> {
                                                             .update({
                                                           'status': "Accepted",
                                                           'OTP': genOPT,
+                                                          'Rating': "0",
                                                         });
                                                         await FirebaseFirestore
                                                             .instance
@@ -523,6 +575,7 @@ class _StaffNotificationPage extends State<StaffNotificationPage> {
                                                             .update({
                                                           'status': "Accepted",
                                                           'OTP': genOPT,
+                                                          "Rating": "0",
                                                         });
 
                                                         var userDoc =
@@ -543,13 +596,13 @@ class _StaffNotificationPage extends State<StaffNotificationPage> {
                                                         sendNotificationService
                                                             .sendNotificationUsingApi(
                                                                 body:
-                                                                    'Your request is accepted by ${currentUserData?['First_name']} ${currentUserData?['Last_name']}',
+                                                                    'Your request is accepted by ${currentStaffData?['First_name']} ${currentStaffData?['Last_name']}',
                                                                 data: {
                                                                   "screen":
                                                                       "ClientNotificationPage",
                                                                   "notificationId":
                                                                       notificationId2
-                                                                          .toString(), // Include notification ID in the data if needed
+                                                                          .toString(),
                                                                 },
                                                                 title:
                                                                     "Request Status",

@@ -80,6 +80,246 @@ class _Deals extends State<Deals> {
   bool isImmediately = false;
 
   String SearchGlobal = '';
+  bool isRatingOpen = false;
+
+  Widget Giverating(String uid, String docID) {
+    return ElevatedButton(
+        onPressed: () {
+          setState(() {
+            selectedUID = uid;
+            selectedDoc = docID;
+            isRatingOpen = true;
+          });
+        },
+        style: ElevatedButton.styleFrom(
+            backgroundColor: Color.fromARGB(7, 0, 0, 63),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10))),
+        child: Text("Give Feedback"));
+  }
+
+  Future<void> reCountRating(String UID) async {
+    var docSnapshot =
+        await FirebaseFirestore.instance.collection("Ratings").doc(UID).get();
+
+    if (!docSnapshot.exists) {
+      print("Ratings document not found.");
+      return;
+    }
+
+    var data = docSnapshot.data() as Map<String, dynamic>;
+
+    // Fetch the star counts safely
+    int firstStar = data['1Star'] ?? 0;
+    int secondStar = data['2Star'] ?? 0;
+    int thirdStar = data['3Star'] ?? 0;
+    int fourthStar = data['4Star'] ?? 0;
+    int fifthStar = data['5Star'] ?? 0;
+
+    // Calculate weighted total
+    int weightedTotal = (firstStar * 1) +
+        (secondStar * 2) +
+        (thirdStar * 3) +
+        (fourthStar * 4) +
+        (fifthStar * 5);
+
+    // Calculate total number of ratings
+    int totalCount =
+        firstStar + secondStar + thirdStar + fourthStar + fifthStar;
+
+    // Ensure totalCount is not zero to prevent division by zero
+    double rating = (totalCount > 0) ? (weightedTotal / totalCount) : 0.0;
+
+    // Fetch user profession
+    var userDoc =
+        await FirebaseFirestore.instance.collection("user").doc(UID).get();
+
+    if (!userDoc.exists) {
+      print("User document not found.");
+      return;
+    }
+
+    var staffData = userDoc.data();
+    if (staffData == null || !staffData.containsKey("professionOfStaff")) {
+      print("professionOfStaff field is missing.");
+      return;
+    }
+
+    // Update the rating in the respective profession collection
+    await FirebaseFirestore.instance
+        .collection(staffData["professionOfStaff"].toString())
+        .doc(UID)
+        .update({
+      "Rating": rating.toStringAsFixed(2), // Rounds to 2 decimal places
+    });
+
+    print("Updated rating: $rating");
+  }
+
+  String selectedUID = '';
+  String selectedDoc = '';
+
+  void Rate(int rate) async {
+    var data = await FirebaseFirestore.instance
+        .collection("Ratings")
+        .doc(selectedUID)
+        .get();
+    var userRecordDoc = await FirebaseFirestore.instance
+        .collection("NotificationForUser")
+        .doc(selectedDoc)
+        .get();
+
+    String staffRecordDoc = '';
+
+    if (userRecordDoc.exists) {
+      Map<String, dynamic>? data = userRecordDoc.data();
+      staffRecordDoc = data?["DocUID"] ?? "";
+
+      print(staffRecordDoc);
+    } else {
+      print("Document does not exist");
+    }
+
+    if (data.exists) {
+      int oneStar = data["1Star"] ?? 0;
+      int twoStar = data["2Star"] ?? 0;
+      int threeStar = data["3Star"] ?? 0;
+      int fourStar = data["4Star"] ?? 0;
+      int fiveStar = data["5Star"] ?? 0;
+
+      switch (rate) {
+        case 1:
+          oneStar += 1;
+          FirebaseFirestore.instance
+              .collection("Ratings")
+              .doc(selectedUID)
+              .update({
+            "1Star": oneStar,
+          });
+          FirebaseFirestore.instance
+              .collection("NotificationForUser")
+              .doc(selectedDoc)
+              .update({
+            "Rating": rate.toString(),
+          });
+          FirebaseFirestore.instance
+              .collection("NotificationForStaff")
+              .doc(staffRecordDoc)
+              .update({
+            "Rating": rate.toString(),
+          });
+          reCountRating(selectedUID);
+          setState(() {
+            isRatingOpen = false;
+          });
+          break;
+        case 2:
+          twoStar += 1;
+          FirebaseFirestore.instance
+              .collection("Ratings")
+              .doc(selectedUID)
+              .update({
+            "2Star": twoStar,
+          });
+          FirebaseFirestore.instance
+              .collection("NotificationForUser")
+              .doc(selectedDoc)
+              .update({
+            "Rating": rate.toString(),
+          });
+          FirebaseFirestore.instance
+              .collection("NotificationForStaff")
+              .doc(staffRecordDoc)
+              .update({
+            "Rating": rate.toString(),
+          });
+          reCountRating(selectedUID);
+          setState(() {
+            isRatingOpen = false;
+          });
+          break;
+        case 3:
+          threeStar += 1;
+          FirebaseFirestore.instance
+              .collection("Ratings")
+              .doc(selectedUID)
+              .update({
+            "3Star": threeStar,
+          });
+          FirebaseFirestore.instance
+              .collection("NotificationForUser")
+              .doc(selectedDoc)
+              .update({
+            "Rating": rate.toString(),
+          });
+          FirebaseFirestore.instance
+              .collection("NotificationForStaff")
+              .doc(staffRecordDoc)
+              .update({
+            "Rating": rate.toString(),
+          });
+          reCountRating(selectedUID);
+          setState(() {
+            isRatingOpen = false;
+          });
+          break;
+        case 4:
+          fourStar += 1;
+          FirebaseFirestore.instance
+              .collection("Ratings")
+              .doc(selectedUID)
+              .update({
+            "4Star": fourStar,
+          });
+          FirebaseFirestore.instance
+              .collection("NotificationForUser")
+              .doc(selectedDoc)
+              .update({
+            "Rating": rate.toString(),
+          });
+          FirebaseFirestore.instance
+              .collection("NotificationForStaff")
+              .doc(staffRecordDoc)
+              .update({
+            "Rating": rate.toString(),
+          });
+          reCountRating(selectedUID);
+          setState(() {
+            isRatingOpen = false;
+          });
+          break;
+        case 5:
+          fiveStar += 1;
+          FirebaseFirestore.instance
+              .collection("Ratings")
+              .doc(selectedUID)
+              .update({
+            "5Star": fiveStar,
+          });
+          FirebaseFirestore.instance
+              .collection("NotificationForUser")
+              .doc(selectedDoc)
+              .update({
+            "Rating": rate.toString(),
+          });
+          FirebaseFirestore.instance
+              .collection("NotificationForStaff")
+              .doc(staffRecordDoc)
+              .update({
+            "Rating": rate.toString(),
+          });
+          reCountRating(selectedUID);
+          setState(() {
+            isRatingOpen = false;
+          });
+          break;
+        default:
+          print("Invalid rating value");
+      }
+    } else {
+      print("No data found for the selected UID");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -481,54 +721,112 @@ class _Deals extends State<Deals> {
                                                               padding:
                                                                   const EdgeInsets
                                                                       .only(
-                                                                      left: 30),
+                                                                      left: 10),
                                                               child: Row(
                                                                 mainAxisAlignment:
                                                                     MainAxisAlignment
                                                                         .spaceBetween,
                                                                 children: [
-                                                                  const Column(
-                                                                    crossAxisAlignment:
-                                                                        CrossAxisAlignment
-                                                                            .start,
-                                                                    children: [
-                                                                      Text(
-                                                                        "Overall Service Rating",
-                                                                        style: TextStyle(
-                                                                            fontSize:
-                                                                                12),
-                                                                      ),
-                                                                      Row(
-                                                                        children: [
-                                                                          Icon(
-                                                                            Icons.star,
-                                                                            color:
-                                                                                Color(0xffFFD700),
-                                                                          ),
-                                                                          Icon(
-                                                                            Icons.star,
-                                                                            color:
-                                                                                Color(0xffFFD700),
-                                                                          ),
-                                                                          Icon(
-                                                                            Icons.star,
-                                                                            color:
-                                                                                Color(0xffFFD700),
-                                                                          ),
-                                                                          Icon(
-                                                                            Icons.star,
-                                                                            color:
-                                                                                Color(0xffFFD700),
-                                                                          ),
-                                                                          Icon(
-                                                                            Icons.star,
-                                                                            color:
-                                                                                Color(0xffFFD700),
-                                                                          ),
-                                                                        ],
-                                                                      ),
-                                                                    ],
-                                                                  ),
+                                                                  user["Rating"] ==
+                                                                          "0"
+                                                                      ? Giverating(
+                                                                          user[
+                                                                              "staffUID"],
+                                                                          user.id)
+                                                                      : Column(
+                                                                          crossAxisAlignment:
+                                                                              CrossAxisAlignment.start,
+                                                                          children: [
+                                                                            Text(
+                                                                              "Overall Service Rating",
+                                                                              style: TextStyle(fontSize: 12),
+                                                                            ),
+                                                                            user["Rating"] == "5"
+                                                                                ? Row(
+                                                                                    children: [
+                                                                                      Icon(
+                                                                                        Icons.star,
+                                                                                        color: Color(0xffFFD700),
+                                                                                      ),
+                                                                                      Icon(
+                                                                                        Icons.star,
+                                                                                        color: Color(0xffFFD700),
+                                                                                      ),
+                                                                                      Icon(
+                                                                                        Icons.star,
+                                                                                        color: Color(0xffFFD700),
+                                                                                      ),
+                                                                                      Icon(
+                                                                                        Icons.star,
+                                                                                        color: Color(0xffFFD700),
+                                                                                      ),
+                                                                                      Icon(
+                                                                                        Icons.star,
+                                                                                        color: Color(0xffFFD700),
+                                                                                      ),
+                                                                                    ],
+                                                                                  )
+                                                                                : user["Rating"] == "4"
+                                                                                    ? Row(
+                                                                                        children: [
+                                                                                          Icon(
+                                                                                            Icons.star,
+                                                                                            color: Color(0xffFFD700),
+                                                                                          ),
+                                                                                          Icon(
+                                                                                            Icons.star,
+                                                                                            color: Color(0xffFFD700),
+                                                                                          ),
+                                                                                          Icon(
+                                                                                            Icons.star,
+                                                                                            color: Color(0xffFFD700),
+                                                                                          ),
+                                                                                          Icon(
+                                                                                            Icons.star,
+                                                                                            color: Color(0xffFFD700),
+                                                                                          ),
+                                                                                        ],
+                                                                                      )
+                                                                                    : user["Rating"] == "3"
+                                                                                        ? Row(
+                                                                                            children: [
+                                                                                              Icon(
+                                                                                                Icons.star,
+                                                                                                color: Color(0xffFFD700),
+                                                                                              ),
+                                                                                              Icon(
+                                                                                                Icons.star,
+                                                                                                color: Color(0xffFFD700),
+                                                                                              ),
+                                                                                              Icon(
+                                                                                                Icons.star,
+                                                                                                color: Color(0xffFFD700),
+                                                                                              ),
+                                                                                            ],
+                                                                                          )
+                                                                                        : user["Rating"] == "2"
+                                                                                            ? Row(
+                                                                                                children: [
+                                                                                                  Icon(
+                                                                                                    Icons.star,
+                                                                                                    color: Color(0xffFFD700),
+                                                                                                  ),
+                                                                                                  Icon(
+                                                                                                    Icons.star,
+                                                                                                    color: Color(0xffFFD700),
+                                                                                                  ),
+                                                                                                ],
+                                                                                              )
+                                                                                            : Row(
+                                                                                                children: [
+                                                                                                  Icon(
+                                                                                                    Icons.star,
+                                                                                                    color: Color(0xffFFD700),
+                                                                                                  )
+                                                                                                ],
+                                                                                              )
+                                                                          ],
+                                                                        ),
                                                                   Padding(
                                                                     padding: const EdgeInsets
                                                                         .only(
@@ -780,48 +1078,111 @@ class _Deals extends State<Deals> {
                                                                     const EdgeInsets
                                                                         .only(
                                                                         left:
-                                                                            30),
+                                                                            10),
                                                                 child: Row(
                                                                   mainAxisAlignment:
                                                                       MainAxisAlignment
                                                                           .spaceBetween,
                                                                   children: [
-                                                                    const Column(
-                                                                      crossAxisAlignment:
-                                                                          CrossAxisAlignment
-                                                                              .start,
-                                                                      children: [
-                                                                        Text(
-                                                                          "Overall Service Rating",
-                                                                          style:
-                                                                              TextStyle(fontSize: 12),
-                                                                        ),
-                                                                        Row(
-                                                                          children: [
-                                                                            Icon(
-                                                                              Icons.star,
-                                                                              color: Color(0xffFFD700),
-                                                                            ),
-                                                                            Icon(
-                                                                              Icons.star,
-                                                                              color: Color(0xffFFD700),
-                                                                            ),
-                                                                            Icon(
-                                                                              Icons.star,
-                                                                              color: Color(0xffFFD700),
-                                                                            ),
-                                                                            Icon(
-                                                                              Icons.star,
-                                                                              color: Color(0xffFFD700),
-                                                                            ),
-                                                                            Icon(
-                                                                              Icons.star,
-                                                                              color: Color(0xffFFD700),
-                                                                            ),
-                                                                          ],
-                                                                        ),
-                                                                      ],
-                                                                    ),
+                                                                    user["Rating"] ==
+                                                                            "0"
+                                                                        ? Giverating(
+                                                                            user["staffUID"],
+                                                                            user.id)
+                                                                        : Column(
+                                                                            crossAxisAlignment:
+                                                                                CrossAxisAlignment.start,
+                                                                            children: [
+                                                                              Text(
+                                                                                "Overall Service Rating",
+                                                                                style: TextStyle(fontSize: 12),
+                                                                              ),
+                                                                              user["Rating"] == "5"
+                                                                                  ? Row(
+                                                                                      children: [
+                                                                                        Icon(
+                                                                                          Icons.star,
+                                                                                          color: Color(0xffFFD700),
+                                                                                        ),
+                                                                                        Icon(
+                                                                                          Icons.star,
+                                                                                          color: Color(0xffFFD700),
+                                                                                        ),
+                                                                                        Icon(
+                                                                                          Icons.star,
+                                                                                          color: Color(0xffFFD700),
+                                                                                        ),
+                                                                                        Icon(
+                                                                                          Icons.star,
+                                                                                          color: Color(0xffFFD700),
+                                                                                        ),
+                                                                                        Icon(
+                                                                                          Icons.star,
+                                                                                          color: Color(0xffFFD700),
+                                                                                        ),
+                                                                                      ],
+                                                                                    )
+                                                                                  : user["Rating"] == "4"
+                                                                                      ? Row(
+                                                                                          children: [
+                                                                                            Icon(
+                                                                                              Icons.star,
+                                                                                              color: Color(0xffFFD700),
+                                                                                            ),
+                                                                                            Icon(
+                                                                                              Icons.star,
+                                                                                              color: Color(0xffFFD700),
+                                                                                            ),
+                                                                                            Icon(
+                                                                                              Icons.star,
+                                                                                              color: Color(0xffFFD700),
+                                                                                            ),
+                                                                                            Icon(
+                                                                                              Icons.star,
+                                                                                              color: Color(0xffFFD700),
+                                                                                            ),
+                                                                                          ],
+                                                                                        )
+                                                                                      : user["Rating"] == "3"
+                                                                                          ? Row(
+                                                                                              children: [
+                                                                                                Icon(
+                                                                                                  Icons.star,
+                                                                                                  color: Color(0xffFFD700),
+                                                                                                ),
+                                                                                                Icon(
+                                                                                                  Icons.star,
+                                                                                                  color: Color(0xffFFD700),
+                                                                                                ),
+                                                                                                Icon(
+                                                                                                  Icons.star,
+                                                                                                  color: Color(0xffFFD700),
+                                                                                                ),
+                                                                                              ],
+                                                                                            )
+                                                                                          : user["Rating"] == "2"
+                                                                                              ? Row(
+                                                                                                  children: [
+                                                                                                    Icon(
+                                                                                                      Icons.star,
+                                                                                                      color: Color(0xffFFD700),
+                                                                                                    ),
+                                                                                                    Icon(
+                                                                                                      Icons.star,
+                                                                                                      color: Color(0xffFFD700),
+                                                                                                    ),
+                                                                                                  ],
+                                                                                                )
+                                                                                              : Row(
+                                                                                                  children: [
+                                                                                                    Icon(
+                                                                                                      Icons.star,
+                                                                                                      color: Color(0xffFFD700),
+                                                                                                    )
+                                                                                                  ],
+                                                                                                )
+                                                                            ],
+                                                                          ),
                                                                     Padding(
                                                                       padding: const EdgeInsets
                                                                           .only(
@@ -1072,48 +1433,111 @@ class _Deals extends State<Deals> {
                                                                     const EdgeInsets
                                                                         .only(
                                                                         left:
-                                                                            30),
+                                                                            10),
                                                                 child: Row(
                                                                   mainAxisAlignment:
                                                                       MainAxisAlignment
                                                                           .spaceBetween,
                                                                   children: [
-                                                                    const Column(
-                                                                      crossAxisAlignment:
-                                                                          CrossAxisAlignment
-                                                                              .start,
-                                                                      children: [
-                                                                        Text(
-                                                                          "Overall Service Rating",
-                                                                          style:
-                                                                              TextStyle(fontSize: 12),
-                                                                        ),
-                                                                        Row(
-                                                                          children: [
-                                                                            Icon(
-                                                                              Icons.star,
-                                                                              color: Color(0xffFFD700),
-                                                                            ),
-                                                                            Icon(
-                                                                              Icons.star,
-                                                                              color: Color(0xffFFD700),
-                                                                            ),
-                                                                            Icon(
-                                                                              Icons.star,
-                                                                              color: Color(0xffFFD700),
-                                                                            ),
-                                                                            Icon(
-                                                                              Icons.star,
-                                                                              color: Color(0xffFFD700),
-                                                                            ),
-                                                                            Icon(
-                                                                              Icons.star,
-                                                                              color: Color(0xffFFD700),
-                                                                            ),
-                                                                          ],
-                                                                        ),
-                                                                      ],
-                                                                    ),
+                                                                    user["Rating"] ==
+                                                                            "0"
+                                                                        ? Giverating(
+                                                                            user["staffUID"],
+                                                                            user.id)
+                                                                        : Column(
+                                                                            crossAxisAlignment:
+                                                                                CrossAxisAlignment.start,
+                                                                            children: [
+                                                                              Text(
+                                                                                "Overall Service Rating",
+                                                                                style: TextStyle(fontSize: 12),
+                                                                              ),
+                                                                              user["Rating"] == "5"
+                                                                                  ? Row(
+                                                                                      children: [
+                                                                                        Icon(
+                                                                                          Icons.star,
+                                                                                          color: Color(0xffFFD700),
+                                                                                        ),
+                                                                                        Icon(
+                                                                                          Icons.star,
+                                                                                          color: Color(0xffFFD700),
+                                                                                        ),
+                                                                                        Icon(
+                                                                                          Icons.star,
+                                                                                          color: Color(0xffFFD700),
+                                                                                        ),
+                                                                                        Icon(
+                                                                                          Icons.star,
+                                                                                          color: Color(0xffFFD700),
+                                                                                        ),
+                                                                                        Icon(
+                                                                                          Icons.star,
+                                                                                          color: Color(0xffFFD700),
+                                                                                        ),
+                                                                                      ],
+                                                                                    )
+                                                                                  : user["Rating"] == "4"
+                                                                                      ? Row(
+                                                                                          children: [
+                                                                                            Icon(
+                                                                                              Icons.star,
+                                                                                              color: Color(0xffFFD700),
+                                                                                            ),
+                                                                                            Icon(
+                                                                                              Icons.star,
+                                                                                              color: Color(0xffFFD700),
+                                                                                            ),
+                                                                                            Icon(
+                                                                                              Icons.star,
+                                                                                              color: Color(0xffFFD700),
+                                                                                            ),
+                                                                                            Icon(
+                                                                                              Icons.star,
+                                                                                              color: Color(0xffFFD700),
+                                                                                            ),
+                                                                                          ],
+                                                                                        )
+                                                                                      : user["Rating"] == "3"
+                                                                                          ? Row(
+                                                                                              children: [
+                                                                                                Icon(
+                                                                                                  Icons.star,
+                                                                                                  color: Color(0xffFFD700),
+                                                                                                ),
+                                                                                                Icon(
+                                                                                                  Icons.star,
+                                                                                                  color: Color(0xffFFD700),
+                                                                                                ),
+                                                                                                Icon(
+                                                                                                  Icons.star,
+                                                                                                  color: Color(0xffFFD700),
+                                                                                                ),
+                                                                                              ],
+                                                                                            )
+                                                                                          : user["Rating"] == "2"
+                                                                                              ? Row(
+                                                                                                  children: [
+                                                                                                    Icon(
+                                                                                                      Icons.star,
+                                                                                                      color: Color(0xffFFD700),
+                                                                                                    ),
+                                                                                                    Icon(
+                                                                                                      Icons.star,
+                                                                                                      color: Color(0xffFFD700),
+                                                                                                    ),
+                                                                                                  ],
+                                                                                                )
+                                                                                              : Row(
+                                                                                                  children: [
+                                                                                                    Icon(
+                                                                                                      Icons.star,
+                                                                                                      color: Color(0xffFFD700),
+                                                                                                    )
+                                                                                                  ],
+                                                                                                )
+                                                                            ],
+                                                                          ),
                                                                     Padding(
                                                                       padding: const EdgeInsets
                                                                           .only(
@@ -1377,54 +1801,112 @@ class _Deals extends State<Deals> {
                                                               padding:
                                                                   const EdgeInsets
                                                                       .only(
-                                                                      left: 30),
+                                                                      left: 10),
                                                               child: Row(
                                                                 mainAxisAlignment:
                                                                     MainAxisAlignment
                                                                         .spaceBetween,
                                                                 children: [
-                                                                  const Column(
-                                                                    crossAxisAlignment:
-                                                                        CrossAxisAlignment
-                                                                            .start,
-                                                                    children: [
-                                                                      Text(
-                                                                        "Overall Service Rating",
-                                                                        style: TextStyle(
-                                                                            fontSize:
-                                                                                12),
-                                                                      ),
-                                                                      Row(
-                                                                        children: [
-                                                                          Icon(
-                                                                            Icons.star,
-                                                                            color:
-                                                                                Color(0xffFFD700),
-                                                                          ),
-                                                                          Icon(
-                                                                            Icons.star,
-                                                                            color:
-                                                                                Color(0xffFFD700),
-                                                                          ),
-                                                                          Icon(
-                                                                            Icons.star,
-                                                                            color:
-                                                                                Color(0xffFFD700),
-                                                                          ),
-                                                                          Icon(
-                                                                            Icons.star,
-                                                                            color:
-                                                                                Color(0xffFFD700),
-                                                                          ),
-                                                                          Icon(
-                                                                            Icons.star,
-                                                                            color:
-                                                                                Color(0xffFFD700),
-                                                                          ),
-                                                                        ],
-                                                                      ),
-                                                                    ],
-                                                                  ),
+                                                                  user["Rating"] ==
+                                                                          "0"
+                                                                      ? Giverating(
+                                                                          user[
+                                                                              "staffUID"],
+                                                                          user.id)
+                                                                      : Column(
+                                                                          crossAxisAlignment:
+                                                                              CrossAxisAlignment.start,
+                                                                          children: [
+                                                                            Text(
+                                                                              "Overall Service Rating",
+                                                                              style: TextStyle(fontSize: 12),
+                                                                            ),
+                                                                            user["Rating"] == "5"
+                                                                                ? Row(
+                                                                                    children: [
+                                                                                      Icon(
+                                                                                        Icons.star,
+                                                                                        color: Color(0xffFFD700),
+                                                                                      ),
+                                                                                      Icon(
+                                                                                        Icons.star,
+                                                                                        color: Color(0xffFFD700),
+                                                                                      ),
+                                                                                      Icon(
+                                                                                        Icons.star,
+                                                                                        color: Color(0xffFFD700),
+                                                                                      ),
+                                                                                      Icon(
+                                                                                        Icons.star,
+                                                                                        color: Color(0xffFFD700),
+                                                                                      ),
+                                                                                      Icon(
+                                                                                        Icons.star,
+                                                                                        color: Color(0xffFFD700),
+                                                                                      ),
+                                                                                    ],
+                                                                                  )
+                                                                                : user["Rating"] == "4"
+                                                                                    ? Row(
+                                                                                        children: [
+                                                                                          Icon(
+                                                                                            Icons.star,
+                                                                                            color: Color(0xffFFD700),
+                                                                                          ),
+                                                                                          Icon(
+                                                                                            Icons.star,
+                                                                                            color: Color(0xffFFD700),
+                                                                                          ),
+                                                                                          Icon(
+                                                                                            Icons.star,
+                                                                                            color: Color(0xffFFD700),
+                                                                                          ),
+                                                                                          Icon(
+                                                                                            Icons.star,
+                                                                                            color: Color(0xffFFD700),
+                                                                                          ),
+                                                                                        ],
+                                                                                      )
+                                                                                    : user["Rating"] == "3"
+                                                                                        ? Row(
+                                                                                            children: [
+                                                                                              Icon(
+                                                                                                Icons.star,
+                                                                                                color: Color(0xffFFD700),
+                                                                                              ),
+                                                                                              Icon(
+                                                                                                Icons.star,
+                                                                                                color: Color(0xffFFD700),
+                                                                                              ),
+                                                                                              Icon(
+                                                                                                Icons.star,
+                                                                                                color: Color(0xffFFD700),
+                                                                                              ),
+                                                                                            ],
+                                                                                          )
+                                                                                        : user["Rating"] == "2"
+                                                                                            ? Row(
+                                                                                                children: [
+                                                                                                  Icon(
+                                                                                                    Icons.star,
+                                                                                                    color: Color(0xffFFD700),
+                                                                                                  ),
+                                                                                                  Icon(
+                                                                                                    Icons.star,
+                                                                                                    color: Color(0xffFFD700),
+                                                                                                  ),
+                                                                                                ],
+                                                                                              )
+                                                                                            : Row(
+                                                                                                children: [
+                                                                                                  Icon(
+                                                                                                    Icons.star,
+                                                                                                    color: Color(0xffFFD700),
+                                                                                                  )
+                                                                                                ],
+                                                                                              )
+                                                                          ],
+                                                                        ),
                                                                   Padding(
                                                                     padding: const EdgeInsets
                                                                         .only(
@@ -1474,6 +1956,79 @@ class _Deals extends State<Deals> {
                   ),
                 ),
               ),
+              isRatingOpen
+                  ? Center(
+                      child: Container(
+                        height: 90,
+                        width: MediaQuery.of(context).size.width * 0.9,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          border: Border.all(color: Colors.blue, width: 1),
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          children: [
+                            InkWell(
+                              onTap: () {
+                                Rate(1);
+                              },
+                              child: Container(
+                                height: 50,
+                                width: 50,
+                                child: Image.asset("assets/Rating/star1.png",
+                                    height: 30, width: 30),
+                              ),
+                            ),
+                            InkWell(
+                              onTap: () {
+                                Rate(2);
+                              },
+                              child: Container(
+                                height: 50,
+                                width: 50,
+                                child: Image.asset("assets/Rating/star2.png",
+                                    height: 30, width: 30),
+                              ),
+                            ),
+                            InkWell(
+                              onTap: () {
+                                Rate(3);
+                              },
+                              child: Container(
+                                height: 50,
+                                width: 50,
+                                child: Image.asset("assets/Rating/star3.png",
+                                    height: 30, width: 30),
+                              ),
+                            ),
+                            InkWell(
+                              onTap: () {
+                                Rate(4);
+                              },
+                              child: Container(
+                                height: 50,
+                                width: 50,
+                                child: Image.asset("assets/Rating/star4.png",
+                                    height: 30, width: 30),
+                              ),
+                            ),
+                            InkWell(
+                              onTap: () {
+                                Rate(5);
+                              },
+                              child: Container(
+                                height: 50,
+                                width: 50,
+                                child: Image.asset("assets/Rating/star5.png",
+                                    height: 30, width: 30),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
+                  : Container(),
               isFilter
                   ? Positioned(
                       right: 0,

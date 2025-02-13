@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:intl/intl.dart';
 
 class ClientNotificationPage extends StatefulWidget {
   const ClientNotificationPage({super.key});
@@ -109,10 +110,30 @@ class _ClientNotificationPageState extends State<ClientNotificationPage> {
                               var users =
                                   snapshot.data?.docs.reversed.toList() ?? [];
                               List<Widget> userViews = [];
+                              DateTime now = DateTime.now();
+                              DateFormat dateFormat = DateFormat("d/M/yyyy");
+                              DateFormat timeFormat = DateFormat("h:mm a");
 
                               for (var user in users) {
+                                String scheduledDateEnd =
+                                    user["ScheduledDateEnd"];
+                                String scheduledTimeEnd =
+                                    user["ScheduledTimeEnd"];
+                                DateTime endDate =
+                                    dateFormat.parse(scheduledDateEnd);
+                                DateTime endTime =
+                                    timeFormat.parse(scheduledTimeEnd);
+                                DateTime combinedEndDateTime = DateTime(
+                                  endDate.year,
+                                  endDate.month,
+                                  endDate.day,
+                                  endTime.hour,
+                                  endTime.minute,
+                                );
+
                                 if (user["userUID"] == uid &&
-                                    user['status'] != "Completed") {
+                                    user['status'] != "Completed" &&
+                                    !combinedEndDateTime.isBefore(now)) {
                                   userViews.add(
                                     FutureBuilder(
                                       future: Future.wait([
