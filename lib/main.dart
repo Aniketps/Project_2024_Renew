@@ -2,6 +2,7 @@ import 'package:carehub/Deals.dart';
 import 'package:carehub/PrivacyPolicy.dart';
 import 'package:carehub/StaffPage.dart';
 import 'package:carehub/Feedback.dart';
+import 'package:carehub/StaffVerifcation.dart';
 import 'package:carehub/services/NotificationService.dart';
 import 'package:carehub/services/fcm_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -293,16 +294,25 @@ class _MyHomePageState extends State<MyHomePage> {
                               fontWeight: FontWeight.bold, fontSize: 18),
                         ),
                 ])),
-            ListTile(
-              leading: Icon(Icons.home),
-              title: Text('Home'),
-              onTap: () {
-                Navigator.pushReplacement(
+            InkWell(
+              onLongPress: () {
+                Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => MyHomePage(),
+                      builder: (context) => StaffVerification(),
                     ));
               },
+              child: ListTile(
+                leading: Icon(Icons.home),
+                title: Text('Home'),
+                onTap: () {
+                  Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => MyHomePage(),
+                      ));
+                },
+              ),
             ),
             ListTile(
               leading: Icon(Icons.history),
