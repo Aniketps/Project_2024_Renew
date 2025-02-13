@@ -1,14 +1,17 @@
 import 'package:carehub/Deals.dart';
+import 'package:carehub/PrivacyPolicy.dart';
 import 'package:carehub/StaffPage.dart';
 import 'package:carehub/Feedback.dart';
 import 'package:carehub/services/NotificationService.dart';
 import 'package:carehub/services/fcm_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'ContactUs.dart';
 import 'MainMap.dart';
 import 'StaffProfilePage.dart';
@@ -38,6 +41,11 @@ Future<void> main() async {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
+  Future<bool> _getAgreementStatus() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getBool("IsAgree") ?? false; // Default to false if null
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -46,7 +54,26 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: LoginPage(),
+      home: FutureBuilder<bool>(
+        future: _getAgreementStatus(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Scaffold(
+              body: Center(
+                  child:
+                      CircularProgressIndicator()), // Loading while fetching data
+            );
+          }
+
+          if (snapshot.hasError) {
+            return const Scaffold(
+              body: Center(child: Text("Error loading data!")),
+            );
+          }
+
+          return snapshot.data == true ? LoginPage() : PrivacyPolicy();
+        },
+      ),
     );
   }
 }
@@ -218,30 +245,42 @@ class _MyHomePageState extends State<MyHomePage> {
                                   builder: (context) => ActualUser(),
                                 ));
                           },
-                          child: Container(
-                            height: 80,
-                            width: 80,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(80),
-                              boxShadow: [
-                                BoxShadow(
-                                  blurRadius: 1,
-                                  spreadRadius: 1,
-                                  color: Colors.black26,
-                                ),
-                              ],
-                              image: StaffData != null &&
-                                      StaffData['Profile_Pic'] != null
-                                  ? DecorationImage(
+                          child: StaffData != null &&
+                                  StaffData['Profile_Pic'] != null
+                              ? Container(
+                                  height: 80,
+                                  width: 80,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(80),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        blurRadius: 1,
+                                        spreadRadius: 1,
+                                        color: Colors.black26,
+                                      ),
+                                    ],
+                                    image: DecorationImage(
                                       image: NetworkImage(
                                           StaffData['Profile_Pic']),
                                       fit: BoxFit
                                           .cover, // Adjust the fit if necessary
-                                    )
-                                  : null,
-                            ),
-                          ),
-                        ),
+                                    ),
+                                  ),
+                                )
+                              : Container(
+                                  height: 80,
+                                  width: 80,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(80),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        blurRadius: 1,
+                                        spreadRadius: 1,
+                                        color: Colors.black26,
+                                      ),
+                                    ],
+                                  ),
+                                  child: Icon(CupertinoIcons.profile_circled))),
                   (StaffData == null)
                       ? Text(
                           "Empty",
@@ -286,6 +325,10 @@ class _MyHomePageState extends State<MyHomePage> {
                     MaterialPageRoute(
                       builder: (context) => ContactUs(),
                     ));
+              },
+              onLongPress: () {
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => PrivacyPolicy()));
               },
             ),
             ListTile(

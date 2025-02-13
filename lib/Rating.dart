@@ -35,6 +35,7 @@ class _RatingStateState extends State<RatingState> {
   bool loader = true;
 
   void getCounts() async {
+    getStaffRating();
     try {
       var docSnapshot =
           await FirebaseFirestore.instance.collection("Ratings").doc(UID).get();
@@ -78,6 +79,48 @@ class _RatingStateState extends State<RatingState> {
       setState(() {
         loader = false;
       });
+    }
+  }
+
+  String StaffRating = '';
+
+  Future<void> getStaffRating() async {
+    try {
+      var userDoc =
+          await FirebaseFirestore.instance.collection("user").doc(UID).get();
+
+      if (!userDoc.exists) {
+        print("User document not found");
+        return;
+      }
+
+      var staffData = userDoc.data();
+      if (staffData == null || !staffData.containsKey("professionOfStaff")) {
+        print("professionOfStaff field is missing");
+        return;
+      }
+
+      var staffDoc = await FirebaseFirestore.instance
+          .collection(staffData["professionOfStaff"].toString())
+          .doc(UID)
+          .get();
+
+      if (!staffDoc.exists) {
+        print("Staff document not found");
+        return;
+      }
+
+      var staffDetails = staffDoc.data();
+      if (staffDetails == null || !staffDetails.containsKey("Rating")) {
+        print("Rating field is missing");
+        return;
+      }
+
+      setState(() {
+        StaffRating = staffDetails["Rating"].toString();
+      });
+    } catch (e) {
+      print("Error fetching staff rating: $e");
     }
   }
 
@@ -175,7 +218,7 @@ class _RatingStateState extends State<RatingState> {
                               SizedBox(
                                   width: 8), // Space between image and text
                               Text(
-                                '4.9/5.0', // Replace with your rating value
+                                '${StaffRating}/5.0',
                                 style: TextStyle(
                                   color: Colors.black,
                                   fontSize: 16,
