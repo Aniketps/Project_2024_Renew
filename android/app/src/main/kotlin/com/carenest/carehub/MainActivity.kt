@@ -1,4 +1,4 @@
-package com.example.carehub
+package com.carenest.carehub
 
 import io.flutter.embedding.android.FlutterActivity
 

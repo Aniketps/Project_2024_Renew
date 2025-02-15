@@ -381,6 +381,7 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                           setState(() {
                             isLoading = true;
                           });
+
                           String phone = PhoneNo.text;
                           String otp = OTP.text;
                           String city = City.text;
@@ -439,15 +440,16 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                                 "City": city,
                                 "Profile_Pic": profileURL,
                               });
+
                               await FirebaseFirestore.instance
                                   .collection('Ratings')
                                   .doc(user?.uid)
                                   .set({
-                                "1Star": "0",
-                                "2Star": "0",
-                                "3Star": "0",
-                                "4Star": "0",
-                                "5Star": "0",
+                                "1Star": 0,
+                                "2Star": 0,
+                                "3Star": 0,
+                                "4Star": 0,
+                                "5Star": 0,
                               });
                               user?.sendEmailVerification();
                               await FirebaseAuth.instance.signOut();
