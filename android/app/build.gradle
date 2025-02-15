@@ -17,7 +17,7 @@ def flutterVersionCode = localProperties.getProperty('flutter.versionCode') ?: '
 def flutterVersionName = localProperties.getProperty('flutter.versionName') ?: '1.0'
 
 android {
-    namespace "com.example.carehub"
+    namespace "com.carenest.carehub"
     compileSdkVersion 34
     ndkVersion flutter.ndkVersion
 
@@ -39,16 +39,27 @@ android {
     }
 
     defaultConfig {
-        applicationId "com.example.carehub"
+        applicationId "com.carenest.carehub"
         minSdkVersion 23
-        targetSdkVersion 33
+        targetSdkVersion 34
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
     }
 
+    signingConfigs {
+        release {
+            storeFile file("/keystore/my-release-key.jks")  // Adjust path if needed
+            storePassword "aniket"
+            keyAlias "my-key-alias"
+            keyPassword "aniket"
+        }
+    }
+
     buildTypes {
         release {
-            signingConfig signingConfigs.debug
+            signingConfig signingConfigs.release  // ✅ FIXED: Use release keystore, not debug!
+            minifyEnabled false
+            shrinkResources false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
