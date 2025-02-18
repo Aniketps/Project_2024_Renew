@@ -101,12 +101,14 @@ We welcome contributions! To get started:
 5. Open a pull request for review.
 
 ---
-![Worker Profile](https://github.com/user-attachments/assets/c7cf1e63-29c9-45b7-97e6-731e534b57ed)
-![Staff Section](https://github.com/user-attachments/assets/478dddca-a6db-47e0-87d3-04dc1ba39cd7)
-![Navigator](https://github.com/user-attachments/assets/2fdd6587-c9cb-4610-9dd2-ceca9f712044)
-![Login and Resister](https://github.com/user-attachments/assets/6edda671-42d4-449c-b1ef-8c77c1e69546)
-![Filter](https://github.com/user-attachments/assets/a7815c23-2ff0-48bb-b0a0-27b6d5dedf71)
-![Booking](https://github.com/user-attachments/assets/eabafef1-6ca5-450e-9c4a-e148761cce01)
+![Goal](https://github.com/Aniketps/Project-Images/blob/main/CareNest/Screenshot%202025-02-18%20115000.png?raw=true)
+![User Registration And Login](https://github.com/Aniketps/Project-Images/blob/main/CareNest/Screenshot%202025-02-18%20115120.png?raw=true)
+![Staff Registration And Login](https://github.com/Aniketps/Project-Images/blob/main/CareNest/Screenshot%202025-02-18%20115140.png?raw=true)
+![Staff KYC](https://github.com/Aniketps/Project-Images/blob/main/CareNest/Screenshot%202025-02-18%20115217.png?raw=true)
+![Helper Fearures](https://github.com/Aniketps/Project-Images/blob/main/CareNest/Screenshot%202025-02-18%20115242.png?raw=true)
+![Staff Hiring](https://github.com/Aniketps/Project-Images/blob/main/CareNest/Screenshot%202025-02-18%20115303.png?raw=true)
+![Request Process](https://github.com/Aniketps/Project-Images/blob/main/CareNest/Screenshot%202025-02-18%20115321.png?raw=true)
+![Extra Features](https://github.com/Aniketps/Project-Images/blob/main/CareNest/Screenshot%202025-02-18%20115342.png?raw=true)
 ## 📜 License
 
 This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) file for more details.
