@@ -1,3 +1,4 @@
+import 'package:carehub/Admin.dart';
 import 'package:carehub/Deals.dart';
 import 'package:carehub/PrivacyPolicy.dart';
 import 'package:carehub/StaffPage.dart';
@@ -299,7 +300,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => StaffVerification(),
+                      builder: (context) => AdminLogin(),
                     ));
               },
               child: ListTile(

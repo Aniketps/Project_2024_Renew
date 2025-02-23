@@ -434,6 +434,7 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                                 'professionOfStaff':
                                     skill[0].toLowerCase() + skill.substring(1),
                                 "Last_name": LastName,
+                                'Rating': 0,
                                 "Password": Password,
                                 'Verified': 'unverified',
                                 "Phone_Number1": phone,

@@ -1,7 +1,7 @@
-import 'package:carehub/AllStaffOnlyVerified.dart';
 import 'package:carehub/ContactedUs.dart';
 import 'package:carehub/LoginPage.dart';
 import 'package:carehub/RegistreredUsers.dart';
+import 'package:carehub/StaffVerifcation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -11,12 +11,12 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:video_player/video_player.dart';
 
-class StaffVerification extends StatefulWidget {
+class Allstaffonlyverified extends StatefulWidget {
   final loggedAdmin;
-  StaffVerification({required this.loggedAdmin});
+  Allstaffonlyverified({required this.loggedAdmin});
   @override
   State<StatefulWidget> createState() =>
-      _StaffVerification(loggedAdmin: loggedAdmin);
+      _Allstaffonlyverified(loggedAdmin: loggedAdmin);
 }
 
 class Staff {
@@ -44,6 +44,13 @@ class Staff {
   Future<String> getDateOfRegistered(String uid, String skill) async {
     var data = await getStaffData(uid, skill);
     return data?["Date_of_registered"]?.toString() ?? "N/A";
+  }
+
+  Future<String> getActionDatenBy(String uid, String skill) async {
+    var data = await getStaffData(uid, skill);
+    return data!.containsKey("actionTakenBy")
+        ? data["actionTakenBy"]?.toString() ?? "N/A"
+        : "N/A";
   }
 
   Future<String> getDayRate(String uid, String skill) async {
@@ -74,13 +81,6 @@ class Staff {
   Future<String> getPhoneNumber(String uid, String skill) async {
     var data = await getStaffData(uid, skill);
     return data?["Phone_Number1"]?.toString() ?? "N/A";
-  }
-
-  Future<String> getActionDatenBy(String uid, String skill) async {
-    var data = await getStaffData(uid, skill);
-    return data!.containsKey("actionTakenBy")
-        ? data["actionTakenBy"]?.toString() ?? "N/A"
-        : "N/A";
   }
 
   Future<String> getProfilePic(String uid, String skill) async {
@@ -121,18 +121,15 @@ class Staff {
 
 final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
-class _StaffVerification extends State<StaffVerification> {
+class _Allstaffonlyverified extends State<Allstaffonlyverified> {
   final loggedAdmin;
-  _StaffVerification({required this.loggedAdmin});
+  _Allstaffonlyverified({required this.loggedAdmin});
   String AadharUrl = '';
   String PassportPhotoUrl = '';
   String ProfessionalDocUrl = '';
   String SelfVideoUrl = '';
   bool isLoading = true;
   bool isStaffOpen = false;
-  bool isFilterOpen = false;
-  bool isFilterAdded = false;
-  String Searched = '';
 
   String SelectedUID = '';
   String SelectedProf = '';
@@ -209,6 +206,9 @@ class _StaffVerification extends State<StaffVerification> {
     );
   }
 
+  bool isFilterAdded = false;
+  String Searched = '';
+  bool isFilterOpen = false;
   TextEditingController feedbackToStaff = TextEditingController();
 
   @override
@@ -255,15 +255,7 @@ class _StaffVerification extends State<StaffVerification> {
             ListTile(
               leading: Icon(Icons.work),
               title: Text('Registared Staff'),
-              onTap: () {
-                Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => Allstaffonlyverified(
-                        loggedAdmin: loggedAdmin,
-                      ),
-                    ));
-              },
+              onTap: () {},
             ),
             ListTile(
               leading: Icon(Icons.person),
@@ -295,7 +287,15 @@ class _StaffVerification extends State<StaffVerification> {
             ListTile(
               leading: Icon(Icons.verified_user),
               title: Text('Pending Verifications'),
-              onTap: () {},
+              onTap: () {
+                Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => StaffVerification(
+                        loggedAdmin: loggedAdmin,
+                      ),
+                    ));
+              },
             ),
             ListTile(
               leading: Icon(Icons.feedback),
@@ -388,7 +388,9 @@ class _StaffVerification extends State<StaffVerification> {
                                       },
                                       decoration: InputDecoration(
                                         border: InputBorder.none,
-                                        hintText: 'Search...',
+                                        hintText:
+                                            'Search by Name, Email, City, Profession',
+                                        hintStyle: TextStyle(fontSize: 12),
                                         contentPadding:
                                             const EdgeInsets.symmetric(
                                                 horizontal: 10),
@@ -430,7 +432,7 @@ class _StaffVerification extends State<StaffVerification> {
                       Padding(
                         padding: const EdgeInsets.all(8.0),
                         child: Text(
-                          "Pending Staff Verifications",
+                          "All Verified Staff",
                           style: TextStyle(fontSize: 16),
                         ),
                       ),
@@ -531,6 +533,14 @@ class _StaffVerification extends State<StaffVerification> {
                                             ?.toLowerCase()
                                             .startsWith(lowerSearch) ==
                                         true ||
+                                    staffData['City']
+                                            ?.toLowerCase()
+                                            .startsWith(lowerSearch) ==
+                                        true ||
+                                    staffData['professionOfStaff']
+                                            ?.toLowerCase()
+                                            .startsWith(lowerSearch) ==
+                                        true ||
                                     staffData['Last_name']
                                             ?.toLowerCase()
                                             .startsWith(lowerSearch) ==
@@ -544,12 +554,8 @@ class _StaffVerification extends State<StaffVerification> {
                               bool matchesFilter(
                                   Map<String, dynamic> staffData) {
                                 return staffData.containsKey('Verified') &&
-                                    ((isFilterAdded &&
-                                            staffData['Verified'] ==
-                                                'rejected') ||
-                                        (!isFilterAdded &&
-                                            staffData['Verified'] ==
-                                                'pending'));
+                                    (!isFilterAdded &&
+                                        staffData['Verified'] == 'verified');
                               }
 
                               for (var staff in staffs!) {
@@ -607,10 +613,12 @@ class _StaffVerification extends State<StaffVerification> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text("Registared Data",
-                                    style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 20)),
+                                Text(
+                                  "Registared Data",
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 20),
+                                ),
                                 FutureBuilder<String>(
                                   future: StoredStaff.getProfilePic(
                                       SelectedUID, SelectedProf),
