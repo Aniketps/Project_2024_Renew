@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:intl/intl.dart';
 
 class ContactUs extends StatefulWidget {
   @override
@@ -55,14 +56,20 @@ class _ContactUs extends State<ContactUs> {
     String email = _emailController.text;
     String description = _descriptionController.text;
     String details = _detailsController.text;
+    String dateAndTime =
+        DateFormat("dd/MM/yyyy, hh:mm a").format(DateTime.now());
 
-    if(fullName.isNotEmpty && email.isNotEmpty && details.isNotEmpty && description.isNotEmpty){
+    if (fullName.isNotEmpty &&
+        email.isNotEmpty &&
+        details.isNotEmpty &&
+        description.isNotEmpty) {
       await FirebaseFirestore.instance.collection("HelpCenter").add({
         "Email": email,
         "Name": fullName,
         "Query": details,
         "Title": description,
-        "Status" : false,
+        "Status": false,
+        "DateTime": dateAndTime,
       });
 
       // Clear the fields after sending
@@ -70,7 +77,7 @@ class _ContactUs extends State<ContactUs> {
       _emailController.clear();
       _descriptionController.clear();
       _detailsController.clear();
-    }else{
+    } else {
       Fluttertoast.showToast(msg: "Please fill details");
     }
   }
@@ -316,7 +323,6 @@ class _ContactUs extends State<ContactUs> {
                                 isLoading = false;
                                 Fluttertoast.showToast(msg: "Query Submited");
                               });
-
                             },
                             child: Text(
                               "Send Message",

@@ -14,13 +14,13 @@ class Feedbacks extends StatefulWidget {
 }
 
 class _Feedbacks extends State<Feedbacks> {
-
   @override
   void initState() {
     super.initState();
     _liveLocation();
     getCurrentUser();
   }
+
   String uid = "";
   Future<void> getCurrentUser() async {
     User? user = FirebaseAuth.instance.currentUser;
@@ -129,7 +129,9 @@ class _Feedbacks extends State<Feedbacks> {
                                     ),
                                     Expanded(
                                       child: StreamBuilder(
-                                        stream: FirebaseFirestore.instance.collection("Feedbacks").snapshots(),
+                                        stream: FirebaseFirestore.instance
+                                            .collection("Feedbacks")
+                                            .snapshots(),
                                         builder: (context, snapshot) {
                                           // Error check
                                           if (snapshot.hasError) {
@@ -137,34 +139,56 @@ class _Feedbacks extends State<Feedbacks> {
                                           }
 
                                           // Loading state
-                                          if (snapshot.connectionState == ConnectionState.waiting) {
-                                            return Center(child: CircularProgressIndicator());
+                                          if (snapshot.connectionState ==
+                                              ConnectionState.waiting) {
+                                            return Center(
+                                                child:
+                                                    CircularProgressIndicator());
                                           }
 
                                           // No data available
-                                          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                                            return Text("No feedbacks available.");
+                                          if (!snapshot.hasData ||
+                                              snapshot.data!.docs.isEmpty) {
+                                            return Text(
+                                                "No feedbacks available.");
                                           }
 
                                           var feedbacks = snapshot.data!.docs;
                                           int count = 0;
 
                                           if (uid == "") {
-                                            return Center(child: CircularProgressIndicator());
+                                            return Center(
+                                                child:
+                                                    CircularProgressIndicator());
                                           } else {
-                                            List<Widget> feedbackWidgets = feedbacks.where((feedback) => uid == feedback['UserUID']).map<Widget>((feedback) {
+                                            List<Widget> feedbackWidgets =
+                                                feedbacks
+                                                    .where((feedback) =>
+                                                        uid ==
+                                                        feedback['UserUID'])
+                                                    .map<Widget>((feedback) {
                                               count++;
-                                              var subject = feedback['Subject'] ?? "No Subject";
-                                              bool status = feedback['Status'] ?? false;
-                                              var timestamp = feedback['DateTime'] ?? "---------";
+                                              var subject =
+                                                  feedback['Subject'] ??
+                                                      "No Subject";
+                                              bool status =
+                                                  feedback['Status'] ?? false;
+                                              var timestamp =
+                                                  feedback['DateTime'] ??
+                                                      "---------";
 
                                               return Padding(
-                                                padding: const EdgeInsets.only(right: 15, left: 15, bottom: 8),
+                                                padding: const EdgeInsets.only(
+                                                    right: 15,
+                                                    left: 15,
+                                                    bottom: 8),
                                                 child: Container(
                                                   height: 50,
                                                   decoration: BoxDecoration(
                                                     color: Colors.white,
-                                                    borderRadius: BorderRadius.circular(15),
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            15),
                                                     boxShadow: [
                                                       BoxShadow(
                                                         color: Colors.black26,
@@ -174,33 +198,57 @@ class _Feedbacks extends State<Feedbacks> {
                                                     ],
                                                   ),
                                                   child: Padding(
-                                                    padding: const EdgeInsets.only(right: 15, left: 15),
+                                                    padding:
+                                                        const EdgeInsets.only(
+                                                            right: 15,
+                                                            left: 15),
                                                     child: Row(
-                                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .spaceBetween,
                                                       children: [
                                                         Row(
                                                           children: [
                                                             Padding(
-                                                              padding: const EdgeInsets.only(right: 10),
+                                                              padding:
+                                                                  const EdgeInsets
+                                                                      .only(
+                                                                      right:
+                                                                          10),
                                                               child: Container(
                                                                 height: 22,
                                                                 width: 22,
-                                                                decoration: BoxDecoration(
-                                                                  color: status ? Colors.white : Colors.green,
-                                                                  borderRadius: BorderRadius.circular(22),
+                                                                decoration:
+                                                                    BoxDecoration(
+                                                                  color: status
+                                                                      ? Colors
+                                                                          .white
+                                                                      : Colors
+                                                                          .green,
+                                                                  borderRadius:
+                                                                      BorderRadius
+                                                                          .circular(
+                                                                              22),
                                                                   boxShadow: [
                                                                     BoxShadow(
-                                                                      color: status ? Colors.white : Colors.black26,
-                                                                      blurRadius: 1,
-                                                                      spreadRadius: 1,
+                                                                      color: status
+                                                                          ? Colors
+                                                                              .white
+                                                                          : Colors
+                                                                              .black26,
+                                                                      blurRadius:
+                                                                          1,
+                                                                      spreadRadius:
+                                                                          1,
                                                                     ),
                                                                   ],
                                                                   image: status
                                                                       ? DecorationImage(
-                                                                    image: NetworkImage(
-                                                                        "https://firebasestorage.googleapis.com/v0/b/carehub-af7ec.appspot.com/o/currect%20icon.png?alt=media&token=b3c6c4e9-5283-4d50-8e39-965695c07808"),
-                                                                    fit: BoxFit.cover,
-                                                                  )
+                                                                          image:
+                                                                              NetworkImage("https://firebasestorage.googleapis.com/v0/b/carehub-af7ec.appspot.com/o/currect%20icon.png?alt=media&token=b3c6c4e9-5283-4d50-8e39-965695c07808"),
+                                                                          fit: BoxFit
+                                                                              .cover,
+                                                                        )
                                                                       : null,
                                                                 ),
                                                               ),
@@ -209,12 +257,19 @@ class _Feedbacks extends State<Feedbacks> {
                                                                 width: 100,
                                                                 child: Text(
                                                                   subject,
-                                                                  style: TextStyle(fontWeight: FontWeight.bold),
-                                                                  overflow: TextOverflow.ellipsis,
+                                                                  style: TextStyle(
+                                                                      fontWeight:
+                                                                          FontWeight
+                                                                              .bold),
+                                                                  overflow:
+                                                                      TextOverflow
+                                                                          .ellipsis,
                                                                 )),
                                                           ],
                                                         ),
-                                                        Text("$timestamp", style: TextStyle(fontSize: 12)),
+                                                        Text("$timestamp",
+                                                            style: TextStyle(
+                                                                fontSize: 12)),
                                                       ],
                                                     ),
                                                   ),
@@ -223,7 +278,8 @@ class _Feedbacks extends State<Feedbacks> {
                                             }).toList(); // Explicitly convert to List<Widget>
 
                                             if (count == 0) {
-                                              return Text("No feedback for this user.");
+                                              return Text(
+                                                  "No feedback for this user.");
                                             }
 
                                             return ListView(
@@ -281,7 +337,6 @@ class _Feedbacks extends State<Feedbacks> {
     );
   }
 }
-
 
 class FeedbackItem extends StatelessWidget {
   final String imageUrl;
@@ -405,8 +460,7 @@ class _BlankPageState extends State<BlankPage> {
           AppBar(
             title: Center(
               child: Text("New Feedback",
-                  style: TextStyle(
-                      fontSize: 20, fontWeight: FontWeight.bold)),
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
             ),
             backgroundColor: Color(0xfffffcc9),
             automaticallyImplyLeading: false,
@@ -529,22 +583,19 @@ class _BlankPageState extends State<BlankPage> {
         DateTime now = DateTime.now();
         String formattedDate = DateFormat('dd MMM yyyy hh:mm a').format(now);
 
-        if(title.isNotEmpty && description.isNotEmpty){
+        if (title.isNotEmpty && description.isNotEmpty) {
           await FirebaseFirestore.instance.collection("Feedbacks").add({
-            "DateTime" : formattedDate,
-            "Description" : description,
-            "Status" : false,
-            "Subject" : title,
-            "UserUID" : userUID,
+            "DateTime": formattedDate,
+            "Description": description,
+            "Status": false,
+            "Subject": title,
+            "UserUID": userUID,
           });
           Fluttertoast.showToast(msg: "Feedback Submited");
           Navigator.pop(context);
+        } else {
+          Fluttertoast.showToast(msg: "Please fill the details");
         }
-        else
-          {
-            Fluttertoast.showToast(msg: "Please fill the details");
-          }
-
       },
       style: ElevatedButton.styleFrom(
         backgroundColor: Colors.greenAccent,
@@ -560,4 +611,3 @@ class _BlankPageState extends State<BlankPage> {
     );
   }
 }
-

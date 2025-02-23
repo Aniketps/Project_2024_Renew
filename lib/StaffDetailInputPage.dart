@@ -13,20 +13,26 @@ import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 
-class StaffDetailInputPage extends StatefulWidget{
+class StaffDetailInputPage extends StatefulWidget {
   final String FirstName;
   final String LastName;
   final String Email;
   final String Password;
 
-  StaffDetailInputPage({required this.FirstName, required this.LastName, required this.Email, required this.Password });
+  StaffDetailInputPage(
+      {required this.FirstName,
+      required this.LastName,
+      required this.Email,
+      required this.Password});
   @override
-  State<StatefulWidget> createState() => _StaffDetailInputPage(Password: Password, FirstName: FirstName, Email: Email, LastName: LastName);
+  State<StatefulWidget> createState() => _StaffDetailInputPage(
+      Password: Password,
+      FirstName: FirstName,
+      Email: Email,
+      LastName: LastName);
 }
 
-class _StaffDetailInputPage extends State<StaffDetailInputPage>{
-
-
+class _StaffDetailInputPage extends State<StaffDetailInputPage> {
   @override
   void initState() {
     super.initState();
@@ -37,20 +43,25 @@ class _StaffDetailInputPage extends State<StaffDetailInputPage>{
       );
 
       Geolocator.getPositionStream(locationSettings: locationSettings).listen(
-            (Position position) {
+        (Position position) {
           setState(() async {
             String lat = position.latitude.toString();
             String long = position.longitude.toString();
             User? user = FirebaseAuth.instance.currentUser;
 
-            await FirebaseFirestore.instance.collection('user').doc(user?.uid).update({
-              'lat' : lat,
-              'long' : long,
+            await FirebaseFirestore.instance
+                .collection('user')
+                .doc(user?.uid)
+                .update({
+              'lat': lat,
+              'long': long,
             });
           });
         },
       );
-    };
+    }
+
+    ;
     _liveLocation();
   }
 
@@ -59,7 +70,11 @@ class _StaffDetailInputPage extends State<StaffDetailInputPage>{
   final String Email;
   final String Password;
 
-  _StaffDetailInputPage({required this.FirstName, required this.LastName, required this.Email, required this.Password });
+  _StaffDetailInputPage(
+      {required this.FirstName,
+      required this.LastName,
+      required this.Email,
+      required this.Password});
 
   @override
   Widget build(BuildContext context) {
@@ -71,38 +86,67 @@ class _StaffDetailInputPage extends State<StaffDetailInputPage>{
 
     return Scaffold(
         backgroundColor: Colors.white,
-        body: isWeb? WebView() : AndroidView(Password: Password, FirstName: FirstName, Email: Email, LastName: LastName)
-    );
+        body: isWeb
+            ? WebView()
+            : AndroidView(
+                Password: Password,
+                FirstName: FirstName,
+                Email: Email,
+                LastName: LastName));
   }
 }
 
-class AndroidStaffPage extends StatefulWidget{
-
+class AndroidStaffPage extends StatefulWidget {
   final String FirstName;
   final String LastName;
   final String Email;
   final String Password;
 
-  AndroidStaffPage({required this.FirstName, required this.LastName, required this.Email, required this.Password });
+  AndroidStaffPage(
+      {required this.FirstName,
+      required this.LastName,
+      required this.Email,
+      required this.Password});
 
   @override
-  State<StatefulWidget> createState() => _AndroidStaffPage(Password: Password, FirstName: FirstName, Email: Email, LastName: LastName);
+  State<StatefulWidget> createState() => _AndroidStaffPage(
+      Password: Password,
+      FirstName: FirstName,
+      Email: Email,
+      LastName: LastName);
 }
 
-class _AndroidStaffPage extends State<AndroidStaffPage>{
-
+class _AndroidStaffPage extends State<AndroidStaffPage> {
   final String FirstName;
   final String LastName;
   final String Email;
   final String Password;
 
-  _AndroidStaffPage({required this.FirstName, required this.LastName, required this.Email, required this.Password });
+  _AndroidStaffPage(
+      {required this.FirstName,
+      required this.LastName,
+      required this.Email,
+      required this.Password});
 
-  List<String> items = ["Chef", "Personal Care Assistants", "Driver", "Security Guards",
-    "Home Guards", "Elder Companions", "Babysitters", "Cleaner",
-    "Housekeepers", "Elderly", "Paramedics", "Occupational Therapists",
-    "Physiotherapists", "Home Health Aides", "Certified Nursing Assistants",
-    "Licensed Practical Nurses", "Registered Nurses"];
+  List<String> items = [
+    "Chef",
+    "Personal Care Assistants",
+    "Driver",
+    "Security Guards",
+    "Home Guards",
+    "Elder Companions",
+    "Babysitters",
+    "Cleaner",
+    "Housekeepers",
+    "Elderly",
+    "Paramedics",
+    "Occupational Therapists",
+    "Physiotherapists",
+    "Home Health Aides",
+    "Certified Nursing Assistants",
+    "Licensed Practical Nurses",
+    "Registered Nurses"
+  ];
   String? selectedValue;
   String ErrorData = "";
 
@@ -118,9 +162,8 @@ class _AndroidStaffPage extends State<AndroidStaffPage>{
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
 
-    return Stack(
-      children: [
-        Column(
+    return Stack(children: [
+      Column(
         children: [
           Container(
             height: 80,
@@ -130,7 +173,8 @@ class _AndroidStaffPage extends State<AndroidStaffPage>{
               color: Colors.black,
               borderRadius: BorderRadius.circular(80),
               boxShadow: [
-                BoxShadow(color: Colors.black12, spreadRadius: 2, blurRadius: 1),
+                BoxShadow(
+                    color: Colors.black12, spreadRadius: 2, blurRadius: 1),
               ],
               image: DecorationImage(
                 image: AssetImage("assets/images/logo.png"),
@@ -146,17 +190,22 @@ class _AndroidStaffPage extends State<AndroidStaffPage>{
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(30),
                   boxShadow: [
-                    BoxShadow(color: Colors.black12, spreadRadius: 2, blurRadius: 1)
-                  ]
-              ),
+                    BoxShadow(
+                        color: Colors.black12, spreadRadius: 2, blurRadius: 1)
+                  ]),
               child: Column(
                 children: [
                   Padding(
                     padding: const EdgeInsets.all(30.0),
-                    child: Text("Details", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),),
+                    child: Text(
+                      "Details",
+                      style:
+                          TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                    ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.only(right: 15, left: 15, top: 10),
+                    padding:
+                        const EdgeInsets.only(right: 15, left: 15, top: 10),
                     child: Row(
                       children: [
                         Container(
@@ -165,7 +214,9 @@ class _AndroidStaffPage extends State<AndroidStaffPage>{
                           decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(12),
-                            boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 6)],
+                            boxShadow: [
+                              BoxShadow(color: Colors.black26, blurRadius: 6)
+                            ],
                           ),
                           child: DropdownButton<String>(
                             value: selectedValue,
@@ -196,7 +247,8 @@ class _AndroidStaffPage extends State<AndroidStaffPage>{
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.only(right: 15, left: 15, top: 10),
+                    padding:
+                        const EdgeInsets.only(right: 15, left: 15, top: 10),
                     child: Row(
                       children: [
                         Padding(
@@ -212,46 +264,61 @@ class _AndroidStaffPage extends State<AndroidStaffPage>{
                                   border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(50),
                                   ),
-                                  contentPadding: EdgeInsets.fromLTRB(20, 16, 16, 16)// Adds border around the text field
-                              ),
+                                  contentPadding: EdgeInsets.fromLTRB(
+                                      20,
+                                      16,
+                                      16,
+                                      16) // Adds border around the text field
+                                  ),
                             ),
                           ),
                         ),
                         Container(
-                          height: 50,
-                          width: 90,
-                          child: ElevatedButton(
-                            onPressed: () {
-                              Fluttertoast.showToast(msg: "Feature Not Added");
-                            },
-                            child: Text("Send", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.red,
-                            ),
-                          )
-                        ),
+                            height: 50,
+                            width: 90,
+                            child: ElevatedButton(
+                              onPressed: () {
+                                Fluttertoast.showToast(
+                                    msg: "Feature Not Added");
+                              },
+                              child: Text(
+                                "Send",
+                                style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.red,
+                              ),
+                            )),
                       ],
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.only(right: 15, left: 15, top: 10),
+                    padding:
+                        const EdgeInsets.only(right: 15, left: 15, top: 10),
                     child: Row(
                       children: [
                         Padding(
                           padding: const EdgeInsets.only(right: 270 * 0.05),
                           child: Container(
-                            height: 50,
-                            width: (270 * 0.45),
-                            child: ElevatedButton(
-                              onPressed: () async {
-                                Fluttertoast.showToast(msg: "Feature Not Added");
-                              },
-                              child: Text("Resend", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.red,
-                              ),
-                            )
-                          ),
+                              height: 50,
+                              width: (270 * 0.45),
+                              child: ElevatedButton(
+                                onPressed: () async {
+                                  Fluttertoast.showToast(
+                                      msg: "Feature Not Added");
+                                },
+                                child: Text(
+                                  "Resend",
+                                  style: TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.red,
+                                ),
+                              )),
                         ),
                         Container(
                           height: 50,
@@ -263,17 +330,18 @@ class _AndroidStaffPage extends State<AndroidStaffPage>{
                                 labelText: "OTP", // Placeholder text
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(50),
-
                                 ),
-                                contentPadding: EdgeInsets.fromLTRB(20, 16, 16, 16)// Adds border around the text field
-                            ),
+                                contentPadding: EdgeInsets.fromLTRB(20, 16, 16,
+                                    16) // Adds border around the text field
+                                ),
                           ),
                         ),
                       ],
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.only(right: 15, left: 15, top: 10),
+                    padding:
+                        const EdgeInsets.only(right: 15, left: 15, top: 10),
                     child: Container(
                       height: 50,
                       child: TextField(
@@ -283,26 +351,28 @@ class _AndroidStaffPage extends State<AndroidStaffPage>{
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(50),
                             ),
-                            contentPadding: EdgeInsets.fromLTRB(20, 16, 16, 16)// Adds border around the text field
-                        ),
+                            contentPadding: EdgeInsets.fromLTRB(20, 16, 16,
+                                16) // Adds border around the text field
+                            ),
                       ),
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.only(right: 15, left: 15, top: 10),
+                    padding:
+                        const EdgeInsets.only(right: 15, left: 15, top: 10),
                     child: Container(
-                      height: 50,
-                      child: ElevatedButton(onPressed: () async {
-                        final pickedImage = await ImagePicker().pickImage(source: ImageSource.gallery);
-                        if(pickedImage!=null){
-                          setState(() {
-                            imagePath = File(pickedImage.path);
-                          });
-                        }
-                      },
-                          child: Text("Select Image")
-                      )
-                    ),
+                        height: 50,
+                        child: ElevatedButton(
+                            onPressed: () async {
+                              final pickedImage = await ImagePicker()
+                                  .pickImage(source: ImageSource.gallery);
+                              if (pickedImage != null) {
+                                setState(() {
+                                  imagePath = File(pickedImage.path);
+                                });
+                              }
+                            },
+                            child: Text("Select Image"))),
                   ),
                   Padding(
                     padding: const EdgeInsets.only(top: 15),
@@ -311,50 +381,88 @@ class _AndroidStaffPage extends State<AndroidStaffPage>{
                           setState(() {
                             isLoading = true;
                           });
+
                           String phone = PhoneNo.text;
                           String otp = OTP.text;
                           String city = City.text;
                           String skill = selectedValue.toString();
-                          if(phone.isNotEmpty && city.isNotEmpty && skill.isNotEmpty){
+                          if (phone.isNotEmpty &&
+                              city.isNotEmpty &&
+                              skill.isNotEmpty) {
                             try {
-                              UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(email: Email, password: Password);
+                              UserCredential userCredential = await FirebaseAuth
+                                  .instance
+                                  .createUserWithEmailAndPassword(
+                                      email: Email, password: Password);
                               User? user = userCredential.user;
 
-                              String? fileName = imagePath?.path.split('/').last;
-                              UploadTask uploadTask = FirebaseStorage.instance.ref().child("${user?.uid}/${fileName}").putFile(imagePath!);
+                              String? fileName =
+                                  imagePath?.path.split('/').last;
+                              UploadTask uploadTask = FirebaseStorage.instance
+                                  .ref()
+                                  .child("${user?.uid}/${fileName}")
+                                  .putFile(imagePath!);
                               TaskSnapshot snapshot = await uploadTask;
                               Reference ref = snapshot.ref;
                               String profileURL = await ref.getDownloadURL();
-                              await FirebaseFirestore.instance.collection(skill.toLowerCase()).doc(user?.uid).set({
-                                'Email':Email,
-                                'City':city,
-                                'First_name':FirstName,
-                                'professionOfStaff': skill[0].toLowerCase()+skill.substring(1),
-                                'Password':Password,
-                                'Phone_Number1':phone,
-                                'Profile_Pic':profileURL,
-                                'Last_name':LastName,
+                              await FirebaseFirestore.instance
+                                  .collection(skill.toLowerCase())
+                                  .doc(user?.uid)
+                                  .set({
+                                'Email': Email,
+                                'City': city,
+                                'First_name': FirstName,
+                                'professionOfStaff':
+                                    skill[0].toLowerCase() + skill.substring(1),
+                                'Password': Password,
+                                'Phone_Number1': phone,
+                                'Profile_Pic': profileURL,
+                                'Last_name': LastName,
                                 'Rating': 0,
-                                'Status':false,
-                                'Verified' : 'unverified',
-                                'Date_of_registered': DateFormat("dd/MM/yyyy").format(DateTime.now()),
-                                'Verified_status' : false,
+                                'Status': false,
+                                'Verified': 'unverified',
+                                'Date_of_registered': DateFormat("dd/MM/yyyy")
+                                    .format(DateTime.now()),
+                                'Verified_status': false,
                               });
-                              await FirebaseFirestore.instance.collection('user').doc(user?.uid).set({
-                                "Email":Email,
-                                "First_name":FirstName,
-                                'professionOfStaff': skill[0].toLowerCase()+skill.substring(1),
-                                "Last_name":LastName,
-                                "Password":Password,
-                                'Verified' : 'unverified',
-                                "Phone_Number1":phone,
-                                "City":city,
-                                "Profile_Pic":profileURL,
+                              await FirebaseFirestore.instance
+                                  .collection('user')
+                                  .doc(user?.uid)
+                                  .set({
+                                "Email": Email,
+                                "First_name": FirstName,
+                                'professionOfStaff':
+                                    skill[0].toLowerCase() + skill.substring(1),
+                                "Last_name": LastName,
+                                'Rating': 0,
+                                "Password": Password,
+                                'Verified': 'unverified',
+                                "Phone_Number1": phone,
+                                "City": city,
+                                "Profile_Pic": profileURL,
+                              });
+
+                              await FirebaseFirestore.instance
+                                  .collection('Ratings')
+                                  .doc(user?.uid)
+                                  .set({
+                                "1Star": 0,
+                                "2Star": 0,
+                                "3Star": 0,
+                                "4Star": 0,
+                                "5Star": 0,
                               });
                               user?.sendEmailVerification();
                               await FirebaseAuth.instance.signOut();
-                              Fluttertoast.showToast(msg: "Link send, A link has been send to your email", toastLength: Toast.LENGTH_LONG);
-                              Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => LoginPage(),));
+                              Fluttertoast.showToast(
+                                  msg:
+                                      "Link send, A link has been send to your email",
+                                  toastLength: Toast.LENGTH_LONG);
+                              Navigator.pushReplacement(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => LoginPage(),
+                                  ));
                               setState(() {
                                 isLoading = false;
                               });
@@ -375,13 +483,13 @@ class _AndroidStaffPage extends State<AndroidStaffPage>{
                                 ErrorData = "$e";
                               });
                             }
-                          }else{
+                          } else {
                             setState(() {
                               isLoading = false;
                             });
                             Fluttertoast.showToast(msg: "Fill all the blanks");
                             setState(() {
-                              ErrorData ="Fill all the blanks";
+                              ErrorData = "Fill all the blanks";
                             });
                           }
                         },
@@ -394,23 +502,24 @@ class _AndroidStaffPage extends State<AndroidStaffPage>{
           ),
         ],
       ),
-        isLoading? Center(
-          child: Padding(
-            padding: EdgeInsets.only(top: screenHeight * 0.35),
-            child: CircularProgressIndicator(),
-          ),
-        ) : Container(),
-      ]
-    );
+      isLoading
+          ? Center(
+              child: Padding(
+                padding: EdgeInsets.only(top: screenHeight * 0.35),
+                child: CircularProgressIndicator(),
+              ),
+            )
+          : Container(),
+    ]);
   }
 }
 
-class WebStaffPage extends StatefulWidget{
+class WebStaffPage extends StatefulWidget {
   @override
   State<StatefulWidget> createState() => _WebStaffPage();
 }
 
-class _WebStaffPage extends State<WebStaffPage>{
+class _WebStaffPage extends State<WebStaffPage> {
   @override
   Widget build(BuildContext context) {
     final mediaquery = MediaQuery.of(context);
@@ -425,8 +534,7 @@ class _WebStaffPage extends State<WebStaffPage>{
           borderRadius: BorderRadius.circular(10),
           boxShadow: [
             BoxShadow(color: Colors.black26, spreadRadius: 2, blurRadius: 1)
-          ]
-      ),
+          ]),
       child: Padding(
         padding: const EdgeInsets.only(left: 30),
         child: Row(
@@ -480,8 +588,12 @@ class _WebStaffPage extends State<WebStaffPage>{
                       decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(20),
-                          boxShadow: [BoxShadow(color: Colors.black26, spreadRadius: 2, blurRadius: 1)]
-                      ),
+                          boxShadow: [
+                            BoxShadow(
+                                color: Colors.black26,
+                                spreadRadius: 2,
+                                blurRadius: 1)
+                          ]),
                     ),
                   ),
 
@@ -492,8 +604,12 @@ class _WebStaffPage extends State<WebStaffPage>{
                     decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(20),
-                        boxShadow: [BoxShadow(color: Colors.black26, spreadRadius: 2, blurRadius: 1)]
-                    ),
+                        boxShadow: [
+                          BoxShadow(
+                              color: Colors.black26,
+                              spreadRadius: 2,
+                              blurRadius: 1)
+                        ]),
                   ),
 
                   // Email input
@@ -505,8 +621,12 @@ class _WebStaffPage extends State<WebStaffPage>{
                       decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(20),
-                          boxShadow: [BoxShadow(color: Colors.black26, spreadRadius: 2, blurRadius: 1)]
-                      ),
+                          boxShadow: [
+                            BoxShadow(
+                                color: Colors.black26,
+                                spreadRadius: 2,
+                                blurRadius: 1)
+                          ]),
                     ),
                   ),
 
@@ -520,8 +640,12 @@ class _WebStaffPage extends State<WebStaffPage>{
                         decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(20),
-                            boxShadow: [BoxShadow(color: Colors.black26, spreadRadius: 2, blurRadius: 1)]
-                        ),
+                            boxShadow: [
+                              BoxShadow(
+                                  color: Colors.black26,
+                                  spreadRadius: 2,
+                                  blurRadius: 1)
+                            ]),
                       ),
                       Container(
                         height: 20,
@@ -529,8 +653,12 @@ class _WebStaffPage extends State<WebStaffPage>{
                         decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(20),
-                            boxShadow: [BoxShadow(color: Colors.black26, spreadRadius: 2, blurRadius: 1)]
-                        ),
+                            boxShadow: [
+                              BoxShadow(
+                                  color: Colors.black26,
+                                  spreadRadius: 2,
+                                  blurRadius: 1)
+                            ]),
                       ),
                     ],
                   ),
@@ -547,8 +675,12 @@ class _WebStaffPage extends State<WebStaffPage>{
                           decoration: BoxDecoration(
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(40),
-                              boxShadow: [BoxShadow(color: Colors.black26, spreadRadius: 2, blurRadius: 1)]
-                          ),
+                              boxShadow: [
+                                BoxShadow(
+                                    color: Colors.black26,
+                                    spreadRadius: 2,
+                                    blurRadius: 1)
+                              ]),
                         ),
                       ),
                     ],
@@ -563,25 +695,36 @@ class _WebStaffPage extends State<WebStaffPage>{
   }
 }
 
-class AndroidView extends StatefulWidget{
+class AndroidView extends StatefulWidget {
   final String FirstName;
   final String LastName;
   final String Email;
   final String Password;
 
-  AndroidView({required this.FirstName, required this.LastName, required this.Email, required this.Password });
+  AndroidView(
+      {required this.FirstName,
+      required this.LastName,
+      required this.Email,
+      required this.Password});
   @override
-  State<StatefulWidget> createState() => _AndroidView(Password: Password, FirstName: FirstName, Email: Email, LastName: LastName);
+  State<StatefulWidget> createState() => _AndroidView(
+      Password: Password,
+      FirstName: FirstName,
+      Email: Email,
+      LastName: LastName);
 }
 
-class _AndroidView extends State<AndroidView>{
-
+class _AndroidView extends State<AndroidView> {
   final String FirstName;
   final String LastName;
   final String Email;
   final String Password;
 
-  _AndroidView({required this.FirstName, required this.LastName, required this.Email, required this.Password });
+  _AndroidView(
+      {required this.FirstName,
+      required this.LastName,
+      required this.Email,
+      required this.Password});
 
   @override
   Widget build(BuildContext context) {
@@ -596,7 +739,11 @@ class _AndroidView extends State<AndroidView>{
           scrollDirection: Axis.vertical,
           child: Column(
             children: [
-              AndroidStaffPage(Password: Password, FirstName: FirstName, Email: Email, LastName: LastName)
+              AndroidStaffPage(
+                  Password: Password,
+                  FirstName: FirstName,
+                  Email: Email,
+                  LastName: LastName)
             ],
           ),
         )
@@ -605,12 +752,12 @@ class _AndroidView extends State<AndroidView>{
   }
 }
 
-class WebView extends StatefulWidget{
+class WebView extends StatefulWidget {
   @override
   State<StatefulWidget> createState() => _WebView();
 }
 
-class _WebView extends State<WebView>{
+class _WebView extends State<WebView> {
   Color StaffColorTrue = Colors.blueAccent;
   Color StaffColorFalse = Colors.white;
   bool StaffPressed = false;
@@ -631,7 +778,7 @@ class _WebView extends State<WebView>{
           clipper: BlueShapeClipper(),
           child: Container(
             height: screenHeight,
-            width: screenWidth,// Adjust the height accordingly
+            width: screenWidth, // Adjust the height accordingly
             color: Color(0xffbef0ff),
           ),
         ),
@@ -649,47 +796,54 @@ class _WebView extends State<WebView>{
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(50),
                           boxShadow: [
-                            BoxShadow(color: Colors.black12, spreadRadius: 2, blurRadius: 1)
-                          ]
-                      ),
+                            BoxShadow(
+                                color: Colors.black12,
+                                spreadRadius: 2,
+                                blurRadius: 1)
+                          ]),
                       child: Row(
                         children: [
-                          ElevatedButton(onPressed: () {
-                            setState(() {
-                              StaffPressed = !StaffPressed;
-                              if(StaffPressed){
-                                StaffColor = StaffColorTrue;
-                                UserColor = UserColorFalse;
-                                UserPressed = false;
-                              }else{
-                                StaffColor = StaffColorFalse;
-                              }
-                            });
-                          },style: ElevatedButton.styleFrom(
-                              backgroundColor: StaffColor,
-                              shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.only(
-                                      topLeft: Radius.circular(50),
-                                      bottomRight: Radius.circular(0),
-                                      bottomLeft: Radius.circular(50),
-                                      topRight: Radius.circular(0)
-                                  )
-                              ),
-                              minimumSize: Size(100, 50)
-                          ),
-                              child: Text("Staff", style: TextStyle(color: Color(0xff013220), fontWeight: FontWeight.bold),)),
-                          ElevatedButton(onPressed: () {
-                            setState(() {
-                              UserPressed = !UserPressed;
-                              if(UserPressed){
-                                StaffColor = StaffColorFalse;
-                                UserColor = UserColorTrue;
-                                StaffPressed = false;
-                              }else{
-                                UserColor = UserColorFalse;
-                              }
-                            });
-                          },
+                          ElevatedButton(
+                              onPressed: () {
+                                setState(() {
+                                  StaffPressed = !StaffPressed;
+                                  if (StaffPressed) {
+                                    StaffColor = StaffColorTrue;
+                                    UserColor = UserColorFalse;
+                                    UserPressed = false;
+                                  } else {
+                                    StaffColor = StaffColorFalse;
+                                  }
+                                });
+                              },
+                              style: ElevatedButton.styleFrom(
+                                  backgroundColor: StaffColor,
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.only(
+                                          topLeft: Radius.circular(50),
+                                          bottomRight: Radius.circular(0),
+                                          bottomLeft: Radius.circular(50),
+                                          topRight: Radius.circular(0))),
+                                  minimumSize: Size(100, 50)),
+                              child: Text(
+                                "Staff",
+                                style: TextStyle(
+                                    color: Color(0xff013220),
+                                    fontWeight: FontWeight.bold),
+                              )),
+                          ElevatedButton(
+                              onPressed: () {
+                                setState(() {
+                                  UserPressed = !UserPressed;
+                                  if (UserPressed) {
+                                    StaffColor = StaffColorFalse;
+                                    UserColor = UserColorTrue;
+                                    StaffPressed = false;
+                                  } else {
+                                    UserColor = UserColorFalse;
+                                  }
+                                });
+                              },
                               style: ElevatedButton.styleFrom(
                                   backgroundColor: UserColor,
                                   shape: RoundedRectangleBorder(
@@ -697,19 +851,21 @@ class _WebView extends State<WebView>{
                                           topLeft: Radius.circular(0),
                                           bottomRight: Radius.circular(50),
                                           bottomLeft: Radius.circular(0),
-                                          topRight: Radius.circular(50)
-                                      )
-                                  ),
-                                  minimumSize: Size(100, 50)
-                              ),
-                              child: Text("User",style: TextStyle(color: Color(0xff8B0000), fontWeight: FontWeight.bold),))
+                                          topRight: Radius.circular(50))),
+                                  minimumSize: Size(100, 50)),
+                              child: Text(
+                                "User",
+                                style: TextStyle(
+                                    color: Color(0xff8B0000),
+                                    fontWeight: FontWeight.bold),
+                              ))
                         ],
                       ),
                     ),
                   ],
                 ),
               ),
-              StaffPressed? WebStaffPage() : WebUserPage()
+              StaffPressed ? WebStaffPage() : WebUserPage()
             ],
           ),
         )
@@ -725,7 +881,7 @@ class BlueShapeClipper extends CustomClipper<Path> {
     path.lineTo(0, size.height * 1); // Left-middle
     path.lineTo(size.width * 1, size.height * 0.65); // Diagonal towards right
     path.lineTo(size.width, size.height * 01); // Top-right curve
-    path.lineTo(size.width , 0); // Top-right corner
+    path.lineTo(size.width, 0); // Top-right corner
     path.close(); // Close the path
     return path;
   }

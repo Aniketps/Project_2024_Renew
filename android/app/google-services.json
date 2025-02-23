@@ -1,18 +1,27 @@
 {
   "project_info": {
     "project_number": "195391760517",
+    "firebase_url": "https://carehub-af7ec-default-rtdb.asia-southeast1.firebasedatabase.app",
     "project_id": "carehub-af7ec",
     "storage_bucket": "carehub-af7ec.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:195391760517:android:9a80ee93672f92234ae1ec",
+        "mobilesdk_app_id": "1:195391760517:android:5b0d3d3357acea4a4ae1ec",
         "android_client_info": {
-          "package_name": "com.example.carehub"
+          "package_name": "com.carenest.carehub"
         }
       },
       "oauth_client": [
+        {
+          "client_id": "195391760517-hhechna1etreej2aosj03fajftpbermp.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.carenest.carehub",
+            "certificate_hash": "3b354d75d2dd06ccdd726b8a785531e446cc94e8"
+          }
+        },
         {
           "client_id": "195391760517-tn69ld52adkn3n5m1tfsfvf41r2au544.apps.googleusercontent.com",
           "client_type": 3
@@ -29,6 +38,13 @@
             {
               "client_id": "195391760517-tn69ld52adkn3n5m1tfsfvf41r2au544.apps.googleusercontent.com",
               "client_type": 3
+            },
+            {
+              "client_id": "195391760517-e832ho7dm96178m5nosqrd67fgrjd59v.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.carehub"
+              }
             }
           ]
         }

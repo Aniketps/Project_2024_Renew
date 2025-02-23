@@ -6,7 +6,6 @@ import 'package:carehub/services/sendNotificationService.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:paytm_allinonesdk/paytm_allinonesdk.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -35,38 +34,6 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
     'Locating..',
     'Locating...',
   ];
-
-  Future<String> initiatePaytmPayment(String mid, String orderId, String txnToken, String amount) async {
-    print("Initiating Payment...");
-    try {
-      var result = await AllInOneSdk.startTransaction(
-          mid =  mid,            // Merchant ID
-          orderId = orderId,        // Order ID
-          txnToken = txnToken,       // Transaction Token
-          amount,         // Transaction Amount
-          "https://securegw.paytm.in/theia/paytmCallback?ORDER_ID=<$orderId>",             // Callback URL (set if required)
-          true,           // isStaging: true for testing, false for production
-          true            // restrictAppInvoke: set to true or false based on your requirement
-      );
-      if (result != null) {
-        if (result['STATUS'] == 'TXN_SUCCESS') {
-          Fluttertoast.showToast(msg: "Payment Successful");
-          print("Payment Successful");
-          return "Payment Successful";
-        } else {
-          Fluttertoast.showToast(msg: "Payment Failed: ${result['RESPMSG']}");
-          print("Payment Failed: ${result['RESPMSG']}");
-          return "Payment Failed";
-        }
-      }
-    } catch (e) {
-      print("Error in payment initiation: $e");
-      Fluttertoast.showToast(msg: "Payment Error: ${e.toString()}");
-      return "Payment Failed";
-    }
-    return "Unknown Payment Status";
-  }
-
 
   Timer? timer;
   int index = 0;
@@ -103,7 +70,9 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
           });
         },
       );
-    };
+    }
+
+    ;
     Loader = true;
     _liveLocation();
     _getCurrentLocation();
@@ -187,6 +156,8 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
   TextEditingController City = TextEditingController();
   TextEditingController SubAddress = TextEditingController();
   TextEditingController Address = TextEditingController();
+  bool isAccepted = false;
+  bool isAcceptOpen = false;
 
   @override
   Widget build(BuildContext context) {
@@ -296,26 +267,29 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                     child: Column(
                       children: [
                         lat == ''
-                            ? Center(
-                                child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Padding(
-                                    padding: const EdgeInsets.all(10.0),
-                                    child: CircularProgressIndicator(),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.all(10.0),
-                                    child: Text(
-                                      LoadingText,
-                                      style: TextStyle(
-                                          color: Colors.green,
-                                          fontWeight: FontWeight.bold),
+                            ? Padding(
+                                padding: const EdgeInsets.only(top: 200.0),
+                                child: Center(
+                                    child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Padding(
+                                      padding: const EdgeInsets.all(10.0),
+                                      child: CircularProgressIndicator(),
                                     ),
-                                  )
-                                ],
-                              ))
+                                    Padding(
+                                      padding: const EdgeInsets.all(10.0),
+                                      child: Text(
+                                        LoadingText,
+                                        style: TextStyle(
+                                            color: Colors.green,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                    )
+                                  ],
+                                )),
+                              )
                             : Stack(
                                 children: [
                                   SingleChildScrollView(
@@ -904,7 +878,6 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                                               Text(
                                                                 "Know more",
                                                                 style: TextStyle(
-
                                                                     fontSize:
                                                                         11,
                                                                     color: Colors
@@ -1138,7 +1111,7 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                               top: 10, right: 10, left: 10),
                                           child: Container(
                                             width: screenWidth * 0.95,
-                                            height: screenHeight * 0.4,
+                                            height: 125,
                                             decoration: BoxDecoration(
                                                 color: Colors.white,
                                                 borderRadius:
@@ -1173,549 +1146,64 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                                           left: 15, right: 15),
                                                   child: Divider(),
                                                 ),
-                                                Padding(
-                                                  padding:
-                                                      EdgeInsets.only(left: 15),
-                                                  child: Row(
+                                                Container(
+                                                  width: screenWidth * 0.9,
+                                                  decoration: BoxDecoration(
+                                                      color: Colors.white,
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              10),
+                                                      boxShadow: [
+                                                        BoxShadow(
+                                                            color:
+                                                                Colors.black26,
+                                                            spreadRadius: 1,
+                                                            blurRadius: 1)
+                                                      ]),
+                                                  child: Column(
                                                     children: [
-                                                      Text(
-                                                        "Most Preferred",
-                                                        style: TextStyle(
-                                                            fontWeight:
-                                                                FontWeight
-                                                                    .bold),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                                Padding(
-                                                  padding:
-                                                      const EdgeInsets.only(
-                                                          left: 15, right: 15),
-                                                  child: Container(
-                                                    decoration: BoxDecoration(
-                                                        color: Colors.white,
-                                                        borderRadius:
-                                                            BorderRadius
-                                                                .circular(10),
-                                                        boxShadow: [
-                                                          BoxShadow(
-                                                              color: Colors
-                                                                  .black26,
-                                                              spreadRadius: 1,
-                                                              blurRadius: 1)
-                                                        ]),
-                                                    child: Column(
-                                                      children: [
-                                                        Padding(
-                                                          padding:
-                                                              const EdgeInsets
-                                                                  .all(5.0),
-                                                          child: Row(
-                                                            children: [
-                                                              Container(
-                                                                height: 20,
-                                                                width: 20,
-                                                                decoration: BoxDecoration(
-                                                                    image: DecorationImage(
-                                                                        image: NetworkImage(
-                                                                            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTo4x8kSTmPUq4PFzl4HNT0gObFuEhivHOFYg&s|"))),
-                                                              ),
-                                                              Padding(
-                                                                padding:
-                                                                    const EdgeInsets
-                                                                        .only(
-                                                                        left:
-                                                                            5),
-                                                                child: Container(
-                                                                    width:
-                                                                        screenWidth *
-                                                                            0.7,
-                                                                    child: Text(
-                                                                        "PhonePe UPI")),
-                                                              ),
-                                                              Container(
-                                                                height: 7,
-                                                                width: 7,
-                                                                decoration: BoxDecoration(
-                                                                    borderRadius:
-                                                                        BorderRadius
-                                                                            .circular(
-                                                                                7),
-                                                                    color: Colors
-                                                                        .blue),
-                                                              )
-                                                            ],
-                                                          ),
-                                                        ),
-                                                        Padding(
-                                                          padding:
-                                                              const EdgeInsets
-                                                                  .all(5.0),
-                                                          child: InkWell(
-                                                            onTap: () async {
-                                                              var UID =
-                                                                  FirebaseAuth.instance.currentUser?.uid;
-                                                              String city = City.text;
-                                                              String address = Address.text;
-                                                              String subAddress = SubAddress.text;
-                                                              String place = Place;
-
-                                                              if (price != 0 && WorkDate != '--/--/----' && WorkTime != '--:--' && city.isNotEmpty && address.isNotEmpty && subAddress.isNotEmpty && place.isNotEmpty) {
-
-                                                                String mid = "xxLLfG59346746519063";
-                                                                const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-                                                                Random random = Random();
-                                                                String orderIdx = 'ORDER'; // Prefix to indicate it's an order ID
-
-                                                                // Generate a random string of 8 characters
-                                                                for (int i = 0; i < 8; i++) {
-                                                                  orderIdx += chars[random.nextInt(chars.length)];
-                                                                }
-                                                                String orderId = orderIdx;
-
-                                                                const charsx = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-                                                                Random randomx = Random();
-                                                                String txnTokenx = 'TXN'; // Prefix to indicate it's a transaction token
-
-                                                                // Generate a random string of 10 characters
-                                                                for (int i = 0; i < 10; i++) {
-                                                                  txnTokenx += charsx[randomx.nextInt(charsx.length)];
-                                                                }
-
-                                                                String txnToken = txnTokenx;
-                                                                String amount = "1.00";
-
-                                                                // var paymentReult = initiatePaytmPayment(
-                                                                //     mid,
-                                                                //     orderId,
-                                                                //     txnToken,
-                                                                //     amount,
-                                                                // );
-                                                                if("Payment Successful" == "Payment Successful"){
-                                                                  try {
-                                                                    // Add data to 'NotificationForStaff' collection
-                                                                    FirebaseFirestore.instance.collection('NotificationForStaff').add({
-                                                                      'userUID': UID,
-                                                                      'Scheduled_City': city,
-                                                                      'Scheduled_Address': address,
-                                                                      'Scheduled_Sub_Address': subAddress,
-                                                                      'Scheduled_Place': place,
-                                                                      "Client_Coordinates_lat": ShareCoordinates
-                                                                          ? lat
-                                                                          : "",
-                                                                      "Client_Coordinates_long": ShareCoordinates
-                                                                          ? long
-                                                                          : "",
-                                                                      'staffUID': StaffID,
-                                                                      'professionOfStaff': Skill,
-                                                                      'status': 'Received a Request',
-                                                                      'timeofdeal': "${DateTime.now().day} ${DateFormat.MMM().format(DateTime.now())} ${DateTime.now().year} ${DateFormat.jm().format(DateTime.now())}",
-                                                                      'totalcost': total,
-                                                                      'ServiceBase': HourBased
-                                                                          ? 'Hour'
-                                                                          : 'Day',
-                                                                      'hours':
-                                                                      "${count}",
-                                                                      'ScheduledDate': WorkDate,
-                                                                      'ScheduledTime': WorkTime,
-                                                                      'PlatformTax': '15%',
-                                                                      'ScheduledDateEnd': WorkDateEnd,
-                                                                      'ScheduledTimeEnd': WorkTimeEnd,
-                                                                    }).then(
-                                                                            (staffDocRef) {
-                                                                          String staffDocUID = staffDocRef.id;
-
-                                                                          // Add data to 'NotificationForUser' collection
-                                                                          FirebaseFirestore.instance.collection('NotificationForUser').add({
-                                                                            'userUID': UID,
-                                                                            'staffUID': StaffID,
-                                                                            'status': 'Request sent',
-                                                                            'Scheduled_City': city,
-                                                                            'Scheduled_Address': address,
-                                                                            'Scheduled_Sub_Address': subAddress,
-                                                                            'Scheduled_Place': place,
-                                                                            "Client_Coordinates_lat": ShareCoordinates
-                                                                                ? lat
-                                                                                : "",
-                                                                            "Client_Coordinates_long": ShareCoordinates
-                                                                                ? long
-                                                                                : "",
-                                                                            'professionOfStaff': Skill,
-                                                                            'timeofdeal': "${DateTime.now().day} ${DateFormat.MMM().format(DateTime.now())} ${DateTime.now().year} ${DateFormat.jm().format(DateTime.now())}",
-                                                                            'DocUID': staffDocUID,
-                                                                            'totalcost': total,
-                                                                            'ServiceBase': HourBased
-                                                                                ? 'Hour'
-                                                                                : 'Day',
-                                                                            'hours': "${count}",
-                                                                            'ScheduledDate': WorkDate,
-                                                                            'ScheduledTime': WorkTime,
-                                                                            'PlatformTax': '15%',
-                                                                            'ScheduledDateEnd': WorkDateEnd,
-                                                                            'ScheduledTimeEnd': WorkTimeEnd,
-                                                                          }).then(
-                                                                                  (userDocRef) {
-                                                                                String userDocUID = userDocRef.id;
-
-                                                                                // Update 'NotificationForStaff' with the 'DocUID' from 'NotificationForUser'
-                                                                                FirebaseFirestore
-                                                                                    .instance
-                                                                                    .collection('NotificationForStaff')
-                                                                                    .doc(staffDocUID)
-                                                                                    .update({
-                                                                                  'DocUID':
-                                                                                  userDocUID,
-                                                                                });
-                                                                              }).catchError(
-                                                                                  (error) {
-                                                                                print(
-                                                                                    "Error adding document to NotificationForUser: $error");
-                                                                              });
-                                                                        }).catchError(
-                                                                            (error) {
-                                                                          print(
-                                                                              "Error adding document to NotificationForStaff: $error");
-                                                                        });
-
-
-                                                                    User? user = await FirebaseAuth.instance.currentUser;
-                                                                    var userDoc = await FirebaseFirestore.instance.collection("user").doc(user?.uid).get();
-                                                                    var staffDoc = await FirebaseFirestore.instance.collection("user").doc(StaffID).get();
-                                                                    var usertoken = userDoc.data()?['token'];
-                                                                    var stafftoken = staffDoc.data()?['token'];
-
-                                                                    print(stafftoken);
-
-                                                                    GetServerKey getServerKey = GetServerKey();
-                                                                    String accessToken = await getServerKey.getServerKeyToken();
-
-// Generate unique IDs for the notifications
-                                                                    int notificationId1 = DateTime.now().millisecondsSinceEpoch; // Unique ID based on timestamp
-                                                                    int notificationId2 = notificationId1 + 1; // Increment to ensure uniqueness for the second notification
-
-// Send first notification
-                                                                    sendNotificationService.sendNotificationUsingApi(
-                                                                        body: 'Send Successful',
-                                                                        data: {
-                                                                          "screen" : "ClientNotificationPage",
-                                                                          "notificationId" : notificationId1.toString(), // Include notification ID in the data if needed
-                                                                        },
-                                                                        title: "Booking",
-                                                                        token: usertoken
-                                                                    );
-// Send second notification
-                                                                    sendNotificationService.sendNotificationUsingApi(
-                                                                        body: 'You have a new request',
-                                                                        data: {
-                                                                          "screen" : "StaffNotificationPage",
-                                                                          "notificationId" : notificationId2.toString(), // Include notification ID in the data if needed
-                                                                        },
-                                                                        title: "Hiring",
-                                                                        token: stafftoken
-                                                                    );
-
-
-                                                                    Navigator
-                                                                        .push(
-                                                                      context,
-                                                                      MaterialPageRoute(builder: (context) => ClientNotificationPage(),
-                                                                      ),
-                                                                    );
-
-
-
-                                                                    Fluttertoast.showToast(msg: "Payment Done");
-                                                                  } catch (e) {
-                                                                    Fluttertoast
-                                                                        .showToast(
-                                                                      msg: "$e",
-                                                                      toastLength:
-                                                                      Toast
-                                                                          .LENGTH_SHORT,
-                                                                      gravity:
-                                                                      ToastGravity
-                                                                          .BOTTOM,
-                                                                    );
-                                                                  }
-                                                                }else{
-                                                                  Fluttertoast.showToast(msg: "Payment Failed");
-                                                                }
-                                                              }
-                                                              else {
-                                                                // Handle validation errors
-                                                                if (price == 0) {
-                                                                  Fluttertoast.showToast(
-                                                                    msg: "User did not set service rate",
-                                                                    toastLength: Toast.LENGTH_SHORT,
-                                                                    gravity: ToastGravity.BOTTOM,
-                                                                  );
-                                                                }
-                                                                else if (WorkDate == '--/--/----') {
-                                                                  Fluttertoast
-                                                                      .showToast(
-                                                                    msg:
-                                                                        "Invalid Date",
-                                                                    toastLength:
-                                                                        Toast
-                                                                            .LENGTH_SHORT,
-                                                                    gravity:
-                                                                        ToastGravity
-                                                                            .BOTTOM,
-                                                                  );
-                                                                }
-                                                                else if (WorkTime == '--:--') {
-                                                                  Fluttertoast
-                                                                      .showToast(
-                                                                    msg:
-                                                                        "Invalid Time",
-                                                                    toastLength:
-                                                                        Toast
-                                                                            .LENGTH_SHORT,
-                                                                    gravity:
-                                                                        ToastGravity
-                                                                            .BOTTOM,
-                                                                  );
-                                                                }
-                                                                else if (city.isEmpty) {
-                                                                  Fluttertoast
-                                                                      .showToast(
-                                                                    msg:
-                                                                        "Invalid City",
-                                                                    toastLength:
-                                                                        Toast
-                                                                            .LENGTH_SHORT,
-                                                                    gravity:
-                                                                        ToastGravity
-                                                                            .BOTTOM,
-                                                                  );
-                                                                }
-                                                                else if (address.isEmpty) {
-                                                                  Fluttertoast
-                                                                      .showToast(
-                                                                    msg:
-                                                                        "Invalid Address",
-                                                                    toastLength:
-                                                                        Toast
-                                                                            .LENGTH_SHORT,
-                                                                    gravity:
-                                                                        ToastGravity
-                                                                            .BOTTOM,
-                                                                  );
-                                                                }
-                                                                else if (subAddress.isEmpty) {
-                                                                  Fluttertoast
-                                                                      .showToast(
-                                                                    msg:
-                                                                        "Invalid Sub Address",
-                                                                    toastLength:
-                                                                        Toast
-                                                                            .LENGTH_SHORT,
-                                                                    gravity:
-                                                                        ToastGravity
-                                                                            .BOTTOM,
-                                                                  );
-                                                                }
-                                                                else {
-                                                                  Fluttertoast.showToast(
-                                                                    msg: "Invalid Place",
-                                                                    toastLength: Toast.LENGTH_SHORT,
-                                                                    gravity: ToastGravity.BOTTOM,
-                                                                  );
-                                                                }
-                                                              }
-                                                            },
-                                                            child: Container(
-                                                              height: 40,
-                                                              width: 180,
-                                                              decoration: BoxDecoration(
+                                                      Padding(
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .all(5.0),
+                                                        child: InkWell(
+                                                          onTap: () {
+                                                            setState(() {
+                                                              isAcceptOpen =
+                                                                  true;
+                                                            });
+                                                          },
+                                                          child: Container(
+                                                            height: 50,
+                                                            width: screenWidth *
+                                                                0.9,
+                                                            decoration: BoxDecoration(
+                                                                color: Colors
+                                                                    .green,
+                                                                borderRadius:
+                                                                    BorderRadius
+                                                                        .circular(
+                                                                            10),
+                                                                boxShadow: [
+                                                                  BoxShadow(
+                                                                      color: Colors
+                                                                          .black26,
+                                                                      spreadRadius:
+                                                                          1,
+                                                                      blurRadius:
+                                                                          1)
+                                                                ]),
+                                                            child: Center(
+                                                                child: Text(
+                                                              "Secure Pay now ${total} ₹",
+                                                              style: TextStyle(
                                                                   color: Colors
-                                                                      .green,
-                                                                  borderRadius:
-                                                                      BorderRadius
-                                                                          .circular(10),
-                                                                  boxShadow: [
-                                                                    BoxShadow(
-                                                                        color: Colors
-                                                                            .black26,
-                                                                        spreadRadius:
-                                                                            1,
-                                                                        blurRadius:
-                                                                            1)
-                                                                  ]),
-                                                              child: Center(
-                                                                  child: Text(
-                                                                "Pay ${total} ₹",
-                                                                style: TextStyle(
-                                                                    color: Colors
-                                                                        .white),
-                                                              )),
-                                                            ),
+                                                                      .white),
+                                                            )),
                                                           ),
-                                                        )
-                                                      ],
-                                                    ),
-                                                  ),
-                                                ),
-                                                Padding(
-                                                  padding: EdgeInsets.only(
-                                                      left: 15, top: 10),
-                                                  child: Row(
-                                                    children: [
-                                                      Text(
-                                                        "UPI",
-                                                        style: TextStyle(
-                                                            fontWeight:
-                                                                FontWeight
-                                                                    .bold),
-                                                      ),
+                                                        ),
+                                                      )
                                                     ],
-                                                  ),
-                                                ),
-                                                Padding(
-                                                  padding:
-                                                      const EdgeInsets.only(
-                                                          left: 15, right: 15),
-                                                  child: Container(
-                                                    decoration: BoxDecoration(
-                                                        color: Colors.white,
-                                                        borderRadius:
-                                                            BorderRadius
-                                                                .circular(10),
-                                                        boxShadow: [
-                                                          BoxShadow(
-                                                              color: Colors
-                                                                  .black26,
-                                                              spreadRadius: 1,
-                                                              blurRadius: 1)
-                                                        ]),
-                                                    child: Column(
-                                                      children: [
-                                                        Padding(
-                                                          padding:
-                                                              const EdgeInsets
-                                                                  .all(5.0),
-                                                          child: Row(
-                                                            children: [
-                                                              Container(
-                                                                height: 20,
-                                                                width: 20,
-                                                                decoration: BoxDecoration(
-                                                                    image: DecorationImage(
-                                                                        image: NetworkImage(
-                                                                            "https://cdn.iconscout.com/icon/free/png-256/free-google-pay-logo-icon-download-in-svg-png-gif-file-formats--gpay-payment-money-pack-logos-icons-1721670.png"))),
-                                                              ),
-                                                              Padding(
-                                                                padding:
-                                                                    const EdgeInsets
-                                                                        .only(
-                                                                        left:
-                                                                            5),
-                                                                child: Container(
-                                                                    width:
-                                                                        screenWidth *
-                                                                            0.7,
-                                                                    child: Text(
-                                                                        "GPay UIP")),
-                                                              ),
-                                                              Container(
-                                                                height: 7,
-                                                                width: 7,
-                                                                decoration: BoxDecoration(
-                                                                    borderRadius:
-                                                                        BorderRadius
-                                                                            .circular(
-                                                                                7),
-                                                                    color: Colors
-                                                                        .green),
-                                                              )
-                                                            ],
-                                                          ),
-                                                        ),
-                                                        Padding(
-                                                          padding:
-                                                              const EdgeInsets
-                                                                  .all(5.0),
-                                                          child: Row(
-                                                            children: [
-                                                              Container(
-                                                                height: 20,
-                                                                width: 20,
-                                                                decoration: BoxDecoration(
-                                                                    image: DecorationImage(
-                                                                        image: NetworkImage(
-                                                                            "https://cdn.icon-icons.com/icons2/730/PNG/512/paytm_icon-icons.com_62778.png"))),
-                                                              ),
-                                                              Padding(
-                                                                padding:
-                                                                    const EdgeInsets
-                                                                        .only(
-                                                                        left:
-                                                                            5),
-                                                                child: Container(
-                                                                    width:
-                                                                        screenWidth *
-                                                                            0.7,
-                                                                    child: Text(
-                                                                        "Paytm UPI")),
-                                                              ),
-                                                              Container(
-                                                                height: 7,
-                                                                width: 7,
-                                                                decoration: BoxDecoration(
-                                                                    borderRadius:
-                                                                        BorderRadius
-                                                                            .circular(
-                                                                                7),
-                                                                    color: Colors
-                                                                        .green),
-                                                              )
-                                                            ],
-                                                          ),
-                                                        ),
-                                                        Padding(
-                                                          padding:
-                                                              const EdgeInsets
-                                                                  .all(5.0),
-                                                          child: Row(
-                                                            children: [
-                                                              Container(
-                                                                height: 20,
-                                                                width: 20,
-                                                                decoration: BoxDecoration(
-                                                                    image: DecorationImage(
-                                                                        image: NetworkImage(
-                                                                            "https://img.icons8.com/color/200/bhim.png"))),
-                                                              ),
-                                                              Padding(
-                                                                padding:
-                                                                    const EdgeInsets
-                                                                        .only(
-                                                                        left:
-                                                                            5),
-                                                                child: Container(
-                                                                    width:
-                                                                        screenWidth *
-                                                                            0.7,
-                                                                    child: Text(
-                                                                        "Pay by any UPI App")),
-                                                              ),
-                                                              Container(
-                                                                height: 7,
-                                                                width: 7,
-                                                                decoration: BoxDecoration(
-                                                                    borderRadius:
-                                                                        BorderRadius
-                                                                            .circular(
-                                                                                7),
-                                                                    color: Colors
-                                                                        .green),
-                                                              )
-                                                            ],
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    ),
                                                   ),
                                                 ),
                                               ],
@@ -1725,6 +1213,426 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                       ],
                                     ),
                                   ),
+                                  (isAcceptOpen)
+                                      ? Positioned(
+                                          bottom: 150,
+                                          right: 0,
+                                          left: 0,
+                                          child: Center(
+                                            child: Container(
+                                              alignment: Alignment.center,
+                                              height: 160,
+                                              width: screenWidth * 0.9,
+                                              decoration: BoxDecoration(
+                                                color: Colors.white,
+                                                borderRadius:
+                                                    BorderRadius.circular(15),
+                                                border: Border.all(
+                                                    color: Colors.blue,
+                                                    width: 1),
+                                              ),
+                                              child: Column(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.center,
+                                                children: [
+                                                  Text(
+                                                    "Warning : Please make sure to call staff for the confirmation of availability before you hire for work and pay",
+                                                    textAlign: TextAlign.center,
+                                                    style: TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.bold),
+                                                  ),
+                                                  SizedBox(height: 10),
+                                                  Row(
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .spaceAround,
+                                                    children: [
+                                                      ElevatedButton(
+                                                          onPressed: () {
+                                                            isAcceptOpen =
+                                                                false;
+                                                          },
+                                                          child: Text(
+                                                              "I will call")),
+                                                      ElevatedButton(
+                                                          onPressed: () async {
+                                                            isAcceptOpen =
+                                                                false;
+                                                            var UID =
+                                                                FirebaseAuth
+                                                                    .instance
+                                                                    .currentUser
+                                                                    ?.uid;
+                                                            String city =
+                                                                City.text;
+                                                            String address =
+                                                                Address.text;
+                                                            String subAddress =
+                                                                SubAddress.text;
+                                                            String place =
+                                                                Place;
+
+                                                            if (price != 0 &&
+                                                                WorkDate !=
+                                                                    '--/--/----' &&
+                                                                WorkTime !=
+                                                                    '--:--' &&
+                                                                city
+                                                                    .isNotEmpty &&
+                                                                address
+                                                                    .isNotEmpty &&
+                                                                subAddress
+                                                                    .isNotEmpty &&
+                                                                place
+                                                                    .isNotEmpty) {
+                                                              // Payment logic
+
+                                                              if ("Payment Successful" ==
+                                                                  "Payment Successful") {
+                                                                try {
+                                                                  // Add data to 'NotificationForStaff' collection
+                                                                  FirebaseFirestore
+                                                                      .instance
+                                                                      .collection(
+                                                                          'NotificationForStaff')
+                                                                      .add({
+                                                                    'userUID':
+                                                                        UID,
+                                                                    'Scheduled_City':
+                                                                        city,
+                                                                    'Scheduled_Address':
+                                                                        address,
+                                                                    'Scheduled_Sub_Address':
+                                                                        subAddress,
+                                                                    'Scheduled_Place':
+                                                                        place,
+                                                                    "Client_Coordinates_lat":
+                                                                        ShareCoordinates
+                                                                            ? lat
+                                                                            : "",
+                                                                    "Client_Coordinates_long":
+                                                                        ShareCoordinates
+                                                                            ? long
+                                                                            : "",
+                                                                    'staffUID':
+                                                                        StaffID,
+                                                                    'professionOfStaff':
+                                                                        Skill,
+                                                                    'status':
+                                                                        'Received a Request',
+                                                                    'timeofdeal':
+                                                                        "${DateTime.now().day} ${DateFormat.MMM().format(DateTime.now())} ${DateTime.now().year} ${DateFormat.jm().format(DateTime.now())}",
+                                                                    'totalcost':
+                                                                        total,
+                                                                    'ServiceBase':
+                                                                        HourBased
+                                                                            ? 'Hour'
+                                                                            : 'Day',
+                                                                    'hours':
+                                                                        "${count}",
+                                                                    'ScheduledDate':
+                                                                        WorkDate,
+                                                                    'ScheduledTime':
+                                                                        WorkTime,
+                                                                    'PlatformTax':
+                                                                        '15%',
+                                                                    'ScheduledDateEnd':
+                                                                        WorkDateEnd,
+                                                                    'ScheduledTimeEnd':
+                                                                        WorkTimeEnd,
+                                                                  }).then(
+                                                                          (staffDocRef) {
+                                                                    String
+                                                                        staffDocUID =
+                                                                        staffDocRef
+                                                                            .id;
+
+                                                                    // Add data to 'NotificationForUser' collection
+                                                                    FirebaseFirestore
+                                                                        .instance
+                                                                        .collection(
+                                                                            'NotificationForUser')
+                                                                        .add({
+                                                                      'userUID':
+                                                                          UID,
+                                                                      'staffUID':
+                                                                          StaffID,
+                                                                      'status':
+                                                                          'Request sent',
+                                                                      'Scheduled_City':
+                                                                          city,
+                                                                      'Scheduled_Address':
+                                                                          address,
+                                                                      'Scheduled_Sub_Address':
+                                                                          subAddress,
+                                                                      'Scheduled_Place':
+                                                                          place,
+                                                                      "Client_Coordinates_lat":
+                                                                          ShareCoordinates
+                                                                              ? lat
+                                                                              : "",
+                                                                      "Client_Coordinates_long": ShareCoordinates
+                                                                          ? long
+                                                                          : "",
+                                                                      'professionOfStaff':
+                                                                          Skill,
+                                                                      'timeofdeal':
+                                                                          "${DateTime.now().day} ${DateFormat.MMM().format(DateTime.now())} ${DateTime.now().year} ${DateFormat.jm().format(DateTime.now())}",
+                                                                      'DocUID':
+                                                                          staffDocUID,
+                                                                      'totalcost':
+                                                                          total,
+                                                                      'ServiceBase': HourBased
+                                                                          ? 'Hour'
+                                                                          : 'Day',
+                                                                      'hours':
+                                                                          "${count}",
+                                                                      'ScheduledDate':
+                                                                          WorkDate,
+                                                                      'ScheduledTime':
+                                                                          WorkTime,
+                                                                      'PlatformTax':
+                                                                          '15%',
+                                                                      'ScheduledDateEnd':
+                                                                          WorkDateEnd,
+                                                                      'ScheduledTimeEnd':
+                                                                          WorkTimeEnd,
+                                                                    }).then(
+                                                                            (userDocRef) {
+                                                                      String
+                                                                          userDocUID =
+                                                                          userDocRef
+                                                                              .id;
+
+                                                                      // Update 'NotificationForStaff' with the 'DocUID' from 'NotificationForUser'
+                                                                      FirebaseFirestore
+                                                                          .instance
+                                                                          .collection(
+                                                                              'NotificationForStaff')
+                                                                          .doc(
+                                                                              staffDocUID)
+                                                                          .update({
+                                                                        'DocUID':
+                                                                            userDocUID,
+                                                                      });
+                                                                    }).catchError(
+                                                                            (error) {
+                                                                      print(
+                                                                          "Error adding document to NotificationForUser: $error");
+                                                                    });
+                                                                  }).catchError(
+                                                                          (error) {
+                                                                    print(
+                                                                        "Error adding document to NotificationForStaff: $error");
+                                                                  });
+
+                                                                  User? user =
+                                                                      await FirebaseAuth
+                                                                          .instance
+                                                                          .currentUser;
+                                                                  var userDoc = await FirebaseFirestore
+                                                                      .instance
+                                                                      .collection(
+                                                                          "user")
+                                                                      .doc(user
+                                                                          ?.uid)
+                                                                      .get();
+                                                                  var staffDoc = await FirebaseFirestore
+                                                                      .instance
+                                                                      .collection(
+                                                                          "user")
+                                                                      .doc(
+                                                                          StaffID)
+                                                                      .get();
+                                                                  var usertoken =
+                                                                      userDoc.data()?[
+                                                                          'token'];
+                                                                  var stafftoken =
+                                                                      staffDoc.data()?[
+                                                                          'token'];
+
+                                                                  print(
+                                                                      stafftoken);
+
+                                                                  GetServerKey
+                                                                      getServerKey =
+                                                                      GetServerKey();
+                                                                  String
+                                                                      accessToken =
+                                                                      await getServerKey
+                                                                          .getServerKeyToken();
+
+                                                                  // Generate unique IDs for the notifications
+                                                                  int notificationId1 =
+                                                                      DateTime.now()
+                                                                          .millisecondsSinceEpoch; // Unique ID based on timestamp
+                                                                  int notificationId2 =
+                                                                      notificationId1 +
+                                                                          1; // Increment to ensure uniqueness for the second notification
+
+                                                                  // Send first notification
+                                                                  sendNotificationService
+                                                                      .sendNotificationUsingApi(
+                                                                          body:
+                                                                              'Send Successful',
+                                                                          data: {
+                                                                            "screen":
+                                                                                "ClientNotificationPage",
+                                                                            "notificationId":
+                                                                                notificationId1.toString(), // Include notification ID in the data if needed
+                                                                          },
+                                                                          title:
+                                                                              "Booking",
+                                                                          token:
+                                                                              usertoken);
+                                                                  // Send second notification
+                                                                  sendNotificationService
+                                                                      .sendNotificationUsingApi(
+                                                                          body:
+                                                                              'You have a new request',
+                                                                          data: {
+                                                                            "screen":
+                                                                                "StaffNotificationPage",
+                                                                            "notificationId":
+                                                                                notificationId2.toString(), // Include notification ID in the data if needed
+                                                                          },
+                                                                          title:
+                                                                              "Hiring",
+                                                                          token:
+                                                                              stafftoken);
+
+                                                                  Navigator
+                                                                      .push(
+                                                                    context,
+                                                                    MaterialPageRoute(
+                                                                      builder:
+                                                                          (context) =>
+                                                                              ClientNotificationPage(),
+                                                                    ),
+                                                                  );
+
+                                                                  Fluttertoast
+                                                                      .showToast(
+                                                                          msg:
+                                                                              "Payment Done");
+                                                                } catch (e) {
+                                                                  Fluttertoast
+                                                                      .showToast(
+                                                                    msg: "$e",
+                                                                    toastLength:
+                                                                        Toast
+                                                                            .LENGTH_SHORT,
+                                                                    gravity:
+                                                                        ToastGravity
+                                                                            .BOTTOM,
+                                                                  );
+                                                                }
+                                                              } else {
+                                                                Fluttertoast
+                                                                    .showToast(
+                                                                        msg:
+                                                                            "Payment Failed");
+                                                              }
+                                                            } else {
+                                                              // Handle validation errors
+                                                              if (price == 0) {
+                                                                Fluttertoast
+                                                                    .showToast(
+                                                                  msg:
+                                                                      "User did not set service rate",
+                                                                  toastLength: Toast
+                                                                      .LENGTH_SHORT,
+                                                                  gravity:
+                                                                      ToastGravity
+                                                                          .BOTTOM,
+                                                                );
+                                                              } else if (WorkDate ==
+                                                                  '--/--/----') {
+                                                                Fluttertoast
+                                                                    .showToast(
+                                                                  msg:
+                                                                      "Invalid Date",
+                                                                  toastLength: Toast
+                                                                      .LENGTH_SHORT,
+                                                                  gravity:
+                                                                      ToastGravity
+                                                                          .BOTTOM,
+                                                                );
+                                                              } else if (WorkTime ==
+                                                                  '--:--') {
+                                                                Fluttertoast
+                                                                    .showToast(
+                                                                  msg:
+                                                                      "Invalid Time",
+                                                                  toastLength: Toast
+                                                                      .LENGTH_SHORT,
+                                                                  gravity:
+                                                                      ToastGravity
+                                                                          .BOTTOM,
+                                                                );
+                                                              } else if (city
+                                                                  .isEmpty) {
+                                                                Fluttertoast
+                                                                    .showToast(
+                                                                  msg:
+                                                                      "Invalid City",
+                                                                  toastLength: Toast
+                                                                      .LENGTH_SHORT,
+                                                                  gravity:
+                                                                      ToastGravity
+                                                                          .BOTTOM,
+                                                                );
+                                                              } else if (address
+                                                                  .isEmpty) {
+                                                                Fluttertoast
+                                                                    .showToast(
+                                                                  msg:
+                                                                      "Invalid Address",
+                                                                  toastLength: Toast
+                                                                      .LENGTH_SHORT,
+                                                                  gravity:
+                                                                      ToastGravity
+                                                                          .BOTTOM,
+                                                                );
+                                                              } else if (subAddress
+                                                                  .isEmpty) {
+                                                                Fluttertoast
+                                                                    .showToast(
+                                                                  msg:
+                                                                      "Invalid Sub Address",
+                                                                  toastLength: Toast
+                                                                      .LENGTH_SHORT,
+                                                                  gravity:
+                                                                      ToastGravity
+                                                                          .BOTTOM,
+                                                                );
+                                                              } else {
+                                                                Fluttertoast
+                                                                    .showToast(
+                                                                  msg:
+                                                                      "Invalid Place",
+                                                                  toastLength: Toast
+                                                                      .LENGTH_SHORT,
+                                                                  gravity:
+                                                                      ToastGravity
+                                                                          .BOTTOM,
+                                                                );
+                                                              }
+                                                            }
+                                                          },
+                                                          child: Text(
+                                                              "Already Called"))
+                                                    ],
+                                                  )
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                        )
+                                      : Container(),
                                   EnterAddress
                                       ? Center(
                                           child: Container(
@@ -1977,7 +1885,9 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                                             const EdgeInsets
                                                                 .all(8.0),
                                                         child: Text(
-                                                          ShareCoordinates? "Sharing Current Location" : "Share Current Location",
+                                                          ShareCoordinates
+                                                              ? "Sharing Current Location"
+                                                              : "Share Current Location",
                                                           style: TextStyle(
                                                               fontWeight:
                                                                   FontWeight
@@ -1988,7 +1898,8 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                                       InkWell(
                                                         onTap: () {
                                                           setState(() {
-                                                            ShareCoordinates = !ShareCoordinates;
+                                                            ShareCoordinates =
+                                                                !ShareCoordinates;
                                                           });
                                                         },
                                                         child: Container(

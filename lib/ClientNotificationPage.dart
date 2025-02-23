@@ -4,8 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:intl/intl.dart';
 
 class ClientNotificationPage extends StatefulWidget {
+  const ClientNotificationPage({super.key});
+
   @override
   State<StatefulWidget> createState() => _ClientNotificationPageState();
 }
@@ -14,8 +17,8 @@ class _ClientNotificationPageState extends State<ClientNotificationPage> {
   @override
   void initState() {
     super.initState();
-    void _liveLocation() {
-      LocationSettings locationSettings = LocationSettings(
+    void liveLocation() {
+      LocationSettings locationSettings = const LocationSettings(
         accuracy: LocationAccuracy.high,
         distanceFilter: 100,
       );
@@ -37,8 +40,9 @@ class _ClientNotificationPageState extends State<ClientNotificationPage> {
           });
         },
       );
-    };
-    _liveLocation();
+    }
+
+    liveLocation();
   }
 
   User? currentUser = FirebaseAuth.instance.currentUser;
@@ -67,17 +71,17 @@ class _ClientNotificationPageState extends State<ClientNotificationPage> {
           // App bar section
           Container(
             height: 150,
-            color: Color(0xfffffcc9),
+            color: const Color(0xfffffcc9),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 AppBar(
-                  title: Center(
+                  title: const Center(
                     child: Text("Notifications",
                         style: TextStyle(
                             fontSize: 20, fontWeight: FontWeight.bold)),
                   ),
-                  backgroundColor: Color(0xfffffcc9),
+                  backgroundColor: const Color(0xfffffcc9),
                   automaticallyImplyLeading: false,
                 ),
               ],
@@ -99,16 +103,37 @@ class _ClientNotificationPageState extends State<ClientNotificationPage> {
                                 .collection("NotificationForUser")
                                 .snapshots(),
                             builder: (context, snapshot) {
-                              if (!snapshot.hasData)
-                                return Center(
+                              if (!snapshot.hasData) {
+                                return const Center(
                                     child: CircularProgressIndicator());
+                              }
                               var users =
                                   snapshot.data?.docs.reversed.toList() ?? [];
                               List<Widget> userViews = [];
+                              DateTime now = DateTime.now();
+                              DateFormat dateFormat = DateFormat("d/M/yyyy");
+                              DateFormat timeFormat = DateFormat("h:mm a");
 
                               for (var user in users) {
+                                String scheduledDateEnd =
+                                    user["ScheduledDateEnd"];
+                                String scheduledTimeEnd =
+                                    user["ScheduledTimeEnd"];
+                                DateTime endDate =
+                                    dateFormat.parse(scheduledDateEnd);
+                                DateTime endTime =
+                                    timeFormat.parse(scheduledTimeEnd);
+                                DateTime combinedEndDateTime = DateTime(
+                                  endDate.year,
+                                  endDate.month,
+                                  endDate.day,
+                                  endTime.hour,
+                                  endTime.minute,
+                                );
+
                                 if (user["userUID"] == uid &&
-                                    user['status'] != "Completed") {
+                                    user['status'] != "Completed" &&
+                                    !combinedEndDateTime.isBefore(now)) {
                                   userViews.add(
                                     FutureBuilder(
                                       future: Future.wait([
@@ -119,8 +144,9 @@ class _ClientNotificationPageState extends State<ClientNotificationPage> {
                                       builder: (context,
                                           AsyncSnapshot<List<dynamic>>
                                               snapshot) {
-                                        if (!snapshot.hasData)
-                                          return CircularProgressIndicator();
+                                        if (!snapshot.hasData) {
+                                          return const CircularProgressIndicator();
+                                        }
 
                                         var currentUserData = snapshot.data?[0];
                                         var currentStaffData =
@@ -143,7 +169,7 @@ class _ClientNotificationPageState extends State<ClientNotificationPage> {
                                                       borderRadius:
                                                           BorderRadius.circular(
                                                               10),
-                                                      boxShadow: [
+                                                      boxShadow: const [
                                                         BoxShadow(
                                                           color: Colors.black26,
                                                           spreadRadius: 1,
@@ -153,10 +179,9 @@ class _ClientNotificationPageState extends State<ClientNotificationPage> {
                                                     ),
                                                     child: Column(
                                                       children: [
-                                                        Padding(
+                                                        const Padding(
                                                           padding:
-                                                              const EdgeInsets
-                                                                  .only(
+                                                              EdgeInsets.only(
                                                                   left: 20,
                                                                   top: 10),
                                                           child: Row(
@@ -173,8 +198,8 @@ class _ClientNotificationPageState extends State<ClientNotificationPage> {
                                                             ],
                                                           ),
                                                         ),
-                                                        Divider(),
-                                                        Container(
+                                                        const Divider(),
+                                                        SizedBox(
                                                           height: screenHeight *
                                                               0.1,
                                                           width: screenWidth *
@@ -192,7 +217,7 @@ class _ClientNotificationPageState extends State<ClientNotificationPage> {
                                                                       BorderRadius
                                                                           .circular(
                                                                               70),
-                                                                  boxShadow: [
+                                                                  boxShadow: const [
                                                                     BoxShadow(
                                                                       color: Colors
                                                                           .black26,
@@ -230,7 +255,7 @@ class _ClientNotificationPageState extends State<ClientNotificationPage> {
                                                                               .ellipsis,
                                                                       maxLines:
                                                                           1,
-                                                                      style: TextStyle(
+                                                                      style: const TextStyle(
                                                                           fontWeight: FontWeight
                                                                               .bold,
                                                                           fontSize:
@@ -238,7 +263,7 @@ class _ClientNotificationPageState extends State<ClientNotificationPage> {
                                                                     ),
                                                                     Text(
                                                                         "${user['timeofdeal']}",
-                                                                        style: TextStyle(
+                                                                        style: const TextStyle(
                                                                             fontSize:
                                                                                 12)),
                                                                   ],
@@ -253,12 +278,13 @@ class _ClientNotificationPageState extends State<ClientNotificationPage> {
                                                                       MainAxisAlignment
                                                                           .center,
                                                                   children: [
-                                                                    Text("For",
+                                                                    const Text(
+                                                                        "For",
                                                                         style: TextStyle(
                                                                             fontWeight:
                                                                                 FontWeight.bold,
                                                                             fontSize: 12)),
-                                                                    Divider(),
+                                                                    const Divider(),
                                                                     Text(
                                                                       "${user['professionOfStaff']}",
                                                                       overflow:
@@ -266,7 +292,7 @@ class _ClientNotificationPageState extends State<ClientNotificationPage> {
                                                                               .ellipsis,
                                                                       maxLines:
                                                                           1,
-                                                                      style: TextStyle(
+                                                                      style: const TextStyle(
                                                                           fontWeight: FontWeight
                                                                               .bold,
                                                                           fontSize:
@@ -299,7 +325,7 @@ class _ClientNotificationPageState extends State<ClientNotificationPage> {
                                                                     color: Colors
                                                                         .white,
                                                                     borderRadius: BorderRadius.circular(5),
-                                                                    boxShadow: [
+                                                                    boxShadow: const [
                                                                       BoxShadow(
                                                                           color: Colors
                                                                               .black26,
@@ -312,7 +338,7 @@ class _ClientNotificationPageState extends State<ClientNotificationPage> {
                                                                     child: Text(
                                                                   user[
                                                                       'ServiceBase'],
-                                                                  style: TextStyle(
+                                                                  style: const TextStyle(
                                                                       fontWeight:
                                                                           FontWeight
                                                                               .bold),
@@ -321,7 +347,7 @@ class _ClientNotificationPageState extends State<ClientNotificationPage> {
                                                             ),
                                                           ],
                                                         ),
-                                                        Container(
+                                                        SizedBox(
                                                           height: 80,
                                                           width: screenWidth *
                                                               0.75,
@@ -343,7 +369,7 @@ class _ClientNotificationPageState extends State<ClientNotificationPage> {
                                                                   ],
                                                                 ),
                                                               ),
-                                                              Divider(),
+                                                              const Divider(),
                                                               Padding(
                                                                 padding:
                                                                     const EdgeInsets
@@ -352,14 +378,13 @@ class _ClientNotificationPageState extends State<ClientNotificationPage> {
                                                                             10),
                                                                 child: Row(
                                                                   children: [
-                                                                    Text(
+                                                                    const Text(
                                                                         "Total",
                                                                         style: TextStyle(
                                                                             fontWeight:
                                                                                 FontWeight.bold)),
-                                                                    Padding(
-                                                                      padding: const EdgeInsets
-                                                                          .only(
+                                                                    const Padding(
+                                                                      padding: EdgeInsets.only(
                                                                           left:
                                                                               10),
                                                                       child: Text(
@@ -367,24 +392,23 @@ class _ClientNotificationPageState extends State<ClientNotificationPage> {
                                                                           style:
                                                                               TextStyle(color: Colors.green)),
                                                                     ),
-                                                                    Spacer(),
+                                                                    const Spacer(),
                                                                     Text(
                                                                         user['totalcost']
                                                                             .toString(),
-                                                                        style: TextStyle(
+                                                                        style: const TextStyle(
                                                                             fontWeight:
                                                                                 FontWeight.bold)),
                                                                   ],
                                                                 ),
                                                               ),
-                                                              Divider(),
+                                                              const Divider(),
                                                             ],
                                                           ),
                                                         ),
-                                                        Padding(
+                                                        const Padding(
                                                           padding:
-                                                              const EdgeInsets
-                                                                  .only(
+                                                              EdgeInsets.only(
                                                                   left: 25),
                                                           child: Row(
                                                             children: [
@@ -408,24 +432,25 @@ class _ClientNotificationPageState extends State<ClientNotificationPage> {
                                                               MainAxisAlignment
                                                                   .center,
                                                           children: [
-                                                            Container(
+                                                            SizedBox(
                                                               width:
                                                                   screenWidth *
                                                                       0.3,
                                                               child: Center(
                                                                 child: Text(
                                                                   "${user['ScheduledDate']} ${user['ScheduledTime']}",
-                                                                  style: TextStyle(
+                                                                  style: const TextStyle(
                                                                       fontSize:
                                                                           9),
                                                                 ),
                                                               ),
                                                             ),
-                                                            Container(
+                                                            SizedBox(
                                                               width:
                                                                   screenWidth *
                                                                       0.15,
-                                                              child: Center(
+                                                              child:
+                                                                  const Center(
                                                                 child: Text(
                                                                   "Due To",
                                                                   style: TextStyle(
@@ -437,14 +462,14 @@ class _ClientNotificationPageState extends State<ClientNotificationPage> {
                                                                 ),
                                                               ),
                                                             ),
-                                                            Container(
+                                                            SizedBox(
                                                               width:
                                                                   screenWidth *
                                                                       0.3,
                                                               child: Center(
                                                                 child: Text(
                                                                   "${user['ScheduledDateEnd']} ${user['ScheduledTimeEnd']}",
-                                                                  style: TextStyle(
+                                                                  style: const TextStyle(
                                                                       fontSize:
                                                                           9),
                                                                 ),
@@ -452,10 +477,9 @@ class _ClientNotificationPageState extends State<ClientNotificationPage> {
                                                             ),
                                                           ],
                                                         ),
-                                                        Padding(
+                                                        const Padding(
                                                           padding:
-                                                              const EdgeInsets
-                                                                  .only(
+                                                              EdgeInsets.only(
                                                                   left: 25),
                                                           child: Row(
                                                             children: [
@@ -481,13 +505,13 @@ class _ClientNotificationPageState extends State<ClientNotificationPage> {
                                                                   MainAxisAlignment
                                                                       .start,
                                                               children: [
-                                                                Container(
+                                                                SizedBox(
                                                                   width:
                                                                       screenWidth *
                                                                           0.8,
                                                                   child: Text(
                                                                     "${user['Scheduled_Sub_Address']}, ${user['Scheduled_Address']}, ${user['Scheduled_City']}",
-                                                                    style: TextStyle(
+                                                                    style: const TextStyle(
                                                                         fontSize:
                                                                             10),
                                                                   ),
@@ -546,7 +570,7 @@ class _ClientNotificationPageState extends State<ClientNotificationPage> {
                                                                             .circular(8),
                                                                     color: Colors
                                                                         .white,
-                                                                    boxShadow: [
+                                                                    boxShadow: const [
                                                                       BoxShadow(
                                                                         color: Colors
                                                                             .black26,
@@ -557,7 +581,8 @@ class _ClientNotificationPageState extends State<ClientNotificationPage> {
                                                                       )
                                                                     ],
                                                                   ),
-                                                                  child: Center(
+                                                                  child:
+                                                                      const Center(
                                                                     child: Text(
                                                                       "Check Map",
                                                                       style: TextStyle(
@@ -576,15 +601,17 @@ class _ClientNotificationPageState extends State<ClientNotificationPage> {
                                                                   .all(5.0),
                                                           child: Text(
                                                             "${user['status']}",
-                                                            style: TextStyle(
-                                                                fontSize: 20),
+                                                            style:
+                                                                const TextStyle(
+                                                                    fontSize:
+                                                                        20),
                                                           ),
                                                         ),
                                                         (user['status'] ==
                                                                 "Accepted")
                                                             ? Text(
                                                                 "${user['OTP'] ?? 'Invalid'}",
-                                                                style: TextStyle(
+                                                                style: const TextStyle(
                                                                     fontWeight:
                                                                         FontWeight
                                                                             .bold,

@@ -11,8 +11,6 @@ class SubMap extends StatefulWidget {
 }
 
 class _SubMapState extends State<SubMap> {
-
-
   List<LatLng> RegisteredNurseMarker = [LatLng(18.591248, 74.000139)];
   List<LatLng> LicensdePracticalNurseMarker = [LatLng(18.576116, 73.972072)];
   List<LatLng> CertifiedNursAssistentMarker = [LatLng(18.367661, 73.784233)];
@@ -67,7 +65,6 @@ class _SubMapState extends State<SubMap> {
             urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
             fallbackUrl: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
           ),
-
           MarkerLayer(
             markers: tappedPoints
                 .map(
@@ -338,7 +335,6 @@ class _SubMapState extends State<SubMap> {
               ),
             ).toList(),
           ),
-
           PolylineLayer(
             polylines: [
               Polyline(

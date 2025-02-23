@@ -86,7 +86,11 @@ class _ActualUser extends State<ActualUser> {
 
   Future<void> _logout() async {
     await FirebaseAuth.instance.signOut();
-    Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => LoginPage(),));
+    Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => LoginPage(),
+        ));
   }
 
   @override
@@ -178,7 +182,6 @@ class _ActualUser extends State<ActualUser> {
                                                                 imagePath.path
                                                                     .split('/')
                                                                     .last;
-
                                                             User? user =
                                                                 FirebaseAuth
                                                                     .instance

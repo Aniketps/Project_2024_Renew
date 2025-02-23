@@ -7,12 +7,12 @@ import 'package:fluttertoast/fluttertoast.dart';
 
 import 'StaffDetailInputPage.dart';
 
-class RegisterPage extends StatefulWidget{
+class RegisterPage extends StatefulWidget {
   @override
   State<StatefulWidget> createState() => _RegisterPage();
 }
 
-class _RegisterPage extends State<RegisterPage>{
+class _RegisterPage extends State<RegisterPage> {
   @override
   Widget build(BuildContext context) {
     final mediaquery = MediaQuery.of(context);
@@ -22,19 +22,16 @@ class _RegisterPage extends State<RegisterPage>{
     final isWeb = screenWidth > 700;
 
     return Scaffold(
-        backgroundColor: Colors.white,
-        body: isWeb? WebView() : AndroidView()
-    );
+        backgroundColor: Colors.white, body: isWeb ? WebView() : AndroidView());
   }
 }
 
-class AndroidStaffPage extends StatefulWidget{
+class AndroidStaffPage extends StatefulWidget {
   @override
   State<StatefulWidget> createState() => _AndroidStaffPage();
 }
 
-class _AndroidStaffPage extends State<AndroidStaffPage>{
-
+class _AndroidStaffPage extends State<AndroidStaffPage> {
   TextEditingController FirstName = TextEditingController();
   TextEditingController LastName = TextEditingController();
   TextEditingController Email = TextEditingController();
@@ -46,9 +43,8 @@ class _AndroidStaffPage extends State<AndroidStaffPage>{
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
 
-    return Stack(
-      children: [
-        Column(
+    return Stack(children: [
+      Column(
         children: [
           Container(
             height: 80,
@@ -58,7 +54,8 @@ class _AndroidStaffPage extends State<AndroidStaffPage>{
               color: Colors.black,
               borderRadius: BorderRadius.circular(80),
               boxShadow: [
-                BoxShadow(color: Colors.black12, spreadRadius: 2, blurRadius: 1),
+                BoxShadow(
+                    color: Colors.black12, spreadRadius: 2, blurRadius: 1),
               ],
               image: DecorationImage(
                 image: AssetImage("assets/images/logo.png"),
@@ -74,17 +71,22 @@ class _AndroidStaffPage extends State<AndroidStaffPage>{
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(30),
                   boxShadow: [
-                    BoxShadow(color: Colors.black12, spreadRadius: 2, blurRadius: 1)
-                  ]
-              ),
+                    BoxShadow(
+                        color: Colors.black12, spreadRadius: 2, blurRadius: 1)
+                  ]),
               child: Column(
                 children: [
                   Padding(
                     padding: const EdgeInsets.all(30.0),
-                    child: Text("Staff Registration", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),),
+                    child: Text(
+                      "Staff Registration",
+                      style:
+                          TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                    ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.only(right: 30, left: 30, top: 10),
+                    padding:
+                        const EdgeInsets.only(right: 30, left: 30, top: 10),
                     child: Container(
                       height: 50,
                       child: TextField(
@@ -94,13 +96,15 @@ class _AndroidStaffPage extends State<AndroidStaffPage>{
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(50),
                             ),
-                            contentPadding: EdgeInsets.fromLTRB(20, 16, 16, 16)// Adds border around the text field
-                        ),
+                            contentPadding: EdgeInsets.fromLTRB(20, 16, 16,
+                                16) // Adds border around the text field
+                            ),
                       ),
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.only(right: 30, left: 30, top: 10),
+                    padding:
+                        const EdgeInsets.only(right: 30, left: 30, top: 10),
                     child: Container(
                       height: 50,
                       child: TextField(
@@ -110,30 +114,36 @@ class _AndroidStaffPage extends State<AndroidStaffPage>{
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(50),
                             ),
-                            contentPadding: EdgeInsets.fromLTRB(20, 16, 16, 16)// Adds border around the text field
-                        ),
+                            contentPadding: EdgeInsets.fromLTRB(20, 16, 16,
+                                16) // Adds border around the text field
+                            ),
                       ),
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.only(right: 30, left: 30, top: 10),
+                    padding:
+                        const EdgeInsets.only(right: 30, left: 30, top: 10),
                     child: Container(
                       height: 50,
-                      child:TextField(
+                      child: TextField(
                         controller: Email, // Controller for the email input
-                        keyboardType: TextInputType.emailAddress, // Optimizes keyboard for email input
+                        keyboardType: TextInputType
+                            .emailAddress, // Optimizes keyboard for email input
                         decoration: InputDecoration(
                           labelText: "Email", // Label for the TextField
                           border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(50), // Rounded border
+                            borderRadius:
+                                BorderRadius.circular(50), // Rounded border
                           ),
-                          contentPadding: EdgeInsets.fromLTRB(20, 16, 16, 16), // Adds padding inside the TextField
+                          contentPadding: EdgeInsets.fromLTRB(20, 16, 16,
+                              16), // Adds padding inside the TextField
                         ),
                       ),
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.only(right: 30, left: 30, top: 10),
+                    padding:
+                        const EdgeInsets.only(right: 30, left: 30, top: 10),
                     child: Container(
                       height: 50,
                       child: TextField(
@@ -144,9 +154,11 @@ class _AndroidStaffPage extends State<AndroidStaffPage>{
                           hintText: "Enter your password", // Placeholder text
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(50),
-                            borderSide: BorderSide(color: Colors.grey, width: 1), // Border color
+                            borderSide: BorderSide(
+                                color: Colors.grey, width: 1), // Border color
                           ),
-                          contentPadding: EdgeInsets.fromLTRB(20, 16, 16, 16), // Padding inside the field
+                          contentPadding: EdgeInsets.fromLTRB(
+                              20, 16, 16, 16), // Padding inside the field
                           // suffixIcon: IconButton(
                           //   icon: Icon(Icons.visibility), // Icon to toggle password visibility
                           //   onPressed: () {
@@ -158,7 +170,8 @@ class _AndroidStaffPage extends State<AndroidStaffPage>{
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.only(right: 30, left: 30, top: 10),
+                    padding:
+                        const EdgeInsets.only(right: 30, left: 30, top: 10),
                     child: Container(
                       height: 50,
                       child: TextField(
@@ -166,14 +179,16 @@ class _AndroidStaffPage extends State<AndroidStaffPage>{
                         obscureText: true, // Hides the text for password fields
                         decoration: InputDecoration(
                           labelText: "Confirm Password", // Label text
-                          hintText: "Re-enter your password", // Hint text for better guidance
+                          hintText:
+                              "Re-enter your password", // Hint text for better guidance
                           border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(50), // Rounded border
+                            borderRadius:
+                                BorderRadius.circular(50), // Rounded border
                           ),
-                          contentPadding: EdgeInsets.fromLTRB(20, 16, 16, 16), // Padding inside the text field
+                          contentPadding: EdgeInsets.fromLTRB(
+                              20, 16, 16, 16), // Padding inside the text field
                         ),
                       ),
-
                     ),
                   ),
                   Padding(
@@ -183,10 +198,19 @@ class _AndroidStaffPage extends State<AndroidStaffPage>{
                       children: [
                         InkWell(
                             onTap: () {
-                              Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => LoginPage(),));
+                              Navigator.pushReplacement(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => LoginPage(),
+                                  ));
                             },
-                            child: Text("Already have an account", style: TextStyle(fontSize: 12, color: Colors.blue, fontWeight: FontWeight.bold),)
-                        ),
+                            child: Text(
+                              "Already have an account",
+                              style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.blue,
+                                  fontWeight: FontWeight.bold),
+                            )),
                       ],
                     ),
                   ),
@@ -202,12 +226,25 @@ class _AndroidStaffPage extends State<AndroidStaffPage>{
                           String email = Email.text;
                           String password1 = Password1.text;
                           String password2 = Password2.text;
-                          if(firstName.isNotEmpty && lastName.isNotEmpty && email.isNotEmpty && password1.isNotEmpty && password2.isNotEmpty){
-                            Navigator.push(context, MaterialPageRoute(builder: (context) => StaffDetailInputPage(Email: email, FirstName: firstName, Password: password1, LastName: lastName,),));
+                          if (firstName.isNotEmpty &&
+                              lastName.isNotEmpty &&
+                              email.isNotEmpty &&
+                              password1.isNotEmpty &&
+                              password2.isNotEmpty) {
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => StaffDetailInputPage(
+                                    Email: email,
+                                    FirstName: firstName,
+                                    Password: password1,
+                                    LastName: lastName,
+                                  ),
+                                ));
                             setState(() {
                               isLoading = false;
                             });
-                          }else{
+                          } else {
                             setState(() {
                               isLoading = false;
                             });
@@ -222,23 +259,24 @@ class _AndroidStaffPage extends State<AndroidStaffPage>{
           ),
         ],
       ),
-        isLoading? Center(
-          child: Padding(
-            padding: EdgeInsets.only(top: screenHeight * 0.35),
-            child: CircularProgressIndicator(),
-          ),
-        ) : Container(),
-      ]
-    );
+      isLoading
+          ? Center(
+              child: Padding(
+                padding: EdgeInsets.only(top: screenHeight * 0.35),
+                child: CircularProgressIndicator(),
+              ),
+            )
+          : Container(),
+    ]);
   }
 }
 
-class AndroidUserPage extends StatefulWidget{
+class AndroidUserPage extends StatefulWidget {
   @override
   State<StatefulWidget> createState() => _AndroidUserPage();
 }
 
-class _AndroidUserPage extends State<AndroidUserPage>{
+class _AndroidUserPage extends State<AndroidUserPage> {
   TextEditingController FirstName = TextEditingController();
   TextEditingController LastName = TextEditingController();
   TextEditingController Email = TextEditingController();
@@ -249,9 +287,8 @@ class _AndroidUserPage extends State<AndroidUserPage>{
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
 
-    return Stack(
-      children: [
-        Column(
+    return Stack(children: [
+      Column(
         children: [
           Container(
             height: 80,
@@ -261,7 +298,8 @@ class _AndroidUserPage extends State<AndroidUserPage>{
               color: Colors.black,
               borderRadius: BorderRadius.circular(80),
               boxShadow: [
-                BoxShadow(color: Colors.black12, spreadRadius: 2, blurRadius: 1),
+                BoxShadow(
+                    color: Colors.black12, spreadRadius: 2, blurRadius: 1),
               ],
               image: DecorationImage(
                 image: AssetImage("assets/images/logo.png"),
@@ -277,17 +315,22 @@ class _AndroidUserPage extends State<AndroidUserPage>{
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(30),
                   boxShadow: [
-                    BoxShadow(color: Colors.black12, spreadRadius: 2, blurRadius: 1)
-                  ]
-              ),
+                    BoxShadow(
+                        color: Colors.black12, spreadRadius: 2, blurRadius: 1)
+                  ]),
               child: Column(
                 children: [
                   Padding(
                     padding: const EdgeInsets.all(30.0),
-                    child: Text("User Registration", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),),
+                    child: Text(
+                      "User Registration",
+                      style:
+                          TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                    ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.only(right: 30, left: 30, top: 10),
+                    padding:
+                        const EdgeInsets.only(right: 30, left: 30, top: 10),
                     child: Container(
                       height: 50,
                       child: TextField(
@@ -297,13 +340,15 @@ class _AndroidUserPage extends State<AndroidUserPage>{
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(50),
                             ),
-                            contentPadding: EdgeInsets.fromLTRB(20, 16, 16, 16)// Adds border around the text field
-                        ),
+                            contentPadding: EdgeInsets.fromLTRB(20, 16, 16,
+                                16) // Adds border around the text field
+                            ),
                       ),
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.only(right: 30, left: 30, top: 10),
+                    padding:
+                        const EdgeInsets.only(right: 30, left: 30, top: 10),
                     child: Container(
                       height: 50,
                       child: TextField(
@@ -313,30 +358,36 @@ class _AndroidUserPage extends State<AndroidUserPage>{
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(50),
                             ),
-                            contentPadding: EdgeInsets.fromLTRB(20, 16, 16, 16)// Adds border around the text field
-                        ),
+                            contentPadding: EdgeInsets.fromLTRB(20, 16, 16,
+                                16) // Adds border around the text field
+                            ),
                       ),
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.only(right: 30, left: 30, top: 10),
+                    padding:
+                        const EdgeInsets.only(right: 30, left: 30, top: 10),
                     child: Container(
                       height: 50,
                       child: TextField(
                         controller: Email, // Controller for the email input
-                        keyboardType: TextInputType.emailAddress, // Optimizes keyboard for email input
+                        keyboardType: TextInputType
+                            .emailAddress, // Optimizes keyboard for email input
                         decoration: InputDecoration(
                           labelText: "Email", // Label for the TextField
                           border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(50), // Rounded border
+                            borderRadius:
+                                BorderRadius.circular(50), // Rounded border
                           ),
-                          contentPadding: EdgeInsets.fromLTRB(20, 16, 16, 16), // Adds padding inside the TextField
+                          contentPadding: EdgeInsets.fromLTRB(20, 16, 16,
+                              16), // Adds padding inside the TextField
                         ),
                       ),
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.only(right: 30, left: 30, top: 10),
+                    padding:
+                        const EdgeInsets.only(right: 30, left: 30, top: 10),
                     child: Container(
                       height: 50,
                       child: TextField(
@@ -344,17 +395,21 @@ class _AndroidUserPage extends State<AndroidUserPage>{
                         obscureText: true, // Hides the text for password fields
                         decoration: InputDecoration(
                           labelText: "Password", // Label text
-                          hintText: "Enter your password", // Hint text for better guidance
+                          hintText:
+                              "Enter your password", // Hint text for better guidance
                           border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(50), // Rounded border
+                            borderRadius:
+                                BorderRadius.circular(50), // Rounded border
                           ),
-                          contentPadding: EdgeInsets.fromLTRB(20, 16, 16, 16), // Padding inside the text field
+                          contentPadding: EdgeInsets.fromLTRB(
+                              20, 16, 16, 16), // Padding inside the text field
                         ),
                       ),
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.only(right: 30, left: 30, top: 10),
+                    padding:
+                        const EdgeInsets.only(right: 30, left: 30, top: 10),
                     child: Container(
                       height: 50,
                       child: TextField(
@@ -362,11 +417,14 @@ class _AndroidUserPage extends State<AndroidUserPage>{
                         obscureText: true, // Hides the text for password fields
                         decoration: InputDecoration(
                           labelText: "Confirm Password", // Label text
-                          hintText: "Re-enter your password", // Hint text for better guidance
+                          hintText:
+                              "Re-enter your password", // Hint text for better guidance
                           border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(50), // Rounded border
+                            borderRadius:
+                                BorderRadius.circular(50), // Rounded border
                           ),
-                          contentPadding: EdgeInsets.fromLTRB(20, 16, 16, 16), // Padding inside the text field
+                          contentPadding: EdgeInsets.fromLTRB(
+                              20, 16, 16, 16), // Padding inside the text field
                         ),
                       ),
                     ),
@@ -378,10 +436,19 @@ class _AndroidUserPage extends State<AndroidUserPage>{
                       children: [
                         InkWell(
                             onTap: () {
-                              Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => LoginPage(),));
+                              Navigator.pushReplacement(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => LoginPage(),
+                                  ));
                             },
-                            child: Text("Already have an account", style: TextStyle(fontSize: 12, color: Colors.blue, fontWeight: FontWeight.bold),)
-                        ),
+                            child: Text(
+                              "Already have an account",
+                              style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.blue,
+                                  fontWeight: FontWeight.bold),
+                            )),
                       ],
                     ),
                   ),
@@ -397,36 +464,51 @@ class _AndroidUserPage extends State<AndroidUserPage>{
                           String email = Email.text;
                           String password1 = Password1.text;
                           String password2 = Password2.text;
-                          if(firstname.isNotEmpty && lastname.isNotEmpty && email.isNotEmpty && password1.isNotEmpty && password2.isNotEmpty){
-                            
-                            
-                            if(password1 == password2){
-                              try{
-                                UserCredential usercredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(email: email, password: password1);
+                          if (firstname.isNotEmpty &&
+                              lastname.isNotEmpty &&
+                              email.isNotEmpty &&
+                              password1.isNotEmpty &&
+                              password2.isNotEmpty) {
+                            if (password1 == password2) {
+                              try {
+                                UserCredential usercredential =
+                                    await FirebaseAuth.instance
+                                        .createUserWithEmailAndPassword(
+                                            email: email, password: password1);
                                 User? user = usercredential.user;
-                                await FirebaseFirestore.instance.collection("user").doc(user?.uid).set({
+                                await FirebaseFirestore.instance
+                                    .collection("user")
+                                    .doc(user?.uid)
+                                    .set({
                                   'Email': email,
                                   'Password': password1,
                                   'First_name': firstname,
                                   'Last_name': lastname,
                                 });
                                 user?.sendEmailVerification();
-                                Fluttertoast.showToast(msg: "Link send, A link has been send to your email");
+                                Fluttertoast.showToast(
+                                    msg:
+                                        "Link send, A link has been send to your email");
                                 await FirebaseAuth.instance.signOut();
 
-                                Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => LoginPage(),));
+                                Navigator.pushReplacement(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => LoginPage(),
+                                    ));
                                 setState(() {
                                   isLoading = false;
                                 });
-                              }catch (e){
+                              } catch (e) {
                                 setState(() {
                                   isLoading = false;
                                 });
                                 Fluttertoast.showToast(
                                     toastLength: Toast.LENGTH_LONG,
                                     msg: "${e}");
-                              };
-                            }else{
+                              }
+                              ;
+                            } else {
                               setState(() {
                                 isLoading = false;
                               });
@@ -434,7 +516,7 @@ class _AndroidUserPage extends State<AndroidUserPage>{
                                   toastLength: Toast.LENGTH_LONG,
                                   msg: "Password not matching");
                             }
-                          }else{
+                          } else {
                             setState(() {
                               isLoading = false;
                             });
@@ -451,23 +533,24 @@ class _AndroidUserPage extends State<AndroidUserPage>{
           ),
         ],
       ),
-        isLoading? Center(
-          child: Padding(
-            padding: EdgeInsets.only(top: screenHeight * 0.35),
-            child: CircularProgressIndicator(),
-          ),
-        ) : Container(),
-      ]
-    );
+      isLoading
+          ? Center(
+              child: Padding(
+                padding: EdgeInsets.only(top: screenHeight * 0.35),
+                child: CircularProgressIndicator(),
+              ),
+            )
+          : Container(),
+    ]);
   }
 }
 
-class WebStaffPage extends StatefulWidget{
+class WebStaffPage extends StatefulWidget {
   @override
   State<StatefulWidget> createState() => _WebStaffPage();
 }
 
-class _WebStaffPage extends State<WebStaffPage>{
+class _WebStaffPage extends State<WebStaffPage> {
   @override
   Widget build(BuildContext context) {
     final mediaquery = MediaQuery.of(context);
@@ -482,8 +565,7 @@ class _WebStaffPage extends State<WebStaffPage>{
           borderRadius: BorderRadius.circular(10),
           boxShadow: [
             BoxShadow(color: Colors.black26, spreadRadius: 2, blurRadius: 1)
-          ]
-      ),
+          ]),
       child: Padding(
         padding: const EdgeInsets.only(left: 30),
         child: Row(
@@ -537,8 +619,12 @@ class _WebStaffPage extends State<WebStaffPage>{
                       decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(20),
-                          boxShadow: [BoxShadow(color: Colors.black26, spreadRadius: 2, blurRadius: 1)]
-                      ),
+                          boxShadow: [
+                            BoxShadow(
+                                color: Colors.black26,
+                                spreadRadius: 2,
+                                blurRadius: 1)
+                          ]),
                     ),
                   ),
 
@@ -549,8 +635,12 @@ class _WebStaffPage extends State<WebStaffPage>{
                     decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(20),
-                        boxShadow: [BoxShadow(color: Colors.black26, spreadRadius: 2, blurRadius: 1)]
-                    ),
+                        boxShadow: [
+                          BoxShadow(
+                              color: Colors.black26,
+                              spreadRadius: 2,
+                              blurRadius: 1)
+                        ]),
                   ),
 
                   // Email input
@@ -562,8 +652,12 @@ class _WebStaffPage extends State<WebStaffPage>{
                       decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(20),
-                          boxShadow: [BoxShadow(color: Colors.black26, spreadRadius: 2, blurRadius: 1)]
-                      ),
+                          boxShadow: [
+                            BoxShadow(
+                                color: Colors.black26,
+                                spreadRadius: 2,
+                                blurRadius: 1)
+                          ]),
                     ),
                   ),
 
@@ -577,8 +671,12 @@ class _WebStaffPage extends State<WebStaffPage>{
                         decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(20),
-                            boxShadow: [BoxShadow(color: Colors.black26, spreadRadius: 2, blurRadius: 1)]
-                        ),
+                            boxShadow: [
+                              BoxShadow(
+                                  color: Colors.black26,
+                                  spreadRadius: 2,
+                                  blurRadius: 1)
+                            ]),
                       ),
                       Container(
                         height: 20,
@@ -586,8 +684,12 @@ class _WebStaffPage extends State<WebStaffPage>{
                         decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(20),
-                            boxShadow: [BoxShadow(color: Colors.black26, spreadRadius: 2, blurRadius: 1)]
-                        ),
+                            boxShadow: [
+                              BoxShadow(
+                                  color: Colors.black26,
+                                  spreadRadius: 2,
+                                  blurRadius: 1)
+                            ]),
                       ),
                     ],
                   ),
@@ -604,8 +706,12 @@ class _WebStaffPage extends State<WebStaffPage>{
                           decoration: BoxDecoration(
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(40),
-                              boxShadow: [BoxShadow(color: Colors.black26, spreadRadius: 2, blurRadius: 1)]
-                          ),
+                              boxShadow: [
+                                BoxShadow(
+                                    color: Colors.black26,
+                                    spreadRadius: 2,
+                                    blurRadius: 1)
+                              ]),
                         ),
                       ),
                     ],
@@ -620,12 +726,12 @@ class _WebStaffPage extends State<WebStaffPage>{
   }
 }
 
-class WebUserPage extends StatefulWidget{
+class WebUserPage extends StatefulWidget {
   @override
   State<StatefulWidget> createState() => _WebUserPage();
 }
 
-class _WebUserPage extends State<WebUserPage>{
+class _WebUserPage extends State<WebUserPage> {
   @override
   Widget build(BuildContext context) {
     final mediaquery = MediaQuery.of(context);
@@ -640,8 +746,7 @@ class _WebUserPage extends State<WebUserPage>{
             borderRadius: BorderRadius.circular(10),
             boxShadow: [
               BoxShadow(color: Colors.black26, spreadRadius: 2, blurRadius: 1)
-            ]
-        ),
+            ]),
         child: Padding(
           padding: const EdgeInsets.only(left: 30),
           child: Row(
@@ -695,8 +800,12 @@ class _WebUserPage extends State<WebUserPage>{
                         decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(20),
-                            boxShadow: [BoxShadow(color: Colors.black26, spreadRadius: 2, blurRadius: 1)]
-                        ),
+                            boxShadow: [
+                              BoxShadow(
+                                  color: Colors.black26,
+                                  spreadRadius: 2,
+                                  blurRadius: 1)
+                            ]),
                       ),
                     ),
 
@@ -707,8 +816,12 @@ class _WebUserPage extends State<WebUserPage>{
                       decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(20),
-                          boxShadow: [BoxShadow(color: Colors.black26, spreadRadius: 2, blurRadius: 1)]
-                      ),
+                          boxShadow: [
+                            BoxShadow(
+                                color: Colors.black26,
+                                spreadRadius: 2,
+                                blurRadius: 1)
+                          ]),
                     ),
 
                     // Email input
@@ -720,8 +833,12 @@ class _WebUserPage extends State<WebUserPage>{
                         decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(20),
-                            boxShadow: [BoxShadow(color: Colors.black26, spreadRadius: 2, blurRadius: 1)]
-                        ),
+                            boxShadow: [
+                              BoxShadow(
+                                  color: Colors.black26,
+                                  spreadRadius: 2,
+                                  blurRadius: 1)
+                            ]),
                       ),
                     ),
 
@@ -735,8 +852,12 @@ class _WebUserPage extends State<WebUserPage>{
                           decoration: BoxDecoration(
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(20),
-                              boxShadow: [BoxShadow(color: Colors.black26, spreadRadius: 2, blurRadius: 1)]
-                          ),
+                              boxShadow: [
+                                BoxShadow(
+                                    color: Colors.black26,
+                                    spreadRadius: 2,
+                                    blurRadius: 1)
+                              ]),
                         ),
                         Container(
                           height: 20,
@@ -744,8 +865,12 @@ class _WebUserPage extends State<WebUserPage>{
                           decoration: BoxDecoration(
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(20),
-                              boxShadow: [BoxShadow(color: Colors.black26, spreadRadius: 2, blurRadius: 1)]
-                          ),
+                              boxShadow: [
+                                BoxShadow(
+                                    color: Colors.black26,
+                                    spreadRadius: 2,
+                                    blurRadius: 1)
+                              ]),
                         ),
                       ],
                     ),
@@ -762,8 +887,12 @@ class _WebUserPage extends State<WebUserPage>{
                             decoration: BoxDecoration(
                                 color: Colors.white,
                                 borderRadius: BorderRadius.circular(40),
-                                boxShadow: [BoxShadow(color: Colors.black26, spreadRadius: 2, blurRadius: 1)]
-                            ),
+                                boxShadow: [
+                                  BoxShadow(
+                                      color: Colors.black26,
+                                      spreadRadius: 2,
+                                      blurRadius: 1)
+                                ]),
                           ),
                         ),
                       ],
@@ -779,12 +908,12 @@ class _WebUserPage extends State<WebUserPage>{
   }
 }
 
-class AndroidView extends StatefulWidget{
+class AndroidView extends StatefulWidget {
   @override
   State<StatefulWidget> createState() => _AndroidView();
 }
 
-class _AndroidView extends State<AndroidView>{
+class _AndroidView extends State<AndroidView> {
   Color StaffColorTrue = Color(0xffbef0ff);
   Color StaffColorFalse = Colors.white;
   bool StaffPressed = false;
@@ -798,7 +927,7 @@ class _AndroidView extends State<AndroidView>{
     return Stack(
       children: [
         Container(
-          color: UserPressed? Color(0xfffffcc9) : Color(0xffbef0ff),
+          color: UserPressed ? Color(0xfffffcc9) : Color(0xffbef0ff),
           height: 320,
           width: double.maxFinite,
         ),
@@ -817,46 +946,53 @@ class _AndroidView extends State<AndroidView>{
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(50),
                           boxShadow: [
-                            BoxShadow(color: Colors.black12, spreadRadius: 2, blurRadius: 1)
-                          ]
-                      ),
+                            BoxShadow(
+                                color: Colors.black12,
+                                spreadRadius: 2,
+                                blurRadius: 1)
+                          ]),
                       child: Row(
                         children: [
-                          ElevatedButton(onPressed: () {
-                            setState(() {
-                              StaffPressed = !StaffPressed;
-                              if(StaffPressed){
-                                StaffColor = StaffColorTrue;
-                                UserColor = UserColorFalse;
-                                UserPressed = false;
-                              }else{
-                                StaffColor = StaffColorFalse;
-                              }
-                            });
-                          },style: ElevatedButton.styleFrom(
-                              backgroundColor: StaffColor,
-                              shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.only(
-                                      topLeft: Radius.circular(50),
-                                      bottomRight: Radius.circular(0),
-                                      bottomLeft: Radius.circular(50),
-                                      topRight: Radius.circular(0)
-                                  )
-                              )
-                          ),
-                              child: Text("Staff", style: TextStyle(color: Color(0xff013220), fontWeight: FontWeight.bold),)),
-                          ElevatedButton(onPressed: () {
-                            setState(() {
-                              UserPressed = !UserPressed;
-                              if(UserPressed){
-                                StaffColor = StaffColorFalse;
-                                UserColor = UserColorTrue;
-                                StaffPressed = false;
-                              }else{
-                                UserColor = UserColorFalse;
-                              }
-                            });
-                          },
+                          ElevatedButton(
+                              onPressed: () {
+                                setState(() {
+                                  StaffPressed = !StaffPressed;
+                                  if (StaffPressed) {
+                                    StaffColor = StaffColorTrue;
+                                    UserColor = UserColorFalse;
+                                    UserPressed = false;
+                                  } else {
+                                    StaffColor = StaffColorFalse;
+                                  }
+                                });
+                              },
+                              style: ElevatedButton.styleFrom(
+                                  backgroundColor: StaffColor,
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.only(
+                                          topLeft: Radius.circular(50),
+                                          bottomRight: Radius.circular(0),
+                                          bottomLeft: Radius.circular(50),
+                                          topRight: Radius.circular(0)))),
+                              child: Text(
+                                "Staff",
+                                style: TextStyle(
+                                    color: Color(0xff013220),
+                                    fontWeight: FontWeight.bold),
+                              )),
+                          ElevatedButton(
+                              onPressed: () {
+                                setState(() {
+                                  UserPressed = !UserPressed;
+                                  if (UserPressed) {
+                                    StaffColor = StaffColorFalse;
+                                    UserColor = UserColorTrue;
+                                    StaffPressed = false;
+                                  } else {
+                                    UserColor = UserColorFalse;
+                                  }
+                                });
+                              },
                               style: ElevatedButton.styleFrom(
                                   backgroundColor: UserColor,
                                   shape: RoundedRectangleBorder(
@@ -864,18 +1000,20 @@ class _AndroidView extends State<AndroidView>{
                                           topLeft: Radius.circular(0),
                                           bottomRight: Radius.circular(50),
                                           bottomLeft: Radius.circular(0),
-                                          topRight: Radius.circular(50)
-                                      )
-                                  )
-                              ),
-                              child: Text("User",style: TextStyle(color: Color(0xff8B0000), fontWeight: FontWeight.bold),))
+                                          topRight: Radius.circular(50)))),
+                              child: Text(
+                                "User",
+                                style: TextStyle(
+                                    color: Color(0xff8B0000),
+                                    fontWeight: FontWeight.bold),
+                              ))
                         ],
                       ),
                     ),
                   ],
                 ),
               ),
-              StaffPressed? AndroidStaffPage() : AndroidUserPage()
+              StaffPressed ? AndroidStaffPage() : AndroidUserPage()
             ],
           ),
         )
@@ -884,12 +1022,12 @@ class _AndroidView extends State<AndroidView>{
   }
 }
 
-class WebView extends StatefulWidget{
+class WebView extends StatefulWidget {
   @override
   State<StatefulWidget> createState() => _WebView();
 }
 
-class _WebView extends State<WebView>{
+class _WebView extends State<WebView> {
   Color StaffColorTrue = Colors.blueAccent;
   Color StaffColorFalse = Colors.white;
   bool StaffPressed = false;
@@ -910,7 +1048,7 @@ class _WebView extends State<WebView>{
           clipper: BlueShapeClipper(),
           child: Container(
             height: screenHeight,
-            width: screenWidth,// Adjust the height accordingly
+            width: screenWidth, // Adjust the height accordingly
             color: Color(0xff2020b7),
           ),
         ),
@@ -928,47 +1066,54 @@ class _WebView extends State<WebView>{
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(50),
                           boxShadow: [
-                            BoxShadow(color: Colors.black12, spreadRadius: 2, blurRadius: 1)
-                          ]
-                      ),
+                            BoxShadow(
+                                color: Colors.black12,
+                                spreadRadius: 2,
+                                blurRadius: 1)
+                          ]),
                       child: Row(
                         children: [
-                          ElevatedButton(onPressed: () {
-                            setState(() {
-                              StaffPressed = !StaffPressed;
-                              if(StaffPressed){
-                                StaffColor = StaffColorTrue;
-                                UserColor = UserColorFalse;
-                                UserPressed = false;
-                              }else{
-                                StaffColor = StaffColorFalse;
-                              }
-                            });
-                          },style: ElevatedButton.styleFrom(
-                              backgroundColor: StaffColor,
-                              shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.only(
-                                      topLeft: Radius.circular(50),
-                                      bottomRight: Radius.circular(0),
-                                      bottomLeft: Radius.circular(50),
-                                      topRight: Radius.circular(0)
-                                  )
-                              ),
-                              minimumSize: Size(100, 50)
-                          ),
-                              child: Text("Staff", style: TextStyle(color: Color(0xff013220), fontWeight: FontWeight.bold),)),
-                          ElevatedButton(onPressed: () {
-                            setState(() {
-                              UserPressed = !UserPressed;
-                              if(UserPressed){
-                                StaffColor = StaffColorFalse;
-                                UserColor = UserColorTrue;
-                                StaffPressed = false;
-                              }else{
-                                UserColor = UserColorFalse;
-                              }
-                            });
-                          },
+                          ElevatedButton(
+                              onPressed: () {
+                                setState(() {
+                                  StaffPressed = !StaffPressed;
+                                  if (StaffPressed) {
+                                    StaffColor = StaffColorTrue;
+                                    UserColor = UserColorFalse;
+                                    UserPressed = false;
+                                  } else {
+                                    StaffColor = StaffColorFalse;
+                                  }
+                                });
+                              },
+                              style: ElevatedButton.styleFrom(
+                                  backgroundColor: StaffColor,
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.only(
+                                          topLeft: Radius.circular(50),
+                                          bottomRight: Radius.circular(0),
+                                          bottomLeft: Radius.circular(50),
+                                          topRight: Radius.circular(0))),
+                                  minimumSize: Size(100, 50)),
+                              child: Text(
+                                "Staff",
+                                style: TextStyle(
+                                    color: Color(0xff013220),
+                                    fontWeight: FontWeight.bold),
+                              )),
+                          ElevatedButton(
+                              onPressed: () {
+                                setState(() {
+                                  UserPressed = !UserPressed;
+                                  if (UserPressed) {
+                                    StaffColor = StaffColorFalse;
+                                    UserColor = UserColorTrue;
+                                    StaffPressed = false;
+                                  } else {
+                                    UserColor = UserColorFalse;
+                                  }
+                                });
+                              },
                               style: ElevatedButton.styleFrom(
                                   backgroundColor: UserColor,
                                   shape: RoundedRectangleBorder(
@@ -976,19 +1121,21 @@ class _WebView extends State<WebView>{
                                           topLeft: Radius.circular(0),
                                           bottomRight: Radius.circular(50),
                                           bottomLeft: Radius.circular(0),
-                                          topRight: Radius.circular(50)
-                                      )
-                                  ),
-                                  minimumSize: Size(100, 50)
-                              ),
-                              child: Text("User",style: TextStyle(color: Color(0xff8B0000), fontWeight: FontWeight.bold),))
+                                          topRight: Radius.circular(50))),
+                                  minimumSize: Size(100, 50)),
+                              child: Text(
+                                "User",
+                                style: TextStyle(
+                                    color: Color(0xff8B0000),
+                                    fontWeight: FontWeight.bold),
+                              ))
                         ],
                       ),
                     ),
                   ],
                 ),
               ),
-              StaffPressed? WebStaffPage() : WebUserPage()
+              StaffPressed ? WebStaffPage() : WebUserPage()
             ],
           ),
         )
@@ -1004,7 +1151,7 @@ class BlueShapeClipper extends CustomClipper<Path> {
     path.lineTo(0, size.height * 1); // Left-middle
     path.lineTo(size.width * 1, size.height * 0.65); // Diagonal towards right
     path.lineTo(size.width, size.height * 01); // Top-right curve
-    path.lineTo(size.width , 0); // Top-right corner
+    path.lineTo(size.width, 0); // Top-right corner
     path.close(); // Close the path
     return path;
   }

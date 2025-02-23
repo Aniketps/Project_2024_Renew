@@ -1,7 +1,10 @@
-import 'package:carehub/BookingScheduleAndPayment.dart';
-import 'package:carehub/ClientNotificationPage.dart';
+import 'dart:io';
+
 import 'package:carehub/EContact.dart';
 import 'package:carehub/EPersonal.dart';
+import 'package:carehub/EServiceRate.dart';
+import 'package:carehub/KYC.dart';
+import 'package:carehub/Rating.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -9,13 +12,13 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'ContactUs.dart';
 import 'Deals.dart';
 import 'Feedback.dart';
 import 'LoginPage.dart';
-import 'MainMap.dart';
 import 'StaffNotificationPage.dart';
 import 'TC.dart';
 import 'client.dart';
@@ -104,34 +107,22 @@ class _StaffProfileHome extends State<StaffProfileHome> {
                   child: Column(children: [
                     (StaffData != null &&
                             StaffData['professionOfStaff'] != null)
-                        ? InkWell(
-                            onTap: () {
-                              // Navigator.push(
-                              //     context,
-                              //     MaterialPageRoute(
-                              //       builder: (context) => StaffProfileHome(
-                              //           StaffID: currentUserID,
-                              //           Skill: StaffData['professionOfStaff'] ??
-                              //               'user'),
-                              //     ));
-                            },
-                            child: Container(
-                              height: 80,
-                              width: 80,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(80),
-                                boxShadow: [
-                                  BoxShadow(
-                                    blurRadius: 1,
-                                    spreadRadius: 1,
-                                    color: Colors.black26,
-                                  ),
-                                ],
-                                image: DecorationImage(
-                                  image: NetworkImage(StaffData['Profile_Pic']),
-                                  fit: BoxFit
-                                      .cover, // Adjust the fit if necessary
+                        ? Container(
+                            height: 80,
+                            width: 80,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(80),
+                              boxShadow: [
+                                BoxShadow(
+                                  blurRadius: 1,
+                                  spreadRadius: 1,
+                                  color: Colors.black26,
                                 ),
+                              ],
+                              image: DecorationImage(
+                                image: NetworkImage(StaffData['Profile_Pic']),
+                                fit:
+                                    BoxFit.cover, // Adjust the fit if necessary
                               ),
                             ),
                           )
@@ -529,8 +520,91 @@ class StaffView extends StatefulWidget {
 }
 
 class _StaffView extends State<StaffView> {
+  @override
+  void initState() {
+    super.initState();
+    fetchVerificationDocs();
+    profilePicUrl = widget.StaffData['Profile_Pic'] ?? "";
+  }
+
   final StaffData;
   final UID;
+  String profilePicUrl = "";
+  Future<void> pickAndUploadImage() async {
+    final pickedImage =
+        await ImagePicker().pickImage(source: ImageSource.gallery);
+    if (pickedImage == null) return;
+
+    File imagePath = File(pickedImage.path);
+    String fileName = imagePath.path.split('/').last;
+    User? user = FirebaseAuth.instance.currentUser;
+
+    if (user != null) {
+      try {
+        Reference ref =
+            FirebaseStorage.instance.ref().child("${user.uid}/$fileName");
+        UploadTask uploadTask = ref.putFile(imagePath);
+        TaskSnapshot snapshot = await uploadTask;
+        String profileURL = await snapshot.ref.getDownloadURL();
+
+        await FirebaseFirestore.instance
+            .collection(StaffData['professionOfStaff'].toLowerCase())
+            .doc(user.uid)
+            .update({
+          "Profile_Pic": profileURL,
+        });
+
+        await FirebaseFirestore.instance
+            .collection("user")
+            .doc(user.uid)
+            .update({
+          "Profile_Pic": profileURL,
+        });
+
+        setState(() {
+          profilePicUrl = profileURL;
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Profile picture updated successfully!")),
+        );
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Error: $e")),
+        );
+      }
+    }
+  }
+
+  Future<void> fetchVerificationDocs() async {
+    try {
+      // Fetch URLs asynchronously
+      User? user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        _aadharUrl = await FirebaseStorage.instance
+            .ref()
+            .child("VerificationDoc/AadharCard/${user.uid}")
+            .getDownloadURL();
+
+        _professionVerDocUrl = await FirebaseStorage.instance
+            .ref()
+            .child("VerificationDoc/ProfessionalDoc/${user.uid}")
+            .getDownloadURL();
+      }
+    } catch (e) {
+      print("Error fetching verification documents: $e");
+    } finally {
+      // Update the state to reflect loading completion
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
+  bool isLoading = true;
+  String? _aadharUrl;
+  String? _professionVerDocUrl;
+
   _StaffView({required this.StaffData, required this.UID});
   @override
   Widget build(BuildContext context) {
@@ -567,20 +641,32 @@ class _StaffView extends State<StaffView> {
                             children: [
                               Column(
                                 children: [
-                                  Container(
-                                    height: 80,
-                                    width: 80,
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(80),
-                                      color: Colors.green,
-                                      image: DecorationImage(
-                                        image: NetworkImage(
-                                            StaffData['Profile_Pic']),
-                                        fit: BoxFit
-                                            .cover, // Adjust the fit if necessary
+                                  InkWell(
+                                    onTap: pickAndUploadImage,
+                                    child: Container(
+                                      height: 80,
+                                      width: 80,
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(80),
+                                        color: Colors.green,
+                                        image: DecorationImage(
+                                          image: profilePicUrl.isEmpty
+                                              ? NetworkImage(
+                                                  "https://media.istockphoto.com/id/1300845620/vector/user-icon-flat-isolated-on-white-background-user-symbol-vector-illustration.jpg?s=612x612&w=0&k=20&c=yBeyba0hUkh14_jgv1OKqIH0CCSWU_4ckRkAoy2p73o=")
+                                              : NetworkImage(profilePicUrl),
+                                          fit: BoxFit.cover,
+                                        ),
                                       ),
                                     ),
-                                  )
+                                  ),
+                                  SizedBox(
+                                      height:
+                                          5), // Space between image and text
+                                  Text(
+                                    "Tap to change",
+                                    style: TextStyle(
+                                        fontSize: 12, color: Colors.grey),
+                                  ),
                                 ],
                               ),
                               Padding(
@@ -638,45 +724,57 @@ class _StaffView extends State<StaffView> {
                                                 fontSize: 12)),
                                       ],
                                     ),
-                                    Container(
-                                      height: 45,
-                                      margin: EdgeInsets.only(top: 10),
-                                      width: screenHeight * 0.27,
-                                      decoration: BoxDecoration(
-                                        color: Color(0xff00008B),
-                                        borderRadius: BorderRadius.circular(10),
-                                      ),
-                                      child: Row(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.center,
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          Icon(
-                                            Icons.star,
-                                            color: Color(0xffFFD700),
-                                          ),
-                                          Padding(
-                                            padding: const EdgeInsets.only(
-                                                right: 10, left: 5),
-                                            child: Text(
-                                              "${StaffData["Rating"]}/5.0",
-                                              style: TextStyle(
-                                                  color: Colors.white,
-                                                  fontWeight: FontWeight.bold),
+                                    InkWell(
+                                      onTap: () {
+                                        Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) =>
+                                                  RatingState(UID: UID),
+                                            ));
+                                      },
+                                      child: Container(
+                                        height: 45,
+                                        margin: EdgeInsets.only(top: 10),
+                                        width: screenHeight * 0.27,
+                                        decoration: BoxDecoration(
+                                          color: Color(0xff00008B),
+                                          borderRadius:
+                                              BorderRadius.circular(10),
+                                        ),
+                                        child: Row(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.center,
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            Icon(
+                                              Icons.star,
+                                              color: Color(0xffFFD700),
                                             ),
-                                          ),
-                                          Text(
-                                            "Check",
-                                            style: TextStyle(
-                                                fontSize: 12,
-                                                color: Colors.white),
-                                          ),
-                                          Icon(
-                                            Icons.play_arrow,
-                                            color: Colors.white,
-                                          )
-                                        ],
+                                            Padding(
+                                              padding: const EdgeInsets.only(
+                                                  right: 10, left: 5),
+                                              child: Text(
+                                                "${StaffData["Rating"]}/5.0",
+                                                style: TextStyle(
+                                                    color: Colors.white,
+                                                    fontWeight:
+                                                        FontWeight.bold),
+                                              ),
+                                            ),
+                                            Text(
+                                              "Check",
+                                              style: TextStyle(
+                                                  fontSize: 12,
+                                                  color: Colors.white),
+                                            ),
+                                            Icon(
+                                              Icons.play_arrow,
+                                              color: Colors.white,
+                                            )
+                                          ],
+                                        ),
                                       ),
                                     )
                                   ],
@@ -721,8 +819,18 @@ class _StaffView extends State<StaffView> {
                               Row(
                                 children: [
                                   InkWell(
-                                      onTap: () async {
-                                        try {
+                                    onTap: () async {
+                                      try {
+                                        // Only update if status needs to be changed to "Available"
+                                        var docSnapshot =
+                                            await FirebaseFirestore.instance
+                                                .collection(StaffData[
+                                                    'professionOfStaff'])
+                                                .doc(UID)
+                                                .get();
+
+                                        if (docSnapshot.exists &&
+                                            docSnapshot['Status'] != true) {
                                           await FirebaseFirestore.instance
                                               .collection(StaffData[
                                                   'professionOfStaff'])
@@ -730,68 +838,119 @@ class _StaffView extends State<StaffView> {
                                               .update({
                                             "Status": true,
                                           });
-                                          print("Status updated successfully");
-                                        } catch (e) {
-                                          print("Error updating status: $e");
+
+                                          // Show Snackbar message
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(
+                                            SnackBar(
+                                                content:
+                                                    Text("You are now live")),
+                                          );
+
+                                          // Refresh and navigate to StaffProfileHome
+                                          Navigator.pushReplacement(
+                                            context,
+                                            MaterialPageRoute(
+                                                builder: (context) =>
+                                                    StaffProfileHome()),
+                                          );
                                         }
-                                      },
-                                      child: Container(
-                                          height: 35,
-                                          decoration: BoxDecoration(
-                                            borderRadius: BorderRadius.only(
-                                              topLeft: Radius.circular(15),
-                                              bottomLeft: Radius.circular(15),
+                                      } catch (e) {
+                                        print(
+                                            "Error updating status to Available: $e");
+                                      }
+                                    },
+                                    child: Container(
+                                      height: 35,
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.only(
+                                          topLeft: Radius.circular(10),
+                                          bottomLeft: Radius.circular(10),
+                                        ),
+                                        color:
+                                            Colors.red, // Color for Available
+                                      ),
+                                      child: Padding(
+                                        padding: const EdgeInsets.only(
+                                            left: 15, right: 5),
+                                        child: Center(
+                                          child: Text(
+                                            "Available",
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.bold,
                                             ),
-                                            color: Colors.red,
                                           ),
-                                          child: Padding(
-                                            padding: const EdgeInsets.only(
-                                                left: 15, right: 5),
-                                            child: Center(
-                                                child: Text(
-                                              "Available",
-                                              style: TextStyle(
-                                                color: Colors.white,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            )),
-                                          ))),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
                                   InkWell(
-                                      onTap: () async {
-                                        try {
+                                    onTap: () async {
+                                      try {
+                                        // Only update if status needs to be changed to "Busy"
+                                        var docSnapshot =
+                                            await FirebaseFirestore.instance
+                                                .collection(StaffData[
+                                                    'professionOfStaff'])
+                                                .doc(UID)
+                                                .get();
+
+                                        if (docSnapshot.exists &&
+                                            docSnapshot['Status'] != false) {
                                           await FirebaseFirestore.instance
                                               .collection(StaffData[
-                                                  "professionOfStaff"])
+                                                  'professionOfStaff'])
                                               .doc(UID)
                                               .update({
                                             "Status": false,
                                           });
-                                          print("Status updated successfully");
-                                        } catch (e) {
-                                          print("Error updating status: $e");
+
+                                          // Show Snackbar message
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(
+                                            SnackBar(
+                                                content: Text(
+                                                    "You are now offline")),
+                                          );
+
+                                          // Refresh and navigate to StaffProfileHome
+                                          Navigator.pushReplacement(
+                                            context,
+                                            MaterialPageRoute(
+                                                builder: (context) =>
+                                                    StaffProfileHome()),
+                                          );
                                         }
-                                      },
-                                      child: Container(
-                                          height: 35,
-                                          decoration: BoxDecoration(
-                                            borderRadius: BorderRadius.only(
-                                              topRight: Radius.circular(15),
-                                              bottomRight: Radius.circular(15),
+                                      } catch (e) {
+                                        print(
+                                            "Error updating status to Busy: $e");
+                                      }
+                                    },
+                                    child: Container(
+                                      height: 35,
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.only(
+                                          topRight: Radius.circular(10),
+                                          bottomRight: Radius.circular(10),
+                                        ),
+                                        color: Colors.red, // Color for Busy
+                                      ),
+                                      child: Padding(
+                                        padding: const EdgeInsets.only(
+                                            right: 15, left: 5),
+                                        child: Center(
+                                          child: Text(
+                                            "Busy",
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.bold,
                                             ),
-                                            color: Colors.red,
                                           ),
-                                          child: Padding(
-                                            padding: const EdgeInsets.only(
-                                                right: 15, left: 5),
-                                            child: Center(
-                                                child: Text(
-                                              "Busy",
-                                              style: TextStyle(
-                                                color: Colors.white,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            )),
-                                          ))),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
                                 ],
                               ),
                               InkWell(
@@ -834,12 +993,92 @@ class _StaffView extends State<StaffView> {
                                 spreadRadius: 1,
                                 blurRadius: 1)
                           ]),
-                      child: Column(
-                        children: [
-                          Text("Data"),
-                          Row(),
-                          Row(),
-                        ],
+                      child: Padding(
+                        padding: const EdgeInsets.all(10),
+                        child: SingleChildScrollView(
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                if (StaffData["Verified"] == "unverified") ...[
+                                  InkWell(
+                                    onTap: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => KYC(
+                                              Skill: StaffData[
+                                                  'professionOfStaff']),
+                                        ),
+                                      );
+                                    },
+                                    child: Text(
+                                      "Not Verified Staff, Click...",
+                                      style: TextStyle(fontSize: 20),
+                                    ),
+                                  )
+                                ] else if (StaffData["Verified"] ==
+                                    "pending") ...[
+                                  Text(
+                                    "Under Verification Process",
+                                    style: TextStyle(fontSize: 20),
+                                  )
+                                ] else if (StaffData["Verified"] ==
+                                    "rejected") ...[
+                                  Text(
+                                    "Rejected",
+                                    style: TextStyle(fontSize: 20),
+                                  )
+                                ] else if (StaffData["Verified"] ==
+                                    "verified") ...[
+                                  Column(
+                                    children: [
+                                      Text(
+                                        "Verified Documents",
+                                        style: TextStyle(fontSize: 20),
+                                      ),
+                                      SizedBox(height: 10),
+                                      Container(
+                                        height: 200,
+                                        width:
+                                            MediaQuery.sizeOf(context).width *
+                                                0.8,
+                                        decoration: BoxDecoration(
+                                          image: DecorationImage(
+                                            image: NetworkImage(
+                                                "${_aadharUrl.toString()}"),
+                                            fit: BoxFit.cover,
+                                          ),
+                                        ),
+                                      ),
+                                      SizedBox(height: 10),
+                                      Container(
+                                        height: 200,
+                                        width:
+                                            MediaQuery.sizeOf(context).width *
+                                                0.8,
+                                        decoration: BoxDecoration(
+                                          image: DecorationImage(
+                                            image: NetworkImage(
+                                                "${_professionVerDocUrl.toString()}"),
+                                            fit: BoxFit.cover,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  )
+                                ] else ...[
+                                  Text(
+                                    "Unknown State",
+                                    style: TextStyle(fontSize: 20),
+                                  )
+                                ]
+                              ],
+                            ),
+                          ),
+                        ),
                       ),
                     ),
                   ),
@@ -1073,10 +1312,35 @@ class _StaffView extends State<StaffView> {
                           Padding(
                             padding: const EdgeInsets.only(
                                 left: 20, top: 10, bottom: 5),
-                            child: Text(
-                              "Service Rate",
-                              style: TextStyle(
-                                  fontSize: 18, fontWeight: FontWeight.bold),
+                            child: Row(
+                              children: [
+                                Text(
+                                  "Service Rate",
+                                  style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.only(left: 20),
+                                  child: InkWell(
+                                      onTap: () {
+                                        Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) =>
+                                                  EServiceRate(
+                                                      Skill: StaffData[
+                                                          'professionOfStaff']),
+                                            ));
+                                      },
+                                      child: Text(
+                                        "Edit",
+                                        style: TextStyle(
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.bold),
+                                      )),
+                                )
+                              ],
                             ),
                           ),
                           Divider(),
@@ -1087,7 +1351,7 @@ class _StaffView extends State<StaffView> {
                                 Container(
                                     width: screenWidth * 0.5,
                                     child: Text("Hour based")),
-                                Text("100"),
+                                Text("${StaffData['Hour_Rate'] ?? '--'} ₹"),
                               ],
                             ),
                           ),
@@ -1098,7 +1362,7 @@ class _StaffView extends State<StaffView> {
                                 Container(
                                     width: screenWidth * 0.5,
                                     child: Text("Day based")),
-                                Text("700"),
+                                Text("${StaffData['Day_Rate'] ?? '--'} ₹"),
                               ],
                             ),
                           ),
@@ -1109,7 +1373,7 @@ class _StaffView extends State<StaffView> {
                                 Container(
                                     width: screenWidth * 0.5,
                                     child: Text(
-                                      "Day service shift 8",
+                                      "Day service shift ${StaffData['Day_Shift'] ?? '--'} hours",
                                       style: TextStyle(
                                           fontSize: 12, color: Colors.blue),
                                     )),

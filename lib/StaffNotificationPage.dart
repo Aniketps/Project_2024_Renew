@@ -6,6 +6,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:intl/intl.dart';
 
 import 'TempMap.dart';
 
@@ -15,8 +16,6 @@ class StaffNotificationPage extends StatefulWidget {
 }
 
 class _StaffNotificationPage extends State<StaffNotificationPage> {
-
-
   @override
   void initState() {
     super.initState();
@@ -27,20 +26,25 @@ class _StaffNotificationPage extends State<StaffNotificationPage> {
       );
 
       Geolocator.getPositionStream(locationSettings: locationSettings).listen(
-            (Position position) {
+        (Position position) {
           setState(() async {
             String lat = position.latitude.toString();
             String long = position.longitude.toString();
             User? user = FirebaseAuth.instance.currentUser;
 
-            await FirebaseFirestore.instance.collection('user').doc(user?.uid).update({
-              'lat' : lat,
-              'long' : long,
+            await FirebaseFirestore.instance
+                .collection('user')
+                .doc(user?.uid)
+                .update({
+              'lat': lat,
+              'long': long,
             });
           });
         },
       );
-    };
+    }
+
+    ;
     _liveLocation();
   }
 
@@ -52,16 +56,16 @@ class _StaffNotificationPage extends State<StaffNotificationPage> {
   var NotificationForUserUID;
   Future<Map<String, dynamic>?> getUserData(String uid) async {
     var snapshot =
-    await FirebaseFirestore.instance.collection("user").doc(uid).get();
+        await FirebaseFirestore.instance.collection("user").doc(uid).get();
     return snapshot.data();
   }
 
   Future<Map<String, dynamic>?> getStaffData(String skill, String uid) async {
     var snapshot =
-    await FirebaseFirestore.instance.collection(skill).doc(uid).get();
+        await FirebaseFirestore.instance.collection(skill).doc(uid).get();
     return snapshot.data();
   }
-  
+
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
@@ -75,15 +79,33 @@ class _StaffNotificationPage extends State<StaffNotificationPage> {
       body: SingleChildScrollView(
         scrollDirection: Axis.vertical,
         child: StreamBuilder<QuerySnapshot>(
-          stream: FirebaseFirestore.instance.collection("NotificationForStaff").snapshots(),
+          stream: FirebaseFirestore.instance
+              .collection("NotificationForStaff")
+              .snapshots(),
           builder: (context, snapshot) {
             if (!snapshot.hasData)
               return Center(child: CircularProgressIndicator());
             var users = snapshot.data?.docs.reversed.toList() ?? [];
             List<Widget> userViews = [];
+            DateTime now = DateTime.now();
+            DateFormat dateFormat = DateFormat("d/M/yyyy");
+            DateFormat timeFormat = DateFormat("h:mm a");
 
             for (var user in users) {
-              if (user["staffUID"] == uid && user['status'] != "Completed") {
+              String scheduledDateEnd = user["ScheduledDateEnd"];
+              String scheduledTimeEnd = user["ScheduledTimeEnd"];
+              DateTime endDate = dateFormat.parse(scheduledDateEnd);
+              DateTime endTime = timeFormat.parse(scheduledTimeEnd);
+              DateTime combinedEndDateTime = DateTime(
+                endDate.year,
+                endDate.month,
+                endDate.day,
+                endTime.hour,
+                endTime.minute,
+              );
+              if (user["staffUID"] == uid &&
+                  user['status'] != "Completed" &&
+                  !combinedEndDateTime.isBefore(now)) {
                 userViews.add(
                   FutureBuilder(
                     future: Future.wait([
@@ -104,7 +126,7 @@ class _StaffNotificationPage extends State<StaffNotificationPage> {
                               Padding(
                                 padding: const EdgeInsets.all(10.0),
                                 child: Container(
-                                  height: screenHeight * 0.64,
+                                  height: screenHeight * 0.70,
                                   width: screenWidth * 0.9,
                                   decoration: BoxDecoration(
                                     color: Colors.white,
@@ -145,7 +167,7 @@ class _StaffNotificationPage extends State<StaffNotificationPage> {
                                               decoration: BoxDecoration(
                                                 color: Colors.white,
                                                 borderRadius:
-                                                BorderRadius.circular(70),
+                                                    BorderRadius.circular(70),
                                                 boxShadow: [
                                                   BoxShadow(
                                                     color: Colors.black26,
@@ -154,23 +176,58 @@ class _StaffNotificationPage extends State<StaffNotificationPage> {
                                                   )
                                                 ],
                                               ),
-                                              child: Icon(CupertinoIcons.profile_circled),
+                                              child: (currentUserData
+                                                          .containsKey(
+                                                              "Profile_Pic") &&
+                                                      currentUserData[
+                                                              "Profile_Pic"] !=
+                                                          null &&
+                                                      currentUserData[
+                                                              "Profile_Pic"]
+                                                          .isNotEmpty)
+                                                  ? Container(
+                                                      height: 70,
+                                                      width: 70,
+                                                      decoration: BoxDecoration(
+                                                        color: Colors.white,
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(70),
+                                                        boxShadow: const [
+                                                          BoxShadow(
+                                                            color:
+                                                                Colors.black26,
+                                                            blurRadius: 1,
+                                                            spreadRadius: 1,
+                                                          )
+                                                        ],
+                                                        image: DecorationImage(
+                                                          image: NetworkImage(
+                                                              currentUserData[
+                                                                  'Profile_Pic']),
+                                                          fit: BoxFit
+                                                              .cover, // Adjust the fit if necessary
+                                                        ),
+                                                      ),
+                                                    )
+                                                  : Icon(CupertinoIcons
+                                                      .profile_circled),
                                             ),
                                             Padding(
                                               padding: const EdgeInsets.only(
                                                   left: 10),
                                               child: Column(
                                                 crossAxisAlignment:
-                                                CrossAxisAlignment.start,
+                                                    CrossAxisAlignment.start,
                                                 children: [
                                                   Text(
                                                     "${currentUserData?['First_name']} ${currentUserData?['Last_name']}",
                                                     overflow:
-                                                    TextOverflow.ellipsis,
+                                                        TextOverflow.ellipsis,
                                                     maxLines: 1,
                                                     style: TextStyle(
                                                         fontWeight:
-                                                        FontWeight.bold,
+                                                            FontWeight.bold,
                                                         fontSize: 16),
                                                   ),
                                                   Text("${user['timeofdeal']}",
@@ -182,24 +239,24 @@ class _StaffNotificationPage extends State<StaffNotificationPage> {
                                             Expanded(
                                               child: Column(
                                                 crossAxisAlignment:
-                                                CrossAxisAlignment.center,
+                                                    CrossAxisAlignment.center,
                                                 mainAxisAlignment:
-                                                MainAxisAlignment.center,
+                                                    MainAxisAlignment.center,
                                                 children: [
                                                   Text("Need",
                                                       style: TextStyle(
                                                           fontWeight:
-                                                          FontWeight.bold,
+                                                              FontWeight.bold,
                                                           fontSize: 12)),
                                                   Divider(),
                                                   Text(
                                                     "${user['professionOfStaff']}",
                                                     overflow:
-                                                    TextOverflow.ellipsis,
+                                                        TextOverflow.ellipsis,
                                                     maxLines: 1,
                                                     style: TextStyle(
                                                         fontWeight:
-                                                        FontWeight.bold,
+                                                            FontWeight.bold,
                                                         fontSize: 18,
                                                         color: Colors.red),
                                                   ),
@@ -212,20 +269,28 @@ class _StaffNotificationPage extends State<StaffNotificationPage> {
                                       Row(
                                         children: [
                                           Padding(
-                                            padding: const EdgeInsets.only(left: 25, top: 5, bottom: 5),
+                                            padding: const EdgeInsets.only(
+                                                left: 25, top: 5, bottom: 5),
                                             child: Container(
                                               height: 30,
                                               width: screenWidth * 0.25,
                                               decoration: BoxDecoration(
                                                   color: Colors.white,
-                                                  borderRadius: BorderRadius.circular(5),
-                                                  boxShadow: [BoxShadow(
-                                                      color: Colors.black26,
-                                                      blurRadius: 1,
-                                                      spreadRadius: 1
-                                                  )]
-                                              ),
-                                              child: Center(child: Text("${user['ServiceBase']} base", style: TextStyle(fontWeight: FontWeight.bold),)),
+                                                  borderRadius:
+                                                      BorderRadius.circular(5),
+                                                  boxShadow: [
+                                                    BoxShadow(
+                                                        color: Colors.black26,
+                                                        blurRadius: 1,
+                                                        spreadRadius: 1)
+                                                  ]),
+                                              child: Center(
+                                                  child: Text(
+                                                "${user['ServiceBase']} base",
+                                                style: TextStyle(
+                                                    fontWeight:
+                                                        FontWeight.bold),
+                                              )),
                                             ),
                                           ),
                                         ],
@@ -241,7 +306,8 @@ class _StaffNotificationPage extends State<StaffNotificationPage> {
                                               child: Row(
                                                 children: [
                                                   Expanded(
-                                                      child: Text(user['ServiceBase'])),
+                                                      child: Text(
+                                                          user['ServiceBase'])),
                                                   Text("${user['hours']}"),
                                                 ],
                                               ),
@@ -255,19 +321,23 @@ class _StaffNotificationPage extends State<StaffNotificationPage> {
                                                   Text("Total",
                                                       style: TextStyle(
                                                           fontWeight:
-                                                          FontWeight.bold)),
+                                                              FontWeight.bold)),
                                                   Padding(
-                                                    padding: const EdgeInsets.only(left: 10),
+                                                    padding:
+                                                        const EdgeInsets.only(
+                                                            left: 10),
                                                     child: Text("Know more",
                                                         style: TextStyle(
-                                                            color: Colors.green)),
+                                                            color:
+                                                                Colors.green)),
                                                   ),
                                                   Spacer(),
-                                                  Text(user['totalcost']
-                                                      .toString(),
+                                                  Text(
+                                                      user['totalcost']
+                                                          .toString(),
                                                       style: TextStyle(
                                                           fontWeight:
-                                                          FontWeight.bold)),
+                                                              FontWeight.bold)),
                                                 ],
                                               ),
                                             ),
@@ -277,7 +347,7 @@ class _StaffNotificationPage extends State<StaffNotificationPage> {
                                       ),
                                       Padding(
                                         padding:
-                                        const EdgeInsets.only(left: 25),
+                                            const EdgeInsets.only(left: 25),
                                         child: Row(
                                           children: [
                                             Text(
@@ -291,9 +361,9 @@ class _StaffNotificationPage extends State<StaffNotificationPage> {
                                       ),
                                       Row(
                                         crossAxisAlignment:
-                                        CrossAxisAlignment.center,
+                                            CrossAxisAlignment.center,
                                         mainAxisAlignment:
-                                        MainAxisAlignment.center,
+                                            MainAxisAlignment.center,
                                         children: [
                                           Container(
                                             width: screenWidth * 0.3,
@@ -328,7 +398,7 @@ class _StaffNotificationPage extends State<StaffNotificationPage> {
                                       ),
                                       Padding(
                                         padding:
-                                        const EdgeInsets.only(left: 25),
+                                            const EdgeInsets.only(left: 25),
                                         child: Row(
                                           children: [
                                             Text(
@@ -342,17 +412,17 @@ class _StaffNotificationPage extends State<StaffNotificationPage> {
                                       ),
                                       Padding(
                                         padding:
-                                        const EdgeInsets.only(left: 25),
+                                            const EdgeInsets.only(left: 25),
                                         child: Row(
                                             mainAxisAlignment:
-                                            MainAxisAlignment.start,
+                                                MainAxisAlignment.start,
                                             children: [
                                               Container(
                                                 width: screenWidth * 0.8,
                                                 child: Text(
                                                   "${user['Scheduled_Sub_Address']}, ${user['Scheduled_Address']}, ${user['Scheduled_City']}",
                                                   style:
-                                                  TextStyle(fontSize: 10),
+                                                      TextStyle(fontSize: 10),
                                                 ),
                                               ),
                                             ]),
@@ -364,14 +434,24 @@ class _StaffNotificationPage extends State<StaffNotificationPage> {
                                           children: [
                                             InkWell(
                                               onTap: () {
-                                                Navigator.push(context, MaterialPageRoute(builder: (context) => TempMap(lat: user['Client_Coordinates_lat'], long: user['Client_Coordinates_long'],),));
+                                                Navigator.push(
+                                                    context,
+                                                    MaterialPageRoute(
+                                                      builder: (context) =>
+                                                          TempMap(
+                                                        lat: user[
+                                                            'Client_Coordinates_lat'],
+                                                        long: user[
+                                                            'Client_Coordinates_long'],
+                                                      ),
+                                                    ));
                                               },
                                               child: Container(
                                                 height: 30,
                                                 width: screenWidth * 0.3,
                                                 decoration: BoxDecoration(
                                                   borderRadius:
-                                                  BorderRadius.circular(8),
+                                                      BorderRadius.circular(8),
                                                   color: Colors.white,
                                                   boxShadow: [
                                                     BoxShadow(
@@ -385,7 +465,7 @@ class _StaffNotificationPage extends State<StaffNotificationPage> {
                                                   child: Text(
                                                     "Check Map",
                                                     style:
-                                                    TextStyle(fontSize: 13),
+                                                        TextStyle(fontSize: 13),
                                                   ),
                                                 ),
                                               ),
@@ -393,150 +473,265 @@ class _StaffNotificationPage extends State<StaffNotificationPage> {
                                           ],
                                         ),
                                       ),
-                                      (user['status']=="Rejected") || (user['status']=="Accepted")?
-                                      Padding(
-                                        padding: const EdgeInsets.all(15.0),
-                                        child: Text(
-                                          "${user['status']}",
-                                          style: TextStyle(fontSize: 20),
-                                        ),
-                                      ):
-                                      Row(
-                                        children: [
-                                          Padding(
-                                            padding: const EdgeInsets.all(5.0),
-                                            child: ElevatedButton(onPressed: () async {
-                                              await FirebaseFirestore.instance.collection("NotificationForStaff").doc(user.id).update({
-                                                'status': "Rejected",
-                                              });
-                                              await FirebaseFirestore.instance.collection("NotificationForUser").doc(user['DocUID']).update({
-                                                'status': "Rejected",
-                                              });
-                                              var userDoc = await FirebaseFirestore.instance.collection("user").doc(user['userUID']).get();
-                                              var usertoken = userDoc.data()?['token'];
-                                              int notificationId1 = DateTime.now().millisecondsSinceEpoch; // Unique ID based on timestamp
-                                              int notificationId2 = notificationId1 + 1;
-                                              sendNotificationService.sendNotificationUsingApi(
-                                                  body: 'Your request is accepted by ${currentUserData?['First_name']} ${currentUserData?['Last_name']}',
-                                                  data: {
-                                                    "screen" : "ClientNotificationPage",
-                                                    "notificationId" : notificationId2.toString(), // Include notification ID in the data if needed
-                                                  },
-                                                  title: "Request Status",
-                                                  token: usertoken
-                                              );
-                                            },style:ElevatedButton.styleFrom(
-                                              backgroundColor: Colors.red,
-                                              shape:RoundedRectangleBorder(
-                                                borderRadius: BorderRadius.circular(40)
-                                              )
+                                      (user['status'] == "Rejected") ||
+                                              (user['status'] == "Accepted")
+                                          ? Padding(
+                                              padding:
+                                                  const EdgeInsets.all(15.0),
+                                              child: Text(
+                                                "${user['status']}",
+                                                style: TextStyle(fontSize: 20),
+                                              ),
                                             )
-                                                ,child: Text('Reject')),
-                                          ),
-                                          Padding(
-                                            padding: const EdgeInsets.all(5.0),
-                                            child: ElevatedButton(onPressed: () async {
+                                          : Row(
+                                              children: [
+                                                Padding(
+                                                  padding:
+                                                      const EdgeInsets.all(5.0),
+                                                  child: ElevatedButton(
+                                                      onPressed: () async {
+                                                        await FirebaseFirestore
+                                                            .instance
+                                                            .collection(
+                                                                "NotificationForStaff")
+                                                            .doc(user.id)
+                                                            .update({
+                                                          'status': "Rejected",
+                                                        });
+                                                        await FirebaseFirestore
+                                                            .instance
+                                                            .collection(
+                                                                "NotificationForUser")
+                                                            .doc(user['DocUID'])
+                                                            .update({
+                                                          'status': "Rejected",
+                                                        });
+                                                        var userDoc =
+                                                            await FirebaseFirestore
+                                                                .instance
+                                                                .collection(
+                                                                    "user")
+                                                                .doc(user[
+                                                                    'userUID'])
+                                                                .get();
+                                                        var usertoken = userDoc
+                                                            .data()?['token'];
+                                                        int notificationId1 =
+                                                            DateTime.now()
+                                                                .millisecondsSinceEpoch; // Unique ID based on timestamp
+                                                        int notificationId2 =
+                                                            notificationId1 + 1;
+                                                        sendNotificationService
+                                                            .sendNotificationUsingApi(
+                                                                body:
+                                                                    'Your request is rejected by ${currentStaffData?['First_name']} ${currentStaffData?['Last_name']}',
+                                                                data: {
+                                                                  "screen":
+                                                                      "ClientNotificationPage",
+                                                                  "notificationId":
+                                                                      notificationId2
+                                                                          .toString(), // Include notification ID in the data if needed
+                                                                },
+                                                                title:
+                                                                    "Request Status",
+                                                                token:
+                                                                    usertoken);
+                                                      },
+                                                      style: ElevatedButton.styleFrom(
+                                                          backgroundColor:
+                                                              Colors.red,
+                                                          shape: RoundedRectangleBorder(
+                                                              borderRadius:
+                                                                  BorderRadius
+                                                                      .circular(
+                                                                          40))),
+                                                      child: Text('Reject')),
+                                                ),
+                                                Padding(
+                                                  padding:
+                                                      const EdgeInsets.all(5.0),
+                                                  child: ElevatedButton(
+                                                      onPressed: () async {
+                                                        Random random =
+                                                            new Random();
+                                                        int genOPT = random
+                                                            .nextInt(10000);
 
-                                              Random random = new Random();
-                                              int genOPT = random.nextInt(10000);
+                                                        await FirebaseFirestore
+                                                            .instance
+                                                            .collection(
+                                                                "NotificationForStaff")
+                                                            .doc(user.id)
+                                                            .update({
+                                                          'status': "Accepted",
+                                                          'OTP': genOPT,
+                                                          'Rating': "0",
+                                                        });
+                                                        await FirebaseFirestore
+                                                            .instance
+                                                            .collection(
+                                                                "NotificationForUser")
+                                                            .doc(user['DocUID'])
+                                                            .update({
+                                                          'status': "Accepted",
+                                                          'OTP': genOPT,
+                                                          "Rating": "0",
+                                                        });
 
-                                              await FirebaseFirestore.instance.collection("NotificationForStaff").doc(user.id).update({
-                                                'status': "Accepted",
-                                                'OTP' : genOPT,
-                                              });
-                                              await FirebaseFirestore.instance.collection("NotificationForUser").doc(user['DocUID']).update({
-                                                'status': "Accepted",
-                                                'OTP' : genOPT,
-                                              });
-
-                                              var userDoc = await FirebaseFirestore.instance.collection("user").doc(user['userUID']).get();
-                                              var usertoken = userDoc.data()?['token'];
-                                              int notificationId1 = DateTime.now().millisecondsSinceEpoch; // Unique ID based on timestamp
-                                              int notificationId2 = notificationId1 + 1;
-                                              sendNotificationService.sendNotificationUsingApi(
-                                                  body: 'Your request is accepted by ${currentUserData?['First_name']} ${currentUserData?['Last_name']}',
-                                                  data: {
-                                                    "screen" : "ClientNotificationPage",
-                                                    "notificationId" : notificationId2.toString(), // Include notification ID in the data if needed
-                                                  },
-                                                  title: "Request Status",
-                                                  token: usertoken
-                                              );
-                                            },style:ElevatedButton.styleFrom(
-                                                backgroundColor: Colors.green,
-                                                shape:RoundedRectangleBorder(
-                                                    borderRadius: BorderRadius.circular(40)
-                                                )
-                                            )
-                                                ,child: Text('Accept')),
-                                          ),
-                                        ],
-                                      ),
+                                                        var userDoc =
+                                                            await FirebaseFirestore
+                                                                .instance
+                                                                .collection(
+                                                                    "user")
+                                                                .doc(user[
+                                                                    'userUID'])
+                                                                .get();
+                                                        var usertoken = userDoc
+                                                            .data()?['token'];
+                                                        int notificationId1 =
+                                                            DateTime.now()
+                                                                .millisecondsSinceEpoch; // Unique ID based on timestamp
+                                                        int notificationId2 =
+                                                            notificationId1 + 1;
+                                                        sendNotificationService
+                                                            .sendNotificationUsingApi(
+                                                                body:
+                                                                    'Your request is accepted by ${currentStaffData?['First_name']} ${currentStaffData?['Last_name']}',
+                                                                data: {
+                                                                  "screen":
+                                                                      "ClientNotificationPage",
+                                                                  "notificationId":
+                                                                      notificationId2
+                                                                          .toString(),
+                                                                },
+                                                                title:
+                                                                    "Request Status",
+                                                                token:
+                                                                    usertoken);
+                                                      },
+                                                      style: ElevatedButton.styleFrom(
+                                                          backgroundColor:
+                                                              Colors.green,
+                                                          shape: RoundedRectangleBorder(
+                                                              borderRadius:
+                                                                  BorderRadius
+                                                                      .circular(
+                                                                          40))),
+                                                      child: Text('Accept')),
+                                                ),
+                                              ],
+                                            ),
                                       (user['status'] == "Accepted")
                                           ? Center(
-                                            child: Container(
-                                              height: 50,
-                                              width: 120,
-                                              // decoration: BoxDecoration(
-                                              //   color: Colors.white,
-                                              //   borderRadius: BorderRadius.circular(15),
-                                              //   boxShadow: [BoxShadow(
-                                              //     color: Colors.black26,
-                                              //     blurRadius: 1,
-                                              //     spreadRadius: 1
-                                              //   )]
-                                              // ),
-                                              child: TextField(
+                                              child: Container(
+                                                height: 50,
+                                                width: 120,
+                                                // decoration: BoxDecoration(
+                                                //   color: Colors.white,
+                                                //   borderRadius: BorderRadius.circular(15),
+                                                //   boxShadow: [BoxShadow(
+                                                //     color: Colors.black26,
+                                                //     blurRadius: 1,
+                                                //     spreadRadius: 1
+                                                //   )]
+                                                // ),
+                                                child: TextField(
+                                                  onChanged: (value) async {
+                                                    setState(() {
+                                                      OTP =
+                                                          value; // Store the entered OTP in the state
+                                                    });
 
-                                                onChanged: (value) async {
-                                                  setState(() {
-                                                    OTP = value; // Store the entered OTP in the state
-                                                  });
-
-                                                  // Automatically check OTP when it's fully entered (assuming OTP is 4 digits)
-                                                  if (OTP?.length == 4) {
-                                                    if (OTP == user['OTP'].toString()) {
-                                                      // OTP is correct, update the status to 'Completed'
-                                                      await FirebaseFirestore.instance.collection("NotificationForStaff").doc(user.id).update({
-                                                        "status": 'Completed',
-                                                      });
-                                                      await FirebaseFirestore.instance.collection("NotificationForUser").doc(user['DocUID']).update({
-                                                        "status": 'Completed',
-                                                      });
-                                                      var userDoc = await FirebaseFirestore.instance.collection("user").doc(user['userUID']).get();
-                                                      var usertoken = userDoc.data()?['token'];
-                                                      int notificationId1 = DateTime.now().millisecondsSinceEpoch; // Unique ID based on timestamp
-                                                      int notificationId2 = notificationId1 + 1;
-                                                      sendNotificationService.sendNotificationUsingApi(
-                                                          body: 'Your work has been successfully completed by ${currentUserData?['First_name']} ${currentUserData?['Last_name']}',
-                                                          data: {
-                                                            "screen" : "ClientNotificationPage",
-                                                            "notificationId" : notificationId2.toString(), // Include notification ID in the data if needed
-                                                          },
-                                                          title: "Staff Status",
-                                                          token: usertoken
-                                                      );
-                                                      ScaffoldMessenger.of(context).showSnackBar(
-                                                        SnackBar(content: Text("OTP Verified!")),
-                                                      );
-                                                    } else {
-                                                      // OTP is incorrect, show error message
-                                                      ScaffoldMessenger.of(context).showSnackBar(
-                                                        SnackBar(content: Text("Invalid OTP!")),
-                                                      );
+                                                    // Automatically check OTP when it's fully entered (assuming OTP is 4 digits)
+                                                    if (OTP?.length == 4) {
+                                                      if (OTP ==
+                                                          user['OTP']
+                                                              .toString()) {
+                                                        // OTP is correct, update the status to 'Completed'
+                                                        await FirebaseFirestore
+                                                            .instance
+                                                            .collection(
+                                                                "NotificationForStaff")
+                                                            .doc(user.id)
+                                                            .update({
+                                                          "status": 'Completed',
+                                                        });
+                                                        await FirebaseFirestore
+                                                            .instance
+                                                            .collection(
+                                                                "NotificationForUser")
+                                                            .doc(user['DocUID'])
+                                                            .update({
+                                                          "status": 'Completed',
+                                                        });
+                                                        var userDoc =
+                                                            await FirebaseFirestore
+                                                                .instance
+                                                                .collection(
+                                                                    "user")
+                                                                .doc(user[
+                                                                    'userUID'])
+                                                                .get();
+                                                        var usertoken = userDoc
+                                                            .data()?['token'];
+                                                        int notificationId1 =
+                                                            DateTime.now()
+                                                                .millisecondsSinceEpoch; // Unique ID based on timestamp
+                                                        int notificationId2 =
+                                                            notificationId1 + 1;
+                                                        sendNotificationService
+                                                            .sendNotificationUsingApi(
+                                                                body:
+                                                                    'Your work has been successfully completed by ${currentUserData?['First_name']} ${currentUserData?['Last_name']}',
+                                                                data: {
+                                                                  "screen":
+                                                                      "ClientNotificationPage",
+                                                                  "notificationId":
+                                                                      notificationId2
+                                                                          .toString(), // Include notification ID in the data if needed
+                                                                },
+                                                                title:
+                                                                    "Staff Status",
+                                                                token:
+                                                                    usertoken);
+                                                        ScaffoldMessenger.of(
+                                                                context)
+                                                            .showSnackBar(
+                                                          SnackBar(
+                                                              content: Text(
+                                                                  "OTP Verified!")),
+                                                        );
+                                                      } else {
+                                                        // OTP is incorrect, show error message
+                                                        ScaffoldMessenger.of(
+                                                                context)
+                                                            .showSnackBar(
+                                                          SnackBar(
+                                                              content: Text(
+                                                                  "Invalid OTP!")),
+                                                        );
+                                                      }
                                                     }
-                                                  }
-                                                },
-                                                decoration: InputDecoration(
-                                                    hintText: "OTP", // Placeholder text
-                                                    border: OutlineInputBorder(
-                                                      borderRadius: BorderRadius.circular(15),
-                                                    ),
-                                                    contentPadding: EdgeInsets.fromLTRB(20, 16, 16, 16)// Adds border around the text field
+                                                  },
+                                                  decoration: InputDecoration(
+                                                      hintText:
+                                                          "OTP", // Placeholder text
+                                                      border:
+                                                          OutlineInputBorder(
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(15),
+                                                      ),
+                                                      contentPadding:
+                                                          EdgeInsets.fromLTRB(
+                                                              20,
+                                                              16,
+                                                              16,
+                                                              16) // Adds border around the text field
+                                                      ),
                                                 ),
                                               ),
-                                            ),
-                                          )
+                                            )
                                           : Container(),
                                     ],
                                   ),
