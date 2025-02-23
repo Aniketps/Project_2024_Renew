@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:intl/intl.dart';
 
 class ContactUs extends StatefulWidget {
   @override
@@ -55,6 +56,8 @@ class _ContactUs extends State<ContactUs> {
     String email = _emailController.text;
     String description = _descriptionController.text;
     String details = _detailsController.text;
+    String dateAndTime =
+        DateFormat("dd/MM/yyyy, hh:mm a").format(DateTime.now());
 
     if (fullName.isNotEmpty &&
         email.isNotEmpty &&
@@ -66,6 +69,7 @@ class _ContactUs extends State<ContactUs> {
         "Query": details,
         "Title": description,
         "Status": false,
+        "DateTime": dateAndTime,
       });
 
       // Clear the fields after sending

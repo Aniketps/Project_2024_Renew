@@ -1159,7 +1159,7 @@ class _StaffPage extends State<StaffPage> {
                         children: [
                           Container(
                               height: screenHeight * 0.5,
-                              width: screenWidth * 0.85,
+                              width: screenWidth * 0.88,
                               decoration: BoxDecoration(
                                   color: Colors.white,
                                   borderRadius: BorderRadius.circular(20),
