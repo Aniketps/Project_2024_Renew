@@ -13,6 +13,8 @@ import 'package:fluttertoast/fluttertoast.dart';
 import '../StaffNotificationPage.dart';
 
 class NotificationService {
+  static FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+  FlutterLocalNotificationsPlugin();
   FirebaseMessaging messaging = FirebaseMessaging.instance;
   final FlutterLocalNotificationsPlugin _flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
@@ -100,6 +102,62 @@ class NotificationService {
   }
 
   Future<void> showNotification(RemoteMessage message) async {
+    if(message.notification!.title.toString() == "Hiring"){
+      showHireNotification(message);
+    }
+    else {
+      AndroidNotificationChannel channel = AndroidNotificationChannel(
+          message.notification!.android!.channelId.toString(),
+          message.notification!.android!.channelId.toString(),
+          importance: Importance.max,
+          showBadge: true,
+          playSound: true);
+      AndroidNotificationDetails androidNotificationDetails =
+      AndroidNotificationDetails(
+        channel.id.toString(),
+        channel.name.toString(),
+        channelDescription: "Channel Description",
+        importance: Importance.high,
+        priority: Priority.high,
+        largeIcon: const DrawableResourceAndroidBitmap('@mipmap/ic_launcher'),
+        sound: channel.sound,
+        playSound: true,
+        actions: [
+          AndroidNotificationAction('open_action', 'Open App'),
+          AndroidNotificationAction(
+              'dismiss_action', 'Dismiss', showsUserInterface: false),
+        ],
+        styleInformation: BigTextStyleInformation(
+          message.notification!.body ?? '', // Use body as the big text
+          contentTitle: message.notification!.title, // Set title
+        ),
+        // Add a custom icon
+        icon: '@mipmap/ic_launcher',
+      );
+
+      NotificationDetails notificationDetails =
+      NotificationDetails(android: androidNotificationDetails);
+
+      Future.delayed(Duration.zero, () {
+        // Generate a unique notification ID based on the current timestamp in seconds
+        int uniqueId = DateTime
+            .now()
+            .millisecondsSinceEpoch ~/ 1000;
+
+        // Show the notification with a unique ID
+        _flutterLocalNotificationsPlugin.show(
+            uniqueId, // Unique notification ID
+            message.notification!.title.toString(), // Notification title
+            message.notification!.body.toString(), // Notification body
+            notificationDetails, // Notification details (icon, sound, etc.)
+            payload: "my_data" // Additional payload data
+        );
+      });
+    }
+  }
+
+  Future<void> showHireNotification(RemoteMessage message) async {
+    print("Hire Called");
     AndroidNotificationChannel channel = AndroidNotificationChannel(
         message.notification!.android!.channelId.toString(),
         message.notification!.android!.channelId.toString(),
@@ -107,24 +165,30 @@ class NotificationService {
         showBadge: true,
         playSound: true);
     AndroidNotificationDetails androidNotificationDetails =
-        AndroidNotificationDetails(
+    AndroidNotificationDetails(
       channel.id.toString(),
       channel.name.toString(),
       channelDescription: "Channel Description",
-      importance: Importance.high,
+      importance: Importance.max,
       priority: Priority.high,
-      sound: channel.sound, // Add custom sound here
-      playSound: true,
+      largeIcon: const DrawableResourceAndroidBitmap('@mipmap/ic_launcher'),
+      sound:
+      RawResourceAndroidNotificationSound('sound.wav'.split('.').first),
+      additionalFlags: Int32List.fromList([0, 500, 500, 500]),
+      actions: [
+        AndroidNotificationAction('open_action', 'Open App'),
+        AndroidNotificationAction('dismiss_action', 'Dismiss', showsUserInterface: false),
+      ],
       styleInformation: BigTextStyleInformation(
         message.notification!.body ?? '', // Use body as the big text
         contentTitle: message.notification!.title, // Set title
       ),
       // Add a custom icon
-      icon: '@mipmap/ic_launcher', // Change this to your custom icon
+      icon: '@mipmap/ic_launcher',
     );
 
     NotificationDetails notificationDetails =
-        NotificationDetails(android: androidNotificationDetails);
+    NotificationDetails(android: androidNotificationDetails);
 
     Future.delayed(Duration.zero, () {
       // Generate a unique notification ID based on the current timestamp in seconds
@@ -137,9 +201,10 @@ class NotificationService {
           message.notification!.body.toString(), // Notification body
           notificationDetails, // Notification details (icon, sound, etc.)
           payload: "my_data" // Additional payload data
-          );
+      );
     });
   }
+
 
   Future androidForgroundMessage() async {
     await FirebaseMessaging.instance

@@ -1497,7 +1497,8 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                                                             "screen":
                                                                                 "StaffNotificationPage",
                                                                             "notificationId":
-                                                                                notificationId2.toString(), // Include notification ID in the data if needed
+                                                                                notificationId2.toString(),
+                                                                            "hire" : "true"// Include notification ID in the data if needed
                                                                           },
                                                                           title:
                                                                               "Hiring",
@@ -1636,7 +1637,6 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                   EnterAddress
                                       ? Center(
                                           child: Container(
-                                            height: screenHeight * 0.5,
                                             width: screenWidth * 0.8,
                                             decoration: BoxDecoration(
                                               color: Colors.white,

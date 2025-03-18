@@ -45,7 +45,7 @@ flutter:
   assets:
     - assets/images/
     - assets/Rating/
-  #   - images/a_dot_ham.jpeg
+    - assets/sound.wav
   # fonts:
   #   - family: Schyler
   #     fonts:
