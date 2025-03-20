@@ -6,11 +6,15 @@ import 'package:carehub/EContact.dart';
 import 'package:carehub/EPersonal.dart';
 import 'package:carehub/EServiceRate.dart';
 import 'package:carehub/Rating.dart';
+import 'package:carehub/services/NotificationService.dart';
+import 'package:carehub/services/sendNotificationService.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
@@ -1246,6 +1250,23 @@ class _StaffView extends State<StaffView> {
                                                               "You are now live")),
                                                     );
 
+                                                    // Notification to staff that he/she is online
+                                                    String? currentToken = await FirebaseMessaging.instance.getToken();
+                                                    sendNotificationService
+                                                        .sendNotificationUsingApi(
+                                                        body:
+                                                        'Send Successful',
+                                                        data: {
+                                                          "screen":
+                                                          "Empty",
+                                                          "notificationId":
+                                                          "2",
+                                                        },
+                                                        title:
+                                                        "Status",
+                                                        token:
+                                                        currentToken);
+
                                                     // Refresh and navigate to StaffProfileHome
                                                     Navigator.pushReplacement(
                                                       context,
@@ -1337,6 +1358,7 @@ class _StaffView extends State<StaffView> {
                                                                 Skill: Skill,
                                                               )),
                                                     );
+                                                    await FlutterLocalNotificationsPlugin().cancel(2);
                                                   }
                                                 } catch (e) {
                                                   print(

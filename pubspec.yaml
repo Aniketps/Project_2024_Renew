@@ -35,6 +35,8 @@ dependencies:
   google_fonts: ^6.2.1
   photo_view: ^0.15.0
   video_player: ^2.9.2
+  flutter_foreground_task: ^8.17.0
+
 
 dev_dependencies:
   flutter_test:
@@ -46,6 +48,7 @@ flutter:
     - assets/images/
     - assets/Rating/
     - assets/sound.wav
+    - assets/Professions/
   # fonts:
   #   - family: Schyler
   #     fonts:
