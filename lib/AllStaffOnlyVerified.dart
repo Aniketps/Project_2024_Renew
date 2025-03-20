@@ -11,6 +11,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:video_player/video_player.dart';
 
+import 'LoaderSupport.dart';
+
 class Allstaffonlyverified extends StatefulWidget {
   final loggedAdmin;
   Allstaffonlyverified({required this.loggedAdmin});
@@ -196,7 +198,7 @@ class _Allstaffonlyverified extends State<Allstaffonlyverified> {
       future: fieldMethods[fieldNeed]!(SelectedUID, SelectedProf),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return CircularProgressIndicator();
+          return LoaderSupport.loadingAnimation.widget;
         } else if (snapshot.hasError) {
           return Text("Error: ${snapshot.error}");
         } else {

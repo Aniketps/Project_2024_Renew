@@ -11,7 +11,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+
+import 'LoaderSupport.dart';
 
 class BookingScheduleAndPayment extends StatefulWidget {
   var StaffData;
@@ -275,16 +278,20 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
                                     Padding(
-                                      padding: const EdgeInsets.all(10.0),
-                                      child: CircularProgressIndicator(),
+                                        padding: const EdgeInsets.only(top : 10.0),
+                                        child: Center(
+                                          child: LoaderSupport.loadingAnimation.widget,
+                                        )
                                     ),
                                     Padding(
                                       padding: const EdgeInsets.all(10.0),
                                       child: Text(
                                         LoadingText,
-                                        style: TextStyle(
-                                            color: Colors.green,
-                                            fontWeight: FontWeight.bold),
+                                        style: GoogleFonts.audiowide(
+                                          color: Color(0xFF00FFFF),  // Neon Blue
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 18,
+                                        ),
                                       ),
                                     )
                                   ],

@@ -5,6 +5,7 @@ import 'package:carehub/ClientNotificationPage.dart';
 import 'package:carehub/EContact.dart';
 import 'package:carehub/EPersonal.dart';
 import 'package:carehub/EServiceRate.dart';
+import 'package:carehub/LoaderSupport.dart';
 import 'package:carehub/Rating.dart';
 import 'package:carehub/services/NotificationService.dart';
 import 'package:carehub/services/sendNotificationService.dart';
@@ -129,9 +130,12 @@ class _StaffProfilePage extends State<StaffProfilePage> {
                       scrollDirection: Axis.vertical,
                       child: Column(
                         children: [
-                          Center(
-                              child:
-                                  CircularProgressIndicator()), // Loading indicator
+                          Padding(
+                            padding: const EdgeInsets.only(top: 250.0),
+                            child: Center(
+                                child:
+                                LoaderSupport.loadingAnimation.widget),
+                          ), // Loading indicator
                         ],
                       ),
                     ),
@@ -253,9 +257,12 @@ class _UserView extends State<UserView> {
     return Stack(
       children: [
         isLoading
-            ? Center(
-                child: CircularProgressIndicator(),
-              )
+            ? Padding(
+            padding: const EdgeInsets.only(top : 250.0),
+            child: Center(
+              child: LoaderSupport.loadingAnimation.widget,
+            )
+        )
             : SingleChildScrollView(
                 scrollDirection: Axis.vertical,
                 child: Column(
@@ -987,7 +994,7 @@ class _StaffView extends State<StaffView> {
     return Stack(
       children: [
         (isLoading && _aadharUrl != null)
-            ? const Center(child: CircularProgressIndicator())
+            ? Center(child: LoaderSupport.loadingAnimation.widget)
             : SingleChildScrollView(
                 scrollDirection: Axis.vertical,
                 child: Column(
@@ -1877,119 +1884,3 @@ class _StaffView extends State<StaffView> {
     );
   }
 }
-
-// class ActualUser extends StatefulWidget {
-//   @override
-//   State<StatefulWidget> createState() => _ActualUser();
-// }
-//
-// class _ActualUser extends State<ActualUser> {
-//   var userData;
-//   bool isLoading = true; // Add a loading state
-//
-//   @override
-//   void initState() {
-//     super.initState();
-//     _fetchUserData();
-//   }
-//
-//   Future<void> _fetchUserData() async {
-//     User? user = FirebaseAuth.instance.currentUser;
-//     if (user != null) {
-//       DocumentSnapshot documentSnapshot = await FirebaseFirestore.instance
-//           .collection('user')
-//           .doc(user.uid)
-//           .get();
-//       setState(() {
-//         userData = documentSnapshot.data();
-//         isLoading = false; // Data fetching is complete
-//       });
-//     }
-//   }
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     final mediaquery = MediaQuery.of(context);
-//     final screenWidth = mediaquery.size.width;
-//     final screenHeight = mediaquery.size.height;
-//
-//     return Scaffold(
-//       appBar: AppBar(
-//         title: Text("Profile"),
-//         backgroundColor: Colors.green,
-//       ),
-//       body: isLoading || userData == null
-//           ? Center(
-//               child:
-//                   CircularProgressIndicator()) // Show loading until data is fetched
-//           : Center(
-//               child: Container(
-//                 height: screenHeight * 0.85,
-//                 width: screenWidth * 0.95,
-//                 decoration: BoxDecoration(
-//                     color: Colors.white,
-//                     borderRadius: BorderRadius.circular(15),
-//                     boxShadow: [
-//                       BoxShadow(
-//                           color: Colors.black26, spreadRadius: 1, blurRadius: 1)
-//                     ]),
-//                 child: Column(
-//                   children: [
-//                     // Profile photo
-//                     Row(
-//                       mainAxisAlignment: MainAxisAlignment.center,
-//                       children: [
-//                         Padding(
-//                           padding: const EdgeInsets.all(10.0),
-//                           child: Container(
-//                             height: 80,
-//                             width: 80,
-//                             decoration: BoxDecoration(
-//                                 color: Colors.white,
-//                                 borderRadius: BorderRadius.circular(80),
-//                                 boxShadow: [
-//                                   BoxShadow(
-//                                       color: Colors.black26,
-//                                       spreadRadius: 1,
-//                                       blurRadius: 1)
-//                                 ]),
-//                           ),
-//                         )
-//                       ],
-//                     ),
-//
-//                     // Full name
-//                     Row(
-//                       mainAxisAlignment: MainAxisAlignment.center,
-//                       children: [
-//                         Text(
-//                           "${userData['First_name']} ${userData['Last_name']}",
-//                           style: TextStyle(
-//                               fontWeight: FontWeight.bold, fontSize: 16),
-//                         ),
-//                       ],
-//                     ),
-//
-//                     // Contact and notificatons
-//                     Row(
-//                       mainAxisAlignment: MainAxisAlignment.center,
-//                       children: [
-//                         InkWell(
-//                             onTap: () {
-//                               Navigator.push(
-//                                   context,
-//                                   MaterialPageRoute(
-//                                     builder: (context) =>
-//                                         ClientNotificationPage(),
-//                                   ));
-//                             },
-//                             child: Icon(Icons.notifications))
-//                       ],
-//                     ),
-//                   ],
-//                 ),
-//               ),
-//             ),
-//     );
-//   }
-// }

@@ -8,6 +8,8 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:intl/intl.dart';
 
+import 'LoaderSupport.dart';
+
 class Feedbacks extends StatefulWidget {
   @override
   State<StatefulWidget> createState() => _Feedbacks();
@@ -143,7 +145,7 @@ class _Feedbacks extends State<Feedbacks> {
                                               ConnectionState.waiting) {
                                             return Center(
                                                 child:
-                                                    CircularProgressIndicator());
+                                                LoaderSupport.loadingAnimation.widget);
                                           }
 
                                           // No data available

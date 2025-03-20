@@ -10,6 +10,7 @@ import 'package:geolocator/geolocator.dart';
 import 'ContactUs.dart';
 import 'Deals.dart';
 import 'Feedback.dart';
+import 'LoaderSupport.dart';
 import 'MainMap.dart';
 import 'TC.dart';
 import 'client.dart';
@@ -26,34 +27,30 @@ class _StaffPage extends State<StaffPage> {
   @override
   void initState() {
     super.initState();
-    void _liveLocation() {
-      LocationSettings locationSettings = LocationSettings(
-        accuracy: LocationAccuracy.high,
-        distanceFilter: 100,
-      );
-
-      Geolocator.getPositionStream(locationSettings: locationSettings).listen(
-        (Position position) {
-          setState(() async {
-            String lat = position.latitude.toString();
-            String long = position.longitude.toString();
-            User? user = FirebaseAuth.instance.currentUser;
-
-            await FirebaseFirestore.instance
-                .collection('user')
-                .doc(user?.uid)
-                .update({
-              'lat': lat,
-              'long': long,
-            });
-          });
-        },
-      );
-    }
-
-    ;
     _liveLocation();
     SearchStaff();
+  }
+  void _liveLocation() {
+    LocationSettings locationSettings = LocationSettings(
+      accuracy: LocationAccuracy.high,
+      distanceFilter: 100,
+    );
+
+    Geolocator.getPositionStream(locationSettings: locationSettings).listen(
+          (Position position) async {
+        String lat = position.latitude.toString();
+        String long = position.longitude.toString();
+        User? user = FirebaseAuth.instance.currentUser;
+
+        await FirebaseFirestore.instance
+            .collection('user')
+            .doc(user?.uid)
+            .update({
+          'lat': lat,
+          'long': long,
+        });
+      },
+    );
   }
 
   String Skill;
@@ -468,576 +465,203 @@ class _StaffPage extends State<StaffPage> {
                               final chefs =
                                   snapshot.data?.docs.reversed.toList();
                               for (var chef in chefs!) {
-                                if (isAnyTime) {
-                                  if (chef["Verified"] == "verified" &&
-                                      !chef["Status"]) {
-                                    final chefView = Row(
-                                      children: [
-                                        Padding(
-                                          padding: const EdgeInsets.all(8.0),
-                                          child: InkWell(
-                                            onTap: () {
-                                              Navigator.push(
-                                                  context,
-                                                  MaterialPageRoute(
-                                                    builder: (context) =>
-                                                        StaffProfilePage(
-                                                            StaffID: chef.id,
-                                                            Skill: Skill),
-                                                  ));
-                                            },
+                                Row rowCopy = Row(
+                                  children: [
+                                    Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: InkWell(
+                                        onTap: () {
+                                          Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (context) =>
+                                                    StaffProfilePage(
+                                                        StaffID: chef.id,
+                                                        Skill: Skill),
+                                              ));
+                                        },
+                                        child: Container(
+                                          height: screenHeight * 0.15,
+                                          width: screenWidth * 0.95,
+                                          decoration: BoxDecoration(
+                                              color: Colors.white,
+                                              borderRadius:
+                                              BorderRadius.circular(20),
+                                              boxShadow: [
+                                                BoxShadow(
+                                                    color: Colors.black26,
+                                                    blurRadius: 1,
+                                                    spreadRadius: 1)
+                                              ]),
+                                          child: Padding(
+                                            padding: const EdgeInsets.only(
+                                                top: 10),
                                             child: Container(
-                                              height: screenHeight * 0.2,
-                                              width: screenWidth * 0.95,
-                                              decoration: BoxDecoration(
-                                                  color: Colors.white,
-                                                  borderRadius:
-                                                      BorderRadius.circular(20),
-                                                  boxShadow: [
-                                                    BoxShadow(
-                                                        color: Colors.black26,
-                                                        blurRadius: 1,
-                                                        spreadRadius: 1)
-                                                  ]),
-                                              child: Padding(
-                                                padding: const EdgeInsets.only(
-                                                    top: 20),
-                                                child: Container(
-                                                  child: Row(
-                                                    crossAxisAlignment:
+                                              child: Row(
+                                                crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                                children: [
+                                                  Padding(
+                                                    padding:
+                                                    const EdgeInsets.all(
+                                                        10.0),
+                                                    child: Container(
+                                                      height: 75,
+                                                      width: 75,
+                                                      decoration:
+                                                      BoxDecoration(
+                                                        borderRadius:
+                                                        BorderRadius
+                                                            .circular(50),
+                                                        color: Colors.orange,
+                                                        image:
+                                                        DecorationImage(
+                                                          image: NetworkImage(
+                                                              chef[
+                                                              'Profile_Pic']),
+                                                          fit: BoxFit
+                                                              .cover, // Adjust the fit if necessary
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  Padding(
+                                                    padding:
+                                                    const EdgeInsets.only(
+                                                        top: 10,
+                                                        right: 5,
+                                                        bottom: 40),
+                                                    child: Container(
+                                                      child: Column(
+                                                        crossAxisAlignment:
                                                         CrossAxisAlignment
                                                             .start,
-                                                    children: [
-                                                      Padding(
-                                                        padding:
-                                                            const EdgeInsets
-                                                                .all(10.0),
-                                                        child: Container(
-                                                          height: 75,
-                                                          width: 75,
-                                                          decoration:
-                                                              BoxDecoration(
-                                                            borderRadius:
-                                                                BorderRadius
-                                                                    .circular(
-                                                                        50),
-                                                            color:
-                                                                Colors.orange,
-                                                            image:
-                                                                DecorationImage(
-                                                              image: NetworkImage(
-                                                                  chef[
-                                                                      'Profile_Pic']),
-                                                              fit: BoxFit
-                                                                  .cover, // Adjust the fit if necessary
-                                                            ),
+                                                        children: [
+                                                          Text(
+                                                            "${chef['First_name']} ${chef['Last_name']}",
+                                                            style: TextStyle(
+                                                                fontWeight:
+                                                                FontWeight
+                                                                    .bold,
+                                                                fontSize: 12),
                                                           ),
-                                                        ),
-                                                      ),
-                                                      Padding(
-                                                        padding:
-                                                            const EdgeInsets
-                                                                .only(
-                                                                top: 10,
-                                                                right: 5,
-                                                                bottom: 40),
-                                                        child: Container(
-                                                          child: Column(
-                                                            crossAxisAlignment:
-                                                                CrossAxisAlignment
-                                                                    .start,
+                                                          Row(
+                                                            mainAxisAlignment:
+                                                            MainAxisAlignment
+                                                                .start,
                                                             children: [
                                                               Text(
-                                                                "${chef['First_name']} ${chef['Last_name']}",
-                                                                style: TextStyle(
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .bold,
-                                                                    fontSize:
-                                                                        12),
-                                                              ),
-                                                              Row(
-                                                                mainAxisAlignment:
-                                                                    MainAxisAlignment
-                                                                        .start,
-                                                                children: [
-                                                                  Text(
-                                                                      chef["Status"]
-                                                                          ? "Available"
-                                                                          : "Busy",
-                                                                      style: TextStyle(
-                                                                          color:
-                                                                              Colors.green)),
-                                                                  Text(" | "),
-                                                                  Text(
-                                                                      "${chef['Rating']}",
-                                                                      style: TextStyle(
-                                                                          color:
-                                                                              Colors.green))
-                                                                ],
-                                                              )
+                                                                  chef["Status"]
+                                                                      ? "Available"
+                                                                      : "Busy",
+                                                                  style: TextStyle(
+                                                                      color: Colors
+                                                                          .green)),
+                                                              Text(" | "),
+                                                              Text(
+                                                                  "${chef['Rating']}",
+                                                                  style: TextStyle(
+                                                                      color: Colors
+                                                                          .green))
                                                             ],
+                                                          )
+                                                        ],
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  Container(
+                                                    width: screenWidth * 0.3,
+                                                    height:
+                                                    screenHeight * 0.2,
+                                                    child: Column(
+                                                      crossAxisAlignment:
+                                                      CrossAxisAlignment
+                                                          .center,
+                                                      children: [
+                                                        Padding(
+                                                          padding:
+                                                          const EdgeInsets
+                                                              .only(
+                                                              bottom: 10),
+                                                          child: Text(
+                                                            chef['City'],
+                                                            style: TextStyle(
+                                                                fontSize: 14,
+                                                                fontWeight:
+                                                                FontWeight
+                                                                    .bold),
                                                           ),
                                                         ),
-                                                      ),
-                                                      Container(
-                                                        width:
-                                                            screenWidth * 0.3,
-                                                        height:
-                                                            screenHeight * 0.2,
-                                                        child: Column(
-                                                          crossAxisAlignment:
-                                                              CrossAxisAlignment
-                                                                  .center,
-                                                          children: [
-                                                            Padding(
-                                                              padding:
-                                                                  const EdgeInsets
-                                                                      .only(
-                                                                      bottom:
-                                                                          10),
-                                                              child: Text(
-                                                                chef['City'],
-                                                                style: TextStyle(
-                                                                    fontSize:
-                                                                        14,
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .bold),
-                                                              ),
-                                                            ),
-                                                            Container(
-                                                              height: 40,
-                                                              width: 120,
-                                                              decoration: BoxDecoration(
-                                                                  borderRadius:
-                                                                      BorderRadius
-                                                                          .circular(15),
-                                                                  color: Colors.white,
-                                                                  boxShadow: [
-                                                                    BoxShadow(
-                                                                        color: Colors
-                                                                            .black26,
-                                                                        spreadRadius:
-                                                                            1,
-                                                                        blurRadius:
-                                                                            1)
-                                                                  ]),
-                                                              child: Center(
-                                                                  child:
-                                                                      Padding(
+                                                        Container(
+                                                          height: 40,
+                                                          width: 120,
+                                                          decoration: BoxDecoration(
+                                                              borderRadius:
+                                                              BorderRadius
+                                                                  .circular(
+                                                                  15),
+                                                              color: Colors.white,
+                                                              boxShadow: [
+                                                                BoxShadow(
+                                                                    color: Colors
+                                                                        .black26,
+                                                                    spreadRadius:
+                                                                    1,
+                                                                    blurRadius:
+                                                                    1)
+                                                              ]),
+                                                          child: Center(
+                                                              child: Padding(
                                                                 padding:
-                                                                    const EdgeInsets
-                                                                        .all(
-                                                                        3.0),
+                                                                const EdgeInsets
+                                                                    .all(3.0),
                                                                 child: Text(
                                                                   "${Skill[0].toUpperCase() + Skill.substring(1)}",
                                                                   overflow:
-                                                                      TextOverflow
-                                                                          .ellipsis,
+                                                                  TextOverflow
+                                                                      .ellipsis,
                                                                   maxLines: 1,
                                                                   style: TextStyle(
                                                                       fontWeight:
-                                                                          FontWeight
-                                                                              .bold,
+                                                                      FontWeight
+                                                                          .bold,
                                                                       color: Colors
                                                                           .green,
                                                                       fontSize:
-                                                                          15),
+                                                                      15),
                                                                 ),
                                                               )),
-                                                            )
-                                                          ],
-                                                        ),
-                                                      ),
-                                                    ],
+                                                        )
+                                                      ],
+                                                    ),
                                                   ),
-                                                ),
+                                                ],
                                               ),
                                             ),
                                           ),
-                                        )
-                                      ],
-                                    );
+                                        ),
+                                      ),
+                                    )
+                                  ],
+                                );
+                                if (isAnyTime) {
+                                  if (chef["Verified"] == "verified" &&
+                                      !chef["Status"]) {
+                                    final chefView = rowCopy;
                                     chefViews.add(chefView);
                                   }
                                 }
                                 if (isImmediately) {
                                   if (chef["Verified"] == "verified" &&
                                       chef["Status"]) {
-                                    final chefView = Row(
-                                      children: [
-                                        Padding(
-                                          padding: const EdgeInsets.all(8.0),
-                                          child: InkWell(
-                                            onTap: () {
-                                              Navigator.push(
-                                                  context,
-                                                  MaterialPageRoute(
-                                                    builder: (context) =>
-                                                        StaffProfilePage(
-                                                            StaffID: chef.id,
-                                                            Skill: Skill),
-                                                  ));
-                                            },
-                                            child: Container(
-                                              height: screenHeight * 0.2,
-                                              width: screenWidth * 0.95,
-                                              decoration: BoxDecoration(
-                                                  color: Colors.white,
-                                                  borderRadius:
-                                                      BorderRadius.circular(20),
-                                                  boxShadow: [
-                                                    BoxShadow(
-                                                        color: Colors.black26,
-                                                        blurRadius: 1,
-                                                        spreadRadius: 1)
-                                                  ]),
-                                              child: Padding(
-                                                padding: const EdgeInsets.only(
-                                                    top: 20),
-                                                child: Container(
-                                                  child: Row(
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment
-                                                            .start,
-                                                    children: [
-                                                      Padding(
-                                                        padding:
-                                                            const EdgeInsets
-                                                                .all(10.0),
-                                                        child: Container(
-                                                          height: 75,
-                                                          width: 75,
-                                                          decoration:
-                                                              BoxDecoration(
-                                                            borderRadius:
-                                                                BorderRadius
-                                                                    .circular(
-                                                                        50),
-                                                            color:
-                                                                Colors.orange,
-                                                            image:
-                                                                DecorationImage(
-                                                              image: NetworkImage(
-                                                                  chef[
-                                                                      'Profile_Pic']),
-                                                              fit: BoxFit
-                                                                  .cover, // Adjust the fit if necessary
-                                                            ),
-                                                          ),
-                                                        ),
-                                                      ),
-                                                      Padding(
-                                                        padding:
-                                                            const EdgeInsets
-                                                                .only(
-                                                                top: 10,
-                                                                right: 5,
-                                                                bottom: 40),
-                                                        child: Container(
-                                                          child: Column(
-                                                            crossAxisAlignment:
-                                                                CrossAxisAlignment
-                                                                    .start,
-                                                            children: [
-                                                              Text(
-                                                                "${chef['First_name']} ${chef['Last_name']}",
-                                                                style: TextStyle(
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .bold,
-                                                                    fontSize:
-                                                                        12),
-                                                              ),
-                                                              Row(
-                                                                mainAxisAlignment:
-                                                                    MainAxisAlignment
-                                                                        .start,
-                                                                children: [
-                                                                  Text(
-                                                                      chef["Status"]
-                                                                          ? "Available"
-                                                                          : "Busy",
-                                                                      style: TextStyle(
-                                                                          color:
-                                                                              Colors.green)),
-                                                                  Text(" | "),
-                                                                  Text(
-                                                                      "${chef['Rating']}",
-                                                                      style: TextStyle(
-                                                                          color:
-                                                                              Colors.green))
-                                                                ],
-                                                              )
-                                                            ],
-                                                          ),
-                                                        ),
-                                                      ),
-                                                      Container(
-                                                        width:
-                                                            screenWidth * 0.3,
-                                                        height:
-                                                            screenHeight * 0.2,
-                                                        child: Column(
-                                                          crossAxisAlignment:
-                                                              CrossAxisAlignment
-                                                                  .center,
-                                                          children: [
-                                                            Padding(
-                                                              padding:
-                                                                  const EdgeInsets
-                                                                      .only(
-                                                                      bottom:
-                                                                          10),
-                                                              child: Text(
-                                                                chef['City'],
-                                                                style: TextStyle(
-                                                                    fontSize:
-                                                                        14,
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .bold),
-                                                              ),
-                                                            ),
-                                                            Container(
-                                                              height: 40,
-                                                              width: 120,
-                                                              decoration: BoxDecoration(
-                                                                  borderRadius:
-                                                                      BorderRadius
-                                                                          .circular(15),
-                                                                  color: Colors.white,
-                                                                  boxShadow: [
-                                                                    BoxShadow(
-                                                                        color: Colors
-                                                                            .black26,
-                                                                        spreadRadius:
-                                                                            1,
-                                                                        blurRadius:
-                                                                            1)
-                                                                  ]),
-                                                              child: Center(
-                                                                  child:
-                                                                      Padding(
-                                                                padding:
-                                                                    const EdgeInsets
-                                                                        .all(
-                                                                        3.0),
-                                                                child: Text(
-                                                                  "${Skill[0].toUpperCase() + Skill.substring(1)}",
-                                                                  overflow:
-                                                                      TextOverflow
-                                                                          .ellipsis,
-                                                                  maxLines: 1,
-                                                                  style: TextStyle(
-                                                                      fontWeight:
-                                                                          FontWeight
-                                                                              .bold,
-                                                                      color: Colors
-                                                                          .green,
-                                                                      fontSize:
-                                                                          15),
-                                                                ),
-                                                              )),
-                                                            )
-                                                          ],
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                        )
-                                      ],
-                                    );
+                                    final chefView = rowCopy;
                                     chefViews.add(chefView);
                                   }
                                 }
                                 if (chef["Verified"] == "verified" &&
                                     !isImmediately &&
                                     !isAnyTime) {
-                                  final chefView = Row(
-                                    children: [
-                                      Padding(
-                                        padding: const EdgeInsets.all(8.0),
-                                        child: InkWell(
-                                          onTap: () {
-                                            Navigator.push(
-                                                context,
-                                                MaterialPageRoute(
-                                                  builder: (context) =>
-                                                      StaffProfilePage(
-                                                          StaffID: chef.id,
-                                                          Skill: Skill),
-                                                ));
-                                          },
-                                          child: Container(
-                                            height: screenHeight * 0.2,
-                                            width: screenWidth * 0.95,
-                                            decoration: BoxDecoration(
-                                                color: Colors.white,
-                                                borderRadius:
-                                                    BorderRadius.circular(20),
-                                                boxShadow: [
-                                                  BoxShadow(
-                                                      color: Colors.black26,
-                                                      blurRadius: 1,
-                                                      spreadRadius: 1)
-                                                ]),
-                                            child: Padding(
-                                              padding: const EdgeInsets.only(
-                                                  top: 20),
-                                              child: Container(
-                                                child: Row(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  children: [
-                                                    Padding(
-                                                      padding:
-                                                          const EdgeInsets.all(
-                                                              10.0),
-                                                      child: Container(
-                                                        height: 75,
-                                                        width: 75,
-                                                        decoration:
-                                                            BoxDecoration(
-                                                          borderRadius:
-                                                              BorderRadius
-                                                                  .circular(50),
-                                                          color: Colors.orange,
-                                                          image:
-                                                              DecorationImage(
-                                                            image: NetworkImage(
-                                                                chef[
-                                                                    'Profile_Pic']),
-                                                            fit: BoxFit
-                                                                .cover, // Adjust the fit if necessary
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    ),
-                                                    Padding(
-                                                      padding:
-                                                          const EdgeInsets.only(
-                                                              top: 10,
-                                                              right: 5,
-                                                              bottom: 40),
-                                                      child: Container(
-                                                        child: Column(
-                                                          crossAxisAlignment:
-                                                              CrossAxisAlignment
-                                                                  .start,
-                                                          children: [
-                                                            Text(
-                                                              "${chef['First_name']} ${chef['Last_name']}",
-                                                              style: TextStyle(
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .bold,
-                                                                  fontSize: 12),
-                                                            ),
-                                                            Row(
-                                                              mainAxisAlignment:
-                                                                  MainAxisAlignment
-                                                                      .start,
-                                                              children: [
-                                                                Text(
-                                                                    chef["Status"]
-                                                                        ? "Available"
-                                                                        : "Busy",
-                                                                    style: TextStyle(
-                                                                        color: Colors
-                                                                            .green)),
-                                                                Text(" | "),
-                                                                Text(
-                                                                    "${chef['Rating']}",
-                                                                    style: TextStyle(
-                                                                        color: Colors
-                                                                            .green))
-                                                              ],
-                                                            )
-                                                          ],
-                                                        ),
-                                                      ),
-                                                    ),
-                                                    Container(
-                                                      width: screenWidth * 0.3,
-                                                      height:
-                                                          screenHeight * 0.2,
-                                                      child: Column(
-                                                        crossAxisAlignment:
-                                                            CrossAxisAlignment
-                                                                .center,
-                                                        children: [
-                                                          Padding(
-                                                            padding:
-                                                                const EdgeInsets
-                                                                    .only(
-                                                                    bottom: 10),
-                                                            child: Text(
-                                                              chef['City'],
-                                                              style: TextStyle(
-                                                                  fontSize: 14,
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .bold),
-                                                            ),
-                                                          ),
-                                                          Container(
-                                                            height: 40,
-                                                            width: 120,
-                                                            decoration: BoxDecoration(
-                                                                borderRadius:
-                                                                    BorderRadius
-                                                                        .circular(
-                                                                            15),
-                                                                color: Colors.white,
-                                                                boxShadow: [
-                                                                  BoxShadow(
-                                                                      color: Colors
-                                                                          .black26,
-                                                                      spreadRadius:
-                                                                          1,
-                                                                      blurRadius:
-                                                                          1)
-                                                                ]),
-                                                            child: Center(
-                                                                child: Padding(
-                                                              padding:
-                                                                  const EdgeInsets
-                                                                      .all(3.0),
-                                                              child: Text(
-                                                                "${Skill[0].toUpperCase() + Skill.substring(1)}",
-                                                                overflow:
-                                                                    TextOverflow
-                                                                        .ellipsis,
-                                                                maxLines: 1,
-                                                                style: TextStyle(
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .bold,
-                                                                    color: Colors
-                                                                        .green,
-                                                                    fontSize:
-                                                                        15),
-                                                              ),
-                                                            )),
-                                                          )
-                                                        ],
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      )
-                                    ],
-                                  );
+                                  final chefView = rowCopy;
                                   chefViews.add(chefView);
                                 }
                               }
@@ -1177,7 +801,7 @@ class _StaffPage extends State<StaffPage> {
                                   if (snapshot.connectionState ==
                                       ConnectionState.waiting) {
                                     return Center(
-                                      child: CircularProgressIndicator(),
+                                      child: LoaderSupport.loadingAnimation.widget,
                                     );
                                   }
 

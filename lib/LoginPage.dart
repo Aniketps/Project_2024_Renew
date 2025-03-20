@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:carehub/LoaderSupport.dart';
 import 'package:carehub/RegisterPage.dart';
 import 'package:carehub/StaffPage.dart';
 import 'package:carehub/StaffProfileHome.dart';
@@ -10,6 +11,18 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+Future<bool> _getUserPageStatus() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  return prefs.getBool("Staff") ?? false;
+}
+Future<bool> _setUserPageStatus(bool value) async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  return prefs.setBool("Staff", value);
+}
 
 class UserData {
   static final UserData _instance = UserData._internal();
@@ -26,13 +39,12 @@ class LoginPage extends StatefulWidget {
   @override
   State<StatefulWidget> createState() => _LoginPage();
 }
-
 class _LoginPage extends State<LoginPage> {
   String lat = '';
   String long = '';
   String locationMessage = "Check current location";
   bool LoaderCheck = false;
-  String LoadingText = 'Getting to you';
+  String LoadingText = 'Connecting to Network...';
 
   late LocationPermission permission;
   List<String> loadingMessages = [
@@ -50,10 +62,8 @@ class _LoginPage extends State<LoginPage> {
   void initState() {
     super.initState();
     timer = Timer.periodic(Duration(seconds: 5), (Timer t) {
-      setState(() {
         LoadingText = loadingMessages[index];
         index = (index + 1) % loadingMessages.length;
-      });
     });
     Getpermission();
     _getCurrentLocation();
@@ -83,14 +93,15 @@ class _LoginPage extends State<LoginPage> {
     }
 
     LoaderCheck = !LoaderCheck;
-    bool staffStatus = UserData().isStaff;
+
+    Future<bool> staffStatus = _getUserPageStatus();
     checkLogin(staffStatus);
   }
 
   Future<void> checkLogin(isStaff) async {
     User? user = await FirebaseAuth.instance.currentUser;
     if (user?.uid != null) {
-      if (isStaff) {
+      if (await _getUserPageStatus()) {
         Navigator.pushReplacement(
             context,
             MaterialPageRoute(
@@ -221,14 +232,17 @@ class _LoginPage extends State<LoginPage> {
                 children: [
                   Padding(
                     padding: const EdgeInsets.all(10.0),
-                    child: CircularProgressIndicator(),
+                    child: LoaderSupport.loadingAnimation.widget,
                   ),
                   Padding(
                     padding: const EdgeInsets.all(10.0),
                     child: Text(
                       LoadingText,
-                      style: TextStyle(
-                          color: Colors.green, fontWeight: FontWeight.bold),
+                      style: GoogleFonts.audiowide(
+                        color: Color(0xFF00FFFF),  // Neon Blue
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                      ),
                     ),
                   )
                 ],
@@ -504,7 +518,7 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
           ? Center(
               child: Padding(
                 padding: EdgeInsets.only(top: screenHeight * 0.35),
-                child: CircularProgressIndicator(),
+                child: LoaderSupport.loadingAnimation.widget,
               ),
             )
           : Container(),
@@ -797,7 +811,7 @@ class _AndroidUserPage extends State<AndroidUserPage> {
           ? Center(
               child: Padding(
                 padding: EdgeInsets.only(top: screenHeight * 0.35),
-                child: CircularProgressIndicator(),
+                child: LoaderSupport.loadingAnimation.widget,
               ),
             )
           : Container(),
@@ -1193,8 +1207,10 @@ class _AndroidView extends State<AndroidView> {
   Color UserColorFalse = Colors.white;
   bool UserPressed = true;
   Color UserColor = Color(0xfffffcc9);
+
   @override
   Widget build(BuildContext context) {
+    _setUserPageStatus(StaffPressed ? true : false);
     UserData().isStaff = StaffPressed ? true : false;
 
     return Stack(

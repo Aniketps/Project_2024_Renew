@@ -6,6 +6,8 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:intl/intl.dart';
 
+import 'LoaderSupport.dart';
+
 class ClientNotificationPage extends StatefulWidget {
   const ClientNotificationPage({super.key});
 
@@ -104,8 +106,8 @@ class _ClientNotificationPageState extends State<ClientNotificationPage> {
                                 .snapshots(),
                             builder: (context, snapshot) {
                               if (!snapshot.hasData) {
-                                return const Center(
-                                    child: CircularProgressIndicator());
+                                return Center(
+                                    child: LoaderSupport.loadingAnimation.widget);
                               }
                               var users =
                                   snapshot.data?.docs.reversed.toList() ?? [];
@@ -145,7 +147,7 @@ class _ClientNotificationPageState extends State<ClientNotificationPage> {
                                           AsyncSnapshot<List<dynamic>>
                                               snapshot) {
                                         if (!snapshot.hasData) {
-                                          return const CircularProgressIndicator();
+                                          return LoaderSupport.loadingAnimation.widget;
                                         }
 
                                         var currentUserData = snapshot.data?[0];

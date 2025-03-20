@@ -12,6 +12,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:video_player/video_player.dart';
 
+import 'LoaderSupport.dart';
+
 class RegistaredUsers extends StatefulWidget {
   final loggedAdmin;
   RegistaredUsers({required this.loggedAdmin});
@@ -115,7 +117,7 @@ class _RegistaredUsers extends State<RegistaredUsers> {
       future: fieldMethods[fieldNeed]!(SelectedUID),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return CircularProgressIndicator();
+          return LoaderSupport.loadingAnimation.widget;
         } else if (snapshot.hasError) {
           return Text("Error: ${snapshot.error}");
         } else {
@@ -497,7 +499,7 @@ class _RegistaredUsers extends State<RegistaredUsers> {
                                   builder: (context, snapshot) {
                                     if (snapshot.connectionState ==
                                         ConnectionState.waiting) {
-                                      return CircularProgressIndicator();
+                                      return LoaderSupport.loadingAnimation.widget;
                                     } else if (snapshot.hasError) {
                                       return Text("Error: ${snapshot.error}");
                                     } else {

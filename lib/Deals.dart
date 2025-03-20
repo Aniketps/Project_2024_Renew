@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:geolocator/geolocator.dart';
 
+import 'LoaderSupport.dart';
+
 class Deals extends StatefulWidget {
   const Deals({super.key});
 
@@ -447,8 +449,8 @@ class _Deals extends State<Deals> {
                                 .snapshots(),
                             builder: (context, snapshot) {
                               if (!snapshot.hasData) {
-                                return const Center(
-                                    child: CircularProgressIndicator());
+                                return Center(
+                                    child: LoaderSupport.loadingAnimation.widget);
                               }
                               var users =
                                   snapshot.data?.docs.reversed.toList() ?? [];
@@ -468,7 +470,7 @@ class _Deals extends State<Deals> {
                                           AsyncSnapshot<List<dynamic>>
                                               snapshot) {
                                         if (!snapshot.hasData) {
-                                          return const CircularProgressIndicator();
+                                          return LoaderSupport.loadingAnimation.widget;
                                         }
 
                                         var currentUserData = snapshot.data?[0];
@@ -2333,8 +2335,8 @@ class _DealsForStaff extends State<DealsForStaff> {
                                 .snapshots(),
                             builder: (context, snapshot) {
                               if (!snapshot.hasData) {
-                                return const Center(
-                                    child: CircularProgressIndicator());
+                                return Center(
+                                    child: LoaderSupport.loadingAnimation.widget);
                               }
                               var users =
                                   snapshot.data?.docs.reversed.toList() ?? [];
@@ -2356,7 +2358,7 @@ class _DealsForStaff extends State<DealsForStaff> {
                                           AsyncSnapshot<List<dynamic>>
                                               snapshot) {
                                         if (!snapshot.hasData) {
-                                          return const CircularProgressIndicator();
+                                          return LoaderSupport.loadingAnimation.widget;
                                         }
 
                                         var currentStaffData =
@@ -2837,8 +2839,8 @@ class _DealsForStaff extends State<DealsForStaff> {
                                 builder: (context, snapshot) {
                                   if (snapshot.connectionState ==
                                       ConnectionState.waiting) {
-                                    return const Center(
-                                      child: CircularProgressIndicator(),
+                                    return Center(
+                                      child: LoaderSupport.loadingAnimation.widget,
                                     );
                                   }
 

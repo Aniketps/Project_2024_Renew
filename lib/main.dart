@@ -13,9 +13,11 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
+import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'ContactUs.dart';
+import 'LoaderSupport.dart';
 import 'MainMap.dart';
 import 'StaffProfilePage.dart';
 import 'TC.dart';
@@ -100,35 +102,30 @@ class _MyHomePageState extends State<MyHomePage> {
     notificationService.firebaseInit(context);
     notificationService.setupInteractMessage(context);
     FcmService.FirebaseInit();
-
     SearchStaff();
-    void _liveLocation() {
-      LocationSettings locationSettings = LocationSettings(
-        accuracy: LocationAccuracy.high,
-        distanceFilter: 100,
-      );
-
-      Geolocator.getPositionStream(locationSettings: locationSettings).listen(
-        (Position position) {
-          setState(() async {
-            String lat = position.latitude.toString();
-            String long = position.longitude.toString();
-            User? user = FirebaseAuth.instance.currentUser;
-
-            await FirebaseFirestore.instance
-                .collection('user')
-                .doc(user?.uid)
-                .update({
-              'lat': lat,
-              'long': long,
-            });
-          });
-        },
-      );
-    }
-
-    ;
     _liveLocation();
+  }
+
+  void _liveLocation() {
+    LocationSettings locationSettings = LocationSettings(
+      accuracy: LocationAccuracy.high,
+      distanceFilter: 100,
+    );
+
+    Geolocator.getPositionStream(locationSettings: locationSettings).listen(
+          (Position position) async {
+          String lat = position.latitude.toString();
+          String long = position.longitude.toString();
+          User? user = FirebaseAuth.instance.currentUser;
+          await FirebaseFirestore.instance
+              .collection('user')
+              .doc(user?.uid)
+              .update({
+            'lat': lat,
+            'long': long,
+          });
+      },
+    );
   }
 
   List<String> Profession = [
@@ -187,6 +184,9 @@ class _MyHomePageState extends State<MyHomePage> {
           StaffData = documentSnapshot.data();
           documentID = documentSnapshot.id;
         });
+        double lat = double.tryParse(StaffData["lat"].toString()) ?? 0.0;
+        double long = double.tryParse(StaffData["long"].toString()) ?? 0.0;
+        getCurrentLocationName(lat, long);
       } else {
         print("No staff found with ID: $currentUserID");
       }
@@ -194,6 +194,18 @@ class _MyHomePageState extends State<MyHomePage> {
       print("Error fetching user by Staff ID: $e");
     }
   }
+
+  Future<void> getCurrentLocationName(double lat, double long) async {
+      List<Placemark> placemarks = await placemarkFromCoordinates(lat, long);
+      if (placemarks.isNotEmpty) {
+        String place = "${placemarks.first.locality}" ?? "Location...";
+        print("Got Location $place");
+        setState(() {
+          CurrentLocation = place;
+        });
+      }
+  }
+  String CurrentLocation = "";
 
   @override
   Widget build(BuildContext context) {
@@ -395,7 +407,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       ));
                 },
                 child: Text(
-                  StaffData?['City'] ?? "Location...",
+                  "$CurrentLocation",
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -627,7 +639,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                   if (snapshot.connectionState ==
                                       ConnectionState.waiting) {
                                     return Center(
-                                      child: CircularProgressIndicator(),
+                                      child: LoaderSupport.loadingAnimation.widget,
                                     );
                                   }
 

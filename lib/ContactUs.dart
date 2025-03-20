@@ -6,6 +6,8 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:intl/intl.dart';
 
+import 'LoaderSupport.dart';
+
 class ContactUs extends StatefulWidget {
   @override
   State<StatefulWidget> createState() => _ContactUs();
@@ -110,7 +112,7 @@ class _ContactUs extends State<ContactUs> {
           ),
 
           isLoading
-              ? Center(child: CircularProgressIndicator())
+              ? Center(child: LoaderSupport.loadingAnimation.widget)
               : Padding(
                   padding: const EdgeInsets.only(top: 150),
                   child: SingleChildScrollView(

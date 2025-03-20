@@ -11,6 +11,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:video_player/video_player.dart';
 
+import 'LoaderSupport.dart';
+
 class StaffVerification extends StatefulWidget {
   final loggedAdmin;
   StaffVerification({required this.loggedAdmin});
@@ -199,7 +201,7 @@ class _StaffVerification extends State<StaffVerification> {
       future: fieldMethods[fieldNeed]!(SelectedUID, SelectedProf),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return CircularProgressIndicator();
+          return LoaderSupport.loadingAnimation.widget;
         } else if (snapshot.hasError) {
           return Text("Error: ${snapshot.error}");
         } else {
@@ -617,7 +619,7 @@ class _StaffVerification extends State<StaffVerification> {
                                   builder: (context, snapshot) {
                                     if (snapshot.connectionState ==
                                         ConnectionState.waiting) {
-                                      return CircularProgressIndicator();
+                                      return LoaderSupport.loadingAnimation.widget;
                                     } else if (snapshot.hasError) {
                                       return Text("Error: ${snapshot.error}");
                                     } else {
@@ -953,7 +955,7 @@ class _StaffVerification extends State<StaffVerification> {
                                             width: 1, color: Colors.blue),
                                         borderRadius: BorderRadius.circular(5)),
                                     child: Center(
-                                        child: CircularProgressIndicator()),
+                                        child: LoaderSupport.loadingAnimation.widget),
                                   )
                                 : Stack(
                                     children: [
@@ -1307,7 +1309,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
             height: 200,
             color: Colors.black,
             child: Center(
-              child: CircularProgressIndicator(),
+              child: LoaderSupport.loadingAnimation.widget,
             ),
           );
   }

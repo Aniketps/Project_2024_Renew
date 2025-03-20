@@ -13,6 +13,8 @@ import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 
+import 'LoaderSupport.dart';
+
 class StaffDetailInputPage extends StatefulWidget {
   final String FirstName;
   final String LastName;
@@ -506,7 +508,7 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
           ? Center(
               child: Padding(
                 padding: EdgeInsets.only(top: screenHeight * 0.35),
-                child: CircularProgressIndicator(),
+                child: LoaderSupport.loadingAnimation.widget,
               ),
             )
           : Container(),

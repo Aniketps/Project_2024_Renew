@@ -13,6 +13,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
+import 'LoaderSupport.dart';
 import 'StaffProfilePage.dart';
 
 class MainMap extends StatefulWidget {
@@ -163,7 +164,8 @@ class _MainMapState extends State<MainMap> {
         var data = doc.data();
         if (data['lat'] != null &&
             data['long'] != null &&
-            data['professionOfStaff'] != null) {
+            data['professionOfStaff'] != null &&
+            data['Verified'] == 'verified') {
           try {
             // Safely get 'professionOfStaff', falling back to an empty string if null
             String professionOfStaff = data['professionOfStaff'] ?? '';
@@ -339,7 +341,7 @@ class _MainMapState extends State<MainMap> {
             ),
           ),
           isLoading
-              ? CircularProgressIndicator()
+              ? LoaderSupport.loadingAnimation.widget
               : Stack(
                   children: [
                     Padding(
@@ -350,7 +352,7 @@ class _MainMapState extends State<MainMap> {
                             padding: const EdgeInsets.only(top: 25),
                             child: Container(
                               child: LoaderCheck
-                                  ? Center(child: CircularProgressIndicator())
+                                  ? Center(child: LoaderSupport.loadingAnimation.widget)
                                   : FlutterMap(
                                       mapController: _mapController,
                                       options: MapOptions(

@@ -8,6 +8,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:intl/intl.dart';
 
+import 'LoaderSupport.dart';
 import 'TempMap.dart';
 
 class StaffNotificationPage extends StatefulWidget {
@@ -84,7 +85,7 @@ class _StaffNotificationPage extends State<StaffNotificationPage> {
               .snapshots(),
           builder: (context, snapshot) {
             if (!snapshot.hasData)
-              return Center(child: CircularProgressIndicator());
+              return Center(child: LoaderSupport.loadingAnimation.widget);
             var users = snapshot.data?.docs.reversed.toList() ?? [];
             List<Widget> userViews = [];
             DateTime now = DateTime.now();
@@ -113,7 +114,7 @@ class _StaffNotificationPage extends State<StaffNotificationPage> {
                       getStaffData(user['professionOfStaff'], user['staffUID']),
                     ]),
                     builder: (context, AsyncSnapshot<List<dynamic>> snapshot) {
-                      if (!snapshot.hasData) return CircularProgressIndicator();
+                      if (!snapshot.hasData) return LoaderSupport.loadingAnimation.widget;
 
                       var currentUserData = snapshot.data?[0];
                       var currentStaffData = snapshot.data?[1];

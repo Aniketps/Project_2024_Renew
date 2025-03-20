@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
+import 'LoaderSupport.dart';
 import 'StaffDetailInputPage.dart';
 
 class RegisterPage extends StatefulWidget {
@@ -263,7 +264,7 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
           ? Center(
               child: Padding(
                 padding: EdgeInsets.only(top: screenHeight * 0.35),
-                child: CircularProgressIndicator(),
+                child: LoaderSupport.loadingAnimation.widget,
               ),
             )
           : Container(),
@@ -537,7 +538,7 @@ class _AndroidUserPage extends State<AndroidUserPage> {
           ? Center(
               child: Padding(
                 padding: EdgeInsets.only(top: screenHeight * 0.35),
-                child: CircularProgressIndicator(),
+                child: LoaderSupport.loadingAnimation.widget,
               ),
             )
           : Container(),

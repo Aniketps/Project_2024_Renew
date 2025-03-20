@@ -9,6 +9,7 @@ import 'ClientNotificationPage.dart';
 import 'ContactUs.dart';
 import 'Deals.dart';
 import 'Feedback.dart';
+import 'LoaderSupport.dart';
 import 'LoginPage.dart';
 import 'MainMap.dart';
 import 'StaffProfilePage.dart';
@@ -136,7 +137,7 @@ class _ActualUser extends State<ActualUser> {
                         Column(
                           children: [
                             isLoading || userData == null
-                                ? Center(child: CircularProgressIndicator())
+                                ? Center(child: LoaderSupport.loadingAnimation.widget)
                                 : Center(
                                     child: Container(
                                       height: screenHeight * 0.85,
