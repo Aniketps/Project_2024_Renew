@@ -13,8 +13,10 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'LoaderSupport.dart';
+import 'TempMap.dart';
 
 class BookingScheduleAndPayment extends StatefulWidget {
   var StaffData;
@@ -143,6 +145,14 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
       {required this.StaffData, required this.StaffID, required this.Skill});
 
   TextEditingController hours = TextEditingController();
+  Future<bool> getShareLocation() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    if(prefs.getDouble("SelectedLat") == 0.0){
+      return false;
+    }else{
+      return true;
+    }
+  }
   var total;
   bool Loader = true;
   bool DayBased = false;
@@ -172,7 +182,7 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
             ? (StaffData['Hour_Rate'] ?? 0)
             : (StaffData['Day_Rate'] ?? 0)) *
         count;
-    double tax = (price * 15) / 100;
+    double tax = (price * 1.5) / 100;
     var total = price + (StaffData['Traveling_Charges'] ?? 0) + tax;
     String Place = Home ? 'Home' : 'Office';
 
@@ -749,7 +759,7 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                                                     screenWidth *
                                                                         0.6,
                                                                 child: Text(
-                                                                  "Platform charges 15%",
+                                                                  "Platform charges 1.5%",
                                                                   style:
                                                                       TextStyle(
                                                                     fontSize:
@@ -1281,6 +1291,7 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                                                 SubAddress.text;
                                                             String place =
                                                                 Place;
+                                                            SharedPreferences prefs = await SharedPreferences.getInstance();
 
                                                             if (price != 0 &&
                                                                 WorkDate !=
@@ -1294,7 +1305,7 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                                                 subAddress
                                                                     .isNotEmpty &&
                                                                 place
-                                                                    .isNotEmpty) {
+                                                                    .isNotEmpty && prefs.getDouble("SelectedLat") != 0.0 && prefs.getDouble("SelectedLong") != 0.0 ) {
                                                               // Payment logic
 
                                                               if ("Payment Successful" ==
@@ -1318,11 +1329,11 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                                                         place,
                                                                     "Client_Coordinates_lat":
                                                                         ShareCoordinates
-                                                                            ? lat
+                                                                            ? prefs.getDouble("SelectedLat").toString()
                                                                             : "",
                                                                     "Client_Coordinates_long":
                                                                         ShareCoordinates
-                                                                            ? long
+                                                                            ? prefs.getDouble("SelectedLong").toString()
                                                                             : "",
                                                                     'staffUID':
                                                                         StaffID,
@@ -1345,7 +1356,7 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                                                     'ScheduledTime':
                                                                         WorkTime,
                                                                     'PlatformTax':
-                                                                        '15%',
+                                                                        '1.5%',
                                                                     'ScheduledDateEnd':
                                                                         WorkDateEnd,
                                                                     'ScheduledTimeEnd':
@@ -1379,10 +1390,10 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                                                           place,
                                                                       "Client_Coordinates_lat":
                                                                           ShareCoordinates
-                                                                              ? lat
+                                                                              ? prefs.getDouble("SelectedLat").toString()
                                                                               : "",
                                                                       "Client_Coordinates_long": ShareCoordinates
-                                                                          ? long
+                                                                          ? prefs.getDouble("SelectedLong").toString()
                                                                           : "",
                                                                       'professionOfStaff':
                                                                           Skill,
@@ -1402,7 +1413,7 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                                                       'ScheduledTime':
                                                                           WorkTime,
                                                                       'PlatformTax':
-                                                                          '15%',
+                                                                          '1.5%',
                                                                       'ScheduledDateEnd':
                                                                           WorkDateEnd,
                                                                       'ScheduledTimeEnd':
@@ -1461,9 +1472,6 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                                                       staffDoc.data()?[
                                                                           'token'];
 
-                                                                  print(
-                                                                      stafftoken);
-
                                                                   GetServerKey
                                                                       getServerKey =
                                                                       GetServerKey();
@@ -1511,6 +1519,8 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                                                               "Hiring",
                                                                           token:
                                                                               stafftoken);
+                                                                  prefs.setDouble("SelectedLat", 0.0);
+                                                                  prefs.setDouble("SelectedLong", 0.0);
 
                                                                   Navigator
                                                                       .push(
@@ -1644,11 +1654,11 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                   EnterAddress
                                       ? Center(
                                           child: Container(
-                                            width: screenWidth * 0.8,
+                                            width: screenWidth * 0.9,
                                             decoration: BoxDecoration(
                                               color: Colors.white,
                                               borderRadius:
-                                                  BorderRadius.circular(15),
+                                                  BorderRadius.circular(10),
                                               boxShadow: [
                                                 BoxShadow(
                                                   color: Colors.black26,
@@ -1661,10 +1671,7 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                               children: [
                                                 Padding(
                                                   padding:
-                                                      const EdgeInsets.only(
-                                                          top: 5,
-                                                          left: 20,
-                                                          right: 5),
+                                                      const EdgeInsets.all(10),
                                                   child: Row(
                                                     mainAxisAlignment:
                                                         MainAxisAlignment
@@ -1672,10 +1679,7 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                                     children: [
                                                       Text(
                                                         "Your Location",
-                                                        style: TextStyle(
-                                                            fontWeight:
-                                                                FontWeight.bold,
-                                                            fontSize: 16),
+                                                        style: GoogleFonts.sanchez(fontSize: 20),
                                                       ),
                                                       InkWell(
                                                         onTap: () {
@@ -1683,6 +1687,9 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                                             EnterAddress =
                                                                 false;
                                                           });
+                                                        },
+                                                        onLongPress: (){
+                                                          Navigator.push(context, MaterialPageRoute(builder: (context) => SelectDestination(),));
                                                         },
                                                         child: Container(
                                                           height: 30,
@@ -1704,7 +1711,7 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                                                         1)
                                                               ]),
                                                           child: Icon(Icons
-                                                              .close_fullscreen),
+                                                              .close),
                                                         ),
                                                       )
                                                     ],
@@ -1885,69 +1892,104 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                                           top: 5),
                                                   child: Row(
                                                     mainAxisAlignment:
-                                                        MainAxisAlignment.end,
+                                                        MainAxisAlignment.spaceBetween,
                                                     children: [
-                                                      Padding(
-                                                        padding:
-                                                            const EdgeInsets
-                                                                .all(8.0),
-                                                        child: Text(
-                                                          ShareCoordinates
-                                                              ? "Sharing Current Location"
-                                                              : "Share Current Location",
-                                                          style: TextStyle(
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold,
-                                                              fontSize: 10),
+                                                      InkWell(
+                                                      onTap: () async {
+                                                        SharedPreferences prefs = await SharedPreferences.getInstance();
+                                                        if((prefs.getString("City") ?? "").isNotEmpty &&
+                                                            (prefs.getString("Place") ?? "").isNotEmpty &&
+                                                            (prefs.getString("Address") ?? "").isNotEmpty &&
+                                                            (prefs.getString("subAddress") ?? "").isNotEmpty){
+                                                          setState(() {
+                                                            City = TextEditingController(text: prefs.getString("City") ?? "");
+                                                            Place = prefs.getString("Place") ?? "";
+                                                            Address = TextEditingController(text: prefs.getString("Address") ?? "");
+                                                            SubAddress = TextEditingController(text: prefs.getString("subAddress") ?? "");
+                                                          });
+                                                        }else{
+                                                          Fluttertoast.showToast(msg: "No Data Available");
+                                                        }
+                                                      },
+                                                        child: Container(
+                                                          decoration: BoxDecoration(
+                                                              color: Colors.white,
+                                                            border: Border.all(width: 1, color: Colors.blue),
+                                                              borderRadius: BorderRadius.circular(10)
+                                                          ),
+                                                            child: Padding(
+                                                              padding: const EdgeInsets.only(top: 5, bottom: 5, left: 20, right: 20),
+                                                              child: Text("Import"),
+                                                            ),
                                                         ),
                                                       ),
-                                                      InkWell(
-                                                        onTap: () {
-                                                          setState(() {
-                                                            ShareCoordinates =
-                                                                !ShareCoordinates;
-                                                          });
-                                                        },
-                                                        child: Container(
-                                                          height: 40,
-                                                          width: 40,
-                                                          decoration:
-                                                              BoxDecoration(
-                                                            color:
-                                                                ShareCoordinates
-                                                                    ? Colors
-                                                                        .green
-                                                                    : Colors
-                                                                        .white,
-                                                            boxShadow: [
-                                                              BoxShadow(
-                                                                  color: Colors
-                                                                      .redAccent,
-                                                                  spreadRadius:
-                                                                      1,
-                                                                  blurRadius: 1)
-                                                            ],
-                                                            borderRadius:
-                                                                BorderRadius
-                                                                    .circular(
-                                                                        40),
-                                                          ),
-                                                          child: Icon(Icons
-                                                              .my_location),
-                                                        ),
+                                                      Row(
+                                                          children: [
+                                                            Padding(
+                                                              padding:
+                                                              const EdgeInsets
+                                                                  .all(8.0),
+                                                              child: Text(
+                                                                "Select Mark from Map",
+                                                                style: TextStyle(
+                                                                    fontWeight:
+                                                                    FontWeight
+                                                                        .bold,
+                                                                    fontSize: 10),
+                                                              ),
+                                                            ),
+                                                            InkWell(
+                                                              onTap: () {
+                                                                setState(() {
+                                                                  Navigator.push(context, MaterialPageRoute(builder: (context) => SelectDestination(),));
+                                                                });
+                                                              },
+                                                              child: Container(
+                                                                height: 40,
+                                                                width: 40,
+                                                                decoration:
+                                                                BoxDecoration(
+                                                                  color:
+                                                                  Colors.green,
+                                                                  boxShadow: [
+                                                                    BoxShadow(
+                                                                        color: Colors
+                                                                            .redAccent,
+                                                                        spreadRadius:
+                                                                        1,
+                                                                        blurRadius: 1)
+                                                                  ],
+                                                                  borderRadius:
+                                                                  BorderRadius
+                                                                      .circular(
+                                                                      40),
+                                                                ),
+                                                                child: Icon(Icons
+                                                                    .my_location),
+                                                              ),
+                                                            )
+                                                          ],
                                                       )
-                                                    ],
+                                                    ]
                                                   ),
                                                 ),
                                                 Padding(
                                                   padding:
                                                       const EdgeInsets.all(8.0),
                                                   child: InkWell(
-                                                    onTap: () {
-                                                      setState(() {
-                                                        EnterAddress = false;
-                                                      });
+                                                    onTap: () async{
+                                                      SharedPreferences prefs = await SharedPreferences.getInstance();
+                                                        // Save Address Information
+                                                        if(City.text.isNotEmpty && Address.text.isNotEmpty && SubAddress.text.isNotEmpty){
+                                                          prefs.setString("City", City.text);
+                                                          prefs.setString("Address", Address.text);
+                                                          prefs.setString("subAddress", SubAddress.text);
+                                                          prefs.setString("Place", Place);
+                                                          EnterAddress = false;
+                                                          Fluttertoast.showToast(msg: "Address Saved");
+                                                        }else{
+                                                          Fluttertoast.showToast(msg: "Fill All the fields");
+                                                        }
                                                     },
                                                     child: Container(
                                                       height: 45,

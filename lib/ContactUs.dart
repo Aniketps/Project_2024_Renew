@@ -203,7 +203,7 @@ class _ContactUs extends State<ContactUs> {
                               maxLines: 4,
                               decoration: InputDecoration(
                                 border: InputBorder.none,
-                                hintText: "Type your description here...",
+                                hintText: "Type your subjest here...",
                                 contentPadding: EdgeInsets.symmetric(
                                     horizontal: 10.0, vertical: 10.0),
                               ),

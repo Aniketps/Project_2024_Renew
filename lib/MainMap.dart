@@ -9,6 +9,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:url_launcher/url_launcher_string.dart';
@@ -17,10 +18,11 @@ import 'LoaderSupport.dart';
 import 'StaffProfilePage.dart';
 
 class MainMap extends StatefulWidget {
-  const MainMap({super.key});
+  final String whichStaff;
+  const MainMap({super.key, required this.whichStaff});
 
   @override
-  State<MainMap> createState() => _MainMapState();
+  State<MainMap> createState() => _MainMapState(whichStaff: whichStaff);
 }
 
 class StaffLocation {
@@ -37,6 +39,8 @@ class StaffLocation {
 }
 
 class _MainMapState extends State<MainMap> {
+  final String whichStaff;
+  _MainMapState({required this.whichStaff});
   List<StaffLocation> AvailableStaff = [];
 
   List<StaffLocation> RegisteredNurseMarker = [];
@@ -63,6 +67,7 @@ class _MainMapState extends State<MainMap> {
   late double long;
   String locationMessage = "Check current location";
   bool LoaderCheck = false;
+  String? selectedValue;
 
   @override
   void initState() {
@@ -162,19 +167,10 @@ class _MainMapState extends State<MainMap> {
     querySnapshot.listen((snapshot) async {
       for (var doc in snapshot.docs) {
         var data = doc.data();
-        if (data['lat'] != null &&
-            data['long'] != null &&
-            data['professionOfStaff'] != null &&
-            data['Verified'] == 'verified') {
+        Future<void> getStaffLocationData() async {
           try {
             // Safely get 'professionOfStaff', falling back to an empty string if null
             String professionOfStaff = data['professionOfStaff'] ?? '';
-
-            // Check if professionOfStaff is empty
-            if (professionOfStaff.isEmpty) {
-              print('Invalid professionOfStaff for staff ID: ${doc.id}');
-              continue; // Skip this document if profession is empty
-            }
 
             // Ensure 'lat' and 'long' are not null, and handle if they are.
             double? lat = double.tryParse(data['lat'] ?? '');
@@ -183,9 +179,9 @@ class _MainMapState extends State<MainMap> {
             if (lat != null && long != null) {
               DocumentSnapshot<Map<String, dynamic>> documentReference =
                   await FirebaseFirestore.instance
-                      .collection(professionOfStaff)
-                      .doc(doc.id)
-                      .get();
+                  .collection(professionOfStaff)
+                  .doc(doc.id)
+                  .get();
 
               var StatffsData = documentReference.data();
 
@@ -266,6 +262,20 @@ class _MainMapState extends State<MainMap> {
             print('Error fetching document for ${doc.id}: $e');
           }
         }
+        if (data['lat'] != null &&
+            data['long'] != null &&
+            data['professionOfStaff'] != null &&
+            data['Verified'] == 'verified') {
+          if(whichStaff.toLowerCase() != "all"){
+            if(data['professionOfStaff'] == whichStaff.toLowerCase()){
+              getStaffLocationData();
+            }
+          }
+          else
+          {
+            getStaffLocationData();
+          }
+        }
       }
     });
   }
@@ -275,6 +285,25 @@ class _MainMapState extends State<MainMap> {
     _debounce?.cancel(); // Cancel debounce when widget is removed
     super.dispose();
   }
+  List<String> items = [
+    "Chef",
+    "Personal Care Assistants",
+    "Driver",
+    "Security Guards",
+    "Home Guards",
+    "Elder Companions",
+    "Babysitters",
+    "Cleaner",
+    "Housekeepers",
+    "Elderly",
+    "Paramedics",
+    "Occupational Therapists",
+    "Physiotherapists",
+    "Home Health Aides",
+    "Certified Nursing Assistants",
+    "Licensed Practical Nurses",
+    "Registered Nurses"
+  ];
 
   Widget createMarkerLayer(List<StaffLocation> markerData, Color color) {
     return MarkerLayer(
@@ -341,7 +370,7 @@ class _MainMapState extends State<MainMap> {
             ),
           ),
           isLoading
-              ? LoaderSupport.loadingAnimation.widget
+              ? Center(child: LoaderSupport.loadingAnimation.widget)
               : Stack(
                   children: [
                     Padding(
@@ -367,10 +396,7 @@ class _MainMapState extends State<MainMap> {
                                       ),
                                       children: [
                                           TileLayer(
-                                            urlTemplate:
-                                                'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                                            fallbackUrl:
-                                                'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                                            urlTemplate: 'https://mt.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',
                                           ),
                                           MarkerLayer(
                                             markers: AvailableStaff.map(
@@ -510,6 +536,47 @@ class _MainMapState extends State<MainMap> {
                               ),
                             ],
                           ),
+                          Padding(
+                            padding: const EdgeInsets.only(top : 45.0),
+                            child: Padding(
+                              padding: const EdgeInsets.all(10.0),
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(10),
+                                  color: Colors.white,
+                                  border: Border.all(width: 1, color: Colors.blueAccent)
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.only(left: 8.0, right: 8),
+                                  child: DropdownButton<String>(
+                                    underline: null,
+                                    borderRadius: BorderRadius.circular(15),
+                                    value: selectedValue,
+                                    hint: Text("$whichStaff Profession", style: GoogleFonts.sanchez(fontWeight: FontWeight.bold),),
+                                    items: items.map((String item) {
+                                      return DropdownMenuItem<String>(
+                                        value: item,
+                                        child: Container(
+                                          constraints: BoxConstraints(
+                                            maxWidth: 150,
+                                          ),
+                                          child: Text(
+                                            item,
+                                            overflow: TextOverflow.ellipsis,
+                                            maxLines: 1, // Limit to 1 line
+                                          ),
+                                        ),
+                                      );
+                                    }).toList(),
+                                    onChanged: (newValue) {
+                                      String profession = newValue!;
+                                      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => MainMap(whichStaff: newValue),));
+                                    },
+                                  ),
+                                ),
+                              ),
+                            ),
+                          )
                         ],
                       ),
                     ),

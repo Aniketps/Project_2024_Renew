@@ -272,7 +272,7 @@ class _StaffPage extends State<StaffPage> {
                     Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => MainMap(),
+                          builder: (context) => MainMap(whichStaff: "All",),
                         ));
                   },
                   child: Container(
