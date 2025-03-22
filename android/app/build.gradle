@@ -48,7 +48,7 @@ android {
 
     signingConfigs {
         release {
-            storeFile file("/keystore/my-release-key.jks")  // Adjust path if needed
+            storeFile file("/keystore/my-release-key.jks")
             storePassword "aniket"
             keyAlias "my-key-alias"
             keyPassword "aniket"
@@ -57,7 +57,7 @@ android {
 
     buildTypes {
         release {
-            signingConfig signingConfigs.release  // ✅ FIXED: Use release keystore, not debug!
+            signingConfig signingConfigs.release
             minifyEnabled false
             shrinkResources false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
