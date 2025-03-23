@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'LoaderSupport.dart';
 
@@ -621,6 +622,30 @@ class _ClientNotificationPageState extends State<ClientNotificationPage> {
                                                                         18),
                                                               )
                                                             : Container(),
+                                                        InkWell(
+                                                          onTap: () async {
+                                                            DocumentSnapshot doc = await FirebaseFirestore.instance.collection("user").doc(user["staffUID"]).get();
+                                                            var phoneNumber = doc["Phone_Number1"].toString();
+                                                            final Uri phoneUri = Uri(
+                                                              scheme: 'tel',
+                                                              path: phoneNumber.toString(),
+                                                            );
+                                                            if (await canLaunchUrl(
+                                                                phoneUri)) {
+                                                              await launchUrl(phoneUri);
+                                                            } else {
+                                                              Fluttertoast.showToast(msg: "System Problem, Use Staff No. $phoneNumber");
+                                                            }
+                                                          },
+                                                          child: Container(
+                                                              height: 50,
+                                                              width: 50,
+                                                              decoration: BoxDecoration(
+                                                                borderRadius: BorderRadius.circular(50),
+                                                                color: Colors.green
+                                                              ),
+                                                              child: Center(child: Icon(Icons.call_rounded, size: 30, color: Colors.white,))),
+                                                        )
                                                       ],
                                                     ),
                                                   ),

@@ -4,6 +4,8 @@ import 'package:app_settings/app_settings.dart';
 import 'package:carehub/ClientNotificationPage.dart';
 import 'package:carehub/StaffProfilePage.dart';
 import 'package:carehub/main.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
@@ -15,10 +17,12 @@ import 'package:fluttertoast/fluttertoast.dart';
 import '../StaffNotificationPage.dart';
 
 class NotificationService {
-  static FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+  FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
   FlutterLocalNotificationsPlugin();
+
   FirebaseMessaging messaging = FirebaseMessaging.instance;
-  final FlutterLocalNotificationsPlugin _flutterLocalNotificationsPlugin =
+
+  FlutterLocalNotificationsPlugin _flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
 
   void requestNotificationPermission() async {
@@ -67,11 +71,18 @@ class NotificationService {
     var initializationSetting =
         InitializationSettings(android: androidInitializationSettings);
 
-    await _flutterLocalNotificationsPlugin.initialize(initializationSetting,
-        onDidReceiveNotificationResponse: (payload) {
-      // handle interaction when app is active for android
-      handleMessage(context, message);
-    });
+    await _flutterLocalNotificationsPlugin.initialize(
+      initializationSetting,
+      onDidReceiveNotificationResponse: (response) async {
+        // Handle navigation after clicking the notification
+        if (response.actionId == 'Reject_Availability_Request' ||
+            response.actionId == 'Accept_Availability_Request') {
+          UserRequest(context, message, response.actionId.toString());
+        } else {
+          handleMessage(context, message);
+        }
+      },
+    );
   }
 
   void firebaseInit(BuildContext context) {
@@ -159,8 +170,6 @@ class NotificationService {
     );
   }
 
-
-
   Future<void> showHireNotification(RemoteMessage message) async {
     AndroidNotificationChannel channel = AndroidNotificationChannel(
         message.notification!.android!.channelId.toString(),
@@ -179,7 +188,12 @@ class NotificationService {
       sound:
       RawResourceAndroidNotificationSound('sound.wav'.split('.').first),
       additionalFlags: Int32List.fromList([0, 500, 500, 500]),
-      actions: [
+      actions: (message.notification!.title.toString() == "Availability Check")
+          ? [
+        const AndroidNotificationAction('Reject_Availability_Request', "I'm Not", showsUserInterface: true,),
+        const AndroidNotificationAction('Accept_Availability_Request', "Yes, I'm", showsUserInterface: true,),
+      ]
+          : [
         AndroidNotificationAction('open_action', 'Open App'),
         AndroidNotificationAction('dismiss_action', 'Dismiss', showsUserInterface: false),
       ],
@@ -195,22 +209,20 @@ class NotificationService {
     NotificationDetails(android: androidNotificationDetails);
 
     Future.delayed(Duration.zero, () {
-      // Generate a unique notification ID based on the current timestamp in seconds
       int uniqueId = DateTime.now().millisecondsSinceEpoch ~/ 1000;
 
-      // Show the notification with a unique ID
       _flutterLocalNotificationsPlugin.show(
           uniqueId, // Unique notification ID
-          message.notification!.title.toString(), // Notification title
-          message.notification!.body.toString(), // Notification body
-          notificationDetails, // Notification details (icon, sound, etc.)
-          payload: "my_data" // Additional payload data
+          message.notification!.title.toString(),
+          message.notification!.body.toString(),
+          notificationDetails,
+          payload: "my_data"
       );
     });
   }
 
   Future<void> showNotification(RemoteMessage message) async {
-    if(message.notification!.title.toString() == "Hiring"){
+    if(message.notification!.title.toString() == "Hiring" || message.notification!.title.toString() == "Availability Check"){
       showHireNotification(message);
     } else if(message.notification!.title.toString() == "Status"){
       showOnlineNotification(message);
@@ -233,9 +245,8 @@ class NotificationService {
         sound: channel.sound,
         playSound: true,
         actions: [
-          AndroidNotificationAction('open_action', 'Open App'),
-          AndroidNotificationAction(
-              'dismiss_action', 'Dismiss', showsUserInterface: false),
+          AndroidNotificationAction('accept_action', 'Open App', showsUserInterface: true,),
+          AndroidNotificationAction('dismiss_action', 'Dismiss', cancelNotification: true,),
         ],
         styleInformation: BigTextStyleInformation(
           message.notification!.body ?? '', // Use body as the big text
@@ -299,5 +310,27 @@ class NotificationService {
       Navigator.push(
           context, MaterialPageRoute(builder: (context) => MyHomePage()));
     }
+  }
+
+  Future<void> UserRequest(
+      BuildContext context, RemoteMessage message, String action) async {
+    if (message.data.isNotEmpty) {
+      String currentUid = FirebaseAuth.instance.currentUser!.uid;
+
+      QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+          .collection("Availability Check")
+          .get();
+
+      for (var doc in querySnapshot.docs) {
+
+        // Corrected condition
+        if (doc["requestSender"].toString().trim() == currentUid.toString().trim() || doc["requestReceiver"].toString().trim() == currentUid.toString().trim()) {
+            await doc.reference.update({
+              "status": action == "Reject_Availability_Request" ? "Rejected" : "Accepted",
+            });
+        }
+      }
+    }
+    _flutterLocalNotificationsPlugin.cancel(int.parse(message.data["notificationId"]));
   }
 }

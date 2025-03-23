@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:carehub/BookingScheduleAndPayment.dart';
@@ -8,6 +9,7 @@ import 'package:carehub/EServiceRate.dart';
 import 'package:carehub/LoaderSupport.dart';
 import 'package:carehub/Rating.dart';
 import 'package:carehub/services/NotificationService.dart';
+import 'package:carehub/services/getServerKey.dart';
 import 'package:carehub/services/sendNotificationService.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -15,10 +17,13 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'KYC.dart';
@@ -74,8 +79,7 @@ class _StaffProfilePage extends State<StaffProfilePage> {
       );
 
       Geolocator.getPositionStream(locationSettings: locationSettings).listen(
-        (Position position) {
-          setState(() async {
+        (Position position) async {
             String lat = position.latitude.toString();
             String long = position.longitude.toString();
             User? user = FirebaseAuth.instance.currentUser;
@@ -87,7 +91,6 @@ class _StaffProfilePage extends State<StaffProfilePage> {
               'lat': lat,
               'long': long,
             });
-          });
         },
       );
     }
@@ -224,6 +227,29 @@ class _UserView extends State<UserView> {
   void initState() {
     super.initState();
     fetchVerificationDocs();
+    AvailabilityStatus();
+    checkForPendingOrder();
+    Timer.periodic(Duration(seconds: 5), (timer) {
+      if (!mounted) {
+        timer.cancel();
+        return;
+      }
+      AvailabilityStatus();
+      checkForPendingOrder();
+    });
+  }
+  
+  bool isShowContact = false;
+  
+  Future<void> checkForPendingOrder()
+  async {
+    String currentUser = FirebaseAuth.instance.currentUser!.uid;
+    QuerySnapshot queryData = await FirebaseFirestore.instance.collection('NotificationForUser').where("status", isNotEqualTo: "Rejected").where("userUID", isEqualTo: currentUser).where("staffUID", isEqualTo: StaffID).get();
+    if(queryData.docs.isNotEmpty){
+      setState(() {
+        isShowContact = true;
+      });
+    }
   }
 
   Future<void> fetchVerificationDocs() async {
@@ -247,6 +273,198 @@ class _UserView extends State<UserView> {
       });
     }
   }
+
+  Container enterUniqueCodeForOrder() {
+    TextEditingController UniqueCode = TextEditingController();
+    return Container(
+      width: 280,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(width: 1.5, color: Colors.blueAccent),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black12,
+            blurRadius: 6,
+            spreadRadius: 2,
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            "Enter the unique code for the work.\nUse the same code if sending to multiple staff.",
+            style: GoogleFonts.poppins(
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+              color: Colors.black87,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: UniqueCode,
+                  keyboardType: TextInputType.number,
+                  style: GoogleFonts.poppins(fontSize: 16),
+                  decoration: InputDecoration(
+                    hintText: "Enter Code...",
+                    hintStyle: TextStyle(color: Colors.black54),
+                    filled: true,
+                    fillColor: Colors.blue[50],
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              ElevatedButton(
+                onPressed: () async {
+                  String currentUid = FirebaseAuth.instance.currentUser!.uid;
+                  DateTime now = DateTime.now();
+
+                  if (UniqueCode.text.isNotEmpty) {
+                    try {
+                      QuerySnapshot existingRequest = await FirebaseFirestore.instance
+                          .collection("Availability Check")
+                          .where("requestSender", isEqualTo: currentUid)
+                          .where("uniqueCode", isEqualTo: UniqueCode.text)
+                          .where("requestReceiver", isEqualTo: StaffID)
+                          .get();
+
+                      if (existingRequest.docs.isNotEmpty) {
+                        Fluttertoast.showToast(msg: "You have already sent a request to this staff for this work before.");
+                        return;
+                      }
+                      existingRequest = await FirebaseFirestore.instance
+                          .collection("Availability Check")
+                          .where("requestSender", isEqualTo: currentUid)
+                          .where("uniqueCode", isEqualTo: UniqueCode.text)
+                          .where("status", isEqualTo: "Accepted")
+                          .get();
+
+                      if (existingRequest.docs.isNotEmpty) {
+                        Fluttertoast.showToast(msg: "Job already accepted with code ${UniqueCode.text}");
+                        return;
+                      }
+
+                      QuerySnapshot recentRequestQuery = await FirebaseFirestore.instance
+                          .collection("Availability Check")
+                          .where("requestSender", isEqualTo: currentUid)
+                          .orderBy("requestTime", descending: true) // Get latest request
+                          .limit(1)
+                          .get();
+
+                      if (recentRequestQuery.docs.isNotEmpty) {
+                        DateTime lastRequestTime = (recentRequestQuery.docs.first["requestTime"] as Timestamp).toDate();
+
+                        if (lastRequestTime.add(Duration(seconds: 30)).isAfter(now)) {
+                          Fluttertoast.showToast(msg: "Wait 30 seconds before sending another request.");
+                          return; // Stop execution
+                        }
+                      }
+
+                      await FirebaseFirestore.instance.collection("Availability Check").add({
+                        "requestSender": currentUid,
+                        "requestReceiver": StaffID,
+                        "requestTime": Timestamp.now(),
+                        "uniqueCode": UniqueCode.text,
+                        "status" : "Neutral",
+                      });
+
+                      DocumentSnapshot staffDoc = await FirebaseFirestore.instance.collection("user").doc(StaffID).get();
+                      var staffToken = staffDoc.get("token");
+
+                      sendNotificationService.sendNotificationUsingApi(
+                        body: 'Are you available for work?',
+                        data: {
+                          "screen": "StaffNotificationPage",
+                          "notificationId": DateTime.now().millisecondsSinceEpoch.toString(),
+                          "uniqueCode" : UniqueCode.text,
+                        },
+                        title: "Availability Check",
+                        token: staffToken,
+                      );
+
+                      setState(() {
+                        enterUniqueCodeForOrderSelector = !enterUniqueCodeForOrderSelector;
+                      });
+
+                      Fluttertoast.showToast(msg: "Request sent successfully!");
+
+                    } catch (e) {
+                      Fluttertoast.showToast(msg: "Please try again.");
+                    }
+                  } else {
+                    Fluttertoast.showToast(msg: "Enter Code");
+                  }
+                }
+                ,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blueAccent,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                ),
+                child: Text(
+                  "Send",
+                  style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w500),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  bool isAccepted = false;
+  String validTime = '';
+
+  Future<void> AvailabilityStatus() async {
+    String currentUid = FirebaseAuth.instance.currentUser!.uid;
+
+    QuerySnapshot existingRequest = await FirebaseFirestore.instance
+        .collection("Availability Check")
+        .where("requestSender", isEqualTo: currentUid)
+        .where("requestReceiver", isEqualTo: StaffID)
+        .where("status", isEqualTo: "Accepted")
+        .orderBy("requestTime", descending: true)
+        .get();
+
+    if (existingRequest.docs.isNotEmpty) {
+      var latestRequest = existingRequest.docs.first;
+
+        Timestamp requestTime = latestRequest["requestTime"];
+        DateTime requestDateTime = requestTime.toDate();
+        DateTime fifteenMinutesLater = requestDateTime.add(Duration(minutes: 15));
+
+        // Compare with current time
+        if (fifteenMinutesLater.isAfter(DateTime.now())) {
+          setState(() {
+            validTime = "${DateFormat("d MMM y, h:mm a").format(fifteenMinutesLater)}";
+            isAccepted = true;
+          });
+      }else{
+          setState(() {
+            isAccepted = false;
+          });
+        }
+    }
+  }
+
+
+  bool enterUniqueCodeForOrderSelector= false;
 
   @override
   Widget build(BuildContext context) {
@@ -286,9 +504,11 @@ class _UserView extends State<UserView> {
                             Padding(
                               padding: const EdgeInsets.all(6.0),
                               child: Container(
-                                height: screenHeight * 0.23,
+                                height: screenHeight * 0.25,
                                 width: screenWidth * 0.95,
                                 child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
                                   children: [
                                     Row(
                                       children: [
@@ -418,7 +638,7 @@ class _UserView extends State<UserView> {
                                       padding: const EdgeInsets.only(right: 50),
                                       child: Row(
                                         mainAxisAlignment:
-                                            MainAxisAlignment.spaceAround,
+                                            MainAxisAlignment.spaceEvenly,
                                         children: [
                                           Container(
                                             height: 45,
@@ -450,23 +670,49 @@ class _UserView extends State<UserView> {
                                               )),
                                             ),
                                           ),
-                                          ElevatedButton(
-                                              onPressed: () {
-                                                Navigator.push(
-                                                    context,
-                                                    MaterialPageRoute(
-                                                      builder: (context) =>
-                                                          BookingScheduleAndPayment(
-                                                        StaffData: StaffData,
-                                                        StaffID: StaffID,
-                                                        Skill: Skill,
+                                          isAccepted
+                                              ? Column(
+                                              children: [
+                                                ElevatedButton(
+                                                    onPressed: () {
+                                                      Navigator.push(
+                                                          context,
+                                                          MaterialPageRoute(
+                                                            builder: (context) =>
+                                                                BookingScheduleAndPayment(
+                                                                  StaffData: StaffData,
+                                                                  StaffID: StaffID,
+                                                                  Skill: Skill,
+                                                                ),
+                                                          ));
+                                                    },
+                                                    style: ElevatedButton.styleFrom(
+                                                        backgroundColor: Colors.red),
+                                                    child: Container(
+                                                      width: 80,
+                                                      child: Center(
+                                                        child: Text(
+                                                          "Select",
+                                                          style: TextStyle(
+                                                            color: Colors.white,
+                                                            fontWeight: FontWeight.bold,
+                                                          ),
+                                                        ),
                                                       ),
-                                                    ));
+                                                    )),
+                                                Text("Valid till $validTime", style: GoogleFonts.sansita(fontSize: 10),),
+                                              ],
+                                          )
+                                          : ElevatedButton(
+                                              onPressed: () {
+                                                setState(() {
+                                                  enterUniqueCodeForOrderSelector = !enterUniqueCodeForOrderSelector;
+                                                });
                                               },
                                               style: ElevatedButton.styleFrom(
                                                   backgroundColor: Colors.red),
                                               child: Text(
-                                                "Select",
+                                                enterUniqueCodeForOrderSelector? "Close" : "Send Request",
                                                 style: TextStyle(
                                                   color: Colors.white,
                                                   fontWeight: FontWeight.bold,
@@ -591,206 +837,208 @@ class _UserView extends State<UserView> {
                             ),
 
                             // Contact information
-                            Padding(
-                              padding: const EdgeInsets.all(6.0),
-                              child: Container(
-                                height: screenHeight * 0.18,
-                                width: screenWidth * 0.95,
-                                decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(15),
-                                    boxShadow: [
-                                      BoxShadow(
-                                          color: Colors.black26,
-                                          spreadRadius: 1,
-                                          blurRadius: 1)
-                                    ]),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Padding(
-                                      padding: const EdgeInsets.only(
-                                          left: 20, top: 10, bottom: 5),
-                                      child: Text(
-                                        "Contact Information",
-                                        style: TextStyle(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.bold),
-                                      ),
-                                    ),
-                                    Divider(),
-                                    Row(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.center,
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
+                            isShowContact
+                                ? Padding(
+                                  padding: const EdgeInsets.all(6.0),
+                                  child: Container(
+                                    height: screenHeight * 0.18,
+                                    width: screenWidth * 0.95,
+                                    decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        borderRadius: BorderRadius.circular(15),
+                                        boxShadow: [
+                                          BoxShadow(
+                                              color: Colors.black26,
+                                              spreadRadius: 1,
+                                              blurRadius: 1)
+                                        ]),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
                                         Padding(
-                                          padding: const EdgeInsets.all(5.0),
-                                          child: InkWell(
-                                            onTap: () async {
-                                              var phoneNumber =
-                                                  StaffData['Phone_Number1'];
-                                              final Uri phoneUri = Uri(
-                                                scheme: 'tel',
-                                                path: phoneNumber,
-                                              );
-                                              if (await canLaunchUrl(
-                                                  phoneUri)) {
-                                                await launchUrl(phoneUri);
-                                              } else {
-                                                throw "Could not lounch phone dialer";
-                                              }
-                                            },
-                                            child: Container(
-                                              height: 60,
-                                              width: 60,
-                                              decoration: BoxDecoration(
-                                                  borderRadius:
-                                                      BorderRadius.circular(60),
-                                                  color: Colors.white,
-                                                  boxShadow: [
-                                                    BoxShadow(
-                                                        color:
-                                                            Colors.blueAccent,
-                                                        blurRadius: 1,
-                                                        spreadRadius: 1)
-                                                  ]),
-                                              child: Icon(
-                                                Icons.call,
-                                                color: Colors.blue,
-                                              ),
-                                            ),
+                                          padding: const EdgeInsets.only(
+                                              left: 20, top: 10, bottom: 5),
+                                          child: Text(
+                                            "Contact Information",
+                                            style: TextStyle(
+                                                fontSize: 18,
+                                                fontWeight: FontWeight.bold),
                                           ),
                                         ),
-                                        Padding(
-                                          padding: const EdgeInsets.all(5.0),
-                                          child: InkWell(
-                                            onTap: () async {
-                                              var phonenumber01 =
-                                                  StaffData["Phone_Number2"];
-                                              final Uri phoneUri01 = Uri(
-                                                scheme: 'tel',
-                                                path: phonenumber01,
-                                              );
-                                              if (phonenumber01 != null) {
-                                                if (await canLaunchUrl(
-                                                    phoneUri01)) {
-                                                  launchUrl(phoneUri01);
-                                                } else {
-                                                  Fluttertoast.showToast(
-                                                    msg: "Empty",
-                                                    toastLength:
-                                                        Toast.LENGTH_SHORT,
-                                                    gravity:
-                                                        ToastGravity.BOTTOM,
+                                        Divider(),
+                                        Row(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.center,
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            Padding(
+                                              padding: const EdgeInsets.all(5.0),
+                                              child: InkWell(
+                                                onTap: () async {
+                                                  var phoneNumber =
+                                                      StaffData['Phone_Number1'];
+                                                  final Uri phoneUri = Uri(
+                                                    scheme: 'tel',
+                                                    path: phoneNumber,
                                                   );
-                                                }
-                                              } else {
-                                                Fluttertoast.showToast(
-                                                  msg: "Empty",
-                                                  toastLength:
-                                                      Toast.LENGTH_SHORT,
-                                                  gravity: ToastGravity.BOTTOM,
-                                                );
-                                              }
-                                            },
-                                            child: Container(
-                                              height: 60,
-                                              width: 60,
-                                              decoration: BoxDecoration(
-                                                  borderRadius:
-                                                      BorderRadius.circular(60),
-                                                  color: Colors.white,
-                                                  boxShadow: [
-                                                    BoxShadow(
-                                                        color:
-                                                            Colors.greenAccent,
-                                                        blurRadius: 1,
-                                                        spreadRadius: 1)
-                                                  ]),
-                                              child: Icon(
-                                                Icons.call,
-                                                color: Colors.green,
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                        Padding(
-                                          padding: const EdgeInsets.all(5.0),
-                                          child: InkWell(
-                                            onTap: () async {
-                                              String subject =
-                                                  "Hiring for work from CareHub";
-                                              var Gmaildata =
-                                                  StaffData["Email"];
-                                              final Uri emailUri = Uri(
-                                                scheme: 'mailto',
-                                                path: Gmaildata,
-                                                queryParameters: {
-                                                  'subject': subject,
+                                                  if (await canLaunchUrl(
+                                                      phoneUri)) {
+                                                    await launchUrl(phoneUri);
+                                                  } else {
+                                                    Fluttertoast.showToast(msg: "System Problem, Use Staff No. $phoneNumber");
+                                                  }
                                                 },
-                                              );
-                                              if (await canLaunchUrl(
-                                                  emailUri)) {
-                                                launchUrl(emailUri);
-                                              } else {
-                                                Fluttertoast.showToast(
-                                                  msg: "Empty",
-                                                  toastLength:
-                                                      Toast.LENGTH_SHORT,
-                                                  gravity: ToastGravity.BOTTOM,
-                                                );
-                                              }
-                                            },
-                                            child: Container(
-                                              height: 60,
-                                              width: 60,
-                                              decoration: BoxDecoration(
-                                                  borderRadius:
-                                                      BorderRadius.circular(60),
-                                                  color: Colors.white,
-                                                  boxShadow: [
-                                                    BoxShadow(
-                                                        color: Colors.redAccent,
-                                                        blurRadius: 1,
-                                                        spreadRadius: 1)
-                                                  ]),
-                                              child: Icon(
-                                                Icons.mail,
-                                                color: Colors.red,
+                                                child: Container(
+                                                  height: 60,
+                                                  width: 60,
+                                                  decoration: BoxDecoration(
+                                                      borderRadius:
+                                                          BorderRadius.circular(60),
+                                                      color: Colors.white,
+                                                      boxShadow: [
+                                                        BoxShadow(
+                                                            color:
+                                                                Colors.blueAccent,
+                                                            blurRadius: 1,
+                                                            spreadRadius: 1)
+                                                      ]),
+                                                  child: Icon(
+                                                    Icons.call,
+                                                    color: Colors.blue,
+                                                  ),
+                                                ),
                                               ),
                                             ),
-                                          ),
-                                        ),
-                                        Padding(
-                                          padding: const EdgeInsets.all(5.0),
-                                          child: Container(
-                                            height: 60,
-                                            width: 60,
-                                            decoration: BoxDecoration(
-                                                borderRadius:
-                                                    BorderRadius.circular(60),
-                                                color: Colors.white,
-                                                boxShadow: [
-                                                  BoxShadow(
-                                                      color:
-                                                          Colors.yellowAccent,
-                                                      blurRadius: 1,
-                                                      spreadRadius: 1)
-                                                ]),
-                                            child: Icon(
-                                              Icons.message,
-                                              color: Colors.yellow,
+                                            Padding(
+                                              padding: const EdgeInsets.all(5.0),
+                                              child: InkWell(
+                                                onTap: () async {
+                                                  var phonenumber01 =
+                                                      StaffData["Phone_Number2"];
+                                                  final Uri phoneUri01 = Uri(
+                                                    scheme: 'tel',
+                                                    path: phonenumber01,
+                                                  );
+                                                  if (phonenumber01 != null) {
+                                                    if (await canLaunchUrl(
+                                                        phoneUri01)) {
+                                                      launchUrl(phoneUri01);
+                                                    } else {
+                                                      Fluttertoast.showToast(
+                                                        msg: "Empty",
+                                                        toastLength:
+                                                            Toast.LENGTH_SHORT,
+                                                        gravity:
+                                                            ToastGravity.BOTTOM,
+                                                      );
+                                                    }
+                                                  } else {
+                                                    Fluttertoast.showToast(
+                                                      msg: "Empty",
+                                                      toastLength:
+                                                          Toast.LENGTH_SHORT,
+                                                      gravity: ToastGravity.BOTTOM,
+                                                    );
+                                                  }
+                                                },
+                                                child: Container(
+                                                  height: 60,
+                                                  width: 60,
+                                                  decoration: BoxDecoration(
+                                                      borderRadius:
+                                                          BorderRadius.circular(60),
+                                                      color: Colors.white,
+                                                      boxShadow: [
+                                                        BoxShadow(
+                                                            color:
+                                                                Colors.greenAccent,
+                                                            blurRadius: 1,
+                                                            spreadRadius: 1)
+                                                      ]),
+                                                  child: Icon(
+                                                    Icons.call,
+                                                    color: Colors.green,
+                                                  ),
+                                                ),
+                                              ),
                                             ),
-                                          ),
-                                        ),
+                                            Padding(
+                                              padding: const EdgeInsets.all(5.0),
+                                              child: InkWell(
+                                                onTap: () async {
+                                                  String subject =
+                                                      "Hiring for work from CareHub";
+                                                  var Gmaildata =
+                                                      StaffData["Email"];
+                                                  final Uri emailUri = Uri(
+                                                    scheme: 'mailto',
+                                                    path: Gmaildata,
+                                                    queryParameters: {
+                                                      'subject': subject,
+                                                    },
+                                                  );
+                                                  if (await canLaunchUrl(
+                                                      emailUri)) {
+                                                    launchUrl(emailUri);
+                                                  } else {
+                                                    Fluttertoast.showToast(
+                                                      msg: "Empty",
+                                                      toastLength:
+                                                          Toast.LENGTH_SHORT,
+                                                      gravity: ToastGravity.BOTTOM,
+                                                    );
+                                                  }
+                                                },
+                                                child: Container(
+                                                  height: 60,
+                                                  width: 60,
+                                                  decoration: BoxDecoration(
+                                                      borderRadius:
+                                                          BorderRadius.circular(60),
+                                                      color: Colors.white,
+                                                      boxShadow: [
+                                                        BoxShadow(
+                                                            color: Colors.redAccent,
+                                                            blurRadius: 1,
+                                                            spreadRadius: 1)
+                                                      ]),
+                                                  child: Icon(
+                                                    Icons.mail,
+                                                    color: Colors.red,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                            Padding(
+                                              padding: const EdgeInsets.all(5.0),
+                                              child: Container(
+                                                height: 60,
+                                                width: 60,
+                                                decoration: BoxDecoration(
+                                                    borderRadius:
+                                                        BorderRadius.circular(60),
+                                                    color: Colors.white,
+                                                    boxShadow: [
+                                                      BoxShadow(
+                                                          color:
+                                                              Colors.yellowAccent,
+                                                          blurRadius: 1,
+                                                          spreadRadius: 1)
+                                                    ]),
+                                                child: Icon(
+                                                  Icons.message,
+                                                  color: Colors.yellow,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        )
                                       ],
-                                    )
-                                  ],
-                                ),
-                              ),
-                            ),
+                                    ),
+                                  ),
+                                  )
+                                : Container(),
 
                             // Service Rate
                             Padding(
@@ -877,7 +1125,16 @@ class _UserView extends State<UserView> {
                     ),
                   ],
                 ),
-              )
+              ),
+
+        enterUniqueCodeForOrderSelector
+            ? Center(
+              child: Padding(
+                padding: const EdgeInsets.only(top: 250.0),
+                child: enterUniqueCodeForOrder(),
+              ),
+            )
+            : Container(),
       ],
     );
   }
