@@ -1440,7 +1440,7 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                                                   Fluttertoast
                                                                       .showToast(
                                                                       msg:
-                                                                      "Payment Done");
+                                                                      "Request has been send");
                                                                 } catch (e) {
                                                                   Fluttertoast
                                                                       .showToast(

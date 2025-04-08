@@ -147,7 +147,7 @@ class _EContact extends State<EContact> {
                                             ),
                                             SizedBox(
                                               height: 50,
-                                              width: screenWidth * 0.45,
+                                              width: screenWidth * 0.6,
                                               child: TextField(
                                                 controller: PrimeryNumber,
                                                 decoration:
@@ -165,55 +165,8 @@ class _EContact extends State<EContact> {
                                                         ),
                                               ),
                                             ),
-                                            ElevatedButton(
-                                                onPressed: () {},
-                                                style: ElevatedButton.styleFrom(
-                                                    backgroundColor:
-                                                        Colors.red),
-                                                child: const Text(
-                                                  "Send",
-                                                  style: TextStyle(
-                                                      color: Colors.white),
-                                                ))
                                           ],
                                         ),
-                                      ),
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.only(
-                                          right: 10, left: 10, top: 10),
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          ElevatedButton(
-                                              onPressed: () {},
-                                              style: ElevatedButton.styleFrom(
-                                                  backgroundColor: Colors.red),
-                                              child: const Text(
-                                                "Resend",
-                                                style: TextStyle(
-                                                    color: Colors.white),
-                                              )),
-                                          SizedBox(
-                                            height: 50,
-                                            width: screenWidth * 0.45,
-                                            child: TextField(
-                                              controller: PrimeryNumber,
-                                              decoration: InputDecoration(
-                                                  hintText:
-                                                      "OTP", // Placeholder text
-                                                  border: OutlineInputBorder(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              10)),
-                                                  contentPadding: const EdgeInsets
-                                                      .fromLTRB(20, 16, 16,
-                                                      16) // Adds border around the text field
-                                                  ),
-                                            ),
-                                          ),
-                                        ],
                                       ),
                                     ),
                                     Padding(
@@ -270,7 +223,7 @@ class _EContact extends State<EContact> {
                                             ),
                                             SizedBox(
                                               height: 50,
-                                              width: screenWidth * 0.45,
+                                              width: screenWidth * 0.6,
                                               child: TextField(
                                                 controller: SeconderyNumber,
                                                 decoration:
@@ -288,55 +241,8 @@ class _EContact extends State<EContact> {
                                                         ),
                                               ),
                                             ),
-                                            ElevatedButton(
-                                                onPressed: () {},
-                                                style: ElevatedButton.styleFrom(
-                                                    backgroundColor:
-                                                        Colors.red),
-                                                child: const Text(
-                                                  "Send",
-                                                  style: TextStyle(
-                                                      color: Colors.white),
-                                                ))
                                           ],
                                         ),
-                                      ),
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.only(
-                                          right: 10, left: 10, top: 10),
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          ElevatedButton(
-                                              onPressed: () {},
-                                              style: ElevatedButton.styleFrom(
-                                                  backgroundColor: Colors.red),
-                                              child: const Text(
-                                                "Resend",
-                                                style: TextStyle(
-                                                    color: Colors.white),
-                                              )),
-                                          SizedBox(
-                                            height: 50,
-                                            width: screenWidth * 0.45,
-                                            child: TextField(
-                                              controller: PrimeryNumber,
-                                              decoration: InputDecoration(
-                                                  hintText:
-                                                      "OTP", // Placeholder text
-                                                  border: OutlineInputBorder(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              10)),
-                                                  contentPadding: const EdgeInsets
-                                                      .fromLTRB(20, 16, 16,
-                                                      16) // Adds border around the text field
-                                                  ),
-                                            ),
-                                          ),
-                                        ],
                                       ),
                                     ),
                                     Padding(
@@ -375,60 +281,13 @@ class _EContact extends State<EContact> {
                                                         ),
                                               ),
                                             ),
-                                            ElevatedButton(
-                                                onPressed: () {},
-                                                style: ElevatedButton.styleFrom(
-                                                    backgroundColor:
-                                                        Colors.red),
-                                                child: const Text(
-                                                  "Send",
-                                                  style: TextStyle(
-                                                      color: Colors.white),
-                                                ))
                                           ],
                                         ),
                                       ),
                                     ),
                                     Padding(
                                       padding: const EdgeInsets.only(
-                                          right: 10, left: 10, top: 10),
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          ElevatedButton(
-                                              onPressed: () {},
-                                              style: ElevatedButton.styleFrom(
-                                                  backgroundColor: Colors.red),
-                                              child: const Text(
-                                                "Resend",
-                                                style: TextStyle(
-                                                    color: Colors.white),
-                                              )),
-                                          SizedBox(
-                                            height: 50,
-                                            width: screenWidth * 0.45,
-                                            child: TextField(
-                                              controller: PrimeryNumber,
-                                              decoration: InputDecoration(
-                                                  hintText:
-                                                      "OTP", // Placeholder text
-                                                  border: OutlineInputBorder(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              10)),
-                                                  contentPadding: const EdgeInsets
-                                                      .fromLTRB(20, 16, 16,
-                                                      16) // Adds border around the text field
-                                                  ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.only(
-                                          right: 25, top: 15),
+                                          right: 10, top: 15),
                                       child: Row(
                                         mainAxisAlignment:
                                             MainAxisAlignment.end,
@@ -440,9 +299,7 @@ class _EContact extends State<EContact> {
                                                 String SeconderyNum =
                                                     SeconderyNumber.text;
                                                 String email = Email.text;
-                                                if (PrimeryNum.isNotEmpty &&
-                                                    SeconderyNum.isNotEmpty &&
-                                                    email.isNotEmpty) {
+
                                                   try {
                                                     User? user = FirebaseAuth
                                                         .instance.currentUser;
@@ -470,15 +327,7 @@ class _EContact extends State<EContact> {
                                                           SeconderyNum,
                                                       "Email": email,
                                                     });
-                                                    Navigator.pushReplacement(
-                                                        context,
-                                                        MaterialPageRoute(
-                                                          builder: (context) =>
-                                                              StaffProfilePage(
-                                                                  StaffID:
-                                                                      currentUID,
-                                                                  Skill: Skill),
-                                                        ));
+                                                    Navigator.pop(context);
                                                   } catch (e) {
                                                     Fluttertoast.showToast(
                                                       msg: "$e",
@@ -488,7 +337,6 @@ class _EContact extends State<EContact> {
                                                           ToastGravity.BOTTOM,
                                                     );
                                                   }
-                                                }
                                               },
                                               style: ElevatedButton.styleFrom(
                                                   backgroundColor:

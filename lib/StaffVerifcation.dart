@@ -119,6 +119,18 @@ class Staff {
     var data = await getStaffData(uid, skill);
     return data?["long"]?.toString() ?? "N/A";
   }
+  Future<String> getVerifiredPhoneNumber(String uid, String skill) async {
+    var data = await getStaffData(uid, skill);
+    return data?["VerifiedNumber"]?.toString() ?? "N/A";
+  }
+  Future<String> getFullName(String uid, String skill) async {
+    var data = await getStaffData(uid, skill);
+    return data?["VerifiedName"]?.toString() ?? "N/A";
+  }
+  Future<String> getUPI(String uid, String skill) async {
+    var data = await getStaffData(uid, skill);
+    return data?["UPI"]?.toString() ?? "N/A";
+  }
 }
 
 final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
@@ -191,6 +203,9 @@ class _StaffVerification extends State<StaffVerification> {
       "Lat": StoredStaff.getLat,
       "Long": StoredStaff.getLong,
       "actionTakenBy": StoredStaff.getActionDatenBy,
+      "FullName": StoredStaff.getFullName,
+      "UPI": StoredStaff.getUPI,
+      "VerifiedNumber": StoredStaff.getVerifiredPhoneNumber,
     };
 
     if (!fieldMethods.containsKey(fieldNeed)) {
@@ -652,8 +667,7 @@ class _StaffVerification extends State<StaffVerification> {
                                         fontWeight: FontWeight.bold)),
                                 Row(
                                   children: [
-                                    getData("FirstName"),
-                                    getData("LastName")
+                                    getData("FullName")
                                   ],
                                 ),
                                 SizedBox(
@@ -715,7 +729,17 @@ class _StaffVerification extends State<StaffVerification> {
                                       fontSize: 14,
                                       fontWeight: FontWeight.bold),
                                 ),
-                                getData("PhoneNumber"),
+                                getData("VerifiedNumber"),
+                                SizedBox(
+                                  height: 5,
+                                ),
+                                Text(
+                                  "UPI",
+                                  style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                                getData("UPI"),
                                 SizedBox(
                                   height: 5,
                                 ),
@@ -1124,7 +1148,7 @@ class _StaffVerification extends State<StaffVerification> {
                                         .update({
                                       "Verified": "rejected",
                                       "actionTakenBy": loggedAdmin,
-                                      "Feedback": feedbackToStaff.toString()
+                                      "Feedback": feedbackToStaff.text
                                     });
                                     await FirebaseFirestore.instance
                                         .collection(SelectedProf)
@@ -1132,7 +1156,7 @@ class _StaffVerification extends State<StaffVerification> {
                                         .update({
                                       "Verified": "rejected",
                                       "actionTakenBy": loggedAdmin,
-                                      "Feedback": feedbackToStaff.toString()
+                                      "Feedback": feedbackToStaff.text
                                     });
                                     setState(() {
                                       isStaffOpen = false;

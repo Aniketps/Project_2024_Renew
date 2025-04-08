@@ -61,6 +61,9 @@ class _KYC extends State<KYC> {
     }
     return "";
   }
+  TextEditingController PhoneNumber = TextEditingController();
+  TextEditingController UPI = TextEditingController();
+  TextEditingController FullName = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -110,6 +113,7 @@ class _KYC extends State<KYC> {
                       height: 50,
                       width: MediaQuery.sizeOf(context).width * 0.8,
                       child: TextField(
+                        controller: FullName,
                         keyboardType: TextInputType.text,
                         style: TextStyle(fontSize: 14),
                         decoration: InputDecoration(
@@ -134,6 +138,7 @@ class _KYC extends State<KYC> {
                       height: 50,
                       width: MediaQuery.sizeOf(context).width * 0.8,
                       child: TextField(
+                        controller: UPI,
                         keyboardType: TextInputType.text,
                         style: TextStyle(fontSize: 14),
                         decoration: InputDecoration(
@@ -156,6 +161,7 @@ class _KYC extends State<KYC> {
                       height: 50,
                       width: MediaQuery.sizeOf(context).width * 0.8,
                       child: TextField(
+                        controller: PhoneNumber,
                         keyboardType: TextInputType.text,
                         style: TextStyle(fontSize: 14),
                         decoration: InputDecoration(
@@ -499,19 +505,21 @@ class _KYC extends State<KYC> {
                                       .doc(user?.uid)
                                       .update({
                                     'Verified': "pending",
+                                    "UPI" : UPI.text,
+                                    "VerifiedName" : FullName.text,
+                                    "VerifiedNumber" : PhoneNumber.text
                                   });
                                   await FirebaseFirestore.instance
                                       .collection("user")
                                       .doc(user?.uid)
                                       .update({
                                     'Verified': "pending",
+                                    "UPI" : UPI.text,
+                                    "VerifiedName" : FullName.text,
+                                    "VerifiedNumber" : PhoneNumber.text
                                   });
                                   Fluttertoast.showToast(msg: "Request Send");
-                                  Navigator.pushReplacement(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => MyHomePage(),
-                                      ));
+                                 Navigator.pop(context);
                                 } else {
                                   Fluttertoast.showToast(
                                       msg: "Fill All Details");

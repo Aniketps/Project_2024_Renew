@@ -229,16 +229,7 @@ class _EServiceRateState extends State<EServiceRate> {
                                                     });
 
                                                     // Navigate to Staff Profile Page
-                                                    Navigator.pushReplacement(
-                                                      context,
-                                                      MaterialPageRoute(
-                                                        builder: (context) =>
-                                                            StaffProfilePage(
-                                                          StaffID: currentUID,
-                                                          Skill: Skill,
-                                                        ),
-                                                      ),
-                                                    );
+                                                    Navigator.pop(context);
                                                   } else {
                                                     Fluttertoast.showToast(
                                                       msg: "No user logged in",

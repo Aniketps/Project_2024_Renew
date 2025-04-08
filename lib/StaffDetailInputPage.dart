@@ -186,7 +186,7 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
           ),
           Center(
             child: Container(
-              height: 520,
+              height: 400,
               width: 300,
               decoration: BoxDecoration(
                   color: Colors.white,
@@ -257,7 +257,7 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                           padding: const EdgeInsets.only(right: 5),
                           child: Container(
                             height: 50,
-                            width: 175,
+                            width: 175+90,
                             child: TextField(
                               keyboardType: TextInputType.numberWithOptions(),
                               controller: PhoneNo,
@@ -273,69 +273,6 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                                       16) // Adds border around the text field
                                   ),
                             ),
-                          ),
-                        ),
-                        Container(
-                            height: 50,
-                            width: 90,
-                            child: ElevatedButton(
-                              onPressed: () {
-                                Fluttertoast.showToast(
-                                    msg: "Feature Not Added");
-                              },
-                              child: Text(
-                                "Send",
-                                style: TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold),
-                              ),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.red,
-                              ),
-                            )),
-                      ],
-                    ),
-                  ),
-                  Padding(
-                    padding:
-                        const EdgeInsets.only(right: 15, left: 15, top: 10),
-                    child: Row(
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.only(right: 270 * 0.05),
-                          child: Container(
-                              height: 50,
-                              width: (270 * 0.45),
-                              child: ElevatedButton(
-                                onPressed: () async {
-                                  Fluttertoast.showToast(
-                                      msg: "Feature Not Added");
-                                },
-                                child: Text(
-                                  "Resend",
-                                  style: TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold),
-                                ),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.red,
-                                ),
-                              )),
-                        ),
-                        Container(
-                          height: 50,
-                          width: (270 * 0.5),
-                          child: TextField(
-                            enabled: false,
-                            controller: OTP,
-                            decoration: InputDecoration(
-                                labelText: "OTP", // Placeholder text
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(50),
-                                ),
-                                contentPadding: EdgeInsets.fromLTRB(20, 16, 16,
-                                    16) // Adds border around the text field
-                                ),
                           ),
                         ),
                       ],
@@ -359,156 +296,171 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                       ),
                     ),
                   ),
-                  Padding(
-                    padding:
-                        const EdgeInsets.only(right: 15, left: 15, top: 10),
-                    child: Container(
-                        height: 50,
-                        child: ElevatedButton(
-                            onPressed: () async {
-                              final pickedImage = await ImagePicker()
-                                  .pickImage(source: ImageSource.gallery);
-                              if (pickedImage != null) {
+                  Container(
+                    width: 265,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Padding(
+                          padding:
+                              const EdgeInsets.only(top: 10),
+                          child: ElevatedButton(
+                              onPressed: () async {
+                                final pickedImage = await ImagePicker()
+                                    .pickImage(source: ImageSource.gallery);
+                                if (pickedImage != null) {
+                                  setState(() {
+                                    imagePath = File(pickedImage.path);
+                                  });
+                                }
+                              },
+                              child: Text(imagePath == null ? "Select Image" : "Image Selected")),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(top: 15),
+                          child: ElevatedButton(
+                              onPressed: () async {
                                 setState(() {
-                                  imagePath = File(pickedImage.path);
+                                  isLoading = true;
                                 });
-                              }
-                            },
-                            child: Text("Select Image"))),
+
+                                String phone = PhoneNo.text;
+                                String otp = OTP.text;
+                                String city = City.text;
+                                String skill = selectedValue.toString();
+                                if (phone.isNotEmpty &&
+                                    city.isNotEmpty &&
+                                    skill.isNotEmpty) {
+                                  try {
+                                    UserCredential userCredential = await FirebaseAuth
+                                        .instance
+                                        .createUserWithEmailAndPassword(
+                                        email: Email, password: Password);
+                                    User? user = userCredential.user;
+
+                                    String? fileName =
+                                        imagePath?.path.split('/').last;
+                                    UploadTask uploadTask = FirebaseStorage.instance
+                                        .ref()
+                                        .child("${user?.uid}/${fileName}")
+                                        .putFile(imagePath!);
+                                    TaskSnapshot snapshot = await uploadTask;
+                                    Reference ref = snapshot.ref;
+                                    String profileURL = await ref.getDownloadURL();
+
+                                    await FirebaseFirestore.instance
+                                        .collection(skill.toLowerCase())
+                                        .doc(user?.uid)
+                                        .set({
+                                      'Email': Email,
+                                      'City': city,
+                                      'First_name': FirstName,
+                                      'professionOfStaff':
+                                      skill[0].toLowerCase() + skill.substring(1),
+                                      'Password': Password,
+                                      'Phone_Number1': phone,
+                                      'Profile_Pic': profileURL,
+                                      'Last_name': LastName,
+                                      "expire" : DateTime.now().add(Duration(days: 37)),
+                                      'Rating': 0,
+                                      'Status': false,
+                                      'Verified': 'unverified',
+                                      'Date_of_registered': DateFormat("dd/MM/yyyy")
+                                          .format(DateTime.now()),
+                                      'Verified_status': false,
+                                    });
+                                    await FirebaseFirestore.instance
+                                        .collection('user')
+                                        .doc(user?.uid)
+                                        .set({
+                                      "Email": Email,
+                                      "First_name": FirstName,
+                                      'professionOfStaff':
+                                      skill[0].toLowerCase() + skill.substring(1),
+                                      "Last_name": LastName,
+                                      'Rating': 0,
+                                      "Password": Password,
+                                      "expire" : DateTime.now().add(Duration(days: 37)),
+                                      'Verified': 'unverified',
+                                      "Phone_Number1": phone,
+                                      "City": city,
+                                      "Profile_Pic": profileURL,
+                                    });
+
+                                    await FirebaseFirestore.instance
+                                        .collection('Ratings')
+                                        .doc(user?.uid)
+                                        .set({
+                                      "1Star": 0,
+                                      "2Star": 0,
+                                      "3Star": 0,
+                                      "4Star": 0,
+                                      "5Star": 0,
+                                    });
+
+                                    FirebaseFirestore.instance.collection("Payment Records").add({
+                                      "duration" : "1 Month",
+                                      "expire" : DateTime.now().add(Duration(days: 37)),
+                                      "plan" : "Free Trial",
+                                      "staffUID" : user?.uid,
+                                      "start" : DateTime.now(),
+                                      "feature1" : "None",
+                                    });
+
+                                    user?.sendEmailVerification();
+                                    await FirebaseAuth.instance.signOut();
+                                    Fluttertoast.showToast(
+                                        msg:
+                                        "Link send, A link has been send to your email",
+                                        toastLength: Toast.LENGTH_LONG);
+                                    Navigator.pushReplacement(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => LoginPage(),
+                                        ));
+                                    setState(() {
+                                      isLoading = false;
+                                    });
+                                  } on FirebaseAuthException catch (e) {
+                                    setState(() {
+                                      isLoading = false;
+                                    });
+                                    Fluttertoast.showToast(msg: e.message!);
+                                    setState(() {
+                                      ErrorData = e.message!;
+                                    });
+                                  } catch (e) {
+                                    setState(() {
+                                      isLoading = false;
+                                    });
+                                    Fluttertoast.showToast(msg: "$e");
+                                    setState(() {
+                                      ErrorData = "$e";
+                                    });
+                                  }
+                                } else {
+                                  setState(() {
+                                    isLoading = false;
+                                  });
+                                  Fluttertoast.showToast(msg: "Fill all the blanks");
+                                  setState(() {
+                                    ErrorData = "Fill all the blanks";
+                                  });
+                                }
+                              },
+                              style: ButtonStyle(
+                                backgroundColor: WidgetStatePropertyAll(Color(
+                                    0xff0009a2))
+                              ),
+                              child: Text("Submit", style: TextStyle(color: Colors.white),)),
+                        ),
+                      ],
+                    ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.only(top: 15),
-                    child: ElevatedButton(
-                        onPressed: () async {
-                          setState(() {
-                            isLoading = true;
-                          });
-
-                          String phone = PhoneNo.text;
-                          String otp = OTP.text;
-                          String city = City.text;
-                          String skill = selectedValue.toString();
-                          if (phone.isNotEmpty &&
-                              city.isNotEmpty &&
-                              skill.isNotEmpty) {
-                            try {
-                              UserCredential userCredential = await FirebaseAuth
-                                  .instance
-                                  .createUserWithEmailAndPassword(
-                                      email: Email, password: Password);
-                              User? user = userCredential.user;
-
-                              String? fileName =
-                                  imagePath?.path.split('/').last;
-                              UploadTask uploadTask = FirebaseStorage.instance
-                                  .ref()
-                                  .child("${user?.uid}/${fileName}")
-                                  .putFile(imagePath!);
-                              TaskSnapshot snapshot = await uploadTask;
-                              Reference ref = snapshot.ref;
-                              String profileURL = await ref.getDownloadURL();
-
-                              await FirebaseFirestore.instance
-                                  .collection(skill.toLowerCase())
-                                  .doc(user?.uid)
-                                  .set({
-                                'Email': Email,
-                                'City': city,
-                                'First_name': FirstName,
-                                'professionOfStaff':
-                                    skill[0].toLowerCase() + skill.substring(1),
-                                'Password': Password,
-                                'Phone_Number1': phone,
-                                'Profile_Pic': profileURL,
-                                'Last_name': LastName,
-                                'Rating': 0,
-                                'Status': false,
-                                'Verified': 'unverified',
-                                'Date_of_registered': DateFormat("dd/MM/yyyy")
-                                    .format(DateTime.now()),
-                                'Verified_status': false,
-                              });
-                              await FirebaseFirestore.instance
-                                  .collection('user')
-                                  .doc(user?.uid)
-                                  .set({
-                                "Email": Email,
-                                "First_name": FirstName,
-                                'professionOfStaff':
-                                    skill[0].toLowerCase() + skill.substring(1),
-                                "Last_name": LastName,
-                                'Rating': 0,
-                                "Password": Password,
-                                'Verified': 'unverified',
-                                "Phone_Number1": phone,
-                                "City": city,
-                                "Profile_Pic": profileURL,
-                              });
-
-                              await FirebaseFirestore.instance
-                                  .collection('Ratings')
-                                  .doc(user?.uid)
-                                  .set({
-                                "1Star": 0,
-                                "2Star": 0,
-                                "3Star": 0,
-                                "4Star": 0,
-                                "5Star": 0,
-                              });
-
-                              FirebaseFirestore.instance.collection("Payment Records").add({
-                                "duration" : "1 Month",
-                                "expire" : DateTime.now().add(Duration(days: 37)),
-                                "plan" : "Free Trial",
-                                "staffUID" : user?.uid,
-                                "start" : DateTime.now(),
-                                "feature1" : "None",
-                              });
-
-                              user?.sendEmailVerification();
-                              await FirebaseAuth.instance.signOut();
-                              Fluttertoast.showToast(
-                                  msg:
-                                      "Link send, A link has been send to your email",
-                                  toastLength: Toast.LENGTH_LONG);
-                              Navigator.pushReplacement(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => LoginPage(),
-                                  ));
-                              setState(() {
-                                isLoading = false;
-                              });
-                            } on FirebaseAuthException catch (e) {
-                              setState(() {
-                                isLoading = false;
-                              });
-                              Fluttertoast.showToast(msg: e.message!);
-                              setState(() {
-                                ErrorData = e.message!;
-                              });
-                            } catch (e) {
-                              setState(() {
-                                isLoading = false;
-                              });
-                              Fluttertoast.showToast(msg: "$e");
-                              setState(() {
-                                ErrorData = "$e";
-                              });
-                            }
-                          } else {
-                            setState(() {
-                              isLoading = false;
-                            });
-                            Fluttertoast.showToast(msg: "Fill all the blanks");
-                            setState(() {
-                              ErrorData = "Fill all the blanks";
-                            });
-                          }
-                        },
-                        child: Text("Submit")),
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text(ErrorData, textAlign: TextAlign.justify,),
                   ),
-                  Text(ErrorData),
                 ],
               ),
             ),

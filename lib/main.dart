@@ -689,185 +689,188 @@ class _MyHomePageState extends State<MyHomePage> {
                                       var data = snapshot.data!.docs[index]
                                           .data() as Map<String, dynamic>;
                                       var UID = snapshot.data!.docs[index].id;
-                                      if (data['professionOfStaff'] != null &&
-                                          data["Verified"] == "verified" &&
-                                          data['First_name'] != null &&
-                                          data['First_name']
-                                              .toString()
-                                              .toLowerCase()
-                                              .startsWith(
-                                                  SearchGlobal.toLowerCase())) {
-                                        return Padding(
-                                          padding: const EdgeInsets.all(5.0),
-                                          child: InkWell(
-                                            onTap: () {
-                                              Navigator.push(
-                                                  context,
-                                                  MaterialPageRoute(
-                                                    builder: (context) =>
-                                                        StaffProfilePage(
-                                                            StaffID: UID,
-                                                            Skill: data[
-                                                                'professionOfStaff']),
-                                                  ));
-                                            },
-                                            child: Container(
-                                              height: 50,
-                                              width: 200,
-                                              decoration: BoxDecoration(
-                                                  color: Colors.white,
-                                                  borderRadius:
-                                                      BorderRadius.circular(15),
-                                                  boxShadow: [
-                                                    BoxShadow(
-                                                        color: Colors.black26,
-                                                        spreadRadius: 1,
-                                                        blurRadius: 1)
-                                                  ]),
-                                              child: Row(
-                                                children: [
-                                                  Padding(
-                                                    padding:
-                                                        const EdgeInsets.only(
-                                                            left: 10),
-                                                    child: Container(
-                                                      height: 40,
-                                                      width: 40,
-                                                      decoration: BoxDecoration(
-                                                          borderRadius:
-                                                              BorderRadius
-                                                                  .circular(40),
-                                                          image: DecorationImage(
-                                                              image: NetworkImage(
-                                                                  data[
-                                                                      'Profile_Pic']),
-                                                              fit: BoxFit
-                                                                  .cover)),
+                                      DateTime now = DateTime.now();
+
+                                      if(data.containsKey("expire") && (data["expire"] as Timestamp).toDate().isAfter(now)){
+                                        if (data['professionOfStaff'] != null &&
+                                            data["Verified"] == "verified" &&
+                                            data['First_name'] != null &&
+                                            data['First_name'].toString()
+                                                .toLowerCase()
+                                                .startsWith(
+                                                SearchGlobal.toLowerCase())) {
+                                          return Padding(
+                                            padding: const EdgeInsets.all(5.0),
+                                            child: InkWell(
+                                              onTap: () {
+                                                Navigator.push(
+                                                    context,
+                                                    MaterialPageRoute(
+                                                      builder: (context) =>
+                                                          StaffProfilePage(
+                                                              StaffID: UID,
+                                                              Skill: data[
+                                                              'professionOfStaff']),
+                                                    ));
+                                              },
+                                              child: Container(
+                                                height: 50,
+                                                width: 200,
+                                                decoration: BoxDecoration(
+                                                    color: Colors.white,
+                                                    borderRadius:
+                                                    BorderRadius.circular(15),
+                                                    boxShadow: [
+                                                      BoxShadow(
+                                                          color: Colors.black26,
+                                                          spreadRadius: 1,
+                                                          blurRadius: 1)
+                                                    ]),
+                                                child: Row(
+                                                  children: [
+                                                    Padding(
+                                                      padding:
+                                                      const EdgeInsets.only(
+                                                          left: 10),
+                                                      child: Container(
+                                                        height: 40,
+                                                        width: 40,
+                                                        decoration: BoxDecoration(
+                                                            borderRadius:
+                                                            BorderRadius
+                                                                .circular(40),
+                                                            image: DecorationImage(
+                                                                image: NetworkImage(
+                                                                    data[
+                                                                    'Profile_Pic']),
+                                                                fit: BoxFit
+                                                                    .cover)),
+                                                      ),
                                                     ),
-                                                  ),
-                                                  Padding(
-                                                    padding:
-                                                        const EdgeInsets.only(
-                                                            left: 10),
-                                                    child: Container(
-                                                        width: 150,
-                                                        child: Text(
-                                                          "${data['First_name']} ${data['Last_name']}",
-                                                          overflow: TextOverflow
-                                                              .ellipsis,
-                                                          maxLines: 1,
-                                                        )),
-                                                  ),
-                                                  Padding(
-                                                    padding:
-                                                        const EdgeInsets.only(
-                                                            left: 10),
-                                                    child: Text(
-                                                      data['City'][0]
-                                                              .toUpperCase() +
-                                                          data['City']
-                                                              .substring(1),
-                                                      style: TextStyle(
-                                                          color: Colors.green,
-                                                          fontWeight:
-                                                              FontWeight.bold),
+                                                    Padding(
+                                                      padding:
+                                                      const EdgeInsets.only(
+                                                          left: 10),
+                                                      child: Container(
+                                                          width: 150,
+                                                          child: Text(
+                                                            "${data['First_name']} ${data['Last_name']}",
+                                                            overflow: TextOverflow
+                                                                .ellipsis,
+                                                            maxLines: 1,
+                                                          )),
                                                     ),
-                                                  ),
-                                                ],
+                                                    Padding(
+                                                      padding:
+                                                      const EdgeInsets.only(
+                                                          left: 10),
+                                                      child: Text(
+                                                        data['City'][0]
+                                                            .toUpperCase() +
+                                                            data['City']
+                                                                .substring(1),
+                                                        style: TextStyle(
+                                                            color: Colors.green,
+                                                            fontWeight:
+                                                            FontWeight.bold),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
                                               ),
                                             ),
-                                          ),
-                                        );
-                                      } else if (data['professionOfStaff'] !=
-                                              null &&
-                                          data["Verified"] == "verified" &&
-                                          data['First_name'] != null &&
-                                          data['City']
-                                              .toString()
-                                              .toLowerCase()
-                                              .startsWith(
-                                                  SearchGlobal.toLowerCase())) {
-                                        return Padding(
-                                          padding: const EdgeInsets.all(5.0),
-                                          child: InkWell(
-                                            onTap: () {
-                                              Navigator.push(
-                                                  context,
-                                                  MaterialPageRoute(
-                                                    builder: (context) =>
-                                                        StaffProfilePage(
-                                                            StaffID: UID,
-                                                            Skill: data[
-                                                                'professionOfStaff']),
-                                                  ));
-                                            },
-                                            child: Container(
-                                              height: 50,
-                                              width: 200,
-                                              decoration: BoxDecoration(
-                                                  color: Colors.white,
-                                                  borderRadius:
-                                                      BorderRadius.circular(15),
-                                                  boxShadow: [
-                                                    BoxShadow(
-                                                        color: Colors.black26,
-                                                        spreadRadius: 1,
-                                                        blurRadius: 1)
-                                                  ]),
-                                              child: Row(
-                                                children: [
-                                                  Padding(
-                                                    padding:
-                                                        const EdgeInsets.only(
-                                                            left: 10),
-                                                    child: Container(
-                                                      height: 40,
-                                                      width: 40,
-                                                      decoration: BoxDecoration(
-                                                          borderRadius:
-                                                              BorderRadius
-                                                                  .circular(40),
-                                                          image: DecorationImage(
-                                                              image: NetworkImage(
-                                                                  data[
-                                                                      'Profile_Pic']),
-                                                              fit: BoxFit
-                                                                  .cover)),
+                                          );
+                                        }
+                                        else
+                                        if (data['professionOfStaff'] != null &&
+                                            data["Verified"] == "verified" &&
+                                            data['First_name'] != null &&
+                                            data['City'].toString()
+                                                .toLowerCase()
+                                                .startsWith(
+                                                SearchGlobal.toLowerCase())) {
+                                          return Padding(
+                                            padding: const EdgeInsets.all(5.0),
+                                            child: InkWell(
+                                              onTap: () {
+                                                Navigator.push(
+                                                    context,
+                                                    MaterialPageRoute(
+                                                      builder: (context) =>
+                                                          StaffProfilePage(
+                                                              StaffID: UID,
+                                                              Skill: data[
+                                                              'professionOfStaff']),
+                                                    ));
+                                              },
+                                              child: Container(
+                                                height: 50,
+                                                width: 200,
+                                                decoration: BoxDecoration(
+                                                    color: Colors.white,
+                                                    borderRadius:
+                                                    BorderRadius.circular(15),
+                                                    boxShadow: [
+                                                      BoxShadow(
+                                                          color: Colors.black26,
+                                                          spreadRadius: 1,
+                                                          blurRadius: 1)
+                                                    ]),
+                                                child: Row(
+                                                  children: [
+                                                    Padding(
+                                                      padding:
+                                                      const EdgeInsets.only(
+                                                          left: 10),
+                                                      child: Container(
+                                                        height: 40,
+                                                        width: 40,
+                                                        decoration: BoxDecoration(
+                                                            borderRadius:
+                                                            BorderRadius
+                                                                .circular(40),
+                                                            image: DecorationImage(
+                                                                image: NetworkImage(
+                                                                    data[
+                                                                    'Profile_Pic']),
+                                                                fit: BoxFit
+                                                                    .cover)),
+                                                      ),
                                                     ),
-                                                  ),
-                                                  Padding(
-                                                    padding:
-                                                        const EdgeInsets.only(
-                                                            left: 10),
-                                                    child: Container(
-                                                        width: 150,
-                                                        child: Text(
-                                                          "${data['First_name']} ${data['Last_name']}",
-                                                          overflow: TextOverflow
-                                                              .ellipsis,
-                                                          maxLines: 1,
-                                                        )),
-                                                  ),
-                                                  Padding(
-                                                    padding:
-                                                        const EdgeInsets.only(
-                                                            left: 10),
-                                                    child: Text(
-                                                      data['City'][0]
-                                                              .toUpperCase() +
-                                                          data['City']
-                                                              .substring(1),
-                                                      style: TextStyle(
-                                                          color: Colors.green,
-                                                          fontWeight:
-                                                              FontWeight.bold),
+                                                    Padding(
+                                                      padding:
+                                                      const EdgeInsets.only(
+                                                          left: 10),
+                                                      child: Container(
+                                                          width: 150,
+                                                          child: Text(
+                                                            "${data['First_name']} ${data['Last_name']}",
+                                                            overflow: TextOverflow
+                                                                .ellipsis,
+                                                            maxLines: 1,
+                                                          )),
                                                     ),
-                                                  ),
-                                                ],
+                                                    Padding(
+                                                      padding:
+                                                      const EdgeInsets.only(
+                                                          left: 10),
+                                                      child: Text(
+                                                        data['City'][0]
+                                                            .toUpperCase() +
+                                                            data['City']
+                                                                .substring(1),
+                                                        style: TextStyle(
+                                                            color: Colors.green,
+                                                            fontWeight:
+                                                            FontWeight.bold),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
                                               ),
                                             ),
-                                          ),
-                                        );
+                                          );
+                                        }
                                       }
                                       return Container();
                                     },

@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:carehub/Admin.dart';
 import 'package:carehub/EContact.dart';
 import 'package:carehub/EPersonal.dart';
 import 'package:carehub/EServiceRate.dart';
@@ -194,6 +195,9 @@ class _StaffProfileHome extends State<StaffProfileHome> {
               ListTile(
                 leading: Icon(Icons.home),
                 title: Text('Home'),
+                onLongPress: (){
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => AdminLogin(),));
+                },
                 onTap: () {
                   Navigator.pushReplacement(
                       context,
@@ -408,6 +412,9 @@ class _StaffProfileHome extends State<StaffProfileHome> {
             ListTile(
               leading: Icon(Icons.home),
               title: Text('Home'),
+              onLongPress: (){
+                Navigator.push(context, MaterialPageRoute(builder:(context) => AdminLogin(),));
+              },
               onTap: () {
                 Navigator.pushReplacement(
                     context,
@@ -635,7 +642,7 @@ class _StaffView extends State<StaffView> {
     final screenHeight = mediaquery.size.height;
     
     
-    Container plans(String title, String price, IconData icon3,  IconData icon4){
+    Container plans(String title, String price, IconData icon3,  IconData icon4, Color color1, Color color2){
       return Container(
         height: 400,
         width: screenWidth * 0.8,
@@ -712,14 +719,14 @@ class _StaffView extends State<StaffView> {
                       ),
                       Row(
                         children: [
-                          Icon(icon3, color: Colors.red, size: 18),
+                          Icon(icon3, color: color1, size: 18),
                           SizedBox(width: 8),
                           Text("Profile in recommendations", style: GoogleFonts.roboto(color: Colors.white)),
                         ],
                       ),
                       Row(
                         children: [
-                          Icon(icon4, color: Colors.red, size: 18),
+                          Icon(icon4, color: color2, size: 18),
                           SizedBox(width: 8),
                           Text("Extra 1 month", style: GoogleFonts.roboto(color: Colors.white)),
                         ],
@@ -1219,7 +1226,7 @@ class _StaffView extends State<StaffView> {
                                   mainAxisAlignment: MainAxisAlignment.start,
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text("Congratulations, \nYour Active on ${paymentRecordModel?.plan} \n${paymentRecordModel?.duration} plan.", style: GoogleFonts.aclonica(fontSize: 16,color: Color(0xFFFFFFff), shadows: [BoxShadow(color: Color(0x000000ff))]),),
+                                    Text("Congratulations, Your\nActive on ${paymentRecordModel?.plan} \n${paymentRecordModel?.duration} plan.", style: GoogleFonts.aclonica(fontSize: 16,color: Color(0xFFFFFFff), shadows: [BoxShadow(color: Color(0x000000ff))]),),
                                     Text("Valid till ${DateFormat("d MMM y").format(paymentRecordModel!.expire)}", style: GoogleFonts.alkatra(),)
                                   ],
                                 ),
@@ -1280,9 +1287,21 @@ class _StaffView extends State<StaffView> {
                                       )
                                     ] else if (StaffData["Verified"] ==
                                         "rejected") ...[
-                                      Text(
-                                        "Rejected",
-                                        style: TextStyle(fontSize: 20),
+                                      InkWell(
+                                        onTap: () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) => KYC(
+                                                  Skill: StaffData[
+                                                  'professionOfStaff']),
+                                            ),
+                                          );
+                                        },
+                                        child: Text(
+                                          "Rejected, Click to apply again... ${StaffData["Feedback"]?? ""}",
+                                          style: TextStyle(fontSize: 20),
+                                        ),
                                       )
                                     ] else if (StaffData["Verified"] ==
                                         "verified") ...[
@@ -1660,11 +1679,11 @@ class _StaffView extends State<StaffView> {
                           scrollDirection: Axis.vertical,
                           child: Column(
                             children: [
-                              plans("BASIC", "99", Icons.cancel, Icons.cancel),
+                              plans("BASIC", "99", Icons.cancel, Icons.cancel, Colors.red, Colors.red),
                               SizedBox(height: 15),
-                              plans("ADVANCE", "149", Icons.check_circle, Icons.cancel),
+                              plans("ADVANCE", "149", Icons.check_circle, Icons.cancel, Colors.green, Colors.red),
                               SizedBox(height: 15),
-                              plans("COMBO", "199", Icons.check_circle, Icons.check_circle),
+                              plans("COMBO", "199", Icons.check_circle, Icons.check_circle, Colors.green, Colors.green),
                             ],
                           ),
                         ),
