@@ -407,6 +407,7 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                               TaskSnapshot snapshot = await uploadTask;
                               Reference ref = snapshot.ref;
                               String profileURL = await ref.getDownloadURL();
+
                               await FirebaseFirestore.instance
                                   .collection(skill.toLowerCase())
                                   .doc(user?.uid)
@@ -454,6 +455,16 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                                 "4Star": 0,
                                 "5Star": 0,
                               });
+
+                              FirebaseFirestore.instance.collection("Payment Records").add({
+                                "duration" : "1 Month",
+                                "expire" : DateTime.now().add(Duration(days: 37)),
+                                "plan" : "Free Trial",
+                                "staffUID" : user?.uid,
+                                "start" : DateTime.now(),
+                                "feature1" : "None",
+                              });
+
                               user?.sendEmailVerification();
                               await FirebaseAuth.instance.signOut();
                               Fluttertoast.showToast(

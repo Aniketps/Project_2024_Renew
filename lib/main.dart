@@ -15,6 +15,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'ContactUs.dart';
 import 'LoaderSupport.dart';
@@ -42,6 +43,32 @@ Future<void> main() async {
   await FirebaseApi().initNotifications();
   FirebaseMessaging.onBackgroundMessage(_firebasebackgroundhandler);
   runApp(const MyApp());
+}
+
+Future<void> checkInternet(BuildContext context) async {
+  final hasInternet = await InternetConnection().hasInternetAccess;
+  if (!hasInternet) {
+    showNoInternetDialog(context);
+  }
+}
+
+void showNoInternetDialog(BuildContext context) {
+  showDialog(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: Text("No Internet Connection"),
+      content: Text("Please turn on your internet to use the app."),
+      actions: [
+        TextButton(
+          onPressed: () {
+            Navigator.pop(context);
+            checkInternet(context); // Retry
+          },
+          child: Text("Retry"),
+        ),
+      ],
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -77,6 +104,8 @@ class MyApp extends StatelessWidget {
             );
           }
 
+          checkInternet(context);
+
           return snapshot.data == true ? LoginPage() : PrivacyPolicy();
         },
       ),
@@ -96,7 +125,6 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
-
     notificationService.requestNotificationPermission();
     notificationService.getDeviceToken();
     notificationService.firebaseInit(context);

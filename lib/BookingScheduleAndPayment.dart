@@ -1568,7 +1568,7 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                                                 ]),
                                                             child: Center(
                                                                 child: Text(
-                                                              "Secure Pay now ${total} ₹",
+                                                              "Hire Now",
                                                               style: TextStyle(
                                                                   color: Colors
                                                                       .white),

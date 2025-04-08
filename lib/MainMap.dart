@@ -185,77 +185,80 @@ class _MainMapState extends State<MainMap> {
 
               var StatffsData = documentReference.data();
 
-              if (StatffsData?['Status'] == true) {
-                String StaffID = doc.id;
-                print("The uid is : $StaffID");
-                String Skill = professionOfStaff;
+              DateTime now = DateTime.now();
+              if(data.containsKey("expire") && (data["expire"] as Timestamp).toDate().isAfter(now)){
+                if (StatffsData?['Status'] == true) {
+                  String StaffID = doc.id;
+                  print("The uid is : $StaffID");
+                  String Skill = professionOfStaff;
 
-                setState(() {
-                  StaffLocation staffLocation = StaffLocation(
-                    location: LatLng(lat, long),
-                    staffID: StaffID,
-                    skill: Skill,
-                    Profile_Pic: StatffsData?['Profile_Pic'] ??
-                        "https://img.pikbest.com/png-images/qiantu/cute-cartoon-male-company-employee-happy-smiling-face-1_2659207.png!sw800",
-                  );
+                  setState(() {
+                    StaffLocation staffLocation = StaffLocation(
+                      location: LatLng(lat, long),
+                      staffID: StaffID,
+                      skill: Skill,
+                      Profile_Pic: StatffsData?['Profile_Pic'] ??
+                          "https://img.pikbest.com/png-images/qiantu/cute-cartoon-male-company-employee-happy-smiling-face-1_2659207.png!sw800",
+                    );
 
-                  // Add to corresponding markers list based on profession
-                  switch (professionOfStaff) {
-                    case 'chef':
-                      chefmarker.add(staffLocation);
-                      break;
-                    case 'personal Care Assistants':
-                      PersonalCareAssistantsMarker.add(staffLocation);
-                      break;
-                    case 'driver':
-                      DriverMarker.add(staffLocation);
-                      break;
-                    case 'security Guards':
-                      SecurityGuardsMarker.add(staffLocation);
-                      break;
-                    case 'home Guards':
-                      HomeGuardsMarker.add(staffLocation);
-                      break;
-                    case 'elder Companions':
-                      ElderCompanionsMarker.add(staffLocation);
-                      break;
-                    case 'babysitters':
-                      BabysittersMarker.add(staffLocation);
-                      break;
-                    case 'cleaner':
-                      CleaningStaffMarker.add(staffLocation);
-                      break;
-                    case 'housekeepers':
-                      HousekeepersMarker.add(staffLocation);
-                      break;
-                    case 'elderly':
-                      ElderCompanionsMarker.add(staffLocation);
-                      break;
-                    case 'paramedics':
-                      ParamedicsMarker.add(staffLocation);
-                      break;
-                    case 'occupational Therapists':
-                      OccupationalTherapistsMarker.add(staffLocation);
-                      break;
-                    case 'physiotherapists':
-                      PhysiotherapistsMarker.add(staffLocation);
-                      break;
-                    case 'home Health Aides':
-                      HomeHealthAidesMarker.add(staffLocation);
-                      break;
-                    case 'certified Nursing Assistants':
-                      CertifiedNursAssistentMarker.add(staffLocation);
-                      break;
-                    case 'licensed Practical Nurses':
-                      LicensdePracticalNurseMarker.add(staffLocation);
-                      break;
-                    case 'registered Nurses':
-                      RegisteredNurseMarker.add(staffLocation);
-                      break;
-                  }
+                    // Add to corresponding markers list based on profession
+                    switch (professionOfStaff) {
+                      case 'chef':
+                        chefmarker.add(staffLocation);
+                        break;
+                      case 'personal Care Assistants':
+                        PersonalCareAssistantsMarker.add(staffLocation);
+                        break;
+                      case 'driver':
+                        DriverMarker.add(staffLocation);
+                        break;
+                      case 'security Guards':
+                        SecurityGuardsMarker.add(staffLocation);
+                        break;
+                      case 'home Guards':
+                        HomeGuardsMarker.add(staffLocation);
+                        break;
+                      case 'elder Companions':
+                        ElderCompanionsMarker.add(staffLocation);
+                        break;
+                      case 'babysitters':
+                        BabysittersMarker.add(staffLocation);
+                        break;
+                      case 'cleaner':
+                        CleaningStaffMarker.add(staffLocation);
+                        break;
+                      case 'housekeepers':
+                        HousekeepersMarker.add(staffLocation);
+                        break;
+                      case 'elderly':
+                        ElderCompanionsMarker.add(staffLocation);
+                        break;
+                      case 'paramedics':
+                        ParamedicsMarker.add(staffLocation);
+                        break;
+                      case 'occupational Therapists':
+                        OccupationalTherapistsMarker.add(staffLocation);
+                        break;
+                      case 'physiotherapists':
+                        PhysiotherapistsMarker.add(staffLocation);
+                        break;
+                      case 'home Health Aides':
+                        HomeHealthAidesMarker.add(staffLocation);
+                        break;
+                      case 'certified Nursing Assistants':
+                        CertifiedNursAssistentMarker.add(staffLocation);
+                        break;
+                      case 'licensed Practical Nurses':
+                        LicensdePracticalNurseMarker.add(staffLocation);
+                        break;
+                      case 'registered Nurses':
+                        RegisteredNurseMarker.add(staffLocation);
+                        break;
+                    }
 
-                  AvailableStaff.add(staffLocation);
-                });
+                    AvailableStaff.add(staffLocation);
+                  });
+                }
               }
             }
           } catch (e) {

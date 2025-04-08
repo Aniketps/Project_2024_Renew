@@ -670,8 +670,7 @@ class _UserView extends State<UserView> {
                                               )),
                                             ),
                                           ),
-                                          isAccepted
-                                              ? Column(
+                                         Column(
                                               children: [
                                                 ElevatedButton(
                                                     onPressed: () {
@@ -700,24 +699,8 @@ class _UserView extends State<UserView> {
                                                         ),
                                                       ),
                                                     )),
-                                                Text("Valid till $validTime", style: GoogleFonts.sansita(fontSize: 10),),
                                               ],
                                           )
-                                          : ElevatedButton(
-                                              onPressed: () {
-                                                setState(() {
-                                                  enterUniqueCodeForOrderSelector = !enterUniqueCodeForOrderSelector;
-                                                });
-                                              },
-                                              style: ElevatedButton.styleFrom(
-                                                  backgroundColor: Colors.red),
-                                              child: Text(
-                                                enterUniqueCodeForOrderSelector? "Close" : "Send Request",
-                                                style: TextStyle(
-                                                  color: Colors.white,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                              )),
                                         ],
                                       ),
                                     ),
@@ -837,8 +820,7 @@ class _UserView extends State<UserView> {
                             ),
 
                             // Contact information
-                            isShowContact
-                                ? Padding(
+                            Padding(
                                   padding: const EdgeInsets.all(6.0),
                                   child: Container(
                                     height: screenHeight * 0.18,
@@ -1037,8 +1019,7 @@ class _UserView extends State<UserView> {
                                       ],
                                     ),
                                   ),
-                                  )
-                                : Container(),
+                                  ),
 
                             // Service Rate
                             Padding(

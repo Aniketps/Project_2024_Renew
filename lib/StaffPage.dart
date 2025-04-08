@@ -1,5 +1,7 @@
 import 'package:carehub/LoginPage.dart';
 import 'package:carehub/StaffProfilePage.dart';
+import 'package:carehub/services/PaymentServices/PaymentRecordImpl.dart';
+import 'package:carehub/services/PaymentServices/PaymentRecordService.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -12,6 +14,7 @@ import 'Deals.dart';
 import 'Feedback.dart';
 import 'LoaderSupport.dart';
 import 'MainMap.dart';
+import 'Models/PaymentRecordModel.dart';
 import 'TC.dart';
 import 'client.dart';
 import 'main.dart';
@@ -86,6 +89,8 @@ class _StaffPage extends State<StaffPage> {
   bool isFilter = false;
   bool isAnyTime = false;
   bool isImmediately = false;
+  PaymentRecordModel? paymentRecordModel;
+  PaymentRecordService paymentRecordService = new PaymentRecordImpl();
 
   @override
   Widget build(BuildContext context) {
@@ -288,7 +293,6 @@ class _StaffPage extends State<StaffPage> {
               automaticallyImplyLeading: true,
             ),
           ),
-
           // Profile photo
           Padding(
             padding: const EdgeInsets.only(top: 60, right: 20),
@@ -465,6 +469,8 @@ class _StaffPage extends State<StaffPage> {
                               final chefs =
                                   snapshot.data?.docs.reversed.toList();
                               for (var chef in chefs!) {
+                                PaymentRecordModel? paymentRecordModel;
+
                                 Row rowCopy = Row(
                                   children: [
                                     Padding(
@@ -644,25 +650,33 @@ class _StaffPage extends State<StaffPage> {
                                     )
                                   ],
                                 );
-                                if (isAnyTime) {
+                                DateTime now = DateTime.now();
+                                final data = chef.data() as Map<String, dynamic>;
+                                if(data.containsKey("expire") && data["expire"].toDate().isAfter(now))
+                                {
+                                  if (isAnyTime) {
+                                    if (chef["Verified"] == "verified" &&
+                                        !chef["Status"]) {
+                                      final chefView = rowCopy;
+                                      chefViews.add(chefView);
+                                    }
+                                  }
+                                  if (isImmediately) {
+                                    if (chef["Verified"] == "verified" &&
+                                        chef["Status"]) {
+                                      final chefView = rowCopy;
+                                      chefViews.add(chefView);
+                                    }
+                                  }
                                   if (chef["Verified"] == "verified" &&
-                                      !chef["Status"]) {
+                                      !isImmediately &&
+                                      !isAnyTime) {
                                     final chefView = rowCopy;
                                     chefViews.add(chefView);
                                   }
                                 }
-                                if (isImmediately) {
-                                  if (chef["Verified"] == "verified" &&
-                                      chef["Status"]) {
-                                    final chefView = rowCopy;
-                                    chefViews.add(chefView);
-                                  }
-                                }
-                                if (chef["Verified"] == "verified" &&
-                                    !isImmediately &&
-                                    !isAnyTime) {
-                                  final chefView = rowCopy;
-                                  chefViews.add(chefView);
+                                else{
+                                  print("All Expired");
                                 }
                               }
                             }

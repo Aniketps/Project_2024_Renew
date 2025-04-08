@@ -501,7 +501,7 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                               ));
                         },
                         child: Text(
-                          "Dont have an account",
+                          "Dont have an account?",
                           style: TextStyle(
                               fontSize: 12,
                               color: Colors.blue,
@@ -794,7 +794,7 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                               ));
                         },
                         child: Text(
-                          "Dont have an account",
+                          "Dont have an account?",
                           style: TextStyle(
                               fontSize: 12,
                               color: Colors.blue,

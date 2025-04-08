@@ -37,6 +37,7 @@ dependencies:
   video_player: ^2.9.2
   flutter_foreground_task: ^8.17.0
   loading_animation_widget: ^1.3.0
+  internet_connection_checker_plus: ^2.7.1
 
 
 dev_dependencies:
@@ -50,6 +51,7 @@ flutter:
     - assets/Rating/
     - assets/sound.wav
     - assets/Professions/
+    - assets/icons/
   # fonts:
   #   - family: Schyler
   #     fonts:
