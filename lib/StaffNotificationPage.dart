@@ -683,7 +683,7 @@ class _StaffNotificationPage extends State<StaffNotificationPage> {
                                                         sendNotificationService
                                                             .sendNotificationUsingApi(
                                                                 body:
-                                                                    'Your work has been successfully completed by ${currentUserData?['First_name']} ${currentUserData?['Last_name']}',
+                                                                    'Your work has been successfully completed by ${currentStaffData?['First_name']} ${currentStaffData?['Last_name']}',
                                                                 data: {
                                                                   "screen":
                                                                       "ClientNotificationPage",

@@ -178,8 +178,7 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
             ? (StaffData['Hour_Rate'] ?? 0)
             : (StaffData['Day_Rate'] ?? 0)) *
         count;
-    double tax = (price * 1.5) / 100;
-    var total = price + (StaffData['Traveling_Charges'] ?? 0) + tax;
+    var total = price + (StaffData['Traveling_Charges'] ?? 0);
     String Place = Home ? 'Home' : 'Office';
 
 // Format start time and date
@@ -747,33 +746,6 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                                       Padding(
                                                         padding:
                                                             const EdgeInsets
-                                                                .all(2.0),
-                                                        child: Row(
-                                                          children: [
-                                                            Container(
-                                                                width:
-                                                                    screenWidth *
-                                                                        0.6,
-                                                                child: Text(
-                                                                  "Platform charges 1.5%",
-                                                                  style:
-                                                                      TextStyle(
-                                                                    fontSize:
-                                                                        10,
-                                                                  ),
-                                                                )),
-                                                            Text(
-                                                              "${tax} ₹",
-                                                              style: TextStyle(
-                                                                fontSize: 10,
-                                                              ),
-                                                            )
-                                                          ],
-                                                        ),
-                                                      ),
-                                                      Padding(
-                                                        padding:
-                                                            const EdgeInsets
                                                                 .only(
                                                                 right: 30),
                                                         child: Divider(),
@@ -1124,106 +1096,130 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                               top: 10, right: 10, left: 10),
                                           child: Container(
                                             width: screenWidth * 0.95,
-                                            height: 125,
                                             decoration: BoxDecoration(
                                                 color: Colors.white,
                                                 borderRadius:
-                                                    BorderRadius.circular(15),
+                                                    BorderRadius.circular(
+                                                        10),
                                                 boxShadow: [
                                                   BoxShadow(
-                                                      color: Colors.black26,
+                                                      color:
+                                                          Colors.black26,
                                                       spreadRadius: 1,
                                                       blurRadius: 1)
                                                 ]),
                                             child: Column(
                                               children: [
                                                 Padding(
-                                                  padding: EdgeInsets.only(
-                                                      top: 15, left: 15),
-                                                  child: Row(
-                                                    children: [
-                                                      Text(
-                                                        "Payment Options",
-                                                        style: TextStyle(
-                                                            fontSize: 16,
-                                                            fontWeight:
-                                                                FontWeight
-                                                                    .bold),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                                Padding(
                                                   padding:
-                                                      const EdgeInsets.only(
-                                                          left: 15, right: 15),
-                                                  child: Divider(),
-                                                ),
-                                                Container(
-                                                  width: screenWidth * 0.9,
-                                                  decoration: BoxDecoration(
-                                                      color: Colors.white,
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              10),
-                                                      boxShadow: [
-                                                        BoxShadow(
-                                                            color:
-                                                                Colors.black26,
-                                                            spreadRadius: 1,
-                                                            blurRadius: 1)
-                                                      ]),
-                                                  child: Column(
-                                                    children: [
-                                                      Padding(
-                                                        padding:
-                                                            const EdgeInsets
-                                                                .all(5.0),
-                                                        child: InkWell(
-                                                          onTap: () async {
-                                                            isAcceptOpen =
-                                                            false;
-                                                            var UID =
-                                                                FirebaseAuth
-                                                                    .instance
-                                                                    .currentUser
-                                                                    ?.uid;
-                                                            String city =
-                                                                City.text;
-                                                            String address =
-                                                                Address.text;
-                                                            String subAddress =
-                                                                SubAddress.text;
-                                                            String place =
-                                                                Place;
-                                                            SharedPreferences prefs = await SharedPreferences.getInstance();
-
-                                                            if (price != 0 &&
-                                                                WorkDate !=
-                                                                    '--/--/----' &&
-                                                                WorkTime !=
-                                                                    '--:--' &&
-                                                                city
-                                                                    .isNotEmpty &&
-                                                                address
-                                                                    .isNotEmpty &&
-                                                                subAddress
-                                                                    .isNotEmpty &&
-                                                                place
-                                                                    .isNotEmpty && prefs.getDouble("SelectedLat") != 0.0 && prefs.getDouble("SelectedLong") != 0.0 ) {
-                                                              // Payment logic
-
-                                                              if ("Payment Successful" ==
-                                                                  "Payment Successful") {
-                                                                try {
-                                                                  // Add data to 'NotificationForStaff' collection
+                                                      const EdgeInsets
+                                                          .all(5.0),
+                                                  child: InkWell(
+                                                    onTap: () async {
+                                                      isAcceptOpen =
+                                                      false;
+                                                      var UID =
+                                                          FirebaseAuth
+                                                              .instance
+                                                              .currentUser
+                                                              ?.uid;
+                                                      String city =
+                                                          City.text;
+                                                      String address =
+                                                          Address.text;
+                                                      String subAddress =
+                                                          SubAddress.text;
+                                                      String place =
+                                                          Place;
+                                                      SharedPreferences prefs = await SharedPreferences.getInstance();
+                                          
+                                                      if (price != 0 &&
+                                                          WorkDate !=
+                                                              '--/--/----' &&
+                                                          WorkTime !=
+                                                              '--:--' &&
+                                                          city
+                                                              .isNotEmpty &&
+                                                          address
+                                                              .isNotEmpty &&
+                                                          subAddress
+                                                              .isNotEmpty &&
+                                                          place
+                                                              .isNotEmpty && prefs.getDouble("SelectedLat") != 0.0 && prefs.getDouble("SelectedLong") != 0.0 ) {
+                                                        // Payment logic
+                                          
+                                                        if ("Payment Successful" ==
+                                                            "Payment Successful") {
+                                                          try {
+                                                            // Add data to 'NotificationForStaff' collection
+                                                            FirebaseFirestore
+                                                                .instance
+                                                                .collection(
+                                                                'NotificationForStaff')
+                                                                .add({
+                                                              'userUID':
+                                                              UID,
+                                                              'Scheduled_City':
+                                                              city,
+                                                              'Scheduled_Address':
+                                                              address,
+                                                              'Scheduled_Sub_Address':
+                                                              subAddress,
+                                                              'Scheduled_Place':
+                                                              place,
+                                                              "Client_Coordinates_lat":
+                                                              ShareCoordinates
+                                                                  ? prefs.getDouble("SelectedLat").toString()
+                                                                  : "",
+                                                              "Client_Coordinates_long":
+                                                              ShareCoordinates
+                                                                  ? prefs.getDouble("SelectedLong").toString()
+                                                                  : "",
+                                                              'staffUID':
+                                                              StaffID,
+                                                              'professionOfStaff':
+                                                              Skill,
+                                                              'status':
+                                                              'Received a Request',
+                                                              'timeofdeal':
+                                                              "${DateTime.now().day} ${DateFormat.MMM().format(DateTime.now())} ${DateTime.now().year} ${DateFormat.jm().format(DateTime.now())}",
+                                                              'totalcost':
+                                                              total,
+                                                              'ServiceBase':
+                                                              HourBased
+                                                                  ? 'Hour'
+                                                                  : 'Day',
+                                                              'hours':
+                                                              "${count}",
+                                                              'ScheduledDate':
+                                                              WorkDate,
+                                                              'ScheduledTime':
+                                                              WorkTime,
+                                                              'PlatformTax':
+                                                              '1.5%',
+                                                              'ScheduledDateEnd':
+                                                              WorkDateEnd,
+                                                              'ScheduledTimeEnd':
+                                                              WorkTimeEnd,
+                                                            }).then(
+                                                                    (staffDocRef) {
+                                                                  String
+                                                                  staffDocUID =
+                                                                      staffDocRef
+                                                                          .id;
+                                          
+                                                                  // Add data to 'NotificationForUser' collection
                                                                   FirebaseFirestore
                                                                       .instance
                                                                       .collection(
-                                                                      'NotificationForStaff')
+                                                                      'NotificationForUser')
                                                                       .add({
                                                                     'userUID':
                                                                     UID,
+                                                                    'staffUID':
+                                                                    StaffID,
+                                                                    'status':
+                                                                    'Request sent',
                                                                     'Scheduled_City':
                                                                     city,
                                                                     'Scheduled_Address':
@@ -1236,22 +1232,18 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                                                     ShareCoordinates
                                                                         ? prefs.getDouble("SelectedLat").toString()
                                                                         : "",
-                                                                    "Client_Coordinates_long":
-                                                                    ShareCoordinates
+                                                                    "Client_Coordinates_long": ShareCoordinates
                                                                         ? prefs.getDouble("SelectedLong").toString()
                                                                         : "",
-                                                                    'staffUID':
-                                                                    StaffID,
                                                                     'professionOfStaff':
                                                                     Skill,
-                                                                    'status':
-                                                                    'Received a Request',
                                                                     'timeofdeal':
                                                                     "${DateTime.now().day} ${DateFormat.MMM().format(DateTime.now())} ${DateTime.now().year} ${DateFormat.jm().format(DateTime.now())}",
+                                                                    'DocUID':
+                                                                    staffDocUID,
                                                                     'totalcost':
                                                                     total,
-                                                                    'ServiceBase':
-                                                                    HourBased
+                                                                    'ServiceBase': HourBased
                                                                         ? 'Hour'
                                                                         : 'Day',
                                                                     'hours':
@@ -1267,318 +1259,258 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                                                     'ScheduledTimeEnd':
                                                                     WorkTimeEnd,
                                                                   }).then(
-                                                                          (staffDocRef) {
+                                                                          (userDocRef) {
                                                                         String
-                                                                        staffDocUID =
-                                                                            staffDocRef
+                                                                        userDocUID =
+                                                                            userDocRef
                                                                                 .id;
-
-                                                                        // Add data to 'NotificationForUser' collection
+                                          
+                                                                        // Update 'NotificationForStaff' with the 'DocUID' from 'NotificationForUser'
                                                                         FirebaseFirestore
                                                                             .instance
                                                                             .collection(
-                                                                            'NotificationForUser')
-                                                                            .add({
-                                                                          'userUID':
-                                                                          UID,
-                                                                          'staffUID':
-                                                                          StaffID,
-                                                                          'status':
-                                                                          'Request sent',
-                                                                          'Scheduled_City':
-                                                                          city,
-                                                                          'Scheduled_Address':
-                                                                          address,
-                                                                          'Scheduled_Sub_Address':
-                                                                          subAddress,
-                                                                          'Scheduled_Place':
-                                                                          place,
-                                                                          "Client_Coordinates_lat":
-                                                                          ShareCoordinates
-                                                                              ? prefs.getDouble("SelectedLat").toString()
-                                                                              : "",
-                                                                          "Client_Coordinates_long": ShareCoordinates
-                                                                              ? prefs.getDouble("SelectedLong").toString()
-                                                                              : "",
-                                                                          'professionOfStaff':
-                                                                          Skill,
-                                                                          'timeofdeal':
-                                                                          "${DateTime.now().day} ${DateFormat.MMM().format(DateTime.now())} ${DateTime.now().year} ${DateFormat.jm().format(DateTime.now())}",
+                                                                            'NotificationForStaff')
+                                                                            .doc(
+                                                                            staffDocUID)
+                                                                            .update({
                                                                           'DocUID':
-                                                                          staffDocUID,
-                                                                          'totalcost':
-                                                                          total,
-                                                                          'ServiceBase': HourBased
-                                                                              ? 'Hour'
-                                                                              : 'Day',
-                                                                          'hours':
-                                                                          "${count}",
-                                                                          'ScheduledDate':
-                                                                          WorkDate,
-                                                                          'ScheduledTime':
-                                                                          WorkTime,
-                                                                          'PlatformTax':
-                                                                          '1.5%',
-                                                                          'ScheduledDateEnd':
-                                                                          WorkDateEnd,
-                                                                          'ScheduledTimeEnd':
-                                                                          WorkTimeEnd,
-                                                                        }).then(
-                                                                                (userDocRef) {
-                                                                              String
-                                                                              userDocUID =
-                                                                                  userDocRef
-                                                                                      .id;
-
-                                                                              // Update 'NotificationForStaff' with the 'DocUID' from 'NotificationForUser'
-                                                                              FirebaseFirestore
-                                                                                  .instance
-                                                                                  .collection(
-                                                                                  'NotificationForStaff')
-                                                                                  .doc(
-                                                                                  staffDocUID)
-                                                                                  .update({
-                                                                                'DocUID':
-                                                                                userDocUID,
-                                                                              });
-                                                                            }).catchError(
-                                                                                (error) {
-                                                                              print(
-                                                                                  "Error adding document to NotificationForUser: $error");
-                                                                            });
+                                                                          userDocUID,
+                                                                        });
                                                                       }).catchError(
                                                                           (error) {
                                                                         print(
-                                                                            "Error adding document to NotificationForStaff: $error");
+                                                                            "Error adding document to NotificationForUser: $error");
                                                                       });
-
-                                                                  User? user =
-                                                                  await FirebaseAuth
-                                                                      .instance
-                                                                      .currentUser;
-                                                                  var userDoc = await FirebaseFirestore
-                                                                      .instance
-                                                                      .collection(
-                                                                      "user")
-                                                                      .doc(user
-                                                                      ?.uid)
-                                                                      .get();
-                                                                  var staffDoc = await FirebaseFirestore
-                                                                      .instance
-                                                                      .collection(
-                                                                      "user")
-                                                                      .doc(
-                                                                      StaffID)
-                                                                      .get();
-                                                                  var usertoken =
-                                                                  userDoc.data()?[
-                                                                  'token'];
-                                                                  var stafftoken =
-                                                                  staffDoc.data()?[
-                                                                  'token'];
-
-                                                                  GetServerKey
-                                                                  getServerKey =
-                                                                  GetServerKey();
-                                                                  String
-                                                                  accessToken =
-                                                                  await getServerKey
-                                                                      .getServerKeyToken();
-
-                                                                  // Generate unique IDs for the notifications
-                                                                  int notificationId1 =
-                                                                      DateTime.now()
-                                                                          .millisecondsSinceEpoch; // Unique ID based on timestamp
-                                                                  int notificationId2 =
-                                                                      notificationId1 +
-                                                                          1; // Increment to ensure uniqueness for the second notification
-
-                                                                  // Send first notification
-                                                                  sendNotificationService
-                                                                      .sendNotificationUsingApi(
-                                                                      body:
-                                                                      'Send Successful',
-                                                                      data: {
-                                                                        "screen":
-                                                                        "ClientNotificationPage",
-                                                                        "notificationId":
-                                                                        notificationId1.toString(), // Include notification ID in the data if needed
-                                                                      },
-                                                                      title:
-                                                                      "Booking",
-                                                                      token:
-                                                                      usertoken);
-                                                                  // Send second notification
-                                                                  sendNotificationService
-                                                                      .sendNotificationUsingApi(
-                                                                      body:
-                                                                      'You have a new request',
-                                                                      data: {
-                                                                        "screen":
-                                                                        "StaffNotificationPage",
-                                                                        "notificationId":
-                                                                        notificationId2.toString(),
-                                                                        "hire" : "true"// Include notification ID in the data if needed
-                                                                      },
-                                                                      title:
-                                                                      "Hiring",
-                                                                      token:
-                                                                      stafftoken);
-                                                                  prefs.setDouble("SelectedLat", 0.0);
-                                                                  prefs.setDouble("SelectedLong", 0.0);
-
-                                                                  Navigator
-                                                                      .push(
-                                                                    context,
-                                                                    MaterialPageRoute(
-                                                                      builder:
-                                                                          (context) =>
-                                                                          ClientNotificationPage(),
-                                                                    ),
-                                                                  );
-
-                                                                  Fluttertoast
-                                                                      .showToast(
-                                                                      msg:
-                                                                      "Request has been send");
-                                                                } catch (e) {
-                                                                  Fluttertoast
-                                                                      .showToast(
-                                                                    msg: "$e",
-                                                                    toastLength:
-                                                                    Toast
-                                                                        .LENGTH_SHORT,
-                                                                    gravity:
-                                                                    ToastGravity
-                                                                        .BOTTOM,
-                                                                  );
-                                                                }
-                                                              } else {
-                                                                Fluttertoast
-                                                                    .showToast(
-                                                                    msg:
-                                                                    "Payment Failed");
-                                                              }
-                                                            } else {
-                                                              // Handle validation errors
-                                                              if (price == 0) {
-                                                                Fluttertoast
-                                                                    .showToast(
-                                                                  msg:
-                                                                  "User did not set service rate",
-                                                                  toastLength: Toast
-                                                                      .LENGTH_SHORT,
-                                                                  gravity:
-                                                                  ToastGravity
-                                                                      .BOTTOM,
-                                                                );
-                                                              } else if (WorkDate ==
-                                                                  '--/--/----') {
-                                                                Fluttertoast
-                                                                    .showToast(
-                                                                  msg:
-                                                                  "Invalid Date",
-                                                                  toastLength: Toast
-                                                                      .LENGTH_SHORT,
-                                                                  gravity:
-                                                                  ToastGravity
-                                                                      .BOTTOM,
-                                                                );
-                                                              } else if (WorkTime ==
-                                                                  '--:--') {
-                                                                Fluttertoast
-                                                                    .showToast(
-                                                                  msg:
-                                                                  "Invalid Time",
-                                                                  toastLength: Toast
-                                                                      .LENGTH_SHORT,
-                                                                  gravity:
-                                                                  ToastGravity
-                                                                      .BOTTOM,
-                                                                );
-                                                              } else if (city
-                                                                  .isEmpty) {
-                                                                Fluttertoast
-                                                                    .showToast(
-                                                                  msg:
-                                                                  "Invalid City",
-                                                                  toastLength: Toast
-                                                                      .LENGTH_SHORT,
-                                                                  gravity:
-                                                                  ToastGravity
-                                                                      .BOTTOM,
-                                                                );
-                                                              } else if (address
-                                                                  .isEmpty) {
-                                                                Fluttertoast
-                                                                    .showToast(
-                                                                  msg:
-                                                                  "Invalid Address",
-                                                                  toastLength: Toast
-                                                                      .LENGTH_SHORT,
-                                                                  gravity:
-                                                                  ToastGravity
-                                                                      .BOTTOM,
-                                                                );
-                                                              } else if (subAddress
-                                                                  .isEmpty) {
-                                                                Fluttertoast
-                                                                    .showToast(
-                                                                  msg:
-                                                                  "Invalid Sub Address",
-                                                                  toastLength: Toast
-                                                                      .LENGTH_SHORT,
-                                                                  gravity:
-                                                                  ToastGravity
-                                                                      .BOTTOM,
-                                                                );
-                                                              } else {
-                                                                Fluttertoast
-                                                                    .showToast(
-                                                                  msg:
-                                                                  "Invalid Place",
-                                                                  toastLength: Toast
-                                                                      .LENGTH_SHORT,
-                                                                  gravity:
-                                                                  ToastGravity
-                                                                      .BOTTOM,
-                                                                );
-                                                              }
-                                                            }
-                                                          },
-                                                          child: Container(
-                                                            height: 50,
-                                                            width: screenWidth *
-                                                                0.9,
-                                                            decoration: BoxDecoration(
+                                                                }).catchError(
+                                                                    (error) {
+                                                                  print(
+                                                                      "Error adding document to NotificationForStaff: $error");
+                                                                });
+                                          
+                                                            User? user =
+                                                            await FirebaseAuth
+                                                                .instance
+                                                                .currentUser;
+                                                            var userDoc = await FirebaseFirestore
+                                                                .instance
+                                                                .collection(
+                                                                "user")
+                                                                .doc(user
+                                                                ?.uid)
+                                                                .get();
+                                                            var staffDoc = await FirebaseFirestore
+                                                                .instance
+                                                                .collection(
+                                                                "user")
+                                                                .doc(
+                                                                StaffID)
+                                                                .get();
+                                                            var usertoken =
+                                                            userDoc.data()?[
+                                                            'token'];
+                                                            var stafftoken =
+                                                            staffDoc.data()?[
+                                                            'token'];
+                                          
+                                                            GetServerKey
+                                                            getServerKey =
+                                                            GetServerKey();
+                                                            String
+                                                            accessToken =
+                                                            await getServerKey
+                                                                .getServerKeyToken();
+                                          
+                                                            // Generate unique IDs for the notifications
+                                                            int notificationId1 =
+                                                                DateTime.now()
+                                                                    .millisecondsSinceEpoch; // Unique ID based on timestamp
+                                                            int notificationId2 =
+                                                                notificationId1 +
+                                                                    1; // Increment to ensure uniqueness for the second notification
+                                          
+                                                            // Send first notification
+                                                            sendNotificationService
+                                                                .sendNotificationUsingApi(
+                                                                body:
+                                                                'Send Successful',
+                                                                data: {
+                                                                  "screen":
+                                                                  "ClientNotificationPage",
+                                                                  "notificationId":
+                                                                  notificationId1.toString(), // Include notification ID in the data if needed
+                                                                },
+                                                                title:
+                                                                "Booking",
+                                                                token:
+                                                                usertoken);
+                                                            // Send second notification
+                                                            sendNotificationService
+                                                                .sendNotificationUsingApi(
+                                                                body:
+                                                                'You have a new request',
+                                                                data: {
+                                                                  "screen":
+                                                                  "StaffNotificationPage",
+                                                                  "notificationId":
+                                                                  notificationId2.toString(),
+                                                                  "hire" : "true"// Include notification ID in the data if needed
+                                                                },
+                                                                title:
+                                                                "Hiring",
+                                                                token:
+                                                                stafftoken);
+                                                            prefs.setDouble("SelectedLat", 0.0);
+                                                            prefs.setDouble("SelectedLong", 0.0);
+                                          
+                                                            Navigator
+                                                                .push(
+                                                              context,
+                                                              MaterialPageRoute(
+                                                                builder:
+                                                                    (context) =>
+                                                                    ClientNotificationPage(),
+                                                              ),
+                                                            );
+                                          
+                                                            Fluttertoast
+                                                                .showToast(
+                                                                msg:
+                                                                "Request has been send");
+                                                          } catch (e) {
+                                                            Fluttertoast
+                                                                .showToast(
+                                                              msg: "$e",
+                                                              toastLength:
+                                                              Toast
+                                                                  .LENGTH_SHORT,
+                                                              gravity:
+                                                              ToastGravity
+                                                                  .BOTTOM,
+                                                            );
+                                                          }
+                                                        } else {
+                                                          Fluttertoast
+                                                              .showToast(
+                                                              msg:
+                                                              "Payment Failed");
+                                                        }
+                                                      } else {
+                                                        // Handle validation errors
+                                                        if (price == 0) {
+                                                          Fluttertoast
+                                                              .showToast(
+                                                            msg:
+                                                            "User did not set service rate",
+                                                            toastLength: Toast
+                                                                .LENGTH_SHORT,
+                                                            gravity:
+                                                            ToastGravity
+                                                                .BOTTOM,
+                                                          );
+                                                        } else if (WorkDate ==
+                                                            '--/--/----') {
+                                                          Fluttertoast
+                                                              .showToast(
+                                                            msg:
+                                                            "Invalid Date",
+                                                            toastLength: Toast
+                                                                .LENGTH_SHORT,
+                                                            gravity:
+                                                            ToastGravity
+                                                                .BOTTOM,
+                                                          );
+                                                        } else if (WorkTime ==
+                                                            '--:--') {
+                                                          Fluttertoast
+                                                              .showToast(
+                                                            msg:
+                                                            "Invalid Time",
+                                                            toastLength: Toast
+                                                                .LENGTH_SHORT,
+                                                            gravity:
+                                                            ToastGravity
+                                                                .BOTTOM,
+                                                          );
+                                                        } else if (city
+                                                            .isEmpty) {
+                                                          Fluttertoast
+                                                              .showToast(
+                                                            msg:
+                                                            "Invalid City",
+                                                            toastLength: Toast
+                                                                .LENGTH_SHORT,
+                                                            gravity:
+                                                            ToastGravity
+                                                                .BOTTOM,
+                                                          );
+                                                        } else if (address
+                                                            .isEmpty) {
+                                                          Fluttertoast
+                                                              .showToast(
+                                                            msg:
+                                                            "Invalid Address",
+                                                            toastLength: Toast
+                                                                .LENGTH_SHORT,
+                                                            gravity:
+                                                            ToastGravity
+                                                                .BOTTOM,
+                                                          );
+                                                        } else if (subAddress
+                                                            .isEmpty) {
+                                                          Fluttertoast
+                                                              .showToast(
+                                                            msg:
+                                                            "Invalid Sub Address",
+                                                            toastLength: Toast
+                                                                .LENGTH_SHORT,
+                                                            gravity:
+                                                            ToastGravity
+                                                                .BOTTOM,
+                                                          );
+                                                        } else {
+                                                          Fluttertoast
+                                                              .showToast(
+                                                            msg:
+                                                            "Invalid Place",
+                                                            toastLength: Toast
+                                                                .LENGTH_SHORT,
+                                                            gravity:
+                                                            ToastGravity
+                                                                .BOTTOM,
+                                                          );
+                                                        }
+                                                      }
+                                                    },
+                                                    child: Container(
+                                                      height: 50,
+                                                      width: screenWidth *
+                                                          0.9,
+                                                      decoration: BoxDecoration(
+                                                          color: Colors
+                                                              .green,
+                                                          borderRadius:
+                                                              BorderRadius
+                                                                  .circular(
+                                                                      10),
+                                                          boxShadow: [
+                                                            BoxShadow(
                                                                 color: Colors
-                                                                    .green,
-                                                                borderRadius:
-                                                                    BorderRadius
-                                                                        .circular(
-                                                                            10),
-                                                                boxShadow: [
-                                                                  BoxShadow(
-                                                                      color: Colors
-                                                                          .black26,
-                                                                      spreadRadius:
-                                                                          1,
-                                                                      blurRadius:
-                                                                          1)
-                                                                ]),
-                                                            child: Center(
-                                                                child: Text(
-                                                              "Hire Now",
-                                                              style: TextStyle(
-                                                                  color: Colors
-                                                                      .white),
-                                                            )),
-                                                          ),
-                                                        ),
-                                                      )
-                                                    ],
+                                                                    .black26,
+                                                                spreadRadius:
+                                                                    1,
+                                                                blurRadius:
+                                                                    1)
+                                                          ]),
+                                                      child: Center(
+                                                          child: Text(
+                                                        "Hire Now",
+                                                        style: TextStyle(
+                                                            color: Colors
+                                                                .white, fontSize: 20, fontWeight: FontWeight.bold),
+                                                      )),
+                                                    ),
                                                   ),
-                                                ),
+                                                )
                                               ],
                                             ),
                                           ),

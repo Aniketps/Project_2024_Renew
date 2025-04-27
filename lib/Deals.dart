@@ -2426,18 +2426,15 @@ class _DealsForStaff extends State<DealsForStaff> {
                                                                       )
                                                                     ],
                                                                     image:
-                                                                        DecorationImage(
-                                                                      image: currentStaffData['Profile_Pic'] ==
-                                                                                  null &&
-                                                                              currentStaffData ==
-                                                                                  null
+                                                                    DecorationImage(
+                                                                      image: currentStaffData == null || currentStaffData['Profile_Pic'] == null
                                                                           ? const NetworkImage(
-                                                                              "https://media.istockphoto.com/id/1300845620/vector/user-icon-flat-isolated-on-white-background-user-symbol-vector-illustration.jpg?s=612x612&w=0&k=20&c=yBeyba0hUkh14_jgv1OKqIH0CCSWU_4ckRkAoy2p73o=")
-                                                                          : NetworkImage(
-                                                                              currentStaffData['Profile_Pic']),
-                                                                      fit: BoxFit
-                                                                          .cover, // Adjust the fit if necessary
-                                                                    ),
+                                                                        "https://media.istockphoto.com/id/1300845620/vector/user-icon-flat-isolated-on-white-background-user-symbol-vector-illustration.jpg?s=612x612&w=0&k=20&c=yBeyba0hUkh14_jgv1OKqIH0CCSWU_4ckRkAoy2p73o=",
+                                                                      )
+                                                                          : NetworkImage(currentStaffData['Profile_Pic'] as String),
+                                                                      fit: BoxFit.cover,
+                                                                    )
+                                                                        ,
                                                                   ),
                                                                 ),
                                                                 Padding(

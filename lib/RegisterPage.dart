@@ -60,7 +60,9 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
               ],
               image: DecorationImage(
                 image: AssetImage("assets/images/logo.png"),
-                fit: BoxFit.cover, // Adjust the fit if necessary
+                fit: BoxFit.none, // No scaling
+                alignment: Alignment.center,
+                scale: 2, // Zoom in (smaller = more zoom)
               ),
             ),
           ),
@@ -304,7 +306,9 @@ class _AndroidUserPage extends State<AndroidUserPage> {
               ],
               image: DecorationImage(
                 image: AssetImage("assets/images/logo.png"),
-                fit: BoxFit.cover, // Adjust the fit if necessary
+                fit: BoxFit.none, // No scaling
+                alignment: Alignment.center,
+                scale: 2, // Zoom in (smaller = more zoom)
               ),
             ),
           ),

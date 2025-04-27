@@ -371,13 +371,13 @@ class _RegistaredUsers extends State<RegistaredUsers> {
                                                     height: 40,
                                                     width: 40,
                                                     decoration: BoxDecoration(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              40),
+                                                      borderRadius: BorderRadius.circular(40),
                                                       image: DecorationImage(
                                                         image: NetworkImage(
-                                                            staffData[
-                                                                'Profile_Pic']),
+                                                          staffData['Profile_Pic'] != null
+                                                              ? staffData['Profile_Pic'] as String
+                                                              : "https://media.istockphoto.com/id/1300845620/vector/user-icon-flat-isolated-on-white-background-user-symbol-vector-illustration.jpg?s=612x612&w=0&k=20&c=yBeyba0hUkh14_jgv1OKqIH0CCSWU_4ckRkAoy2p73o=",
+                                                        ),
                                                         fit: BoxFit.cover,
                                                       ),
                                                     ),

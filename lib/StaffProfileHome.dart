@@ -739,25 +739,30 @@ class _StaffView extends State<StaffView> {
                   width: 200, // Adjust width as needed
                   child: ElevatedButton(
                     onPressed: () {
-                      String? CurrentUID = FirebaseAuth.instance.currentUser?.uid;
-                      FirebaseFirestore.instance.collection("Payment Records").add({
-                        "duration" : title == "COMBO"? "2 Months" : "1 Month",
-                       "expire" : title == "COMBO" ? DateTime.now().add(Duration(days: 60)) : DateTime.now().add(Duration(days: 30)),
-                        "plan" : "₹${price}",
-                        "staffUID" : CurrentUID,
-                        "start" : DateTime.now(),
-                        "feature1" : title == "BASIC"? "None" : "Recommendations",
-                      });
+                      if(title == "BASIC"){
+                        String? CurrentUID = FirebaseAuth.instance.currentUser?.uid;
+                        FirebaseFirestore.instance.collection("Payment Records").add({
+                          "duration" : title == "COMBO"? "2 Months" : "1 Month",
+                          "expire" : title == "COMBO" ? DateTime.now().add(Duration(days: 60)) : DateTime.now().add(Duration(days: 30)),
+                          "plan" : "₹${price}",
+                          "staffUID" : CurrentUID,
+                          "start" : DateTime.now(),
+                          "feature1" : title == "BASIC"? "None" : "Recommendations",
+                        });
 
-                      FirebaseFirestore.instance.collection(StaffData['professionOfStaff'].toString().toLowerCase()).doc(CurrentUID).update({
-                        "expire" : title == "COMBO" ? DateTime.now().add(Duration(days: 60)) : DateTime.now().add(Duration(days: 30)),
-                      });
+                        FirebaseFirestore.instance.collection(StaffData['professionOfStaff'].toString().toLowerCase()).doc(CurrentUID).update({
+                          "expire" : title == "COMBO" ? DateTime.now().add(Duration(days: 60)) : DateTime.now().add(Duration(days: 30)),
+                        });
 
-                      FirebaseFirestore.instance.collection("user").doc(CurrentUID).update({
-                        "expire" : title == "COMBO" ? DateTime.now().add(Duration(days: 60)) : DateTime.now().add(Duration(days: 30)),
-                      });
+                        FirebaseFirestore.instance.collection("user").doc(CurrentUID).update({
+                          "expire" : title == "COMBO" ? DateTime.now().add(Duration(days: 60)) : DateTime.now().add(Duration(days: 30)),
+                        });
 
-                      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => StaffProfileHome(),));
+                        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => StaffProfileHome(),));
+                      }else{
+                        Fluttertoast.showToast(msg: "Not available yet");
+                      }
+
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Color(0xFFFFD700),
@@ -1679,11 +1684,11 @@ class _StaffView extends State<StaffView> {
                           scrollDirection: Axis.vertical,
                           child: Column(
                             children: [
-                              plans("BASIC", "99", Icons.cancel, Icons.cancel, Colors.red, Colors.red),
+                              plans("BASIC", "29", Icons.cancel, Icons.cancel, Colors.red, Colors.red),
                               SizedBox(height: 15),
-                              plans("ADVANCE", "149", Icons.check_circle, Icons.cancel, Colors.green, Colors.red),
+                              plans("ADVANCE", "49", Icons.check_circle, Icons.cancel, Colors.green, Colors.red),
                               SizedBox(height: 15),
-                              plans("COMBO", "199", Icons.check_circle, Icons.check_circle, Colors.green, Colors.green),
+                              plans("COMBO", "99", Icons.check_circle, Icons.check_circle, Colors.green, Colors.green),
                             ],
                           ),
                         ),

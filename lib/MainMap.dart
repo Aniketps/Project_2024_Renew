@@ -573,7 +573,7 @@ class _MainMapState extends State<MainMap> {
                                     }).toList(),
                                     onChanged: (newValue) {
                                       String profession = newValue!;
-                                      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => MainMap(whichStaff: newValue),));
+                                      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => MainMap(whichStaff: newValue.toLowerCase()),));
                                     },
                                   ),
                                 ),

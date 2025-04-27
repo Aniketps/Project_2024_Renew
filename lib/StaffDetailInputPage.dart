@@ -327,10 +327,10 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                                 String phone = PhoneNo.text;
                                 String otp = OTP.text;
                                 String city = City.text;
-                                String skill = selectedValue.toString();
+                                String skill = selectedValue.toString().toLowerCase();
                                 if (phone.isNotEmpty &&
                                     city.isNotEmpty &&
-                                    skill.isNotEmpty) {
+                                    skill.isNotEmpty && selectedValue!.isNotEmpty) {
                                   try {
                                     UserCredential userCredential = await FirebaseAuth
                                         .instance

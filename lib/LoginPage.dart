@@ -293,7 +293,9 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
               ],
               image: DecorationImage(
                 image: AssetImage("assets/images/logo.png"),
-                fit: BoxFit.cover, // Adjust the fit if necessary
+                fit: BoxFit.none, // No scaling
+                alignment: Alignment.center,
+                scale: 2, // Zoom in (smaller = more zoom)
               ),
             ),
           ),
@@ -402,39 +404,22 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                             try {
                               UserCredential usercredential = await FirebaseAuth
                                   .instance
-                                  .signInWithEmailAndPassword(
-                                      email: email, password: password);
+                                  .signInWithEmailAndPassword(email: email, password: password);
                               User? user = usercredential.user;
-                              DocumentSnapshot documentSnapshot =
-                                  await FirebaseFirestore.instance
-                                      .collection('user')
-                                      .doc(user?.uid)
-                                      .get();
+                              DocumentSnapshot documentSnapshot = await FirebaseFirestore.instance.collection('user').doc(user?.uid).get();
                               if (documentSnapshot.exists) {
-                                var StaffData = documentSnapshot.data()
-                                    as Map<String, dynamic>?;
-                                if (StaffData != null &&
-                                    StaffData['professionOfStaff'] != null) {
-                                  String? fcmToken = await FirebaseMessaging
-                                      .instance
-                                      .getToken();
-                                  await FirebaseFirestore.instance
-                                      .collection("user")
-                                      .doc(user?.uid)
-                                      .update({
+                                var StaffData = documentSnapshot.data() as Map<String, dynamic>?;
+                                if (StaffData != null && StaffData['professionOfStaff'] != null) {
+                                  String? fcmToken = await FirebaseMessaging.instance.getToken();
+                                  await FirebaseFirestore.instance.collection("user").doc(user?.uid).update({
                                     'lat': lat,
                                     'long': long,
                                     'token': fcmToken,
                                   });
-                                  await FirebaseFirestore.instance
-                                      .collection(
-                                          StaffData['professionOfStaff'])
-                                      .doc(user?.uid)
-                                      .update({
+                                  await FirebaseFirestore.instance.collection(StaffData['professionOfStaff']).doc(user?.uid).update({
                                     'lat': lat,
                                     'long': long,
                                   });
-
                                   if (user!.emailVerified) {
                                     Navigator.pushReplacement(
                                         context,
@@ -566,7 +551,9 @@ class _AndroidUserPage extends State<AndroidUserPage> {
               ],
               image: DecorationImage(
                 image: AssetImage("assets/images/logo.png"),
-                fit: BoxFit.cover, // Adjust the fit if necessary
+                fit: BoxFit.none, // No scaling
+                alignment: Alignment.center,
+                scale: 2, // Zoom in (smaller = more zoom)
               ),
             ),
           ),

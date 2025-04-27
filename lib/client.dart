@@ -377,6 +377,7 @@ class _ActualUser extends State<ActualUser> {
         Expanded(
           child: TextField(
             controller: controller,
+            keyboardType: label == "Phone Number"? TextInputType.numberWithOptions() : TextInputType.text,
             decoration: InputDecoration(labelText: label),
           ),
         ),
