@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:carehub/Admin.dart';
@@ -16,6 +17,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -23,6 +25,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
+import 'package:razorpay_flutter/razorpay_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'ContactUs.dart';
@@ -32,6 +35,7 @@ import 'LoginPage.dart';
 import 'StaffNotificationPage.dart';
 import 'TC.dart';
 import 'client.dart';
+import 'package:http/http.dart' as http;
 
 class StaffProfileHome extends StatefulWidget {
   @override
@@ -538,13 +542,152 @@ class StaffView extends StatefulWidget {
 }
 
 class _StaffView extends State<StaffView> {
+  late Razorpay _razorpay;
+  String? _razorpayKey;
+  String? _razorpayKeySecret;
+  bool _loading = true;
   PaymentRecordService paymentRecordService = new PaymentRecordImpl();
   @override
   void initState() {
     super.initState();
+    _razorpay = Razorpay();
+    _razorpay.on(Razorpay.EVENT_PAYMENT_SUCCESS, _handlePaymentSuccess);
+    _razorpay.on(Razorpay.EVENT_PAYMENT_ERROR, _handlePaymentError);
+    _razorpay.on(Razorpay.EVENT_EXTERNAL_WALLET, _handleExternalWallet);
+    _fetchRazorpayKey();
     fetchVerificationDocs();
     paymentRecordModels();
     profilePicUrl = widget.StaffData['Profile_Pic'] ?? "";
+  }
+
+  Future<void> _fetchRazorpayKey() async {
+    try {
+      final response = await http.get(Uri.parse("https://aniketapi.ancientcoders.in/razorpay_key"));
+      final data = jsonDecode(response.body);
+      setState(() {
+        _razorpayKey = data['key_id'];
+        _razorpayKeySecret = data["key_secret"];
+        _loading = false;
+      });
+    } catch (e) {
+      debugPrint('Failed to fetch key: $e');
+      setState(() => _loading = false);
+    }
+  }
+
+  late String _planTitle;
+  late String _plan;
+  late int _amountInPaise;
+  late String _userEmail;
+  late String _userContact;
+
+  void _startPayment({required int amountInPaise, required String plan, required String planTitle, required String userEmail, required String userContact}) {
+    if (_razorpayKey == null) {
+      _showAlert("Error", "Razorpay Key not loaded.");
+      return;
+    }
+    // Store data in state
+    _planTitle = planTitle;
+    _plan = plan;
+    _amountInPaise = amountInPaise;
+    _userEmail = userEmail;
+    _userContact = userContact;
+
+    var options = {
+      'key': _razorpayKey,
+      'amount': amountInPaise,
+      'name': 'CareNest',
+      'description': 'Subscription Plan $plan',
+      'retry': {'enabled': true, 'max_count': 1},
+      'send_sms_hash': false,
+      'prefill': {'contact': userContact, 'email': userEmail},
+      'external': {'wallets': ['paytm']}
+    };
+
+    try {
+      _razorpay.open(options);
+    } catch (e) {
+      debugPrint("Error: $e");
+    }
+  }
+
+  void _handlePaymentSuccess(PaymentSuccessResponse response) {
+    _showAlert("Success", "Payment ID: ${response.paymentId}");
+
+    FirebaseFirestore.instance.collection("Payment Records").add({
+      "duration" : _planTitle == "COMBO"? "2 Months" : "1 Month",
+      "expire" : _planTitle == "COMBO" ? DateTime.now().add(Duration(days: 60)) : DateTime.now().add(Duration(days: 30)),
+      "plan" : "₹${_amountInPaise/100}",
+      "staffUID" : UID,
+      "start" : DateTime.now(),
+      "feature1" : _planTitle == "BASIC"? "None" : "Recommendations",
+    });
+
+    FirebaseFirestore.instance.collection(StaffData['professionOfStaff'].toString().toLowerCase()).doc(UID).update({
+      "expire" : _planTitle == "COMBO" ? DateTime.now().add(Duration(days: 60)) : DateTime.now().add(Duration(days: 30)),
+    });
+
+    FirebaseFirestore.instance.collection("user").doc(UID).update({
+      "expire" : _planTitle == "COMBO" ? DateTime.now().add(Duration(days: 60)) : DateTime.now().add(Duration(days: 30)),
+    });
+    capturePayment(_amountInPaise, response.paymentId.toString());
+    Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => StaffProfileHome(),));
+  }
+
+  Future<void> capturePayment(int amount, String id) async {
+    try {
+      final Uri uri = Uri.https('api.razorpay.com', '/v1/payments/$id/capture');
+      final String auth = 'Basic ${base64Encode(
+          utf8.encode('$_razorpayKey:$_razorpayKeySecret'))}';
+      final http.Response response = await http.post(
+        uri,
+        headers: {
+      'Content-Type': 'application/json',
+      "Authorization": auth
+        },
+        body: jsonEncode({
+          'amount': amount,
+          'currency': 'INR',
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        if (kDebugMode) {
+          print('Payment Capture Successefull: ${response.body}');
+        }
+      } else {
+        final Map<String, dynamic> errorJson = json.decode(response.body);
+        final errorMessage = errorJson['error']['description'];
+        throw errorMessage ?? 'Failed to Capture Payment';
+        capturePayment(amount, id);
+      }
+    }catch(e){
+      rethrow;
+    }
+  }
+
+  void _handlePaymentError(PaymentFailureResponse response) {
+    setState(() {
+      _loading = false;
+    });
+    _showAlert("Payment Failed", "Code: ${response.code}\nMessage: ${response.message}");
+  }
+
+  void _handleExternalWallet(ExternalWalletResponse response) {
+    _showAlert("Wallet Selected", "Wallet: ${response.walletName}");
+  }
+
+  void _showAlert(String title, String message) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: Text(title),
+        content: Text(message),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: Text("OK")),
+        ],
+      ),
+    );
   }
 
   PaymentRecordModel? paymentRecordModel;
@@ -738,31 +881,27 @@ class _StaffView extends State<StaffView> {
                 SizedBox(
                   width: 200, // Adjust width as needed
                   child: ElevatedButton(
-                    onPressed: () {
+                    onPressed: () async {
                       if(title == "BASIC"){
                         String? CurrentUID = FirebaseAuth.instance.currentUser?.uid;
-                        FirebaseFirestore.instance.collection("Payment Records").add({
-                          "duration" : title == "COMBO"? "2 Months" : "1 Month",
-                          "expire" : title == "COMBO" ? DateTime.now().add(Duration(days: 60)) : DateTime.now().add(Duration(days: 30)),
-                          "plan" : "₹${price}",
-                          "staffUID" : CurrentUID,
-                          "start" : DateTime.now(),
-                          "feature1" : title == "BASIC"? "None" : "Recommendations",
-                        });
+                        int amount = int.parse(price.toString());
+                        String plan = "$price₹ ${title == "COMBO"? "2 Months" : "1 Month"}";
 
-                        FirebaseFirestore.instance.collection(StaffData['professionOfStaff'].toString().toLowerCase()).doc(CurrentUID).update({
-                          "expire" : title == "COMBO" ? DateTime.now().add(Duration(days: 60)) : DateTime.now().add(Duration(days: 30)),
-                        });
-
-                        FirebaseFirestore.instance.collection("user").doc(CurrentUID).update({
-                          "expire" : title == "COMBO" ? DateTime.now().add(Duration(days: 60)) : DateTime.now().add(Duration(days: 30)),
-                        });
-
-                        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => StaffProfileHome(),));
+                        try {
+                          _startPayment(
+                            amountInPaise: 1 * 100,
+                            plan: plan,
+                            planTitle: title,
+                            userEmail: StaffData["Email"].toString(),
+                            userContact: StaffData["Phone_Number1"],
+                          );
+                        } catch (e) {
+                          print(e);
+                          Fluttertoast.showToast(msg: "Payment failed to initialize");
+                        }
                       }else{
                         Fluttertoast.showToast(msg: "Not available yet");
                       }
-
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Color(0xFFFFD700),

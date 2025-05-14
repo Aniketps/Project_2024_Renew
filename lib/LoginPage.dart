@@ -456,8 +456,9 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                               setState(() {
                                 isLoading = false;
                               });
+                              print(e);
                               Fluttertoast.showToast(
-                                msg: "$e",
+                                msg: "Invalid Data",
                                 toastLength: Toast.LENGTH_SHORT,
                                 gravity: ToastGravity.BOTTOM,
                               );

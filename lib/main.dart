@@ -15,6 +15,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:in_app_update/in_app_update.dart';
 import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'ContactUs.dart';
@@ -121,6 +122,7 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   String SearchGlobal = '';
   NotificationService notificationService = NotificationService();
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey();
 
   @override
   void initState() {
@@ -129,9 +131,36 @@ class _MyHomePageState extends State<MyHomePage> {
     notificationService.getDeviceToken();
     notificationService.firebaseInit(context);
     notificationService.setupInteractMessage(context);
+    _checkAndUpdate();
     FcmService.FirebaseInit();
     SearchStaff();
     _liveLocation();
+  }
+  void _showSnack(String text) {
+    if (_scaffoldKey.currentContext != null) {
+      ScaffoldMessenger.of(_scaffoldKey.currentContext!)
+          .showSnackBar(SnackBar(content: Text(text)));
+    }
+  }
+  Future<void> _checkAndUpdate() async {
+    try {
+      final updateInfo = await InAppUpdate.checkForUpdate();
+
+      if (updateInfo.updateAvailability == UpdateAvailability.updateAvailable &&
+          updateInfo.flexibleUpdateAllowed) {
+        await InAppUpdate.startFlexibleUpdate();
+        await InAppUpdate.completeFlexibleUpdate(); // completes silently
+      }
+    } catch (e) {
+      print("Start $e End");
+      if (e.toString() ==
+          'PlatformException(TASK_FAILURE, -10: Install Error(-10): The app is not owned by any user on this device. An app is "owned" if it has been acquired from Play. (https://developer.android.com/reference/com/google/android/play/core/install/model/InstallErrorCode#ERROR_APP_NOT_OWNED), null, null)'){
+        _showSnack('Update failed: Testing Version');
+      }
+      else {
+        _showSnack('Update failed : Unknown Error');
+      }
+    }
   }
 
   void _liveLocation() {
@@ -241,6 +270,7 @@ class _MyHomePageState extends State<MyHomePage> {
     final screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
+      key: _scaffoldKey,
       drawer: Drawer(
         width: screenWidth * 0.7,
         child: ListView(
@@ -434,17 +464,23 @@ class _MyHomePageState extends State<MyHomePage> {
                         builder: (context) => const MainMap(whichStaff: "All"),
                       ));
                 },
-                child: Text(
-                  "$CurrentLocation",
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    decoration: TextDecoration.underline, // Underline effect
-                    decorationThickness: 1.5, // Makes underline more visible
-                    decorationColor: Colors.blue, // Matches text color
-                    color: Colors.blue, // Standard clickable link color
-                  ),
-                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.location_on, color: Colors.green, size: 30,),
+                    SizedBox(width: 5,),
+                    Text(
+                      "$CurrentLocation",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        decoration: TextDecoration.underline, // Underline effect
+                        decorationThickness: 1.5, // Makes underline more visible
+                        decorationColor: Colors.blue, // Matches text color
+                        color: Colors.blue, // Standard clickable link color
+                      ),
+                    ),
+                  ],
+                )
               ),
               backgroundColor: Color(0xfffffcc9),
               automaticallyImplyLeading: true,
