@@ -889,7 +889,7 @@ class _StaffView extends State<StaffView> {
 
                         try {
                           _startPayment(
-                            amountInPaise: 1 * 100,
+                            amountInPaise: amount * 100,
                             plan: plan,
                             planTitle: title,
                             userEmail: StaffData["Email"].toString(),
