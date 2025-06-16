@@ -99,11 +99,11 @@ class _PrivacyPolicyState extends State<PrivacyPolicy> {
 
                   // Links to External Policies
                   _buildPolicyLink("View our Terms and Conditions",
-                      "https://aniketp.ancientcoders.in/Terms_Conditions.html"),
+                      "https://carenest.ancientcoders.in/Terms_Conditions.html"),
                   _buildPolicyLink("View our Privacy Policy",
-                      "https://aniketp.ancientcoders.in/Privacy_Policy.html"),
+                      "https://carenest.ancientcoders.in/Privacy_Policy.html"),
                   _buildPolicyLink("View our Refund Policy",
-                      "https://aniketp.ancientcoders.in/Refund_Policy.html"),
+                      "https://carenest.ancientcoders.in/Refund_Policy.html"),
                 ],
               ),
             ),

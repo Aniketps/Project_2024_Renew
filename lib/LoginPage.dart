@@ -14,6 +14,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 Future<bool> _getUserPageStatus() async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -39,180 +40,184 @@ class LoginPage extends StatefulWidget {
   @override
   State<StatefulWidget> createState() => _LoginPage();
 }
+
 class _LoginPage extends State<LoginPage> {
   String lat = '';
   String long = '';
   String locationMessage = "Check current location";
-  bool LoaderCheck = false;
-  String LoadingText = 'Connecting to Network...';
+  String loadingText = 'Connecting to Network...';
 
   late LocationPermission permission;
-  List<String> loadingMessages = [
-    'Getting things ready...',
-    'Hang tight, almost there...',
-    'Just a moment...',
-    'Loading your personalized experience...',
-    'Setting things up for you...',
-    'Making sure everything is perfect...',
-  ];
-
   Timer? timer;
   int index = 0;
+
   @override
   void initState() {
     super.initState();
-    timer = Timer.periodic(Duration(seconds: 5), (Timer t) {
-        LoadingText = loadingMessages[index];
-        index = (index + 1) % loadingMessages.length;
-    });
-    Getpermission();
-    _getCurrentLocation();
-    void _liveLocation() {
-      LocationSettings locationSettings = LocationSettings(
-        accuracy: LocationAccuracy.high,
-        distanceFilter: 100,
-      );
-
-      Geolocator.getPositionStream(locationSettings: locationSettings).listen(
-        (Position position) {
-          setState(() async {
-            lat = position.latitude.toString();
-            long = position.longitude.toString();
-            User? user = await FirebaseAuth.instance.currentUser;
-
-            await FirebaseFirestore.instance
-                .collection('user')
-                .doc(user?.uid)
-                .update({
-              'lat': lat,
-              'long': long,
-            });
-          });
-        },
-      );
-    }
-
-    LoaderCheck = !LoaderCheck;
-
-    Future<bool> staffStatus = _getUserPageStatus();
-    checkLogin(staffStatus);
+    _initialize();
   }
 
-  Future<void> checkLogin(isStaff) async {
-    User? user = await FirebaseAuth.instance.currentUser;
-    if (user?.uid != null) {
-      if (await _getUserPageStatus()) {
-        Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-              builder: (context) => StaffProfileHome(),
-            ));
-      } else {
-        Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-              builder: (context) => MyHomePage(),
-            ));
-      }
-    }
+  Future<void> _initialize() async {
+    await _getPermission();
+    await _getCurrentLocation();
+    _startLiveLocation();
+
+    final staffStatusFuture = _getUserPageStatus();
+    checkLogin(staffStatusFuture);
   }
 
-  void _liveLocation() {
-    LocationSettings locationSettings = LocationSettings(
-      accuracy: LocationAccuracy.high,
-      distanceFilter: 100,
-    );
-
-    Geolocator.getPositionStream(locationSettings: locationSettings).listen(
-      (Position position) {
-        setState(() async {
-          lat = position.latitude.toString();
-          long = position.longitude.toString();
-          User? user = await FirebaseAuth.instance.currentUser;
-
-          await FirebaseFirestore.instance
-              .collection('user')
-              .doc(user?.uid)
-              .update({
-            'lat': lat,
-            'long': long,
-          });
-        });
-      },
-    );
-  }
-
-  Future<void> Getpermission() async {
+  Future<void> _getPermission() async {
     permission = await Geolocator.checkPermission();
+
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
-        throw 'Permission required';
+        throw 'Location permission is required.';
       }
     }
 
     if (permission == LocationPermission.deniedForever) {
-      throw "Location permissions are permanently denied, we cannot request.";
+      throw 'Location permission is permanently denied.';
     }
   }
 
   Future<void> _getCurrentLocation() async {
-    bool serviceEnabled;
-    LocationPermission permission;
+    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
 
-    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    // Wait and retry if location is still disabled
     if (!serviceEnabled) {
-      setState(() {
-        throw "Location services are disabled.";
-      });
-      return;
+      // Retry after a short delay
+      await Future.delayed(Duration(seconds: 1));
+      serviceEnabled = await Geolocator.isLocationServiceEnabled();
+
+      if (!serviceEnabled) {
+        _showLocationDialog(); // Only show if still disabled after retry
+        return;
+      }
     }
 
     permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
-        setState(() {
-          throw "Location permissions are denied.";
-        });
-        return;
+        throw 'Location permissions are denied.';
       }
     }
 
-    void _liveLocation() {
-      LocationSettings locationSettings = LocationSettings(
-        accuracy: LocationAccuracy.high,
-        distanceFilter: 100,
-      );
-
-      Geolocator.getPositionStream(locationSettings: locationSettings).listen(
-        (Position position) {
-          setState(() {
-            lat = position.latitude.toString();
-            long = position.longitude.toString();
-            locationMessage = "Latitude: $lat, Longitude: $long";
-          });
-        },
-      );
-    }
-
     if (permission == LocationPermission.deniedForever) {
-      setState(() {
-        throw "Location permissions are permanently denied, we cannot request.";
-      });
-      return;
+      throw 'Location permissions are permanently denied.';
     }
 
     Position position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high);
 
+    if (!mounted) return;
     setState(() {
       lat = '${position.latitude}';
       long = '${position.longitude}';
       locationMessage = "Latitude: $lat, Longitude: $long";
-      LoaderCheck = !LoaderCheck;
     });
   }
+
+  void _startLiveLocation() {
+    final locationSettings = LocationSettings(
+      accuracy: LocationAccuracy.high,
+      distanceFilter: 100,
+    );
+
+    Geolocator.getPositionStream(locationSettings: locationSettings).listen(
+          (Position position) async {
+        if (!mounted) return;
+
+        String newLat = position.latitude.toString();
+        String newLong = position.longitude.toString();
+
+        setState(() {
+          lat = newLat;
+          long = newLong;
+          locationMessage = "Latitude: $lat, Longitude: $long";
+        });
+
+        User? user = FirebaseAuth.instance.currentUser;
+        if (user != null) {
+          await FirebaseFirestore.instance
+              .collection('user')
+              .doc(user.uid)
+              .update({'lat': newLat, 'long': newLong});
+        }
+      },
+    );
+  }
+
+  Future<bool> _getUserPageStatus() async {
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user == null) return false;
+
+    final doc = await FirebaseFirestore.instance
+        .collection('user')
+        .doc(user.uid)
+        .get();
+
+    return doc.data()?['isStaff'] == true;
+  }
+
+  Future<void> checkLogin(Future<bool> isStaffFuture) async {
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user?.uid == null) return;
+
+    final isStaff = await isStaffFuture;
+
+    if (!mounted) return;
+
+    if (isStaff) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => StaffProfileHome()),
+      );
+    } else {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => MyHomePage()),
+      );
+    }
+  }
+
+  void _showLocationDialog() {
+    if (!mounted) return;
+
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text("Location Disabled"),
+        content: const Text("Please turn on your location services."),
+        actions: [
+          TextButton(
+            onPressed: () async {
+              if (!mounted) return;
+
+              Navigator.of(context, rootNavigator: true).pop();
+
+              await Future.delayed(const Duration(milliseconds: 500));
+
+              // Call location check after dialog is dismissed and system updates
+              await _getCurrentLocation();
+            },
+            child: const Text("Try Again"),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    timer?.cancel();
+    super.dispose();
+  }
+
+  // Dummy pages
+  Widget StaffProfileHome() => Scaffold(body: Center(child: Text('Staff Profile')));
+  Widget MyHomePage() => Scaffold(body: Center(child: Text('User Home Page')));
 
   @override
   Widget build(BuildContext context) {
@@ -220,36 +225,10 @@ class _LoginPage extends State<LoginPage> {
     final screenWidth = mediaquery.size.width;
     final screenHeight = mediaquery.size.height;
 
-    final isWeb = screenWidth > 700;
 
     return Scaffold(
         backgroundColor: Colors.white,
-        body: LoaderCheck
-            ? Center(
-                child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(10.0),
-                    child: LoaderSupport.loadingAnimation.widget,
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(10.0),
-                    child: Text(
-                      LoadingText,
-                      style: GoogleFonts.audiowide(
-                        color: Color(0xFF00FFFF),  // Neon Blue
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18,
-                      ),
-                    ),
-                  )
-                ],
-              ))
-            : isWeb
-                ? WebView()
-                : AndroidView(
+        body: AndroidView(
                     lat: lat,
                     long: long,
                   ));
@@ -259,16 +238,21 @@ class _LoginPage extends State<LoginPage> {
 class AndroidStaffPage extends StatefulWidget {
   String lat;
   String long;
-  AndroidStaffPage({required this.lat, required this.long});
+  final bool isStaff;
+  AndroidStaffPage({required this.lat, required this.long, required this.isStaff});
   @override
-  State<StatefulWidget> createState() =>
-      _AndroidStaffPage(lat: lat, long: long);
+  State<StatefulWidget> createState() => _AndroidStaffPage(lat: lat, long: long, isStaff: isStaff);
 }
 
 class _AndroidStaffPage extends State<AndroidStaffPage> {
   String lat;
   String long;
-  _AndroidStaffPage({required this.lat, required this.long});
+
+  final bool isStaff;
+
+  bool isValidEmail = true;
+  bool isValidPassword = true;
+  _AndroidStaffPage({required this.lat, required this.long, required this.isStaff});
 
   TextEditingController Email = TextEditingController();
   TextEditingController Password = TextEditingController();
@@ -276,64 +260,94 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
   @override
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
+    final screenWidth = MediaQuery.of(context).size.width;
 
     return Stack(children: [
       Column(
         children: [
-          Container(
-            height: 80,
-            width: 80,
-            margin: EdgeInsets.only(bottom: 40),
-            decoration: BoxDecoration(
-              color: Colors.black,
-              borderRadius: BorderRadius.circular(80),
-              boxShadow: [
-                BoxShadow(
-                    color: Colors.black12, spreadRadius: 2, blurRadius: 1),
-              ],
-              image: DecorationImage(
-                image: AssetImage("assets/images/logo.png"),
-                fit: BoxFit.none, // No scaling
-                alignment: Alignment.center,
-                scale: 2, // Zoom in (smaller = more zoom)
-              ),
-            ),
-          ),
           Center(
             child: Container(
-              height: 400,
-              width: 300,
+              width: screenWidth,
               decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(30),
-                  boxShadow: [
-                    BoxShadow(
-                        color: Colors.black12, spreadRadius: 2, blurRadius: 1)
-                  ]),
+                color: Colors.white,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black12,
+                    offset: Offset(0, -5), // Moves shadow **upward**
+                    blurRadius: 4,
+                    spreadRadius: 1,
+                  ),
+                ],),
               child: Column(
                 children: [
-                  Padding(
-                    padding: const EdgeInsets.only(top: 20, bottom: 10),
-                    child: Text(
-                      "Staft Login",
-                      style:
-                          TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                    ),
-                  ),
+                  SizedBox(height: 10,),
                   Padding(
                     padding:
-                        const EdgeInsets.only(right: 30, left: 30, top: 30),
+                    const EdgeInsets.only(right: 30, left: 30, top: 10),
+                    child: Row(
+                      children: [
+                        Container(
+                          height: 80,
+                          width: 80,
+                          margin: EdgeInsets.only(bottom: 10, top: 20),
+                          decoration: BoxDecoration(
+                            color: Colors.black,
+                            borderRadius: BorderRadius.circular(80),
+                            boxShadow: [
+                              BoxShadow(
+                                  color: Colors.black12, spreadRadius: 2, blurRadius: 1),
+                            ],
+                            image: DecorationImage(
+                              image: AssetImage("assets/images/logo.png"),
+                              fit: BoxFit.none, // No scaling
+                              alignment: Alignment.center,
+                              scale: 2, // Zoom in (smaller = more zoom)
+                            ),
+                          ),
+                        ),
+                        SizedBox(width: 10,),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 16.0),
+                          child: Text(
+                            "CARENEST \nSTAFF SIGN IN",
+                            textAlign: TextAlign.start,
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,      // Semi-bold for professionalism
+                              color: Colors.black87,             // Dark color for readability
+                              fontFamily: 'Roboto',              // Use a clean, modern font (make sure it's added in your project)
+                              letterSpacing: 0.5,
+                              // Slight subtle letter spacing
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // Email input field
+                  Padding(
+                    padding:
+                        const EdgeInsets.only(right: 30, left: 30, top: 10),
                     child: Container(
                       height: 60,
                       child: TextField(
-                        controller: Email, // Controller for the email input
+                        controller: Email,
+                        onChanged: (value) {
+                          // Check entire email string using RegExp
+                          setState(() {
+                            isValidEmail = RegExp(
+                              r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$",
+                            ).hasMatch(value);
+                          });
+                        },
                         keyboardType: TextInputType
                             .emailAddress, // Optimizes keyboard for email input
                         decoration: InputDecoration(
                           labelText: "Email", // Label for the TextField
                           border: OutlineInputBorder(
                             borderRadius:
-                                BorderRadius.circular(50), // Rounded border
+                                BorderRadius.circular(10), // Rounded border
                           ),
                           contentPadding: EdgeInsets.fromLTRB(20, 16, 16,
                               16), // Adds padding inside the TextField
@@ -341,6 +355,21 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                       ),
                     ),
                   ),
+                  !isValidEmail
+                      ? Padding(
+                    padding: const EdgeInsets.only(right: 30, left: 30, top: 5),
+                    child: Row(
+                      children: [
+                        Text(
+                          "Invalid Email",
+                          style: TextStyle(color: Colors.red),
+                        ),
+                      ],
+                    ),
+                  )
+                      : Container(),
+
+                  // Password input field
                   Padding(
                     padding:
                         const EdgeInsets.only(right: 30, left: 30, top: 20),
@@ -354,7 +383,7 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                           labelText: "Password", // Label for the TextField
                           border: OutlineInputBorder(
                             borderRadius:
-                                BorderRadius.circular(50), // Rounded border
+                                BorderRadius.circular(10), // Rounded border
                           ),
                           contentPadding: EdgeInsets.fromLTRB(
                               20, 16, 16, 16), // Padding inside the TextField
@@ -362,8 +391,10 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                       ),
                     ),
                   ),
+
+                  // Forgot password link
                   Padding(
-                    padding: const EdgeInsets.only(top: 2, bottom: 5, left: 50),
+                    padding: const EdgeInsets.only(top: 5, bottom: 5, left: 30),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
@@ -391,9 +422,21 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                       ],
                     ),
                   ),
+
+                  // Submit button
                   Padding(
-                    padding: const EdgeInsets.only(top: 15),
-                    child: ElevatedButton(
+                    padding:
+                    const EdgeInsets.only(right: 30, left: 30, top: 20),
+                    child: Container(
+                      height: 45,
+                      width: double.infinity, // Make the container full width
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.green,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10), // Border radius 10
+                          ),
+                        ),
                         onPressed: () async {
                           setState(() {
                             isLoading = true;
@@ -434,7 +477,7 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                                     Fluttertoast.showToast(
                                       toastLength: Toast.LENGTH_SHORT,
                                       msg:
-                                          "Please check your mailbox to verify email",
+                                      "Please check your mailbox to verify email",
                                     );
                                     await FirebaseAuth.instance.signOut();
                                     setState(() {
@@ -474,25 +517,109 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                             );
                           }
                         },
-                        child: Text("Submit")),
+                        child: Text("Submit", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),),
+                      ),
+                    ),
                   ),
+
+                  // Create account link
                   Padding(
-                    padding: const EdgeInsets.only(top: 15, bottom: 5),
-                    child: InkWell(
-                        onTap: () {
-                          Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => RegisterPage(),
-                              ));
-                        },
-                        child: Text(
-                          "Dont have an account?",
-                          style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.blue,
-                              fontWeight: FontWeight.bold),
-                        )),
+                    padding: const EdgeInsets.only(top: 5, bottom: 5, left: 30),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        InkWell(
+                            onTap: () {
+                              Navigator.pushReplacement(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => RegisterPage(isStaff: isStaff,),
+                                  ));
+                            },
+                            child: Text(
+                              "Don't have an account?",
+                              style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.blue,
+                                  fontWeight: FontWeight.bold),
+                            )),
+                      ],
+                    ),
+                  ),
+
+                  // Speed image
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Flexible(
+                        child: InkWell(
+                          onTap: () async {
+                            final Uri uri = Uri.parse("https://carenest.ancientcoders.in");
+                            if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+                              throw 'Could not launch $uri';
+                            }
+                          },
+                          child: Image.asset(
+                            "assets/images/speed.jpg",
+                            fit: BoxFit.contain, // ensures it scales down while keeping proportions
+                            height: 180, // optional: set a max height
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  // Polacy link
+                  Padding(
+                    padding: const EdgeInsets.only(top: 5, bottom: 5),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        InkWell(
+                            onTap: () async {
+                              final Uri uri = Uri.parse("https://carenest.ancientcoders.in/Privacy_Policy.html");
+                              if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+                                throw 'Could not launch ${"https://carenest.ancientcoders.in/Privacy_Policy.html"}';
+                              }
+                            },
+                            child: Text(
+                              "Privacy Policy, ",
+                              style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.blue,
+                                  fontWeight: FontWeight.bold),
+                            )),
+                        InkWell(
+                            onTap: () async {
+                              final Uri uri = Uri.parse("https://carenest.ancientcoders.in/Terms_Conditions.html");
+                              if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+                                throw 'Could not launch ${"https://carenest.ancientcoders.in/Terms_Conditions.html"}';
+                              }
+                            },
+                            child: Text(
+                              "Terms & Conditions, ",
+                              style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.blue,
+                                  fontWeight: FontWeight.bold),
+                            )),
+                        InkWell(
+                            onTap: () async {
+                              final Uri uri = Uri.parse("https://carenest.ancientcoders.in/Refund_Policy.html");
+                              if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+                                throw 'Could not launch ${"https://carenest.ancientcoders.in/Refund_Policy.html"}';
+                              }
+                            },
+                            child: Text(
+                              "Refund Policy",
+                              style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.blue,
+                                  fontWeight: FontWeight.bold),
+                            )),
+                      ],
+                    ),
                   ),
                 ],
               ),
@@ -516,89 +643,123 @@ class AndroidUserPage extends StatefulWidget {
   String lat;
   String long;
 
-  AndroidUserPage({required this.lat, required this.long});
+  final bool isStaff;
+  AndroidUserPage({required this.lat, required this.long, required this.isStaff});
   @override
-  State<StatefulWidget> createState() => _AndroidUserPage(lat: lat, long: long);
+  State<StatefulWidget> createState() => _AndroidUserPage(lat: lat, long: long, isStaff: isStaff);
 }
 
 class _AndroidUserPage extends State<AndroidUserPage> {
   String lat;
   String long;
-
-  _AndroidUserPage({required this.lat, required this.long});
+  final bool isStaff;
+  _AndroidUserPage({required this.lat, required this.long, required this.isStaff});
   TextEditingController Email = TextEditingController();
   TextEditingController Password = TextEditingController();
 
   bool isPasswordcurrect = true;
   bool isEmailcurrect = true;
   bool isLoading = false;
+
+  bool isValidEmail = true;
+  bool isValidPassword = true;
   @override
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
+    final screenWidth = MediaQuery.of(context).size.width;
 
     return Stack(children: [
       Column(
         children: [
-          Container(
-            height: 80,
-            width: 80,
-            margin: EdgeInsets.only(bottom: 40),
-            decoration: BoxDecoration(
-              color: Colors.black,
-              borderRadius: BorderRadius.circular(80),
-              boxShadow: [
-                BoxShadow(
-                    color: Colors.black12, spreadRadius: 2, blurRadius: 1),
-              ],
-              image: DecorationImage(
-                image: AssetImage("assets/images/logo.png"),
-                fit: BoxFit.none, // No scaling
-                alignment: Alignment.center,
-                scale: 2, // Zoom in (smaller = more zoom)
-              ),
-            ),
-          ),
           Center(
             child: Container(
-              height: 400,
-              width: 300,
+              width: screenWidth,
               decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(30),
-                  boxShadow: [
-                    BoxShadow(
-                        color: Colors.black12, spreadRadius: 2, blurRadius: 1)
-                  ]),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black12,
+                    offset: Offset(0, -5), // Moves shadow **upward**
+                    blurRadius: 4,
+                    spreadRadius: 1,
+                  ),
+                ],),
               child: Column(
                 children: [
-                  Padding(
-                    padding: const EdgeInsets.only(top: 20, bottom: 10),
-                    child: Text(
-                      "User Login",
-                      style:
-                          TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                    ),
-                  ),
+                  SizedBox(height: 10,),
                   Padding(
                     padding:
-                        const EdgeInsets.only(right: 30, left: 30, top: 30),
+                    const EdgeInsets.only(right: 30, left: 30, top: 10),
+                    child: Row(
+                      children: [
+                        Container(
+                          height: 80,
+                          width: 80,
+                          margin: EdgeInsets.only(bottom: 10, top: 20),
+                          decoration: BoxDecoration(
+                            color: Colors.black,
+                            borderRadius: BorderRadius.circular(80),
+                            boxShadow: [
+                              BoxShadow(
+                                  color: Colors.black12, spreadRadius: 2, blurRadius: 1),
+                            ],
+                            image: DecorationImage(
+                              image: AssetImage("assets/images/logo.png"),
+                              fit: BoxFit.none, // No scaling
+                              alignment: Alignment.center,
+                              scale: 2, // Zoom in (smaller = more zoom)
+                            ),
+                          ),
+                        ),
+                        SizedBox(width: 10,),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 16.0),
+                          child: Text(
+                            "CARENEST \nCUSTOMER SIGN IN",
+                            textAlign: TextAlign.start,
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,      // Semi-bold for professionalism
+                              color: Colors.black87,             // Dark color for readability
+                              fontFamily: 'Roboto',              // Use a clean, modern font (make sure it's added in your project)
+                              letterSpacing: 0.5,
+                              // Slight subtle letter spacing
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // Email Input box
+                  Padding(
+                    padding:
+                        const EdgeInsets.only(right: 30, left: 30, top: 10),
                     child: Container(
                       height: 60,
                       child: TextField(
-                        controller: Email, // Controller for the email input
+                        controller: Email,
+                        onChanged: (value) {
+                          // Check entire email string using RegExp
+                          setState(() {
+                            isValidEmail = RegExp(
+                              r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$",
+                            ).hasMatch(value);
+                          });
+                        },
                         keyboardType: TextInputType
                             .emailAddress, // Optimizes keyboard for email input
                         decoration: InputDecoration(
                           labelText: "Email", // Label for the TextField
                           border: OutlineInputBorder(
                             borderRadius:
-                                BorderRadius.circular(50), // Rounded border
+                                BorderRadius.circular(10), // Rounded border
                           ),
                           contentPadding: EdgeInsets.fromLTRB(20, 16, 16,
                               16), // Adds padding inside the TextField
                           enabledBorder: OutlineInputBorder(
                             borderRadius:
-                                BorderRadius.circular(50), // Rounded border
+                                BorderRadius.circular(10), // Rounded border
                             borderSide: BorderSide(
                               color: isEmailcurrect
                                   ? Colors.grey
@@ -611,7 +772,7 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(
-                                50), // Rounded border when focused
+                                10), // Rounded border when focused
                             borderSide: BorderSide(
                                 color: Colors.blue,
                                 width:
@@ -621,6 +782,21 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                       ),
                     ),
                   ),
+                  !isValidEmail
+                      ? Padding(
+                    padding: const EdgeInsets.only(right: 30, left: 30, top: 5),
+                    child: Row(
+                      children: [
+                        Text(
+                          "Invalid Email",
+                          style: TextStyle(color: Colors.red),
+                        ),
+                      ],
+                    ),
+                  )
+                      : Container(),
+
+                  // Password input box
                   Padding(
                     padding:
                         const EdgeInsets.only(right: 30, left: 30, top: 20),
@@ -632,10 +808,10 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                         decoration: InputDecoration(
                           labelText: "Password", // Label for the TextField
                           border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(50),
+                            borderRadius: BorderRadius.circular(10),
                           ),
                           enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(50),
+                            borderRadius: BorderRadius.circular(10),
                             borderSide: BorderSide(
                               color: isPasswordcurrect
                                   ? Colors.grey
@@ -646,7 +822,7 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                             ),
                           ),
                           focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(50),
+                            borderRadius: BorderRadius.circular(10),
                             borderSide: BorderSide(
                                 color: Colors.blue,
                                 width: 2), // Border when focused
@@ -657,8 +833,10 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                       ),
                     ),
                   ),
+
+                  // Forgot password buttom/link
                   Padding(
-                    padding: const EdgeInsets.only(top: 2, bottom: 5, left: 50),
+                    padding: const EdgeInsets.only(top: 5, bottom: 5, left: 30),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
@@ -686,9 +864,21 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                       ],
                     ),
                   ),
+
+                  // Submit buttom
                   Padding(
-                    padding: const EdgeInsets.only(top: 15),
-                    child: ElevatedButton(
+                    padding:
+                    const EdgeInsets.only(right: 30, left: 30, top: 20),
+                    child: Container(
+                      height: 45,
+                      width: double.infinity, // Make the container full width
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.green,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10), // Border radius 10
+                          ),
+                        ),
                         onPressed: () async {
                           setState(() {
                             isLoading = true;
@@ -697,27 +887,20 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                           String password = Password.text;
                           if (email.isNotEmpty && password.isNotEmpty) {
                             try {
-                              UserCredential userCredential = await FirebaseAuth
-                                  .instance
-                                  .signInWithEmailAndPassword(
-                                      email: email, password: password);
+                              UserCredential userCredential = await FirebaseAuth.instance
+                                  .signInWithEmailAndPassword(email: email, password: password);
                               User? user = userCredential.user;
                               if (user!.emailVerified) {
-                                String? fcmToken =
-                                    await FirebaseMessaging.instance.getToken();
-                                await FirebaseFirestore.instance
-                                    .collection("user")
-                                    .doc(user?.uid)
-                                    .update({
+                                String? fcmToken = await FirebaseMessaging.instance.getToken();
+                                await FirebaseFirestore.instance.collection("user").doc(user?.uid).update({
                                   'lat': lat,
                                   'long': long,
                                   'token': fcmToken,
                                 });
                                 Navigator.pushReplacement(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => MyHomePage(),
-                                    ));
+                                  context,
+                                  MaterialPageRoute(builder: (context) => MyHomePage()),
+                                );
                                 setState(() {
                                   isLoading = false;
                                 });
@@ -727,9 +910,9 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                                 });
                                 await FirebaseAuth.instance.signOut();
                                 Fluttertoast.showToast(
-                                    toastLength: Toast.LENGTH_LONG,
-                                    msg:
-                                        "Please Check your mailbox to verify email");
+                                  toastLength: Toast.LENGTH_LONG,
+                                  msg: "Please Check your mailbox to verify email",
+                                );
                               }
                             } on FirebaseAuthException catch (e) {
                               setState(() {
@@ -737,15 +920,13 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                               });
                               var CheckEmailOrPass =
                                   'The supplied auth credential is incorrect, malformed or has expired.';
-                              var EmailIsWrong =
-                                  'The email address is badly formatted.';
+                              var EmailIsWrong = 'The email address is badly formatted.';
                               if ('${e.message}' == CheckEmailOrPass) {
                                 setState(() {
                                   isEmailcurrect = false;
                                   isPasswordcurrect = false;
                                 });
-                                Fluttertoast.showToast(
-                                    msg: "Invalid Email or Password");
+                                Fluttertoast.showToast(msg: "Invalid Email or Password");
                               } else if ('${e.message}' == EmailIsWrong) {
                                 setState(() {
                                   isLoading = false;
@@ -769,25 +950,109 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                             Fluttertoast.showToast(msg: "Invalid data");
                           }
                         },
-                        child: Text("Submit")),
+                        child: Text("Submit", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),),
+                      ),
+                    ),
                   ),
+
+                  // Create account link
                   Padding(
-                    padding: const EdgeInsets.only(top: 15, bottom: 5),
-                    child: InkWell(
-                        onTap: () {
-                          Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => RegisterPage(),
-                              ));
-                        },
-                        child: Text(
-                          "Dont have an account?",
-                          style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.blue,
-                              fontWeight: FontWeight.bold),
-                        )),
+                    padding: const EdgeInsets.only(top: 5, bottom: 5, left: 30),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        InkWell(
+                            onTap: () {
+                              Navigator.pushReplacement(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => RegisterPage(isStaff: isStaff,),
+                                  ));
+                            },
+                            child: Text(
+                              "Don't have an account?",
+                              style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.blue,
+                                  fontWeight: FontWeight.bold),
+                            )),
+                      ],
+                    ),
+                  ),
+
+                  // Speed image
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Flexible(
+                        child: InkWell(
+                          onTap: () async {
+                            final Uri uri = Uri.parse("https://carenest.ancientcoders.in");
+                            if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+                              throw 'Could not launch $uri';
+                            }
+                          },
+                          child: Image.asset(
+                            "assets/images/speed.jpg",
+                            fit: BoxFit.contain, // ensures it scales down while keeping proportions
+                            height: 180, // optional: set a max height
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  // Polacy link
+                  Padding(
+                    padding: const EdgeInsets.only(top: 5, bottom: 5),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        InkWell(
+                            onTap: () async {
+                              final Uri uri = Uri.parse("https://carenest.ancientcoders.in/Privacy_Policy.html");
+                              if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+                                throw 'Could not launch ${"https://carenest.ancientcoders.in/Privacy_Policy.html"}';
+                              }
+                            },
+                            child: Text(
+                              "Privacy Policy, ",
+                              style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.blue,
+                                  fontWeight: FontWeight.bold),
+                            )),
+                        InkWell(
+                            onTap: () async {
+                              final Uri uri = Uri.parse("https://carenest.ancientcoders.in/Terms_Conditions.html");
+                              if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+                                throw 'Could not launch ${"https://carenest.ancientcoders.in/Terms_Conditions.html"}';
+                              }
+                            },
+                            child: Text(
+                              "Terms & Conditions, ",
+                              style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.blue,
+                                  fontWeight: FontWeight.bold),
+                            )),
+                        InkWell(
+                            onTap: () async {
+                              final Uri uri = Uri.parse("https://carenest.ancientcoders.in/Refund_Policy.html");
+                              if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+                                throw 'Could not launch ${"https://carenest.ancientcoders.in/Refund_Policy.html"}';
+                              }
+                            },
+                            child: Text(
+                              "Refund Policy",
+                              style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.blue,
+                                  fontWeight: FontWeight.bold),
+                            )),
+                      ],
+                    ),
                   ),
                 ],
               ),
@@ -804,369 +1069,6 @@ class _AndroidUserPage extends State<AndroidUserPage> {
             )
           : Container(),
     ]);
-  }
-}
-
-class WebStaffPage extends StatefulWidget {
-  @override
-  State<StatefulWidget> createState() => _WebStaffPage();
-}
-
-class _WebStaffPage extends State<WebStaffPage> {
-  @override
-  Widget build(BuildContext context) {
-    final mediaquery = MediaQuery.of(context);
-    final screenHeight = mediaquery.size.height;
-    final screenWidth = mediaquery.size.width;
-
-    return Container(
-      height: screenHeight * 0.50,
-      width: screenWidth * 0.65,
-      decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(10),
-          boxShadow: [
-            BoxShadow(color: Colors.black26, spreadRadius: 2, blurRadius: 1)
-          ]),
-      child: Padding(
-        padding: const EdgeInsets.only(left: 30),
-        child: Row(
-          children: [
-            Container(
-              height: (screenHeight * 0.55) * 0.75,
-              width: (screenWidth * 0.65) * 0.5,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Logo
-                  Container(
-                    height: 20,
-                    width: 150,
-                    decoration: BoxDecoration(
-                      border: Border.all(width: 1, color: Colors.black),
-                    ),
-                  ),
-                  // Login
-                  Container(
-                    height: 20,
-                    width: 150,
-                    decoration: BoxDecoration(
-                      border: Border.all(width: 1, color: Colors.black),
-                    ),
-                  ),
-                  // Use your user account to login
-                  Container(
-                    height: 20,
-                    width: 150,
-                    decoration: BoxDecoration(
-                      border: Border.all(width: 1, color: Colors.black),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Container(
-              height: (screenHeight * 0.55) * 0.75,
-              width: (screenWidth * 0.65) * 0.38,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  // Email input
-                  Padding(
-                    padding: const EdgeInsets.only(top: 10),
-                    child: Container(
-                      height: 50,
-                      width: (screenWidth * 0.65) * 0.38,
-                      decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(20),
-                          boxShadow: [
-                            BoxShadow(
-                                color: Colors.black26,
-                                spreadRadius: 2,
-                                blurRadius: 1)
-                          ]),
-                    ),
-                  ),
-
-                  // Email Forgot
-                  Container(
-                    height: 20,
-                    width: ((screenWidth * 0.65) * 0.38) * 0.4,
-                    decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          BoxShadow(
-                              color: Colors.black26,
-                              spreadRadius: 2,
-                              blurRadius: 1)
-                        ]),
-                  ),
-
-                  // Email input
-                  Padding(
-                    padding: const EdgeInsets.only(top: 10),
-                    child: Container(
-                      height: 50,
-                      width: (screenWidth * 0.65) * 0.38,
-                      decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(20),
-                          boxShadow: [
-                            BoxShadow(
-                                color: Colors.black26,
-                                spreadRadius: 2,
-                                blurRadius: 1)
-                          ]),
-                    ),
-                  ),
-
-                  // Email forgot
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Container(
-                        height: 20,
-                        width: ((screenWidth * 0.65) * 0.38) * 0.4,
-                        decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(20),
-                            boxShadow: [
-                              BoxShadow(
-                                  color: Colors.black26,
-                                  spreadRadius: 2,
-                                  blurRadius: 1)
-                            ]),
-                      ),
-                      Container(
-                        height: 20,
-                        width: ((screenWidth * 0.65) * 0.38) * 0.3,
-                        decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(20),
-                            boxShadow: [
-                              BoxShadow(
-                                  color: Colors.black26,
-                                  spreadRadius: 2,
-                                  blurRadius: 1)
-                            ]),
-                      ),
-                    ],
-                  ),
-
-                  // Submit
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.only(top: 40),
-                        child: Container(
-                          height: 40,
-                          width: (screenWidth * 0.65) * 0.1,
-                          decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(40),
-                              boxShadow: [
-                                BoxShadow(
-                                    color: Colors.black26,
-                                    spreadRadius: 2,
-                                    blurRadius: 1)
-                              ]),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class WebUserPage extends StatefulWidget {
-  @override
-  State<StatefulWidget> createState() => _WebUserPage();
-}
-
-class _WebUserPage extends State<WebUserPage> {
-  @override
-  Widget build(BuildContext context) {
-    final mediaquery = MediaQuery.of(context);
-    final screenWidth = mediaquery.size.width;
-    final screenHeight = mediaquery.size.height;
-    return Center(
-      child: Container(
-        height: screenHeight * 0.50,
-        width: screenWidth * 0.65,
-        decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(10),
-            boxShadow: [
-              BoxShadow(color: Colors.black26, spreadRadius: 2, blurRadius: 1)
-            ]),
-        child: Padding(
-          padding: const EdgeInsets.only(left: 30),
-          child: Row(
-            children: [
-              Container(
-                height: (screenHeight * 0.55) * 0.75,
-                width: (screenWidth * 0.65) * 0.5,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Logo
-                    Container(
-                      height: 20,
-                      width: 150,
-                      decoration: BoxDecoration(
-                        border: Border.all(width: 1, color: Colors.black),
-                      ),
-                    ),
-                    // Login
-                    Container(
-                      height: 20,
-                      width: 150,
-                      decoration: BoxDecoration(
-                        border: Border.all(width: 1, color: Colors.black),
-                      ),
-                    ),
-                    // Use your user account to login
-                    Container(
-                      height: 20,
-                      width: 150,
-                      decoration: BoxDecoration(
-                        border: Border.all(width: 1, color: Colors.black),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Container(
-                height: (screenHeight * 0.55) * 0.75,
-                width: (screenWidth * 0.65) * 0.38,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    // Email input
-                    Padding(
-                      padding: const EdgeInsets.only(top: 10),
-                      child: Container(
-                        height: 50,
-                        width: (screenWidth * 0.65) * 0.38,
-                        decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(20),
-                            boxShadow: [
-                              BoxShadow(
-                                  color: Colors.black26,
-                                  spreadRadius: 2,
-                                  blurRadius: 1)
-                            ]),
-                      ),
-                    ),
-
-                    // Email Forgot
-                    Container(
-                      height: 20,
-                      width: ((screenWidth * 0.65) * 0.38) * 0.4,
-                      decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(20),
-                          boxShadow: [
-                            BoxShadow(
-                                color: Colors.black26,
-                                spreadRadius: 2,
-                                blurRadius: 1)
-                          ]),
-                    ),
-
-                    // Email input
-                    Padding(
-                      padding: const EdgeInsets.only(top: 10),
-                      child: Container(
-                        height: 50,
-                        width: (screenWidth * 0.65) * 0.38,
-                        decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(20),
-                            boxShadow: [
-                              BoxShadow(
-                                  color: Colors.black26,
-                                  spreadRadius: 2,
-                                  blurRadius: 1)
-                            ]),
-                      ),
-                    ),
-
-                    // Email forgot
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Container(
-                          height: 20,
-                          width: ((screenWidth * 0.65) * 0.38) * 0.4,
-                          decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(20),
-                              boxShadow: [
-                                BoxShadow(
-                                    color: Colors.black26,
-                                    spreadRadius: 2,
-                                    blurRadius: 1)
-                              ]),
-                        ),
-                        Container(
-                          height: 20,
-                          width: ((screenWidth * 0.65) * 0.38) * 0.3,
-                          decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(20),
-                              boxShadow: [
-                                BoxShadow(
-                                    color: Colors.black26,
-                                    spreadRadius: 2,
-                                    blurRadius: 1)
-                              ]),
-                        ),
-                      ],
-                    ),
-
-                    // Submit
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.only(top: 40),
-                          child: Container(
-                            height: 40,
-                            width: (screenWidth * 0.65) * 0.1,
-                            decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(40),
-                                boxShadow: [
-                                  BoxShadow(
-                                      color: Colors.black26,
-                                      spreadRadius: 2,
-                                      blurRadius: 1)
-                                ]),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
   }
 }
 
@@ -1187,24 +1089,22 @@ class _AndroidView extends State<AndroidView> {
 
   _AndroidView({required this.lat, required this.long});
 
-  Color StaffColorTrue = Color(0xffbef0ff);
-  Color StaffColorFalse = Colors.white;
-  bool StaffPressed = false;
-  Color StaffColor = Colors.white;
-  Color UserColorTrue = Color(0xfffffcc9);
-  Color UserColorFalse = Colors.white;
-  bool UserPressed = true;
-  Color UserColor = Color(0xfffffcc9);
-
   @override
   Widget build(BuildContext context) {
-    _setUserPageStatus(StaffPressed ? true : false);
-    UserData().isStaff = StaffPressed ? true : false;
+    Color StaffColorTrue = Color(0xFF4C9EEB);
+    Color StaffColorFalse = Color(0xFFB0BEC5);
+    Color StaffColor = isStaff? StaffColorTrue : StaffColorFalse;
+    Color UserColorTrue = Color(0xFF4C9EEB);
+    Color UserColorFalse = Color(0xFFB0BEC5);
+    Color UserColor = isStaff? UserColorFalse : UserColorTrue;
+
+    _setUserPageStatus(isStaff ? true : false);
+    UserData().isStaff = isStaff ? true : false;
 
     return Stack(
       children: [
         Container(
-          color: UserPressed ? Color(0xfffffcc9) : Color(0xffbef0ff),
+          color: !isStaff ? Color(0xfffffcc9) : Color(0xffbef0ff),
           height: 320,
           width: double.maxFinite,
         ),
@@ -1213,217 +1113,111 @@ class _AndroidView extends State<AndroidView> {
           child: Column(
             children: [
               Padding(
-                padding: const EdgeInsets.only(top: 50, bottom: 20, right: 20),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    Container(
-                      height: 40,
+                padding: const EdgeInsets.only(top: 50, bottom: 20),
+                child: Center(
+                  child: GestureDetector(
+                    onHorizontalDragEnd: (details) {
+                      setState(() {
+                        if (details.primaryVelocity != null && details.primaryVelocity! < 0) {
+                          // Swiped left
+                          isStaff = true;  // Swipe left → Staff (left side)
+                        } else if (details.primaryVelocity != null && details.primaryVelocity! > 0) {
+                          // Swiped right
+                          isStaff = false; // Swipe right → User (right side)
+                        }
+                      });
+                    },
+                    child: Container(
+                      width: MediaQuery.of(context).size.width * 0.8,
+                      height: 50,
                       decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(50),
-                          boxShadow: [
-                            BoxShadow(
-                                color: Colors.black12,
-                                spreadRadius: 2,
-                                blurRadius: 1)
-                          ]),
-                      child: Row(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(50),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black12,
+                            spreadRadius: 2,
+                            blurRadius: 1,
+                          )
+                        ],
+                      ),
+                      child: Stack(
                         children: [
-                          // Staff
-                          ElevatedButton(
-                              onPressed: () {
-                                setState(() {
-                                  StaffPressed = true;
-                                  if (StaffPressed) {
-                                    StaffColor = StaffColorTrue;
-                                    UserColor = UserColorFalse;
-                                    UserPressed = false;
-                                  } else {
-                                    StaffColor = StaffColorFalse;
-                                  }
-                                });
-                              },
-                              style: ElevatedButton.styleFrom(
-                                  backgroundColor: StaffColor,
-                                  shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.only(
-                                          topLeft: Radius.circular(50),
-                                          bottomRight: Radius.circular(0),
-                                          bottomLeft: Radius.circular(50),
-                                          topRight: Radius.circular(0)))),
-                              child: Text(
-                                "Staff",
-                                style: TextStyle(
-                                    color: Colors.black,
-                                    fontWeight: FontWeight.bold),
-                              )),
-
-                          // User
-                          ElevatedButton(
-                              onPressed: () {
-                                setState(() {
-                                  UserPressed = true;
-                                  if (UserPressed) {
-                                    StaffColor = StaffColorFalse;
-                                    UserColor = UserColorTrue;
-                                    StaffPressed = false;
-                                  } else {
-                                    UserColor = UserColorFalse;
-                                  }
-                                });
-                              },
-                              style: ElevatedButton.styleFrom(
-                                  backgroundColor: UserColor,
-                                  shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.only(
-                                          topLeft: Radius.circular(0),
-                                          bottomRight: Radius.circular(50),
-                                          bottomLeft: Radius.circular(0),
-                                          topRight: Radius.circular(50)))),
-                              child: Text(
-                                "User",
-                                style: TextStyle(
-                                    color: Colors.black,
-                                    fontWeight: FontWeight.bold),
-                              ))
+                          // Animated background
+                          AnimatedAlign(
+                            duration: Duration(milliseconds: 300),
+                            alignment: isStaff ? Alignment.centerLeft : Alignment.centerRight,
+                            curve: Curves.easeInOut,
+                            child: Container(
+                              width: (MediaQuery.of(context).size.width * 0.8) / 2,
+                              height: 50,
+                              decoration: BoxDecoration(
+                                color: Colors.blueAccent,
+                                borderRadius: BorderRadius.circular(50),
+                              ),
+                            ),
+                          ),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: GestureDetector(
+                                  onTap: () {
+                                    setState(() {
+                                      isStaff = true;
+                                    });
+                                  },
+                                  child: Container(
+                                    alignment: Alignment.center,
+                                    height: 50,
+                                    child: Text(
+                                      "Staff",
+                                      style: TextStyle(
+                                        color: isStaff ? Colors.white : Colors.black,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              Expanded(
+                                child: GestureDetector(
+                                  onTap: () {
+                                    setState(() {
+                                      isStaff = false;
+                                    });
+                                  },
+                                  child: Container(
+                                    alignment: Alignment.center,
+                                    height: 40,
+                                    child: Text(
+                                      "User",
+                                      style: TextStyle(
+                                        color: !isStaff ? Colors.white : Colors.black,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                         ],
                       ),
                     ),
-                  ],
+                  ),
                 ),
               ),
-              StaffPressed
+              isStaff
                   ? AndroidStaffPage(
                       lat: lat,
                       long: long,
+                isStaff: isStaff,
                     )
                   : AndroidUserPage(
                       lat: lat,
                       long: long,
+                isStaff: isStaff,
                     )
-            ],
-          ),
-        )
-      ],
-    );
-  }
-}
-
-class WebView extends StatefulWidget {
-  @override
-  State<StatefulWidget> createState() => _WebView();
-}
-
-class _WebView extends State<WebView> {
-  Color StaffColorTrue = Colors.blueAccent;
-  Color StaffColorFalse = Colors.white;
-  bool StaffPressed = false;
-  Color StaffColor = Colors.white;
-  Color UserColorTrue = Colors.blueAccent;
-  Color UserColorFalse = Colors.white;
-  bool UserPressed = true;
-  Color UserColor = Colors.blueAccent;
-  @override
-  Widget build(BuildContext context) {
-    final mediaquery = MediaQuery.of(context);
-    final screenWidth = mediaquery.size.width;
-    final screenHeight = mediaquery.size.height;
-
-    return Stack(
-      children: [
-        ClipPath(
-          clipper: BlueShapeClipper(),
-          child: Container(
-            height: screenHeight,
-            width: screenWidth, // Adjust the height accordingly
-            color: Color(0xff2020b7),
-          ),
-        ),
-        SingleChildScrollView(
-          scrollDirection: Axis.vertical,
-          child: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(top: 20, bottom: 20, right: 80),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    Container(
-                      decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(50),
-                          boxShadow: [
-                            BoxShadow(
-                                color: Colors.black12,
-                                spreadRadius: 2,
-                                blurRadius: 1)
-                          ]),
-                      child: Row(
-                        children: [
-                          ElevatedButton(
-                              onPressed: () {
-                                setState(() {
-                                  StaffPressed = true;
-                                  if (StaffPressed) {
-                                    StaffColor = StaffColorTrue;
-                                    UserColor = UserColorFalse;
-                                    UserPressed = false;
-                                  } else {
-                                    StaffColor = StaffColorFalse;
-                                  }
-                                });
-                              },
-                              style: ElevatedButton.styleFrom(
-                                  backgroundColor: StaffColor,
-                                  shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.only(
-                                          topLeft: Radius.circular(50),
-                                          bottomRight: Radius.circular(0),
-                                          bottomLeft: Radius.circular(50),
-                                          topRight: Radius.circular(0))),
-                                  minimumSize: Size(100, 50)),
-                              child: Text(
-                                "Staff",
-                                style: TextStyle(
-                                    color: Color(0xff013220),
-                                    fontWeight: FontWeight.bold),
-                              )),
-                          ElevatedButton(
-                              onPressed: () {
-                                setState(() {
-                                  UserPressed = true;
-                                  if (UserPressed) {
-                                    StaffColor = StaffColorFalse;
-                                    UserColor = UserColorTrue;
-                                    StaffPressed = false;
-                                  } else {
-                                    UserColor = UserColorFalse;
-                                  }
-                                });
-                              },
-                              style: ElevatedButton.styleFrom(
-                                  backgroundColor: UserColor,
-                                  shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.only(
-                                          topLeft: Radius.circular(0),
-                                          bottomRight: Radius.circular(50),
-                                          bottomLeft: Radius.circular(0),
-                                          topRight: Radius.circular(50))),
-                                  minimumSize: Size(100, 50)),
-                              child: Text(
-                                "User",
-                                style: TextStyle(
-                                    color: Color(0xff8B0000),
-                                    fontWeight: FontWeight.bold),
-                              ))
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              StaffPressed ? WebStaffPage() : WebUserPage()
             ],
           ),
         )

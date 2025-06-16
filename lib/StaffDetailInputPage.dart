@@ -9,9 +9,11 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'LoaderSupport.dart';
 
@@ -61,9 +63,7 @@ class _StaffDetailInputPage extends State<StaffDetailInputPage> {
           });
         },
       );
-    }
-
-    ;
+    };
     _liveLocation();
   }
 
@@ -88,9 +88,7 @@ class _StaffDetailInputPage extends State<StaffDetailInputPage> {
 
     return Scaffold(
         backgroundColor: Colors.white,
-        body: isWeb
-            ? WebView()
-            : AndroidView(
+        body: AndroidView(
                 Password: Password,
                 FirstName: FirstName,
                 Email: Email,
@@ -119,6 +117,13 @@ class AndroidStaffPage extends StatefulWidget {
 }
 
 class _AndroidStaffPage extends State<AndroidStaffPage> {
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    _getCurrentLocation();
+  }
+
   final String FirstName;
   final String LastName;
   final String Email;
@@ -154,75 +159,144 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
 
   TextEditingController PhoneNo = TextEditingController();
   TextEditingController OTP = TextEditingController();
-  TextEditingController City = TextEditingController();
   TextEditingController ProfilePic = TextEditingController();
+  TextEditingController City = TextEditingController(text: "Loading...");
+
   bool isLoading = false;
 
   File? imagePath;
+  late LocationPermission permission;
+  bool isValidPhone = true;
+  bool isValidCity = true;
+
+  Future<void> _getCurrentLocation() async {
+    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+
+    // Wait and retry if location is still disabled
+    if (!serviceEnabled) {
+      // Retry after a short delay
+      await Future.delayed(Duration(seconds: 1));
+      serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    }
+
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        throw 'Location permissions are denied.';
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      throw 'Location permissions are permanently denied.';
+    }
+
+    Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high);
+
+    if (!mounted) return;
+    await getCurrentLocationName(position.latitude, position.longitude);
+  }
+  Future<void> getCurrentLocationName(double lat, double long) async {
+    List<Placemark> placemarks = await placemarkFromCoordinates(lat, long);
+    if (placemarks.isNotEmpty) {
+      String place = "${placemarks.first.locality}" ?? "Location...";
+      print("Got Location $place");
+      CurrentLocation = place;
+      City.text = place;
+    }
+  }
+  String CurrentLocation = "";
 
   @override
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
+    final screenWidth = MediaQuery.of(context).size.width;
 
     return Stack(children: [
       Column(
         children: [
-          Container(
-            height: 80,
-            width: 80,
-            margin: EdgeInsets.only(bottom: 40, top: 50),
-            decoration: BoxDecoration(
-              color: Colors.black,
-              borderRadius: BorderRadius.circular(80),
-              boxShadow: [
-                BoxShadow(
-                    color: Colors.black12, spreadRadius: 2, blurRadius: 1),
-              ],
-              image: DecorationImage(
-                image: AssetImage("assets/images/logo.png"),
-                fit: BoxFit.cover, // Adjust the fit if necessary
-              ),
-            ),
-          ),
+          SizedBox(height: 100,),
           Center(
             child: Container(
-              height: 400,
-              width: 300,
+              width: screenWidth,
               decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(30),
-                  boxShadow: [
-                    BoxShadow(
-                        color: Colors.black12, spreadRadius: 2, blurRadius: 1)
-                  ]),
+                color: Colors.white,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black12,
+                    offset: Offset(0, -5), // Moves shadow **upward**
+                    blurRadius: 4,
+                    spreadRadius: 1,
+                  ),
+                ],),
               child: Column(
                 children: [
-                  Padding(
-                    padding: const EdgeInsets.all(30.0),
-                    child: Text(
-                      "Details",
-                      style:
-                          TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                    ),
-                  ),
+                  SizedBox(height: 10,),
+                  // logo title
                   Padding(
                     padding:
-                        const EdgeInsets.only(right: 15, left: 15, top: 10),
+                    const EdgeInsets.only(right: 30, left: 30, top: 10),
+                    child: Row(
+                      children: [
+                        Container(
+                          height: 80,
+                          width: 80,
+                          margin: EdgeInsets.only(bottom: 10, top: 20),
+                          decoration: BoxDecoration(
+                            color: Colors.black,
+                            borderRadius: BorderRadius.circular(80),
+                            boxShadow: [
+                              BoxShadow(
+                                  color: Colors.black12, spreadRadius: 2, blurRadius: 1),
+                            ],
+                            image: DecorationImage(
+                              image: AssetImage("assets/images/logo.png"),
+                              fit: BoxFit.none, // No scaling
+                              alignment: Alignment.center,
+                              scale: 2, // Zoom in (smaller = more zoom)
+                            ),
+                          ),
+                        ),
+                        SizedBox(width: 10,),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 16.0),
+                          child: Text(
+                            "CARENEST \nEXTRA INFORMATION",
+                            textAlign: TextAlign.start,
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,      // Semi-bold for professionalism
+                              color: Colors.black87,             // Dark color for readability
+                              fontFamily: 'Roboto',              // Use a clean, modern font (make sure it's added in your project)
+                              letterSpacing: 0.5,
+                              // Slight subtle letter spacing
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // Profession
+                  Padding(
+                    padding:
+                    const EdgeInsets.only(right: 30, left: 30, top: 10),
                     child: Row(
                       children: [
                         Container(
                           padding: EdgeInsets.symmetric(horizontal: 20),
-                          width: 265,
+                          width: screenWidth - 60,
                           decoration: BoxDecoration(
                             color: Colors.white,
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(10),
                             boxShadow: [
                               BoxShadow(color: Colors.black26, blurRadius: 6)
                             ],
                           ),
                           child: DropdownButton<String>(
                             value: selectedValue,
-                            hint: Text("Select an option"),
+                            hint: Text("Select Job"),
                             items: items.map((String item) {
                               return DropdownMenuItem<String>(
                                 value: item,
@@ -248,47 +322,75 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                       ],
                     ),
                   ),
+
+                  // Phone Number
                   Padding(
                     padding:
-                        const EdgeInsets.only(right: 15, left: 15, top: 10),
+                    const EdgeInsets.only(right: 30, left: 30, top: 10),
                     child: Row(
                       children: [
-                        Padding(
-                          padding: const EdgeInsets.only(right: 5),
-                          child: Container(
-                            height: 50,
-                            width: 175+90,
-                            child: TextField(
-                              keyboardType: TextInputType.numberWithOptions(),
-                              controller: PhoneNo,
-                              decoration: InputDecoration(
-                                  labelText: "Phone no.", // Placeholder text
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(50),
-                                  ),
-                                  contentPadding: EdgeInsets.fromLTRB(
-                                      20,
-                                      16,
-                                      16,
-                                      16) // Adds border around the text field
-                                  ),
-                            ),
+                        Container(
+                          height: 50,
+                          width: screenWidth - 60,
+                          child: TextField(
+                            keyboardType: TextInputType.numberWithOptions(),
+                            controller: PhoneNo,
+                            onChanged: (value) {
+                              setState(() {
+                                isValidPhone = RegExp(
+                                  r"^\d{7,12}$",
+                                ).hasMatch(value);
+                              });
+                            },
+                            decoration: InputDecoration(
+                                labelText: "Phone no.", // Placeholder text
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                contentPadding: EdgeInsets.fromLTRB(
+                                    20,
+                                    16,
+                                    16,
+                                    16) // Adds border around the text field
+                                ),
                           ),
                         ),
                       ],
                     ),
                   ),
+                  !isValidPhone
+                      ? Padding(
+                    padding: const EdgeInsets.only(right: 30, left: 30, top: 5),
+                    child: Row(
+                      children: [
+                        Text(
+                          "Invalid Phone Number",
+                          style: TextStyle(color: Colors.red),
+                        ),
+                      ],
+                    ),
+                  )
+                      : Container(),
+
+                  // City name
                   Padding(
                     padding:
-                        const EdgeInsets.only(right: 15, left: 15, top: 10),
+                    const EdgeInsets.only(right: 30, left: 30, top: 10),
                     child: Container(
                       height: 50,
                       child: TextField(
                         controller: City,
+                        onChanged: (value) {
+                          setState(() {
+                            isValidCity = RegExp(
+                              r"^[a-zA-Z ]+$",
+                            ).hasMatch(value);
+                          });
+                        },
                         decoration: InputDecoration(
-                            labelText: "City", // Placeholder text
+                            labelText: "City",
                             border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(50),
+                              borderRadius: BorderRadius.circular(10),
                             ),
                             contentPadding: EdgeInsets.fromLTRB(20, 16, 16,
                                 16) // Adds border around the text field
@@ -296,25 +398,48 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                       ),
                     ),
                   ),
+                  !isValidCity
+                      ? Padding(
+                    padding: const EdgeInsets.only(right: 30, left: 30, top: 5),
+                    child: Row(
+                      children: [
+                        Text(
+                          "Invalid City",
+                          style: TextStyle(color: Colors.red),
+                        ),
+                      ],
+                    ),
+                  )
+                      : Container(),
+
+                  // Image and submit
                   Container(
                     width: 265,
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Padding(
-                          padding:
-                              const EdgeInsets.only(top: 10),
-                          child: ElevatedButton(
-                              onPressed: () async {
-                                final pickedImage = await ImagePicker()
-                                    .pickImage(source: ImageSource.gallery);
-                                if (pickedImage != null) {
-                                  setState(() {
-                                    imagePath = File(pickedImage.path);
-                                  });
-                                }
-                              },
-                              child: Text(imagePath == null ? "Select Image" : "Image Selected")),
+                          padding: const EdgeInsets.only(top: 10),
+                          child: imagePath == null
+                              ? ElevatedButton(
+                            onPressed: () async {
+                              final pickedImage = await ImagePicker().pickImage(source: ImageSource.gallery);
+                              if (pickedImage != null) {
+                                setState(() {
+                                  imagePath = File(pickedImage.path);
+                                });
+                              }
+                            },
+                            child: Text("Select Image"),
+                          )
+                              : ClipOval(
+                            child: Image.file(
+                              imagePath!,
+                              width: 100,
+                              height: 100,
+                              fit: BoxFit.cover,
+                            ),
+                          ),
                         ),
                         Padding(
                           padding: const EdgeInsets.only(top: 15),
@@ -457,9 +582,86 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                       ],
                     ),
                   ),
+
                   Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Text(ErrorData, textAlign: TextAlign.justify,),
+                    padding:
+                    const EdgeInsets.only(right: 30, left: 30, top: 10),
+                    child: Text(ErrorData, textAlign: TextAlign.justify, style: TextStyle(color: Colors.red),),
+                  ),
+
+                  // Speed image
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Flexible(
+                        child: InkWell(
+                          onTap: () async {
+                            final Uri uri = Uri.parse("https://carenest.ancientcoders.in");
+                            if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+                              throw 'Could not launch $uri';
+                            }
+                          },
+                          child: Image.asset(
+                            "assets/images/speed.jpg",
+                            fit: BoxFit.contain, // ensures it scales down while keeping proportions
+                            height: 180, // optional: set a max height
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  // Polacy link
+                  Padding(
+                    padding: const EdgeInsets.only(top: 5, bottom: 5),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        InkWell(
+                            onTap: () async {
+                              final Uri uri = Uri.parse("https://carenest.ancientcoders.in/Privacy_Policy.html");
+                              if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+                                throw 'Could not launch ${"https://carenest.ancientcoders.in/Privacy_Policy.html"}';
+                              }
+                            },
+                            child: Text(
+                              "Privacy Policy, ",
+                              style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.blue,
+                                  fontWeight: FontWeight.bold),
+                            )),
+                        InkWell(
+                            onTap: () async {
+                              final Uri uri = Uri.parse("https://carenest.ancientcoders.in/Terms_Conditions.html");
+                              if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+                                throw 'Could not launch ${"https://carenest.ancientcoders.in/Terms_Conditions.html"}';
+                              }
+                            },
+                            child: Text(
+                              "Terms & Conditions, ",
+                              style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.blue,
+                                  fontWeight: FontWeight.bold),
+                            )),
+                        InkWell(
+                            onTap: () async {
+                              final Uri uri = Uri.parse("https://carenest.ancientcoders.in/Refund_Policy.html");
+                              if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+                                throw 'Could not launch ${"https://carenest.ancientcoders.in/Refund_Policy.html"}';
+                              }
+                            },
+                            child: Text(
+                              "Refund Policy",
+                              style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.blue,
+                                  fontWeight: FontWeight.bold),
+                            )),
+                      ],
+                    ),
                   ),
                 ],
               ),
@@ -476,187 +678,6 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
             )
           : Container(),
     ]);
-  }
-}
-
-class WebStaffPage extends StatefulWidget {
-  @override
-  State<StatefulWidget> createState() => _WebStaffPage();
-}
-
-class _WebStaffPage extends State<WebStaffPage> {
-  @override
-  Widget build(BuildContext context) {
-    final mediaquery = MediaQuery.of(context);
-    final screenHeight = mediaquery.size.height;
-    final screenWidth = mediaquery.size.width;
-
-    return Container(
-      height: screenHeight * 0.50,
-      width: screenWidth * 0.65,
-      decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(10),
-          boxShadow: [
-            BoxShadow(color: Colors.black26, spreadRadius: 2, blurRadius: 1)
-          ]),
-      child: Padding(
-        padding: const EdgeInsets.only(left: 30),
-        child: Row(
-          children: [
-            Container(
-              height: (screenHeight * 0.55) * 0.75,
-              width: (screenWidth * 0.65) * 0.5,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Logo
-                  Container(
-                    height: 20,
-                    width: 150,
-                    decoration: BoxDecoration(
-                      border: Border.all(width: 1, color: Colors.black),
-                    ),
-                  ),
-                  // Login
-                  Container(
-                    height: 20,
-                    width: 150,
-                    decoration: BoxDecoration(
-                      border: Border.all(width: 1, color: Colors.black),
-                    ),
-                  ),
-                  // Use your user account to login
-                  Container(
-                    height: 20,
-                    width: 150,
-                    decoration: BoxDecoration(
-                      border: Border.all(width: 1, color: Colors.black),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Container(
-              height: (screenHeight * 0.55) * 0.75,
-              width: (screenWidth * 0.65) * 0.38,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  // Email input
-                  Padding(
-                    padding: const EdgeInsets.only(top: 10),
-                    child: Container(
-                      height: 50,
-                      width: (screenWidth * 0.65) * 0.38,
-                      decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(20),
-                          boxShadow: [
-                            BoxShadow(
-                                color: Colors.black26,
-                                spreadRadius: 2,
-                                blurRadius: 1)
-                          ]),
-                    ),
-                  ),
-
-                  // Email Forgot
-                  Container(
-                    height: 20,
-                    width: ((screenWidth * 0.65) * 0.38) * 0.4,
-                    decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          BoxShadow(
-                              color: Colors.black26,
-                              spreadRadius: 2,
-                              blurRadius: 1)
-                        ]),
-                  ),
-
-                  // Email input
-                  Padding(
-                    padding: const EdgeInsets.only(top: 10),
-                    child: Container(
-                      height: 50,
-                      width: (screenWidth * 0.65) * 0.38,
-                      decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(20),
-                          boxShadow: [
-                            BoxShadow(
-                                color: Colors.black26,
-                                spreadRadius: 2,
-                                blurRadius: 1)
-                          ]),
-                    ),
-                  ),
-
-                  // Email forgot
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Container(
-                        height: 20,
-                        width: ((screenWidth * 0.65) * 0.38) * 0.4,
-                        decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(20),
-                            boxShadow: [
-                              BoxShadow(
-                                  color: Colors.black26,
-                                  spreadRadius: 2,
-                                  blurRadius: 1)
-                            ]),
-                      ),
-                      Container(
-                        height: 20,
-                        width: ((screenWidth * 0.65) * 0.38) * 0.3,
-                        decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(20),
-                            boxShadow: [
-                              BoxShadow(
-                                  color: Colors.black26,
-                                  spreadRadius: 2,
-                                  blurRadius: 1)
-                            ]),
-                      ),
-                    ],
-                  ),
-
-                  // Submit
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.only(top: 40),
-                        child: Container(
-                          height: 40,
-                          width: (screenWidth * 0.65) * 0.1,
-                          decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(40),
-                              boxShadow: [
-                                BoxShadow(
-                                    color: Colors.black26,
-                                    spreadRadius: 2,
-                                    blurRadius: 1)
-                              ]),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
   }
 }
 
@@ -709,128 +730,6 @@ class _AndroidView extends State<AndroidView> {
                   FirstName: FirstName,
                   Email: Email,
                   LastName: LastName)
-            ],
-          ),
-        )
-      ],
-    );
-  }
-}
-
-class WebView extends StatefulWidget {
-  @override
-  State<StatefulWidget> createState() => _WebView();
-}
-
-class _WebView extends State<WebView> {
-  Color StaffColorTrue = Colors.blueAccent;
-  Color StaffColorFalse = Colors.white;
-  bool StaffPressed = false;
-  Color StaffColor = Colors.white;
-  Color UserColorTrue = Colors.blueAccent;
-  Color UserColorFalse = Colors.white;
-  bool UserPressed = true;
-  Color UserColor = Colors.blueAccent;
-  @override
-  Widget build(BuildContext context) {
-    final mediaquery = MediaQuery.of(context);
-    final screenWidth = mediaquery.size.width;
-    final screenHeight = mediaquery.size.height;
-
-    return Stack(
-      children: [
-        ClipPath(
-          clipper: BlueShapeClipper(),
-          child: Container(
-            height: screenHeight,
-            width: screenWidth, // Adjust the height accordingly
-            color: Color(0xffbef0ff),
-          ),
-        ),
-        SingleChildScrollView(
-          scrollDirection: Axis.vertical,
-          child: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(top: 20, bottom: 20, right: 80),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    Container(
-                      decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(50),
-                          boxShadow: [
-                            BoxShadow(
-                                color: Colors.black12,
-                                spreadRadius: 2,
-                                blurRadius: 1)
-                          ]),
-                      child: Row(
-                        children: [
-                          ElevatedButton(
-                              onPressed: () {
-                                setState(() {
-                                  StaffPressed = !StaffPressed;
-                                  if (StaffPressed) {
-                                    StaffColor = StaffColorTrue;
-                                    UserColor = UserColorFalse;
-                                    UserPressed = false;
-                                  } else {
-                                    StaffColor = StaffColorFalse;
-                                  }
-                                });
-                              },
-                              style: ElevatedButton.styleFrom(
-                                  backgroundColor: StaffColor,
-                                  shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.only(
-                                          topLeft: Radius.circular(50),
-                                          bottomRight: Radius.circular(0),
-                                          bottomLeft: Radius.circular(50),
-                                          topRight: Radius.circular(0))),
-                                  minimumSize: Size(100, 50)),
-                              child: Text(
-                                "Staff",
-                                style: TextStyle(
-                                    color: Color(0xff013220),
-                                    fontWeight: FontWeight.bold),
-                              )),
-                          ElevatedButton(
-                              onPressed: () {
-                                setState(() {
-                                  UserPressed = !UserPressed;
-                                  if (UserPressed) {
-                                    StaffColor = StaffColorFalse;
-                                    UserColor = UserColorTrue;
-                                    StaffPressed = false;
-                                  } else {
-                                    UserColor = UserColorFalse;
-                                  }
-                                });
-                              },
-                              style: ElevatedButton.styleFrom(
-                                  backgroundColor: UserColor,
-                                  shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.only(
-                                          topLeft: Radius.circular(0),
-                                          bottomRight: Radius.circular(50),
-                                          bottomLeft: Radius.circular(0),
-                                          topRight: Radius.circular(50))),
-                                  minimumSize: Size(100, 50)),
-                              child: Text(
-                                "User",
-                                style: TextStyle(
-                                    color: Color(0xff8B0000),
-                                    fontWeight: FontWeight.bold),
-                              ))
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              StaffPressed ? WebStaffPage() : WebUserPage()
             ],
           ),
         )
