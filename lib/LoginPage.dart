@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:carehub/LoaderSupport.dart';
 import 'package:carehub/RegisterPage.dart';
-import 'package:carehub/StaffPage.dart';
 import 'package:carehub/StaffProfileHome.dart';
 import 'package:carehub/main.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -11,15 +10,9 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-Future<bool> _getUserPageStatus() async {
-  SharedPreferences prefs = await SharedPreferences.getInstance();
-  return prefs.getBool("Staff") ?? false;
-}
 Future<bool> _setUserPageStatus(bool value) async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   return prefs.setBool("Staff", value);
@@ -221,11 +214,6 @@ class _LoginPage extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    final mediaquery = MediaQuery.of(context);
-    final screenWidth = mediaquery.size.width;
-    final screenHeight = mediaquery.size.height;
-
-
     return Scaffold(
         backgroundColor: Colors.white,
         body: AndroidView(
@@ -1087,10 +1075,35 @@ class _AndroidView extends State<AndroidView> {
 
   bool isStaff = false;
 
+  @override
+  void initState() {
+    super.initState();
+    isIntroRead();
+  }
+
   _AndroidView({required this.lat, required this.long});
+
+  bool sawAd = false;
+
+  int imageCount = 1;
+
+  static Future<void> setIntroRead(bool value) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setBool("isIntroRead", value);
+  }
+
+  Future<void> isIntroRead() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      sawAd = prefs.getBool("isIntroRead") ?? false;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
+    double screenWidth = MediaQuery.sizeOf(context).width;
+    double screenHeight = MediaQuery.sizeOf(context).height;
+
     Color StaffColorTrue = Color(0xFF4C9EEB);
     Color StaffColorFalse = Color(0xFFB0BEC5);
     Color StaffColor = isStaff? StaffColorTrue : StaffColorFalse;
@@ -1101,7 +1114,7 @@ class _AndroidView extends State<AndroidView> {
     _setUserPageStatus(isStaff ? true : false);
     UserData().isStaff = isStaff ? true : false;
 
-    return Stack(
+    return sawAd? Stack(
       children: [
         Container(
           color: !isStaff ? Color(0xfffffcc9) : Color(0xffbef0ff),
@@ -1222,6 +1235,805 @@ class _AndroidView extends State<AndroidView> {
           ),
         )
       ],
+    ):
+    Container(
+      height: screenHeight,
+      width: screenWidth,
+      decoration: BoxDecoration(
+          color: Colors.white
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          imageCount == 1
+            ?
+        Container(
+        height: screenHeight * 0.8,
+        width: screenWidth * 0.9,
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Text(
+              "Welcome to CareNest",
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 26,
+                color: Colors.black87,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            SizedBox(height: 20),
+            Image.asset(
+              "assets/images/logo2.png",
+              height: 180,
+              width: 180,
+            ),
+            SizedBox(height: 20),
+            Text(
+              "Smart Hiring for Daily Needs",
+              style: TextStyle(
+                fontWeight: FontWeight.w600,
+                fontSize: 18,
+                color: Colors.blueGrey[700],
+              ),
+              textAlign: TextAlign.center,
+            ),
+            SizedBox(height: 12),
+            Text(
+              "CareNest connects you with trusted, verified staff for short-term jobs like nursing, driving, cooking, and more.",
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey[800],
+                height: 1.5,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            SizedBox(height: 20),
+            Row(
+              mainAxisAlignment: imageCount == 1? MainAxisAlignment.end : MainAxisAlignment.spaceBetween,
+              children: [
+                imageCount == 1?
+                    Container()
+                    : ElevatedButton(
+                  onPressed: () {
+                    setState(() {
+                      setState(() {
+                        imageCount--;
+                      });
+                    });
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blueAccent,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: Text("Prev", style: TextStyle(color: Colors.white),),
+                ),
+                imageCount == 7
+                    ? ElevatedButton(
+                  onPressed: () {
+
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blueAccent,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: Text("Finish", style: TextStyle(color: Colors.white),),
+                )
+                    : ElevatedButton(
+                  onPressed: () {
+                    setState(() {
+                      imageCount++;
+                    });
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text("Next", style: TextStyle(color: Colors.black),),
+                  ),
+                ),
+              ],
+            )
+          ],
+        ),
+      )
+        : imageCount == 2
+              ? Container(
+            height: screenHeight * 0.8,
+            width: screenWidth * 0.9,
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text(
+                  "Live Staff Around You",
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 26,
+                    color: Colors.black87,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: 20),
+                Image.asset(
+                  "assets/images/liveLocation.jpg",
+                  height: 250,
+                  width: 250,
+                ),
+                SizedBox(height: 20),
+                Text(
+                  "Find Help Nearby in Real-Time",
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 18,
+                    color: Colors.blueGrey[700],
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: 12),
+                Text(
+                  "Instantly view available staff near you on the map—filtered by profession and rating.",
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey[800],
+                    height: 1.5,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: imageCount == 1? MainAxisAlignment.end : MainAxisAlignment.spaceBetween,
+                  children: [
+                    imageCount == 1?
+                    Container()
+                        : ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+                          setState(() {
+                            imageCount--;
+                          });
+                        });
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: Text("Prev", style: TextStyle(color: Colors.black),),
+                    ),
+                    imageCount == 7
+                        ? ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+
+                        });
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text("Finish", style: TextStyle(color: Colors.black),),
+                      ),
+                    )
+                        : ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+                          imageCount++;
+                        });
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text("Next", style: TextStyle(color: Colors.black),),
+                      ),
+                    ),
+                  ],
+                )
+              ],
+            ),
+          )
+              : imageCount == 3
+                ? Container(
+            height: screenHeight * 0.8,
+            width: screenWidth * 0.9,
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text(
+                  "Quick Hiring Process",
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 26,
+                    color: Colors.black87,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: 20),
+                Image.asset(
+                  "assets/images/hire.jpg",
+                  height: 250,
+                  width: 250,
+                ),
+                SizedBox(height: 20),
+                Text(
+                  "Easy Booking, Your Way",
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 18,
+                    color: Colors.blueGrey[700],
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: 12),
+                Text(
+                  "Choose who you need, when, and for how long. Fill a short form and get connected fast.",
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey[800],
+                    height: 1.5,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: imageCount == 1? MainAxisAlignment.end : MainAxisAlignment.spaceBetween,
+                  children: [
+                    imageCount == 1?
+                    Container()
+                        : ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+                          setState(() {
+                            imageCount--;
+                          });
+                        });
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text("Prev", style: TextStyle(color: Colors.black),),
+                      ),
+                    ),
+                    imageCount == 7
+                        ? ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+
+                        });
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text("Finish", style: TextStyle(color: Colors.black),),
+                      ),
+                    )
+                        : ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+                          imageCount++;
+                        });
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text("Next", style: TextStyle(color: Colors.black),),
+                      ),
+                    ),
+                  ],
+                )
+              ],
+            ),
+          )
+              : imageCount == 4
+                  ? Container(
+            height: screenHeight * 0.8,
+            width: screenWidth * 0.9,
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text(
+                  "Verified & Trusted Professionals",
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 26,
+                    color: Colors.black87,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: 20),
+                Image.asset(
+                  "assets/images/kyc.jpg",
+                  height: 250,
+                  width: 250,
+                ),
+                SizedBox(height: 20),
+                Text(
+                  "Only KYC-Verified Staff",
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 18,
+                    color: Colors.blueGrey[700],
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: 12),
+                Text(
+                  "Every staff member completes a strict KYC process for safety and trust.",
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey[800],
+                    height: 1.5,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: imageCount == 1? MainAxisAlignment.end : MainAxisAlignment.spaceBetween,
+                  children: [
+                    imageCount == 1?
+                    Container()
+                        : ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+                          setState(() {
+                            imageCount--;
+                          });
+                        });
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text("Prev", style: TextStyle(color: Colors.black),),
+                      ),
+                    ),
+                    imageCount == 7
+                        ? ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+
+                        });
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text("Finish", style: TextStyle(color: Colors.black),),
+                      ),
+                    )
+                        : ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+                          imageCount++;
+                        });
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text("Next", style: TextStyle(color: Colors.black),),
+                      ),
+                    ),
+                  ],
+                )
+              ],
+            ),
+          )
+              : imageCount == 5
+                    ? Container(
+            height: screenHeight * 0.8,
+            width: screenWidth * 0.9,
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text(
+                  "For Staff: Get Started with KYC",
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 26,
+                    color: Colors.black87,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: 20),
+                Image.asset(
+                  "assets/images/staffVerification.jpg",
+                  height: 250,
+                  width: 250,
+                ),
+                SizedBox(height: 20),
+                Text(
+                  "Join as Staff – It's Simple!",
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 18,
+                    color: Colors.blueGrey[700],
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: 12),
+                Text(
+                  "Register your profession, complete your KYC, and get listed on the platform.",
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey[800],
+                    height: 1.5,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: imageCount == 1? MainAxisAlignment.end : MainAxisAlignment.spaceBetween,
+                  children: [
+                    imageCount == 1?
+                    Container()
+                        : ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+                          setState(() {
+                            imageCount--;
+                          });
+                        });
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text("Prev", style: TextStyle(color: Colors.black),),
+                      ),
+                    ),
+                    imageCount == 7
+                        ? ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+
+                        });
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text("Finish", style: TextStyle(color: Colors.black),),
+                      ),
+                    )
+                        : ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+                          imageCount++;
+                        });
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text("Next", style: TextStyle(color: Colors.black),),
+                      ),
+                    ),
+                  ],
+                )
+              ],
+            ),
+          )
+              : imageCount == 6
+                      ? Container(
+            height: screenHeight * 0.8,
+            width: screenWidth * 0.9,
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text(
+                  "Go Online When You're Free",
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 26,
+                    color: Colors.black87,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: 20),
+                Image.asset(
+                  "assets/images/onoff.png",
+                  height: 250,
+                  width: 250,
+                ),
+                SizedBox(height: 20),
+                Text(
+                  "Flexible Working, Your Control",
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 18,
+                    color: Colors.blueGrey[700],
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: 12),
+                Text(
+                  "You control your availability—go online when you're ready to work, offline when you're not.",
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey[800],
+                    height: 1.5,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: imageCount == 1? MainAxisAlignment.end : MainAxisAlignment.spaceBetween,
+                  children: [
+                    imageCount == 1?
+                    Container()
+                        : ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+                          setState(() {
+                            imageCount--;
+                          });
+                        });
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text("Prev", style: TextStyle(color: Colors.black),),
+                      ),
+                    ),
+                    imageCount == 7
+                        ? ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+
+                        });
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blueAccent,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text("Finish", style: TextStyle(color: Colors.white),),
+                      ),
+                    )
+                        : ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+                          imageCount++;
+                        });
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text("Next", style: TextStyle(color: Colors.black),),
+                      ),
+                    ),
+                  ],
+                )
+              ],
+            ),
+          )
+              : Container(
+            height: screenHeight * 0.8,
+            width: screenWidth * 0.9,
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text(
+                  "Get Job Requests in Real Time",
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 26,
+                    color: Colors.black87,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: 20),
+                Image.asset(
+                  "assets/images/notification.jpg",
+                  height: 250,
+                  width: 250,
+                ),
+                SizedBox(height: 20),
+                Text(
+                  "Earn Instantly, Get Hired Fast",
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 18,
+                    color: Colors.blueGrey[700],
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: 12),
+                Text(
+                  "Get notified when users need your service. Accept jobs, start earning.",
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey[800],
+                    height: 1.5,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: imageCount == 1? MainAxisAlignment.end : MainAxisAlignment.spaceBetween,
+                  children: [
+                    imageCount == 1?
+                    Container()
+                        : ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+                          setState(() {
+                            imageCount--;
+                          });
+                        });
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text("Prev", style: TextStyle(color: Colors.black),),
+                      ),
+                    ),
+                    imageCount == 7
+                        ? ElevatedButton(
+                      onPressed: () {
+                          setIntroRead(true);
+                          setState(() {
+                            sawAd = true;
+                          });
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text("Finish", style: TextStyle(color: Colors.black),),
+                      ),
+                    )
+                        : ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+                          imageCount++;
+                        });
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text("Next", style: TextStyle(color: Colors.black),),
+                      ),
+                    ),
+                  ],
+                )
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
