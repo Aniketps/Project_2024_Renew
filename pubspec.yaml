@@ -11,7 +11,7 @@ dependencies:
   shared_preferences: ^2.1.0
 #  upi_india: 3.0.1
   http: ^1.1.0
-  google_sign_in: ^6.1.6
+  google_sign_in: ^6.2.2
   image_picker: ^1.1.2
   intl: ^0.18.0
   firebase_core: ^3.6.0

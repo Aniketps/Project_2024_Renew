@@ -23,7 +23,15 @@
           }
         },
         {
-          "client_id": "195391760517-tn69ld52adkn3n5m1tfsfvf41r2au544.apps.googleusercontent.com",
+          "client_id": "195391760517-se9g1frde6li39btid4cu5hp80u606vv.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.carenest.carehub",
+            "certificate_hash": "7bff79830cc165185d1618d1435ce5e90a7c017f"
+          }
+        },
+        {
+          "client_id": "195391760517-isnhflbs9iqstrlt8nf316c3mnp86p19.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
@@ -36,7 +44,7 @@
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "195391760517-tn69ld52adkn3n5m1tfsfvf41r2au544.apps.googleusercontent.com",
+              "client_id": "195391760517-isnhflbs9iqstrlt8nf316c3mnp86p19.apps.googleusercontent.com",
               "client_type": 3
             },
             {

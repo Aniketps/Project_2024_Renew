@@ -23,6 +23,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
@@ -260,6 +261,7 @@ class _StaffProfileHome extends State<StaffProfileHome> {
                 leading: Icon(Icons.logout),
                 title: Text('Logout'),
                 onTap: () async {
+                  await GoogleSignIn().signOut();
                   await FirebaseAuth.instance.signOut();
                   Navigator.pushReplacement(context,
                       MaterialPageRoute(builder: (context) => LoginPage()));
@@ -477,6 +479,7 @@ class _StaffProfileHome extends State<StaffProfileHome> {
               leading: Icon(Icons.logout),
               title: Text('Logout'),
               onTap: () async {
+                await GoogleSignIn().signOut();
                 await FirebaseAuth.instance.signOut();
                 Navigator.pushReplacement(context,
                     MaterialPageRoute(builder: (context) => LoginPage()));

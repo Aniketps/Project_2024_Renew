@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:carehub/Admin.dart';
 import 'package:carehub/Deals.dart';
 import 'package:carehub/PrivacyPolicy.dart';
@@ -15,6 +17,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:in_app_update/in_app_update.dart';
 import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -168,7 +171,6 @@ class _MyHomePageState extends State<MyHomePage> {
       accuracy: LocationAccuracy.high,
       distanceFilter: 100,
     );
-
     Geolocator.getPositionStream(locationSettings: locationSettings).listen(
           (Position position) async {
           String lat = position.latitude.toString();
@@ -441,6 +443,7 @@ class _MyHomePageState extends State<MyHomePage> {
               leading: Icon(Icons.logout),
               title: Text('Logout'),
               onTap: () async {
+                await GoogleSignIn().signOut();
                 await FirebaseAuth.instance.signOut();
                 Navigator.pushReplacement(context,
                     MaterialPageRoute(builder: (context) => LoginPage()));

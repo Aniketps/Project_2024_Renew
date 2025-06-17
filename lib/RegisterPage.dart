@@ -4,10 +4,13 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'LoaderSupport.dart';
 import 'StaffDetailInputPage.dart';
+import 'main.dart';
 
 class RegisterPage extends StatefulWidget {
   final bool isStaff;
@@ -137,6 +140,111 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                       ],
                     ),
                   ),
+
+                  // Google buttom
+                  Padding(
+                    padding:
+                    const EdgeInsets.only(right: 30, left: 30, top: 20),
+                    child: Container(
+                      height: 45,
+                      width: double.infinity, // Make the container full width
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.green,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10), // Border radius 10
+                          ),
+                        ),
+                        onPressed: () async {
+                          try {
+                            setState(() {
+                              isLoading = true;
+                            });
+
+                            // Step 1: Start the Google sign-in process
+                            final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+                            if (googleUser == null) {
+                              // User canceled the login
+                              setState(() {
+                                isLoading = false;
+                              });
+                              return;
+                            }
+
+                            // Step 2: Get auth credentials from the signed-in user
+                            final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+
+                            final credential = GoogleAuthProvider.credential(
+                              accessToken: googleAuth.accessToken,
+                              idToken: googleAuth.idToken,
+                            );
+
+                            String? fullName = googleUser?.displayName;
+                            String? firstName;
+                            String? lastName;
+
+                            if (fullName != null && fullName.contains(" ")) {
+                              List<String> names = fullName.split(" ");
+                              setState(() {
+                                firstName = names.first;
+                                lastName = names.sublist(1).join(" ");
+                              });
+                            }else{
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => AndroidStaffPageGoogle(
+                                    FirstName: "Unknown",
+                                    LastName: "",
+                                    credential : credential
+                                ),
+                              ));
+                            }
+
+                            if(firstName != "" && lastName != ""){
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => AndroidStaffPageGoogle(
+                                        FirstName: firstName?? '',
+                                        LastName: lastName?? '',
+                                        credential : credential
+                                    ),
+                                  ));
+                            }
+                          } catch (e) {
+                            Fluttertoast.showToast(msg: "Error during Google Sign-In");
+                            print("The error is : ${e}");
+                          } finally {
+                            setState(() {
+                              isLoading = false;
+                            });
+                          }
+                        },
+                        child: Text("Google", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),),
+                      ),
+                    ),
+                  ),
+
+                  SizedBox(height: 5,),
+                  Padding(
+                    padding:
+                    const EdgeInsets.only(right: 30, left: 30, top: 10),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Divider(thickness: 1, color: Colors.black),
+                        ),
+                        SizedBox(width: 8),
+                        Text("OR", style: TextStyle(fontWeight: FontWeight.bold),),
+                        SizedBox(width: 8),
+                        Expanded(
+                          child: Divider(thickness: 1, color: Colors.black,),
+                        ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(height: 5,),
 
                   // First name
                   Padding(
@@ -555,6 +663,36 @@ class _AndroidUserPage extends State<AndroidUserPage> {
   }
 
   _AndroidUserPage({required this.isStaff});
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    _getCurrentLocation();
+  }
+
+  String lat = '';
+  String long = '';
+
+  Future<void> _getCurrentLocation() async {
+    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+
+    // Wait and retry if location is still disabled
+    if (!serviceEnabled) {
+      // Retry after a short delay
+      await Future.delayed(Duration(seconds: 1));
+      serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    }
+
+    Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high);
+
+    if (!mounted) return;
+    setState(() {
+      lat = '${position.latitude}';
+      long = '${position.longitude}';
+    });
+  }
   @override
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
@@ -623,6 +761,125 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                       ],
                     ),
                   ),
+
+                  // Google buttom
+                  Padding(
+                    padding:
+                    const EdgeInsets.only(right: 30, left: 30, top: 20),
+                    child: Container(
+                      height: 45,
+                      width: double.infinity, // Make the container full width
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.green,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10), // Border radius 10
+                          ),
+                        ),
+                        onPressed: () async {
+                          try {
+                            setState(() {
+                              isLoading = true;
+                            });
+
+                            // Step 1: Start the Google sign-in process
+                            final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+                            if (googleUser == null) {
+                              // User canceled the login
+                              setState(() {
+                                isLoading = false;
+                              });
+                              return;
+                            }
+
+                            // Step 2: Get auth credentials from the signed-in user
+                            final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+
+                            final credential = GoogleAuthProvider.credential(
+                              accessToken: googleAuth.accessToken,
+                              idToken: googleAuth.idToken,
+                            );
+
+                            // Step 3: Sign in to Firebase
+                            final UserCredential userCredential =
+                            await FirebaseAuth.instance.signInWithCredential(credential);
+
+                            final User? user = userCredential.user;
+                            String? fullName = googleUser?.displayName;
+
+                            String? firstName;
+                            String? lastName;
+
+                            if (fullName != null && fullName.contains(" ")) {
+                              List<String> names = fullName.split(" ");
+                              firstName = names.first;
+                              lastName = names.sublist(1).join(" "); // handles middle names too
+                            }else{
+                              firstName = "Unknown";
+                              lastName = "";
+                            }
+                            if (user != null) {
+                              // Step 4: Save user info to Firestore
+                              final userDocRef = FirebaseFirestore.instance.collection("user").doc(user.uid);
+                              final docSnapshot = await userDocRef.get();
+
+                              if (!docSnapshot.exists) {
+                                // New user → set full data
+                                await userDocRef.set({
+                                  'Email': user.email,
+                                  'First_name': firstName,
+                                  'Last_name': lastName,
+                                  'lat' : lat,
+                                  'long' : long,
+                                });
+                              } else {
+                                // Existing user → update only what you want (NOT name)
+                                await userDocRef.update({
+                                  'lat' : lat,
+                                  'long' : long,
+                                });
+                              }
+
+                              // Step 5: Navigate to home page
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(builder: (context) => MyHomePage()),
+                              );
+                            }
+
+                          } catch (e) {
+                            Fluttertoast.showToast(msg: "Error during Google Sign-In");
+                            print("The error is : ${e}");
+                          } finally {
+                            setState(() {
+                              isLoading = false;
+                            });
+                          }
+                        },
+                        child: Text("Google", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),),
+                      ),
+                    ),
+                  ),
+
+                  SizedBox(height: 5,),
+                  Padding(
+                    padding:
+                    const EdgeInsets.only(right: 30, left: 30, top: 10),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Divider(thickness: 1, color: Colors.black),
+                        ),
+                        SizedBox(width: 8),
+                        Text("OR", style: TextStyle(fontWeight: FontWeight.bold),),
+                        SizedBox(width: 8),
+                        Expanded(
+                          child: Divider(thickness: 1, color: Colors.black,),
+                        ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(height: 5,),
 
                   // First name
                   Padding(

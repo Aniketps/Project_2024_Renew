@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:image_picker/image_picker.dart';
 import 'ClientNotificationPage.dart';
 import 'ContactUs.dart';
@@ -25,6 +26,8 @@ class _ActualUser extends State<ActualUser> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _addressController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
+  late TextEditingController _lastName = TextEditingController();
+  late TextEditingController _firstName = TextEditingController();
   String Profile_pic_url = "";
 
   var userData;
@@ -80,12 +83,15 @@ class _ActualUser extends State<ActualUser> {
           _addressController.text = userData['City'] ?? '';
           _phoneController.text = userData['Phone_Number1'] ?? '';
           Profile_pic_url = userData['Profile_Pic'] ?? '';
+          _lastName.text = userData['First_name']?? '';
+          _firstName.text = userData['Last_name']?? '';
         }
       });
     }
   }
 
   Future<void> _logout() async {
+    await GoogleSignIn().signOut();
     await FirebaseAuth.instance.signOut();
     Navigator.pushReplacement(
         context,
@@ -270,21 +276,6 @@ class _ActualUser extends State<ActualUser> {
                                                 ],
                                               ),
 
-                                              // Full name
-                                              Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.center,
-                                                children: [
-                                                  Text(
-                                                    "${userData['First_name']} ${userData['Last_name']}",
-                                                    style: TextStyle(
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                        fontSize: 16),
-                                                  ),
-                                                ],
-                                              ),
-
                                               // Notifications
                                               Row(
                                                 mainAxisAlignment:
@@ -323,22 +314,32 @@ class _ActualUser extends State<ActualUser> {
                                                                   "Email"),
                                                     ),
                                                   ),
-                                                  Icon(Icons.edit,
-                                                      color: Colors.grey),
                                                 ],
                                               ),
+                                              SizedBox(height: 20,),
+                                              _buildTextFieldWithIcon(
+                                                  _lastName,
+                                                  'First Name',
+                                                  'First_name',
+                                                  Icons.done_outline),
+                                              SizedBox(height: 20),
+                                              _buildTextFieldWithIcon(
+                                                  _firstName,
+                                                  'Last Name',
+                                                  'Last_name',
+                                                  Icons.done_outline),
                                               SizedBox(height: 20),
                                               _buildTextFieldWithIcon(
                                                   _addressController,
                                                   'City',
                                                   'City',
-                                                  Icons.edit),
+                                                  Icons.done_outline),
                                               SizedBox(height: 20),
                                               _buildTextFieldWithIcon(
                                                   _phoneController,
                                                   'Phone Number',
                                                   'Phone_Number1',
-                                                  Icons.edit),
+                                                  Icons.done_outline),
                                               SizedBox(height: 40),
 
                                               // Logout button

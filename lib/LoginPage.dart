@@ -10,23 +10,13 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 Future<bool> _setUserPageStatus(bool value) async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   return prefs.setBool("Staff", value);
-}
-
-class UserData {
-  static final UserData _instance = UserData._internal();
-  bool isStaff = false;
-
-  factory UserData() {
-    return _instance;
-  }
-
-  UserData._internal();
 }
 
 class LoginPage extends StatefulWidget {
@@ -51,13 +41,14 @@ class _LoginPage extends State<LoginPage> {
   }
 
   Future<void> _initialize() async {
+    final staffStatusFuture = _getUserPageStatus();
+    await checkLogin(staffStatusFuture);
     await _getPermission();
     await _getCurrentLocation();
     _startLiveLocation();
-
-    final staffStatusFuture = _getUserPageStatus();
-    checkLogin(staffStatusFuture);
   }
+
+  bool isLoading = true;
 
   Future<void> _getPermission() async {
     permission = await Geolocator.checkPermission();
@@ -143,6 +134,9 @@ class _LoginPage extends State<LoginPage> {
   }
 
   Future<bool> _getUserPageStatus() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getBool("Staff")?? false;
+
     User? user = FirebaseAuth.instance.currentUser;
     if (user == null) return false;
 
@@ -155,24 +149,46 @@ class _LoginPage extends State<LoginPage> {
   }
 
   Future<void> checkLogin(Future<bool> isStaffFuture) async {
+    setState(() {
+      isLoading = true;
+    });
     User? user = FirebaseAuth.instance.currentUser;
-    if (user?.uid == null) return;
+    if (user?.uid == null) {
+      setState(() {
+        isLoading = false;
+      });
+      return;
+    }
 
     final isStaff = await isStaffFuture;
 
-    if (!mounted) return;
+    if (!mounted) {
+      setState(() {
+        isLoading = false;
+      });
+      return;
+    }
 
     if (isStaff) {
+      setState(() {
+        isLoading = false;
+      });
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (_) => StaffProfileHome()),
       );
     } else {
+      setState(() {
+        isLoading = false;
+      });
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (_) => MyHomePage()),
       );
     }
+    setState(() {
+      isLoading = false;
+    });
   }
 
   void _showLocationDialog() {
@@ -208,19 +224,34 @@ class _LoginPage extends State<LoginPage> {
     super.dispose();
   }
 
-  // Dummy pages
-  Widget StaffProfileHome() => Scaffold(body: Center(child: Text('Staff Profile')));
-  Widget MyHomePage() => Scaffold(body: Center(child: Text('User Home Page')));
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
         backgroundColor: Colors.white,
-        body: AndroidView(
+        body: isLoading
+            ? Loader()
+            : AndroidView(
                     lat: lat,
                     long: long,
                   ));
   }
+}
+
+class Loader extends StatefulWidget {
+  @override
+  State<StatefulWidget> createState() => _Loader();
+}
+
+class _Loader extends State<Loader>{
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+        height: double.infinity,
+        width: double.infinity,
+        color: Colors.red,
+      );
+  }
+
 }
 
 class AndroidStaffPage extends StatefulWidget {
@@ -247,6 +278,7 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
   bool isLoading = false;
   @override
   Widget build(BuildContext context) {
+    _setUserPageStatus(isStaff ? true : false);
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
 
@@ -653,6 +685,7 @@ class _AndroidUserPage extends State<AndroidUserPage> {
   bool isValidPassword = true;
   @override
   Widget build(BuildContext context) {
+    _setUserPageStatus(isStaff ? true : false);
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
 
@@ -718,6 +751,126 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                       ],
                     ),
                   ),
+
+                  // Google buttom
+                  Padding(
+                    padding:
+                    const EdgeInsets.only(right: 30, left: 30, top: 20),
+                    child: Container(
+                      height: 45,
+                      width: double.infinity, // Make the container full width
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.green,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10), // Border radius 10
+                          ),
+                        ),
+                        onPressed: () async {
+                          try {
+                            setState(() {
+                              isLoading = true;
+                            });
+
+                            // Step 1: Start the Google sign-in process
+                            final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+                            if (googleUser == null) {
+                              // User canceled the login
+                              setState(() {
+                                isLoading = false;
+                              });
+                              return;
+                            }
+
+                            // Step 2: Get auth credentials from the signed-in user
+                            final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+
+                            final credential = GoogleAuthProvider.credential(
+                              accessToken: googleAuth.accessToken,
+                              idToken: googleAuth.idToken,
+                            );
+
+                            // Step 3: Sign in to Firebase
+                            final UserCredential userCredential =
+                            await FirebaseAuth.instance.signInWithCredential(credential);
+
+                            final User? user = userCredential.user;
+                            String? fullName = googleUser?.displayName;
+
+                            String? firstName;
+                            String? lastName;
+
+                            if (fullName != null && fullName.contains(" ")) {
+                              List<String> names = fullName.split(" ");
+                              firstName = names.first;
+                              lastName = names.sublist(1).join(" "); // handles middle names too
+                            }else{
+                              firstName = "Unknown";
+                          lastName = "";
+                          }
+                            if (user != null) {
+                              // Step 4: Save user info to Firestore
+                              final userDocRef = FirebaseFirestore.instance.collection("user").doc(user.uid);
+                              final docSnapshot = await userDocRef.get();
+
+                              if (!docSnapshot.exists) {
+                                // New user → set full data
+                                await userDocRef.set({
+                                  'Email': user.email,
+                                  'First_name': firstName,
+                                  'Password' : '',
+                                  'Last_name': lastName,
+                                  'lat' : lat,
+                                  'long' : long,
+                                });
+                              } else {
+                                // Existing user → update only what you want (NOT name)
+                                await userDocRef.update({
+                                  'lat' : lat,
+                                  'long' : long,
+                                });
+                              }
+
+                              // Step 5: Navigate to home page
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(builder: (context) => MyHomePage()),
+                              );
+                            }
+
+                          } catch (e) {
+                            Fluttertoast.showToast(msg: "Error during Google Sign-In");
+                            print("The error is : ${e}");
+                          } finally {
+                            setState(() {
+                              isLoading = false;
+                            });
+                          }
+                        },
+                        child: Text("Google", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),),
+                      ),
+                    ),
+                  ),
+
+                  SizedBox(height: 5,),
+                  Padding(
+                    padding:
+                    const EdgeInsets.only(right: 30, left: 30, top: 10),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Divider(thickness: 1, color: Colors.black),
+                        ),
+                        SizedBox(width: 8),
+                        Text("OR", style: TextStyle(fontWeight: FontWeight.bold),),
+                        SizedBox(width: 8),
+                        Expanded(
+                          child: Divider(thickness: 1, color: Colors.black,),
+                        ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(height: 5,),
 
                   // Email Input box
                   Padding(
@@ -1112,7 +1265,6 @@ class _AndroidView extends State<AndroidView> {
     Color UserColor = isStaff? UserColorFalse : UserColorTrue;
 
     _setUserPageStatus(isStaff ? true : false);
-    UserData().isStaff = isStaff ? true : false;
 
     return sawAd? Stack(
       children: [
