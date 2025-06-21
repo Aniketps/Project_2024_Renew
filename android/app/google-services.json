@@ -15,11 +15,11 @@
       },
       "oauth_client": [
         {
-          "client_id": "195391760517-hhechna1etreej2aosj03fajftpbermp.apps.googleusercontent.com",
+          "client_id": "195391760517-cc90lsc26a2cg0jd60r9c751nc876gt1.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.carenest.carehub",
-            "certificate_hash": "3b354d75d2dd06ccdd726b8a785531e446cc94e8"
+            "certificate_hash": "82fa6e2d4707c40c35c23bd9d2dea9266d2a0ffe"
           }
         },
         {

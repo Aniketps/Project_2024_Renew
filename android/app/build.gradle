@@ -48,7 +48,7 @@ android {
 
     signingConfigs {
         release {
-            storeFile file("keystore/upload-keystore.jks") // relative path from android/app
+            storeFile file("keystore/upload-key.jks")
             storePassword "aniket"
             keyAlias "upload"
             keyPassword "aniket"
