@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:geolocator/geolocator.dart';
 
 import 'LoaderSupport.dart';
+import 'globle.dart';
 
 class Deals extends StatefulWidget {
   const Deals({super.key});
@@ -334,7 +335,7 @@ class _Deals extends State<Deals> {
           // App bar section
           Container(
             height: 150,
-            color: const Color(0xfffffcc9),
+            color: Globle.theme,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
@@ -344,10 +345,10 @@ class _Deals extends State<Deals> {
                     child: Center(
                       child: Text("Deals History",
                           style: TextStyle(
-                              fontSize: 20, fontWeight: FontWeight.bold)),
+                              fontSize: 20, fontWeight: FontWeight.bold, color : Colors.white)),
                     ),
                   ),
-                  backgroundColor: const Color(0xfffffcc9),
+                  backgroundColor: Globle.theme,
                   automaticallyImplyLeading: false,
                 ),
               ],
@@ -1789,7 +1790,7 @@ class _Deals extends State<Deals> {
                                                                         ),
                                                                         const Spacer(),
                                                                         Text(
-                                                                            "${user['totalcost']}",
+                                                                            "${user['totalcost']} ${currentStaffData['Currency'] ?? '-'}",
                                                                             style:
                                                                                 const TextStyle(fontWeight: FontWeight.bold)),
                                                                       ],
@@ -2220,7 +2221,7 @@ class _DealsForStaff extends State<DealsForStaff> {
           // App bar section
           Container(
             height: 150,
-            color: const Color(0xfffffcc9),
+            color: Globle.theme,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
@@ -2230,10 +2231,10 @@ class _DealsForStaff extends State<DealsForStaff> {
                     child: Center(
                       child: Text("Deals History",
                           style: TextStyle(
-                              fontSize: 20, fontWeight: FontWeight.bold)),
+                              fontSize: 20, fontWeight: FontWeight.bold, color : Colors.white)),
                     ),
                   ),
-                  backgroundColor: const Color(0xfffffcc9),
+                  backgroundColor: Globle.theme,
                   automaticallyImplyLeading: false,
                 ),
               ],
@@ -2601,7 +2602,7 @@ class _DealsForStaff extends State<DealsForStaff> {
                                                                     ),
                                                                     const Spacer(),
                                                                     Text(
-                                                                        "${user['totalcost']}",
+                                                                        "${user['totalcost']} ${currentUserData['Currency'] ?? '-'}",
                                                                         style: const TextStyle(
                                                                             fontWeight:
                                                                                 FontWeight.bold)),

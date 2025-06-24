@@ -4,6 +4,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 
+import 'globle.dart';
+
 class TC extends StatefulWidget {
   @override
   State<StatefulWidget> createState() => _TC();
@@ -68,7 +70,7 @@ class _TC extends State<TC> {
           // App bar section
           Container(
             height: 150,
-            color: Color(0xfffffcc9),
+            color: Globle.theme,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
@@ -76,9 +78,9 @@ class _TC extends State<TC> {
                   title: Center(
                     child: Text("Terms & Conditions",
                         style: TextStyle(
-                            fontSize: 20, fontWeight: FontWeight.bold)),
+                            fontSize: 20, fontWeight: FontWeight.bold, color : Colors.white)),
                   ),
-                  backgroundColor: Color(0xfffffcc9),
+                  backgroundColor: Globle.theme,
                   automaticallyImplyLeading: false,
                 ),
               ],

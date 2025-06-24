@@ -33,6 +33,7 @@ class sendNotificationService{
     );
 
     if(response.statusCode==200){
+      print(response.body);
       print("Notification send");
     }else{
       print("Notification not send");

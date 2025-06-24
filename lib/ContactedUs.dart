@@ -6,6 +6,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import 'globle.dart';
+
 class ContactedUse extends StatefulWidget {
   final loggedAdmin;
   ContactedUse({required this.loggedAdmin});
@@ -49,7 +51,7 @@ class _ContactedUse extends State<ContactedUse> {
           padding: EdgeInsets.zero,
           children: [
             DrawerHeader(
-                decoration: BoxDecoration(color: Color(0xfffffcc9)),
+                decoration: BoxDecoration(color: Globle.theme),
                 child: Column(children: [
                   Container(
                     height: 80,

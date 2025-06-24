@@ -13,6 +13,7 @@ import 'package:photo_view/photo_view.dart';
 import 'package:video_player/video_player.dart';
 
 import 'LoaderSupport.dart';
+import 'globle.dart';
 
 class RegistaredUsers extends StatefulWidget {
   final loggedAdmin;
@@ -141,7 +142,7 @@ class _RegistaredUsers extends State<RegistaredUsers> {
           padding: EdgeInsets.zero,
           children: [
             DrawerHeader(
-                decoration: BoxDecoration(color: Color(0xfffffcc9)),
+                decoration: BoxDecoration(color: Globle.theme),
                 child: Column(children: [
                   Container(
                     height: 80,

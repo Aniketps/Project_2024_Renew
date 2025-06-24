@@ -1,5 +1,7 @@
 import 'dart:async';
+import 'dart:ui';
 
+import 'package:app_settings/app_settings.dart';
 import 'package:carehub/Admin.dart';
 import 'package:carehub/Deals.dart';
 import 'package:carehub/PrivacyPolicy.dart';
@@ -17,10 +19,12 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:in_app_update/in_app_update.dart';
 import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'ClientNotificationPage.dart';
 import 'ContactUs.dart';
 import 'LoaderSupport.dart';
 import 'MainMap.dart';
@@ -30,6 +34,7 @@ import 'api/firebase_api.dart';
 import 'client.dart';
 import 'firebase_options.dart';
 import 'LoginPage.dart';
+import 'globle.dart';
 
 @pragma('vm:entry-point')
 Future<void> _firebasebackgroundhandler(RemoteMessage message) async {
@@ -75,6 +80,36 @@ void showNoInternetDialog(BuildContext context) {
   );
 }
 
+void showLocationDialog(BuildContext context, {required bool permissionDeniedForever}) {
+  showDialog(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: const Text("Location Required"),
+      content: Text(permissionDeniedForever
+          ? "Location permission is permanently denied. Please enable it from settings."
+          : "Location is disabled or denied. Please allow access to continue."),
+      actions: [
+        if (!permissionDeniedForever)
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              // Retry permission check
+              Geolocator.requestPermission();
+            },
+            child: const Text("Retry"),
+          ),
+        TextButton(
+          onPressed: () {
+            Navigator.pop(context);
+            AppSettings.openAppSettings(); // opens location permission settings
+          },
+          child: const Text("Open Settings"),
+        ),
+      ],
+    ),
+  );
+}
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -110,7 +145,7 @@ class MyApp extends StatelessWidget {
 
           checkInternet(context);
 
-          return snapshot.data == true ? LoginPage() : PrivacyPolicy();
+          return LoginPage();
         },
       ),
     );
@@ -130,6 +165,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
+    _liveLocation();
     notificationService.requestNotificationPermission();
     notificationService.getDeviceToken();
     notificationService.firebaseInit(context);
@@ -137,7 +173,6 @@ class _MyHomePageState extends State<MyHomePage> {
     _checkAndUpdate();
     FcmService.FirebaseInit();
     SearchStaff();
-    _liveLocation();
   }
   void _showSnack(String text) {
     if (_scaffoldKey.currentContext != null) {
@@ -166,65 +201,197 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
-  void _liveLocation() {
-    LocationSettings locationSettings = LocationSettings(
-      accuracy: LocationAccuracy.high,
-      distanceFilter: 100,
-    );
-    Geolocator.getPositionStream(locationSettings: locationSettings).listen(
-          (Position position) async {
-          String lat = position.latitude.toString();
-          String long = position.longitude.toString();
-          User? user = FirebaseAuth.instance.currentUser;
-          await FirebaseFirestore.instance
-              .collection('user')
-              .doc(user?.uid)
-              .update({
-            'lat': lat,
-            'long': long,
-          });
-      },
-    );
+  Future<void> _liveLocation() async {
+    try {
+      // Check if location services are enabled
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        showLocationDialog(context, permissionDeniedForever: false);
+        return;
+      }
+
+      // Check for permission
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          permission = await Geolocator.requestPermission();
+          if (permission == LocationPermission.denied) {
+            showLocationDialog(context, permissionDeniedForever: false);
+            return;
+          }
+        }
+      }
+
+      if (permission == LocationPermission.deniedForever) {
+        showLocationDialog(context, permissionDeniedForever: true);
+        return;
+      }
+
+      // Fetch position quickly
+      Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.lowest,
+      );
+
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) return;
+
+      final String lat = position.latitude.toStringAsFixed(6);
+      final String long = position.longitude.toStringAsFixed(6);
+      final double latA = position.latitude;
+      final double longA = position.longitude;
+
+      await getCurrentLocationName(latA, longA);
+
+      DocumentReference userDoc =
+      FirebaseFirestore.instance.collection('user').doc(user.uid);
+
+      DocumentSnapshot snapshot = await userDoc.get();
+      String? oldLat = snapshot['lat'];
+      String? oldLong = snapshot['long'];
+
+      if (oldLat != lat || oldLong != long) {
+        await userDoc.update({
+          'lat': lat,
+          'long': long,
+          'lastUpdated': FieldValue.serverTimestamp(),
+        });
+      }
+    } catch (e) {
+      print("Live location error: $e");
+    }
   }
 
-  List<String> Profession = [
-    "Chef",
-    "Personal Care Assistants",
-    "Driver",
-    "Security Guards",
-    "Home Guards",
-    "Elder Companions",
-    "Babysitters",
-    "Cleaner",
-    "Housekeepers",
-    "Elderly",
-    "Paramedics",
-    "Occupational Therapists",
-    "Physiotherapists",
-    "Home Health Aides",
-    "Certified Nursing Assistants",
-    "Licensed Practical Nurses",
-    "Registered Nurses"
+
+  List<String>  CreativeWellness = [
+    "Fitness Trainer",
+    "Yoga Trainer",
+    "Photographer",
   ];
-  List<String> ProfessionBack = [
-    "chefCopy.png", // Chef
-    "Personal Care AssistanceCopy.png", // Personal Care Assistance
-    "driverCopy.png", // Driver
-    "securitygaurdCopy.jpeg", // securitygaurd
-    "house gaurdCopy.jpeg", // house gaurd
-    "ederlyCopy.png", // ederly
-    "babysitter.jpeg", // babysitter
-    "housekeeperSecondCopy.png", // housekeeperSecond
-    "house keeper.jpeg", // house keeper
-    "elderly individualSecondCopy.png", // elderly individualSecond
-    "PeramedicCopy.png", // Peramedic
-    "therapistCopy.png", // therapist
-    "PhysiotherepistCopy.png", // Physiotherepist
-    "aidesCopy.png", // aides
-    "CNACopy.png", // CNA
-    "LPN Copy.png", // LPN
-    "LastnurseCopy.png",
-    "img.png",
+  List<String>  CreativeWellnessDesc = [
+    "🏃‍♂️Stay Fit, Stay Happy",
+    "🧘‍♀️Find Your Inner Peace",
+    "📸 Moments Made Timeless",
+  ];
+  List<String>  CreativeWellnessImg = [
+    "gym.jpg",
+    "yoga.jpg",
+    "photographer.avif",
+  ];
+
+  List<String> SkilledTechnical = [
+    "AC Technician",
+    "Electrician",
+    "Plumber",
+    "Carpenter",
+    "Painter",
+  ];
+  List<String> SkilledTechnicalDesc = [
+    "❄ Cool Air, Just a Tap",
+    "⚡ Light Up Your Space",
+    "💧 Flow Fixed, Peace Restored",
+    "🪵 Built with Heart",
+    "🎨 Walls that Speak",
+  ];
+  List<String> SkilledTechnicalImg = [
+    "repairing-air-conditioner.avif",
+    "electrician.avif",
+    "Plumber.avif",
+    "Carpenter.jpg",
+    "Painter.avif",
+  ];
+
+  List<String> MedicalHealthcare = [
+    "Certified Nursing Assistants",
+    "Home Health Aides",
+    "Physiotherapists",
+  ];
+  List<String> MedicalHealthcareDesc = [
+    "👩‍⚕️ Gentle Hands, Big Heart",
+    "🏡 Care That Comes Home",
+    "💪 Move. Heal. Live.",
+  ];
+  List<String> MedicalHealthcareImg = [
+    "CNACopy.png",
+    "aidesCopy.png",
+    "PhysiotherepistCopy.png",
+  ];
+
+  List<String> CookingHospitality = [
+    "Chef",
+    "Event Helpers",
+    "Bartender",
+  ];
+  List<String> CookingHospitalityDesc = [
+    "🍽️ Crafted With Flavor",
+    "🎉 Every Detail Matters",
+    "🍸 Poured to Perfection",
+  ];
+  List<String> CookingHospitalityImg = [
+    "chefCopy.png",
+    "Event Helpers.jpeg",
+    "Bartender.avif",
+  ];
+
+  List<String> SecuritySupport = [
+    "Driver",
+    "Home Guards",
+    "Security Guards",
+  ];
+  List<String> SecuritySupportDesc = [
+    "🚗 Safe Ride, Every Time",
+    "🏠 Watchful, Always There",
+    "🛡️ Your Safety, Our Duty",
+  ];
+  List<String> SecuritySupportImg = [
+    "driverCopy.png",
+    "house gaurdCopy.jpeg",
+    "securitygaurdCopy.jpeg",
+  ];
+
+  List<String> ChildcareEducation = [
+    "Babysitters",
+    "Teacher",
+  ];
+  List<String> ChildcareEducationDesc = [
+    "👶 Gentle Hands, Big Heart",
+    "🎓 Inspire. Learn. Shine.",
+  ];
+  List<String> ChildcareEducationImg = [
+    "babysitter.jpeg",
+    "Teacher.avif",
+  ];
+
+  List<String> ElderlyPersonalCare = [
+    "Personal Care Assistants",
+    "Elder Companions",
+    "Elderly",
+  ];
+  List<String> ElderlyPersonalCareDesc = [
+    "🤝 Dignity in Every Touch",
+    "	🕊️ Kindness by Their Side",
+    "👵 Care with True Respect",
+  ];
+  List<String> ElderlyPersonalCareImg = [
+    "Personal Care AssistanceCopy.png",
+    "elderly individualSecondCopy.png",
+    "ederlyCopy.png",
+  ];
+
+  List<String> HomeServices = [
+    "Cleaner",
+    "Gardener",
+    "Housekeepers",
+  ];
+  List<String> HomeServicesDesc = [
+    "🧼 Fresh Spaces, Always",
+    "🌿 Beauty Grows Here",
+    "🏠 Your Home, Cared For",
+  ];
+  List<String> HomeServicesImg = [
+    "housekeeperSecondCopy.png",
+    "Gardener.avif",
+    "house keeper.jpeg",
   ];
 
   var StaffData;
@@ -245,7 +412,7 @@ class _MyHomePageState extends State<MyHomePage> {
         });
         double lat = double.tryParse(StaffData["lat"].toString()) ?? 0.0;
         double long = double.tryParse(StaffData["long"].toString()) ?? 0.0;
-        getCurrentLocationName(lat, long);
+        await getCurrentLocationName(lat, long);
       } else {
         print("No staff found with ID: $currentUserID");
       }
@@ -260,11 +427,11 @@ class _MyHomePageState extends State<MyHomePage> {
         String place = "${placemarks.first.locality}" ?? "Location...";
         print("Got Location $place");
         setState(() {
-          CurrentLocation = place;
+          CurrentLocation = "CareNest \nin ${place}";
         });
       }
   }
-  String CurrentLocation = "";
+  String CurrentLocation = "Loading...";
 
   @override
   Widget build(BuildContext context) {
@@ -279,19 +446,37 @@ class _MyHomePageState extends State<MyHomePage> {
           padding: EdgeInsets.zero,
           children: [
             DrawerHeader(
-                decoration: BoxDecoration(color: Color(0xfffffcc9)),
+                decoration: BoxDecoration(
+                    color: Globle.theme
+                ),
                 child: Column(children: [
                   (StaffData != null && StaffData['professionOfStaff'] != null)
                       ? InkWell(
                           onTap: () {
+
                             Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => StaffProfilePage(
-                                      StaffID: currentUserID,
-                                      Skill: StaffData['professionOfStaff'] ??
-                                          'user'),
-                                ));
+                              context,
+                              PageRouteBuilder(
+                                transitionDuration: const Duration(milliseconds: 500),
+                                pageBuilder: (context, animation, secondaryAnimation) => StaffProfilePage(
+                                    StaffID: currentUserID,
+                                    Skill: StaffData['professionOfStaff'] ??
+                                        'user'),
+                                transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                                  const begin = Offset(0.0, 1.0); // From bottom
+                                  const end = Offset.zero;
+                                  const curve = Curves.easeOut;
+
+                                  final tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+                                  final offsetAnimation = animation.drive(tween);
+
+                                  return SlideTransition(
+                                    position: offsetAnimation,
+                                    child: child,
+                                  );
+                                },
+                              ),
+                            );
                           },
                           child: Container(
                             height: 80,
@@ -315,11 +500,27 @@ class _MyHomePageState extends State<MyHomePage> {
                         )
                       : InkWell(
                           onTap: () {
+
                             Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => ActualUser(),
-                                ));
+                              context,
+                              PageRouteBuilder(
+                                transitionDuration: const Duration(milliseconds: 500),
+                                pageBuilder: (context, animation, secondaryAnimation) => ActualUser(),
+                                transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                                  const begin = Offset(0.0, 1.0); // From bottom
+                                  const end = Offset.zero;
+                                  const curve = Curves.easeOut;
+
+                                  final tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+                                  final offsetAnimation = animation.drive(tween);
+
+                                  return SlideTransition(
+                                    position: offsetAnimation,
+                                    child: child,
+                                  );
+                                },
+                              ),
+                            );
                           },
                           child: StaffData != null &&
                                   StaffData['Profile_Pic'] != null
@@ -366,26 +567,57 @@ class _MyHomePageState extends State<MyHomePage> {
                       : Text(
                           "${StaffData['First_name']} ${StaffData['Last_name']}",
                           style: TextStyle(
-                              fontWeight: FontWeight.bold, fontSize: 18),
+                              fontWeight: FontWeight.bold, fontSize: 18, color: Colors.white),
                         ),
                 ])),
             InkWell(
               onLongPress: () {
                 Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => AdminLogin(),
-                    ));
+                  context,
+                  PageRouteBuilder(
+                    transitionDuration: const Duration(milliseconds: 500),
+                    pageBuilder: (context, animation, secondaryAnimation) => AdminLogin(),
+                    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                      const begin = Offset(1.0, 0.0); // From bottom
+                      const end = Offset.zero;
+                      const curve = Curves.easeOut;
+
+                      final tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+                      final offsetAnimation = animation.drive(tween);
+
+                      return SlideTransition(
+                        position: offsetAnimation,
+                        child: child,
+                      );
+                    },
+                  ),
+                );
               },
               child: ListTile(
                 leading: Icon(Icons.home),
                 title: Text('Home'),
                 onTap: () {
+
                   Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => MyHomePage(),
-                      ));
+                    context,
+                    PageRouteBuilder(
+                      transitionDuration: const Duration(milliseconds: 500),
+                      pageBuilder: (context, animation, secondaryAnimation) => MyHomePage(),
+                      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                        const begin = Offset(1.0, 0.0); // From bottom
+                        const end = Offset.zero;
+                        const curve = Curves.easeOut;
+
+                        final tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+                        final offsetAnimation = animation.drive(tween);
+
+                        return SlideTransition(
+                          position: offsetAnimation,
+                          child: child,
+                        );
+                      },
+                    ),
+                  );
                 },
               ),
             ),
@@ -393,11 +625,27 @@ class _MyHomePageState extends State<MyHomePage> {
               leading: Icon(Icons.history),
               title: Text('Deals'),
               onTap: () {
+
                 Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => Deals(),
-                    ));
+                  context,
+                  PageRouteBuilder(
+                    transitionDuration: const Duration(milliseconds: 500),
+                    pageBuilder: (context, animation, secondaryAnimation) => Deals(),
+                    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                      const begin = Offset(1.0, 0.0);// From bottom
+                      const end = Offset.zero;
+                      const curve = Curves.easeOut;
+
+                      final tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+                      final offsetAnimation = animation.drive(tween);
+
+                      return SlideTransition(
+                        position: offsetAnimation,
+                        child: child,
+                      );
+                    },
+                  ),
+                );
               },
             ),
             Divider(),
@@ -405,15 +653,49 @@ class _MyHomePageState extends State<MyHomePage> {
               leading: Icon(Icons.headset_mic),
               title: Text('Contact Us'),
               onTap: () {
+
                 Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => ContactUs(),
-                    ));
+                  context,
+                  PageRouteBuilder(
+                    transitionDuration: const Duration(milliseconds: 500),
+                    pageBuilder: (context, animation, secondaryAnimation) => ContactUs(),
+                    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                      const begin = Offset(1.0, 0.0);
+                      const end = Offset.zero;
+                      const curve = Curves.easeOut;
+
+                      final tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+                      final offsetAnimation = animation.drive(tween);
+
+                      return SlideTransition(
+                        position: offsetAnimation,
+                        child: child,
+                      );
+                    },
+                  ),
+                );
               },
               onLongPress: () {
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => PrivacyPolicy()));
+                Navigator.push(
+                  context,
+                  PageRouteBuilder(
+                    transitionDuration: const Duration(milliseconds: 500),
+                    pageBuilder: (context, animation, secondaryAnimation) => PrivacyPolicy(),
+                    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                      const begin = Offset(1.0, 0.0);
+                      const end = Offset.zero;
+                      const curve = Curves.easeOut;
+
+                      final tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+                      final offsetAnimation = animation.drive(tween);
+
+                      return SlideTransition(
+                        position: offsetAnimation,
+                        child: child,
+                      );
+                    },
+                  ),
+                );
               },
             ),
             ListTile(
@@ -421,10 +703,25 @@ class _MyHomePageState extends State<MyHomePage> {
               title: Text('Terms and Conditions'),
               onTap: () {
                 Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => TC(),
-                    ));
+                  context,
+                  PageRouteBuilder(
+                    transitionDuration: const Duration(milliseconds: 500),
+                    pageBuilder: (context, animation, secondaryAnimation) => TC(),
+                    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                      const begin = Offset(1.0, 0.0);
+                      const end = Offset.zero;
+                      const curve = Curves.easeOut;
+
+                      final tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+                      final offsetAnimation = animation.drive(tween);
+
+                      return SlideTransition(
+                        position: offsetAnimation,
+                        child: child,
+                      );
+                    },
+                  ),
+                );
               },
             ),
             ListTile(
@@ -432,10 +729,25 @@ class _MyHomePageState extends State<MyHomePage> {
               title: Text('Feedback'),
               onTap: () {
                 Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => Feedbacks(),
-                    ));
+                  context,
+                  PageRouteBuilder(
+                    transitionDuration: const Duration(milliseconds: 500),
+                    pageBuilder: (context, animation, secondaryAnimation) => Feedbacks(),
+                    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                      const begin = Offset(1.0, 0.0);
+                      const end = Offset.zero;
+                      const curve = Curves.easeOut;
+
+                      final tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+                      final offsetAnimation = animation.drive(tween);
+
+                      return SlideTransition(
+                        position: offsetAnimation,
+                        child: child,
+                      );
+                    },
+                  ),
+                );
               },
             ),
             Divider(),
@@ -445,8 +757,27 @@ class _MyHomePageState extends State<MyHomePage> {
               onTap: () async {
                 await GoogleSignIn().signOut();
                 await FirebaseAuth.instance.signOut();
-                Navigator.pushReplacement(context,
-                    MaterialPageRoute(builder: (context) => LoginPage()));
+
+                Navigator.pushReplacement(
+                  context,
+                  PageRouteBuilder(
+                    transitionDuration: const Duration(milliseconds: 500),
+                    pageBuilder: (context, animation, secondaryAnimation) => LoginPage(),
+                    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                      const begin = Offset(1.0, 0.0);
+                      const end = Offset.zero;
+                      const curve = Curves.easeOut;
+
+                      final tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+                      final offsetAnimation = animation.drive(tween);
+
+                      return SlideTransition(
+                        position: offsetAnimation,
+                        child: child,
+                      );
+                    },
+                  ),
+                );
               },
             ),
           ],
@@ -457,35 +788,26 @@ class _MyHomePageState extends State<MyHomePage> {
           // App bar section
           Container(
             height: 150,
-            color: Color(0xfffffcc9),
+            color: Globle.theme,
             child: AppBar(
-              title: InkWell(
-                onTap: () {
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const MainMap(whichStaff: "All"),
-                      ));
-                },
-                child: Row(
-                  children: [
-                    Icon(Icons.location_on, color: Colors.green, size: 30,),
-                    SizedBox(width: 5,),
-                    Text(
-                      "$CurrentLocation",
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        decoration: TextDecoration.underline, // Underline effect
-                        decorationThickness: 1.5, // Makes underline more visible
-                        decorationColor: Colors.blue, // Matches text color
-                        color: Colors.blue, // Standard clickable link color
-                      ),
-                    ),
-                  ],
-                )
+              iconTheme: IconThemeData(
+                color: Colors.white,
+                size: 35
               ),
-              backgroundColor: Color(0xfffffcc9),
+              title: Column(
+                children: [
+                  SizedBox(height: 10,),
+                  Text(
+                    "$CurrentLocation",
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white, // Standard clickable link color
+                    ),
+                  ),
+                ],
+              ),
+              backgroundColor: Globle.theme,
               automaticallyImplyLeading: true,
             ),
           ),
@@ -500,13 +822,28 @@ class _MyHomePageState extends State<MyHomePage> {
                     ? InkWell(
                         onTap: () {
                           Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => StaffProfilePage(
-                                    StaffID: currentUserID,
-                                    Skill: StaffData['professionOfStaff'] ??
-                                        'user'),
-                              ));
+                            context,
+                            PageRouteBuilder(
+                              transitionDuration: const Duration(milliseconds: 500),
+                              pageBuilder: (context, animation, secondaryAnimation) => StaffProfilePage(
+                                  StaffID: currentUserID,
+                                  Skill: StaffData['professionOfStaff'] ??
+                                      'user'),
+                              transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                                const begin = Offset(1.0, 0.0);
+                                const end = Offset.zero;
+                                const curve = Curves.easeOut;
+
+                                final tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+                                final offsetAnimation = animation.drive(tween);
+
+                                return SlideTransition(
+                                  position: offsetAnimation,
+                                  child: child,
+                                );
+                              },
+                            ),
+                          );
                         },
                         child: Container(
                           height: 50,
@@ -529,10 +866,25 @@ class _MyHomePageState extends State<MyHomePage> {
                     : InkWell(
                         onTap: () {
                           Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => ActualUser(),
-                              ));
+                            context,
+                            PageRouteBuilder(
+                              transitionDuration: const Duration(milliseconds: 500),
+                              pageBuilder: (context, animation, secondaryAnimation) => ActualUser(),
+                              transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                                const begin = Offset(1.0, 0.0);
+                                const end = Offset.zero;
+                                const curve = Curves.easeOut;
+
+                                final tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+                                final offsetAnimation = animation.drive(tween);
+
+                                return SlideTransition(
+                                  position: offsetAnimation,
+                                  child: child,
+                                );
+                              },
+                            ),
+                          );
                         },
                         child: Container(
                           height: 50,
@@ -565,19 +917,18 @@ class _MyHomePageState extends State<MyHomePage> {
             children: [
               Padding(
                 padding: const EdgeInsets.only(top: 125),
-                child: Container(
-                  margin: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
-                  child: Column(
-                    children: [
-                      // Search bar
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 5),
-                        child: Row(
-                          children: [
-                            Container(
-                              width: screenWidth * 0.88,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Search bar
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.only(right: 8, left: 8),
+                            child: Container(
                               decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(50),
+                                borderRadius: BorderRadius.circular(8),
                                 color: Colors.white,
                                 boxShadow: [
                                   BoxShadow(
@@ -612,67 +963,816 @@ class _MyHomePageState extends State<MyHomePage> {
                                 ],
                               ),
                             ),
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    Expanded(
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.vertical,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Recommendations
+                            false
+                                ? Padding(
+                              padding: const EdgeInsets.only(left: 13.0, top: 10),
+                              child: Text("Recommendations", style: GoogleFonts.roboto(fontWeight: FontWeight.bold, fontSize: 20),),
+                            )
+                                : Container(),
+                            false
+                                ?Padding(
+                              padding: const EdgeInsets.only(left: 13.0, right: 8, bottom: 8),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Container(
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(5),
+                                      border: Border.all(width: 1, color: Colors.black)
+                                    ),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(5.0),
+                                      child: Text("Chef", style: GoogleFonts.roboto(fontSize: 16, fontWeight: FontWeight.bold),),
+                                    ),
+                                  )
+                                ],
+                              ),
+                            )
+                                : Container(),
+
+                            // Trending
+                            false
+                                ? Padding(
+                              padding: const EdgeInsets.only(left: 13.0, top: 10),
+                              child: Text("More Requested", style: GoogleFonts.roboto(fontWeight: FontWeight.bold, fontSize: 20),),
+                            )
+                                : Container(),
+                            false
+                                ? Padding(
+                              padding: const EdgeInsets.only(left: 8.0, right: 8, bottom: 8),
+                              child: SizedBox(
+                                height: 205,
+                                child: ListView.builder(
+                                  scrollDirection: Axis.horizontal,
+                                  padding: EdgeInsets.zero,
+                                  itemCount: HomeServices.length,
+                                  itemBuilder: (context, index) {
+                                    return Padding(
+                                      padding: const EdgeInsets.all(5.0),
+                                      child: InkWell(
+                                          onTap: () {
+                                            Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                  builder: (context) => StaffPage(
+                                                      Skill: HomeServices[index]
+                                                          .toLowerCase()),
+                                                ));
+                                          },
+                                          child: SizedBox(
+                                            height: 220,
+                                            width: screenWidth * 0.7,
+                                            child: Column(
+                                              mainAxisAlignment: MainAxisAlignment.start,
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: [
+                                                Container(
+                                                  width: screenWidth * 0.7,
+                                                  height: 140,
+                                                  decoration: BoxDecoration(
+                                                    image: DecorationImage(
+                                                      image: AssetImage("assets/Professions/${HomeServicesImg[index]}"),
+                                                      fit: BoxFit.cover, // Adjust the fit if necessary
+                                                    ),
+                                                    color: Colors.white,
+                                                    borderRadius: BorderRadius.circular(8),
+                                                    boxShadow: [
+                                                      BoxShadow(
+                                                          color: Colors.black26,
+                                                          blurRadius: 1,
+                                                          spreadRadius: 1),
+                                                    ],
+                                                  ),
+                                                ),
+                                                SizedBox(height: 5,),
+                                                Text("${HomeServices[index]}", style: GoogleFonts.roboto(fontSize: 16, fontWeight: FontWeight.bold),),
+                                                SizedBox(height: 2,),
+                                                Text("${HomeServicesDesc[index]}", style: GoogleFonts.roboto(fontSize: 16),),
+                                              ],
+                                            ),
+                                          )
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                            )
+                                : Container(),
+
+                            // Home Services
+                            Padding(
+                              padding: const EdgeInsets.only(left: 13.0, top: 10),
+                              child: Text("Home Services", style: GoogleFonts.roboto(fontWeight: FontWeight.bold, fontSize: 20),),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.only(left: 8.0, right: 8, bottom: 8),
+                              child: SizedBox(
+                                height: 205,
+                                child: ListView.builder(
+                                  scrollDirection: Axis.horizontal,
+                                  padding: EdgeInsets.zero,
+                                  itemCount: HomeServices.length,
+                                  itemBuilder: (context, index) {
+                                    return Padding(
+                                      padding: const EdgeInsets.all(5.0),
+                                      child: InkWell(
+                                          onTap: () {
+                                            Navigator.push(
+                                              context,
+                                              PageRouteBuilder(
+                                                transitionDuration: const Duration(milliseconds: 500),
+                                                pageBuilder: (context, animation, secondaryAnimation) => StaffPage(
+                                                    Skill: HomeServices[index]
+                                                        .toLowerCase()),
+                                                transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                                                  const begin = Offset(1.0, 0.0);
+                                                  const end = Offset.zero;
+                                                  const curve = Curves.easeOut;
+
+                                                  final tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+                                                  final offsetAnimation = animation.drive(tween);
+
+                                                  return SlideTransition(
+                                                    position: offsetAnimation,
+                                                    child: child,
+                                                  );
+                                                },
+                                              ),
+                                            );
+                                          },
+                                          child: SizedBox(
+                                            height: 220,
+                                            width: screenWidth * 0.7,
+                                            child: Column(
+                                              mainAxisAlignment: MainAxisAlignment.start,
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: [
+                                                Container(
+                                                  width: screenWidth * 0.7,
+                                                  height: 140,
+                                                  decoration: BoxDecoration(
+                                                    image: DecorationImage(
+                                                      image: AssetImage("assets/Professions/${HomeServicesImg[index]}"),
+                                                      fit: BoxFit.cover, // Adjust the fit if necessary
+                                                    ),
+                                                    color: Colors.white,
+                                                    borderRadius: BorderRadius.circular(8),
+                                                    boxShadow: [
+                                                      BoxShadow(
+                                                          color: Colors.black26,
+                                                          blurRadius: 1,
+                                                          spreadRadius: 1),
+                                                    ],
+                                                  ),
+                                                ),
+                                                SizedBox(height: 5,),
+                                                Text("${HomeServices[index]}", style: GoogleFonts.roboto(fontSize: 16, fontWeight: FontWeight.bold),),
+                                                SizedBox(height: 2,),
+                                                Text("${HomeServicesDesc[index]}", style: GoogleFonts.roboto(fontSize: 16),),
+                                              ],
+                                            ),
+                                          )
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                            ),
+
+                            // Childcare & Education
+                            Padding(
+                              padding: const EdgeInsets.only(left: 13.0, top: 10),
+                              child: Text("Childcare & Education", style: GoogleFonts.roboto(fontWeight: FontWeight.bold, fontSize: 20),),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.only(left: 8.0, right: 8, bottom: 8),
+                              child: SizedBox(
+                                height: 205,
+                                child: ListView.builder(
+                                  scrollDirection: Axis.horizontal,
+                                  padding: EdgeInsets.zero,
+                                  itemCount: ChildcareEducation.length,
+                                  itemBuilder: (context, index) {
+                                    return Padding(
+                                      padding: const EdgeInsets.all(5.0),
+                                      child: InkWell(
+                                          onTap: () {
+                                            Navigator.push(
+                                              context,
+                                              PageRouteBuilder(
+                                                transitionDuration: const Duration(milliseconds: 500),
+                                                pageBuilder: (context, animation, secondaryAnimation) => StaffPage(
+                                                    Skill: ChildcareEducation[index]
+                                                        .toLowerCase()),
+                                                transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                                                  const begin = Offset(1.0, 0.0); // From bottom
+                                                  const end = Offset.zero;
+                                                  const curve = Curves.easeOut;
+
+                                                  final tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+                                                  final offsetAnimation = animation.drive(tween);
+
+                                                  return SlideTransition(
+                                                    position: offsetAnimation,
+                                                    child: child,
+                                                  );
+                                                },
+                                              ),
+                                            );
+                                          },
+                                          child: SizedBox(
+                                            height: 220,
+                                            width: screenWidth * 0.7,
+                                            child: Column(
+                                              mainAxisAlignment: MainAxisAlignment.start,
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: [
+                                                Container(
+                                                  width: screenWidth * 0.7,
+                                                  height: 140,
+                                                  decoration: BoxDecoration(
+                                                    image: DecorationImage(
+                                                      image: AssetImage("assets/Professions/${ChildcareEducationImg[index]}"),
+                                                      fit: BoxFit.cover, // Adjust the fit if necessary
+                                                    ),
+                                                    color: Colors.white,
+                                                    borderRadius: BorderRadius.circular(8),
+                                                    boxShadow: [
+                                                      BoxShadow(
+                                                          color: Colors.black26,
+                                                          blurRadius: 1,
+                                                          spreadRadius: 1),
+                                                    ],
+                                                  ),
+                                                ),
+                                                SizedBox(height: 5,),
+                                                Text("${ChildcareEducation[index]}", style: GoogleFonts.roboto(fontSize: 16, fontWeight: FontWeight.bold),),
+                                                SizedBox(height: 2,),
+                                                Text("${ChildcareEducationDesc[index]}", style: GoogleFonts.roboto(fontSize: 16),),
+                                              ],
+                                            ),
+                                          )
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                            ),
+
+                            // Elderly & Personal Care
+                            Padding(
+                              padding: const EdgeInsets.only(left: 13.0, top: 10),
+                              child: Text("Elderly & Personal Care", style: GoogleFonts.roboto(fontWeight: FontWeight.bold, fontSize: 20),),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.only(left: 8.0, right: 8, bottom: 8),
+                              child: SizedBox(
+                                height: 205,
+                                child: ListView.builder(
+                                  scrollDirection: Axis.horizontal,
+                                  padding: EdgeInsets.zero,
+                                  itemCount: ElderlyPersonalCare.length,
+                                  itemBuilder: (context, index) {
+                                    return Padding(
+                                      padding: const EdgeInsets.all(5.0),
+                                      child: InkWell(
+                                          onTap: () {
+                                            Navigator.push(
+                                              context,
+                                              PageRouteBuilder(
+                                                transitionDuration: const Duration(milliseconds: 500),
+                                                pageBuilder: (context, animation, secondaryAnimation) => StaffPage(
+                                                    Skill: ElderlyPersonalCare[index]
+                                                        .toLowerCase()),
+                                                transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                                                  const begin = Offset(1.0, 0.0); // From bottom
+                                                  const end = Offset.zero;
+                                                  const curve = Curves.easeOut;
+
+                                                  final tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+                                                  final offsetAnimation = animation.drive(tween);
+
+                                                  return SlideTransition(
+                                                    position: offsetAnimation,
+                                                    child: child,
+                                                  );
+                                                },
+                                              ),
+                                            );
+                                          },
+                                          child: SizedBox(
+                                            height: 220,
+                                            width: screenWidth * 0.7,
+                                            child: Column(
+                                              mainAxisAlignment: MainAxisAlignment.start,
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: [
+                                                Container(
+                                                  width: screenWidth * 0.7,
+                                                  height: 140,
+                                                  decoration: BoxDecoration(
+                                                    image: DecorationImage(
+                                                      image: AssetImage("assets/Professions/${ElderlyPersonalCareImg[index]}"),
+                                                      fit: BoxFit.cover, // Adjust the fit if necessary
+                                                    ),
+                                                    color: Colors.white,
+                                                    borderRadius: BorderRadius.circular(8),
+                                                    boxShadow: [
+                                                      BoxShadow(
+                                                          color: Colors.black26,
+                                                          blurRadius: 1,
+                                                          spreadRadius: 1),
+                                                    ],
+                                                  ),
+                                                ),
+                                                SizedBox(height: 5,),
+                                                Text("${ElderlyPersonalCare[index]}", style: GoogleFonts.roboto(fontSize: 16, fontWeight: FontWeight.bold),),
+                                                SizedBox(height: 2,),
+                                                Text("${ElderlyPersonalCareDesc[index]}", style: GoogleFonts.roboto(fontSize: 16),),
+                                              ],
+                                            ),
+                                          )
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                            ),
+
+                            // Cooking & Hospitality
+                            Padding(
+                              padding: const EdgeInsets.only(left: 13.0, top: 10),
+                              child: Text("Cooking & Hospitality", style: GoogleFonts.roboto(fontWeight: FontWeight.bold, fontSize: 20),),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.only(left: 8.0, right: 8, bottom: 8),
+                              child: SizedBox(
+                                height: 205,
+                                child: ListView.builder(
+                                  scrollDirection: Axis.horizontal,
+                                  padding: EdgeInsets.zero,
+                                  itemCount: CookingHospitality.length,
+                                  itemBuilder: (context, index) {
+                                    return Padding(
+                                      padding: const EdgeInsets.all(5.0),
+                                      child: InkWell(
+                                          onTap: () {
+                                            Navigator.push(
+                                              context,
+                                              PageRouteBuilder(
+                                                transitionDuration: const Duration(milliseconds: 500),
+                                                pageBuilder: (context, animation, secondaryAnimation) =>StaffPage(
+                                                    Skill: CookingHospitality[index]
+                                                        .toLowerCase()),
+                                                transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                                                  const begin = Offset(1.0, 0.0); // From bottom
+                                                  const end = Offset.zero;
+                                                  const curve = Curves.easeOut;
+
+                                                  final tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+                                                  final offsetAnimation = animation.drive(tween);
+
+                                                  return SlideTransition(
+                                                    position: offsetAnimation,
+                                                    child: child,
+                                                  );
+                                                },
+                                              ),
+                                            );
+                                          },
+                                          child: SizedBox(
+                                            height: 220,
+                                            width: screenWidth * 0.7,
+                                            child: Column(
+                                              mainAxisAlignment: MainAxisAlignment.start,
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: [
+                                                Container(
+                                                  width: screenWidth * 0.7,
+                                                  height: 140,
+                                                  decoration: BoxDecoration(
+                                                    image: DecorationImage(
+                                                      image: AssetImage("assets/Professions/${CookingHospitalityImg[index]}"),
+                                                      fit: BoxFit.cover, // Adjust the fit if necessary
+                                                    ),
+                                                    color: Colors.white,
+                                                    borderRadius: BorderRadius.circular(8),
+                                                    boxShadow: [
+                                                      BoxShadow(
+                                                          color: Colors.black26,
+                                                          blurRadius: 1,
+                                                          spreadRadius: 1),
+                                                    ],
+                                                  ),
+                                                ),
+                                                SizedBox(height: 5,),
+                                                Text("${CookingHospitality[index]}", style: GoogleFonts.roboto(fontSize: 16, fontWeight: FontWeight.bold),),
+                                                SizedBox(height: 2,),
+                                                Text("${CookingHospitalityDesc[index]}", style: GoogleFonts.roboto(fontSize: 16),),
+                                              ],
+                                            ),
+                                          )
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                            ),
+
+                            // Medical & Healthcare
+                            Padding(
+                              padding: const EdgeInsets.only(left: 13.0, top: 10),
+                              child: Text("Medical & Healthcare", style: GoogleFonts.roboto(fontWeight: FontWeight.bold, fontSize: 20),),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.only(left: 8.0, right: 8, bottom: 8),
+                              child: SizedBox(
+                                height: 205,
+                                child: ListView.builder(
+                                  scrollDirection: Axis.horizontal,
+                                  padding: EdgeInsets.zero,
+                                  itemCount: MedicalHealthcare.length,
+                                  itemBuilder: (context, index) {
+                                    return Padding(
+                                      padding: const EdgeInsets.all(5.0),
+                                      child: InkWell(
+                                          onTap: () {
+                                            Navigator.push(
+                                              context,
+                                              PageRouteBuilder(
+                                                transitionDuration: const Duration(milliseconds: 500),
+                                                pageBuilder: (context, animation, secondaryAnimation) =>StaffPage(
+                                                    Skill: MedicalHealthcare[index]
+                                                        .toLowerCase()),
+                                                transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                                                  const begin = Offset(1.0, 0.0); // From bottom
+                                                  const end = Offset.zero;
+                                                  const curve = Curves.easeOut;
+
+                                                  final tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+                                                  final offsetAnimation = animation.drive(tween);
+
+                                                  return SlideTransition(
+                                                    position: offsetAnimation,
+                                                    child: child,
+                                                  );
+                                                },
+                                              ),
+                                            );
+                                          },
+                                          child: SizedBox(
+                                            height: 220,
+                                            width: screenWidth * 0.7,
+                                            child: Column(
+                                              mainAxisAlignment: MainAxisAlignment.start,
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: [
+                                                Container(
+                                                  width: screenWidth * 0.7,
+                                                  height: 140,
+                                                  decoration: BoxDecoration(
+                                                    image: DecorationImage(
+                                                      image: AssetImage("assets/Professions/${MedicalHealthcareImg[index]}"),
+                                                      fit: BoxFit.cover, // Adjust the fit if necessary
+                                                    ),
+                                                    color: Colors.white,
+                                                    borderRadius: BorderRadius.circular(8),
+                                                    boxShadow: [
+                                                      BoxShadow(
+                                                          color: Colors.black26,
+                                                          blurRadius: 1,
+                                                          spreadRadius: 1),
+                                                    ],
+                                                  ),
+                                                ),
+                                                SizedBox(height: 5,),
+                                                Text("${MedicalHealthcare[index]}", style: GoogleFonts.roboto(fontSize: 16, fontWeight: FontWeight.bold),),
+                                                SizedBox(height: 2,),
+                                                Text("${MedicalHealthcareDesc[index]}", style: GoogleFonts.roboto(fontSize: 16),),
+                                              ],
+                                            ),
+                                          )
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                            ),
+
+                            // Skilled & Technical
+                            Padding(
+                              padding: const EdgeInsets.only(left: 13.0, top: 10),
+                              child: Text("Skilled & Technical", style: GoogleFonts.roboto(fontWeight: FontWeight.bold, fontSize: 20),),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.only(left: 8.0, right: 8, bottom: 8),
+                              child: SizedBox(
+                                height: 205,
+                                child: ListView.builder(
+                                  scrollDirection: Axis.horizontal,
+                                  padding: EdgeInsets.zero,
+                                  itemCount: SkilledTechnical.length,
+                                  itemBuilder: (context, index) {
+                                    return Padding(
+                                      padding: const EdgeInsets.all(5.0),
+                                      child: InkWell(
+                                          onTap: () {
+
+                                            Navigator.push(
+                                              context,
+                                              PageRouteBuilder(
+                                                transitionDuration: const Duration(milliseconds: 500),
+                                                pageBuilder: (context, animation, secondaryAnimation) =>StaffPage(
+                                                    Skill: SkilledTechnical[index]
+                                                        .toLowerCase()),
+                                                transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                                                  const begin = Offset(1.0, 0.0); // From bottom
+                                                  const end = Offset.zero;
+                                                  const curve = Curves.easeOut;
+
+                                                  final tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+                                                  final offsetAnimation = animation.drive(tween);
+
+                                                  return SlideTransition(
+                                                    position: offsetAnimation,
+                                                    child: child,
+                                                  );
+                                                },
+                                              ),
+                                            );
+                                          },
+                                          child: SizedBox(
+                                            height: 220,
+                                            width: screenWidth * 0.7,
+                                            child: Column(
+                                              mainAxisAlignment: MainAxisAlignment.start,
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: [
+                                                Container(
+                                                  width: screenWidth * 0.7,
+                                                  height: 140,
+                                                  decoration: BoxDecoration(
+                                                    image: DecorationImage(
+                                                      image: AssetImage("assets/Professions/${SkilledTechnicalImg[index]}"),
+                                                      fit: BoxFit.cover, // Adjust the fit if necessary
+                                                    ),
+                                                    color: Colors.white,
+                                                    borderRadius: BorderRadius.circular(8),
+                                                    boxShadow: [
+                                                      BoxShadow(
+                                                          color: Colors.black26,
+                                                          blurRadius: 1,
+                                                          spreadRadius: 1),
+                                                    ],
+                                                  ),
+                                                ),
+                                                SizedBox(height: 5,),
+                                                Text("${SkilledTechnical[index]}", style: GoogleFonts.roboto(fontSize: 16, fontWeight: FontWeight.bold),),
+                                                SizedBox(height: 2,),
+                                                Text("${SkilledTechnicalDesc[index]}", style: GoogleFonts.roboto(fontSize: 16),),
+                                              ],
+                                            ),
+                                          )
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                            ),
+
+                            // Security & Support
+                            Padding(
+                              padding: const EdgeInsets.only(left: 13.0, top: 10),
+                              child: Text("Security & Support", style: GoogleFonts.roboto(fontWeight: FontWeight.bold, fontSize: 20),),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.only(left: 8.0, right: 8, bottom: 8),
+                              child: SizedBox(
+                                height: 205,
+                                child: ListView.builder(
+                                  scrollDirection: Axis.horizontal,
+                                  padding: EdgeInsets.zero,
+                                  itemCount: SecuritySupport.length,
+                                  itemBuilder: (context, index) {
+                                    return Padding(
+                                      padding: const EdgeInsets.all(5.0),
+                                      child: InkWell(
+                                          onTap: () {
+                                            Navigator.push(
+                                              context,
+                                              PageRouteBuilder(
+                                                transitionDuration: const Duration(milliseconds: 500),
+                                                pageBuilder: (context, animation, secondaryAnimation) => StaffPage(
+                                                    Skill: SecuritySupport[index]
+                                                        .toLowerCase()),
+                                                transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                                                  const begin = Offset(1.0, 0.0); // From bottom
+                                                  const end = Offset.zero;
+                                                  const curve = Curves.easeOut;
+
+                                                  final tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+                                                  final offsetAnimation = animation.drive(tween);
+
+                                                  return SlideTransition(
+                                                    position: offsetAnimation,
+                                                    child: child,
+                                                  );
+                                                },
+                                              ),
+                                            );
+                                          },
+                                          child: SizedBox(
+                                            height: 220,
+                                            width: screenWidth * 0.7,
+                                            child: Column(
+                                              mainAxisAlignment: MainAxisAlignment.start,
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: [
+                                                Container(
+                                                  width: screenWidth * 0.7,
+                                                  height: 140,
+                                                  decoration: BoxDecoration(
+                                                    image: DecorationImage(
+                                                      image: AssetImage("assets/Professions/${SecuritySupportImg[index]}"),
+                                                      fit: BoxFit.cover, // Adjust the fit if necessary
+                                                    ),
+                                                    color: Colors.white,
+                                                    borderRadius: BorderRadius.circular(8),
+                                                    boxShadow: [
+                                                      BoxShadow(
+                                                          color: Colors.black26,
+                                                          blurRadius: 1,
+                                                          spreadRadius: 1),
+                                                    ],
+                                                  ),
+                                                ),
+                                                SizedBox(height: 5,),
+                                                Text("${SecuritySupport[index]}", style: GoogleFonts.roboto(fontSize: 16, fontWeight: FontWeight.bold),),
+                                                SizedBox(height: 2,),
+                                                Text("${SecuritySupportDesc[index]}", style: GoogleFonts.roboto(fontSize: 16),),
+                                              ],
+                                            ),
+                                          )
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                            ),
+
+                            // Creative & Wellness
+                            Padding(
+                              padding: const EdgeInsets.only(left: 13.0, top: 10),
+                              child: Text("Creative & Wellness", style: GoogleFonts.roboto(fontWeight: FontWeight.bold, fontSize: 20),),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.only(left: 8.0, right: 8, bottom: 8),
+                              child: SizedBox(
+                                height: 205,
+                                child: ListView.builder(
+                                  scrollDirection: Axis.horizontal,
+                                  padding: EdgeInsets.zero,
+                                  itemCount: CreativeWellness.length,
+                                  itemBuilder: (context, index) {
+                                    return Padding(
+                                      padding: const EdgeInsets.all(5.0),
+                                      child: InkWell(
+                                          onTap: () {
+                                            Navigator.push(
+                                              context,
+                                              PageRouteBuilder(
+                                                transitionDuration: const Duration(milliseconds: 500),
+                                                pageBuilder: (context, animation, secondaryAnimation) => StaffPage(
+                                                    Skill: CreativeWellness[index]
+                                                        .toLowerCase()),
+                                                transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                                                  const begin = Offset(1.0, 0.0); // From bottom
+                                                  const end = Offset.zero;
+                                                  const curve = Curves.easeOut;
+
+                                                  final tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+                                                  final offsetAnimation = animation.drive(tween);
+
+                                                  return SlideTransition(
+                                                    position: offsetAnimation,
+                                                    child: child,
+                                                  );
+                                                },
+                                              ),
+                                            );
+                                          },
+                                          child: SizedBox(
+                                            height: 220,
+                                            width: screenWidth * 0.7,
+                                            child: Column(
+                                              mainAxisAlignment: MainAxisAlignment.start,
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: [
+                                                Container(
+                                                  width: screenWidth * 0.7,
+                                                  height: 140,
+                                                  decoration: BoxDecoration(
+                                                    image: DecorationImage(
+                                                      image: AssetImage("assets/Professions/${CreativeWellnessImg[index]}"),
+                                                      fit: BoxFit.cover, // Adjust the fit if necessary
+                                                    ),
+                                                    color: Colors.white,
+                                                    borderRadius: BorderRadius.circular(8),
+                                                    boxShadow: [
+                                                      BoxShadow(
+                                                          color: Colors.black26,
+                                                          blurRadius: 1,
+                                                          spreadRadius: 1),
+                                                    ],
+                                                  ),
+                                                ),
+                                                SizedBox(height: 5,),
+                                                Text("${CreativeWellness[index]}", style: GoogleFonts.roboto(fontSize: 16, fontWeight: FontWeight.bold),),
+                                                SizedBox(height: 2,),
+                                                Text("${CreativeWellnessDesc[index]}", style: GoogleFonts.roboto(fontSize: 16),),
+                                              ],
+                                            ),
+                                          )
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                            ),
+
+                            // Professions
+                            // Expanded(
+                            //   child: ListView.builder(
+                            //     padding: EdgeInsets.zero,
+                            //     itemCount: Profession.length,
+                            //     itemBuilder: (context, index) {
+                            //       return Padding(
+                            //         padding: const EdgeInsets.all(10.0),
+                            //         child: InkWell(
+                            //           onTap: () {
+                            //             Navigator.push(
+                            //                 context,
+                            //                 MaterialPageRoute(
+                            //                   builder: (context) => StaffPage(
+                            //                       Skill: Profession[index]
+                            //                           .toLowerCase()),
+                            //                 ));
+                            //           },
+                            //           child: Container(
+                            //             height: 150,
+                            //             width: screenWidth,
+                            //             decoration: BoxDecoration(
+                            //               image: DecorationImage(
+                            //                 image: AssetImage("assets/Professions/${ProfessionBack[index]}"),
+                            //                 fit: BoxFit.cover, // Adjust the fit if necessary
+                            //               ),
+                            //               color: Colors.white,
+                            //               borderRadius: BorderRadius.circular(15),
+                            //               boxShadow: [
+                            //                 BoxShadow(
+                            //                     color: Colors.black26,
+                            //                     blurRadius: 1,
+                            //                     spreadRadius: 1),
+                            //               ],
+                            //             ),
+                            //             child: Padding(
+                            //               padding: const EdgeInsets.all(10.0),
+                            //               child: Text(Profession[index],
+                            //                   style: TextStyle(
+                            //                       fontSize: 18,
+                            //                       color: Colors.white,
+                            //                       fontWeight: FontWeight.bold,
+                            //                       shadows: [
+                            //                         Shadow(
+                            //                             blurRadius: 1,
+                            //                             color: Colors.black,
+                            //                             offset: Offset(1, 1))
+                            //                       ])),
+                            //             ),
+                            //           ),
+                            //         ),
+                            //       );
+                            //     },
+                            //   ),
+                            // ),
                           ],
                         ),
                       ),
-
-                      // Professions
-                      Expanded(
-                        child: ListView.builder(
-                          padding: EdgeInsets.zero,
-                          itemCount: Profession.length,
-                          itemBuilder: (context, index) {
-                            return Padding(
-                              padding: const EdgeInsets.all(10.0),
-                              child: InkWell(
-                                onTap: () {
-                                  Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => StaffPage(
-                                            Skill: Profession[index]
-                                                .toLowerCase()),
-                                      ));
-                                },
-                                child: Container(
-                                  height: 150,
-                                  width: screenWidth,
-                                  decoration: BoxDecoration(
-                                    image: DecorationImage(
-                                      image: AssetImage("assets/Professions/${ProfessionBack[index]}"),
-                                      fit: BoxFit.cover, // Adjust the fit if necessary
-                                    ),
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(15),
-                                    boxShadow: [
-                                      BoxShadow(
-                                          color: Colors.black26,
-                                          blurRadius: 1,
-                                          spreadRadius: 1),
-                                    ],
-                                  ),
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(10.0),
-                                    child: Text(Profession[index],
-                                        style: TextStyle(
-                                            fontSize: 18,
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.bold,
-                                            shadows: [
-                                              Shadow(
-                                                  blurRadius: 1,
-                                                  color: Colors.black,
-                                                  offset: Offset(1, 1))
-                                            ])),
-                                  ),
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
+                    )
+                  ],
                 ),
               ),
 
@@ -688,10 +1788,10 @@ class _MyHomePageState extends State<MyHomePage> {
                         children: [
                           Container(
                               height: screenHeight * 0.5,
-                              width: screenWidth * 0.85,
+                              width: screenWidth - 16,
                               decoration: BoxDecoration(
                                   color: Colors.white,
-                                  borderRadius: BorderRadius.circular(20),
+                                  borderRadius: BorderRadius.circular(5),
                                   boxShadow: [
                                     BoxShadow(
                                         color: Colors.black26,
@@ -743,14 +1843,28 @@ class _MyHomePageState extends State<MyHomePage> {
                                             child: InkWell(
                                               onTap: () {
                                                 Navigator.push(
-                                                    context,
-                                                    MaterialPageRoute(
-                                                      builder: (context) =>
-                                                          StaffProfilePage(
-                                                              StaffID: UID,
-                                                              Skill: data[
-                                                              'professionOfStaff']),
-                                                    ));
+                                                  context,
+                                                  PageRouteBuilder(
+                                                    transitionDuration: const Duration(milliseconds: 500),
+                                                    pageBuilder: (context, animation, secondaryAnimation) => StaffProfilePage(
+                                                        StaffID: UID,
+                                                        Skill: data[
+                                                        'professionOfStaff']),
+                                                    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                                                      const begin = Offset(1.0, 0.0); // From bottom
+                                                      const end = Offset.zero;
+                                                      const curve = Curves.easeOut;
+
+                                                      final tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+                                                      final offsetAnimation = animation.drive(tween);
+
+                                                      return SlideTransition(
+                                                        position: offsetAnimation,
+                                                        child: child,
+                                                      );
+                                                    },
+                                                  ),
+                                                );
                                               },
                                               child: Container(
                                                 height: 50,
@@ -758,7 +1872,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                                 decoration: BoxDecoration(
                                                     color: Colors.white,
                                                     borderRadius:
-                                                    BorderRadius.circular(15),
+                                                    BorderRadius.circular(5),
                                                     boxShadow: [
                                                       BoxShadow(
                                                           color: Colors.black26,
@@ -833,14 +1947,28 @@ class _MyHomePageState extends State<MyHomePage> {
                                             child: InkWell(
                                               onTap: () {
                                                 Navigator.push(
-                                                    context,
-                                                    MaterialPageRoute(
-                                                      builder: (context) =>
-                                                          StaffProfilePage(
-                                                              StaffID: UID,
-                                                              Skill: data[
-                                                              'professionOfStaff']),
-                                                    ));
+                                                  context,
+                                                  PageRouteBuilder(
+                                                    transitionDuration: const Duration(milliseconds: 500),
+                                                    pageBuilder: (context, animation, secondaryAnimation) => StaffProfilePage(
+                                                        StaffID: UID,
+                                                        Skill: data[
+                                                        'professionOfStaff']),
+                                                    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                                                      const begin = Offset(1.0, 0.0); // From bottom
+                                                      const end = Offset.zero;
+                                                      const curve = Curves.easeOut;
+
+                                                      final tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+                                                      final offsetAnimation = animation.drive(tween);
+
+                                                      return SlideTransition(
+                                                        position: offsetAnimation,
+                                                        child: child,
+                                                      );
+                                                    },
+                                                  ),
+                                                );
                                               },
                                               child: Container(
                                                 height: 50,
@@ -923,6 +2051,131 @@ class _MyHomePageState extends State<MyHomePage> {
           )
         ],
       ),
+      bottomNavigationBar: Container(
+        height: 70,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(16),
+            topRight: Radius.circular(16),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black12,
+              blurRadius: 10,
+              offset: Offset(0, -2),
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            InkWell(
+              borderRadius: BorderRadius.circular(12),
+              onTap: () {
+                Navigator.pushReplacement(
+                  context,
+                  PageRouteBuilder(
+                    transitionDuration: const Duration(milliseconds: 500),
+                    pageBuilder: (context, animation, secondaryAnimation) => MyHomePage(),
+                    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                      const begin = Offset(0.0, 1.0); // From bottom
+                      const end = Offset.zero;
+                      const curve = Curves.easeOut;
+
+                      final tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+                      final offsetAnimation = animation.drive(tween);
+
+                      return SlideTransition(
+                        position: offsetAnimation,
+                        child: child,
+                      );
+                    },
+                  ),
+                );
+              },
+              child: Container(
+                height: 50,
+                width: 50,
+                decoration: BoxDecoration(
+                  color: Colors.blue.shade50,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(Icons.home, color: Colors.blueAccent, size: 28),
+              ),
+            ),
+            InkWell(
+              borderRadius: BorderRadius.circular(12),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  PageRouteBuilder(
+                    transitionDuration: const Duration(milliseconds: 500),
+                    pageBuilder: (context, animation, secondaryAnimation) => MainMap(whichStaff: "All"),
+                    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                      const begin = Offset(0.0, 1.0); // From bottom
+                      const end = Offset.zero;
+                      const curve = Curves.easeOut;
+
+                      final tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+                      final offsetAnimation = animation.drive(tween);
+
+                      return SlideTransition(
+                        position: offsetAnimation,
+                        child: child,
+                      );
+                    },
+                  ),
+                );
+              },
+              child: Container(
+                height: 50,
+                width: 50,
+                decoration: BoxDecoration(
+                  color: Colors.green.shade50,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(Icons.map, color: Colors.green, size: 28),
+              ),
+            ),
+            InkWell(
+              borderRadius: BorderRadius.circular(12),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  PageRouteBuilder(
+                    transitionDuration: const Duration(milliseconds: 500),
+                    pageBuilder: (context, animation, secondaryAnimation) => ClientNotificationPage(),
+                    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                      const begin = Offset(0.0, 1.0); // From bottom
+                      const end = Offset.zero;
+                      const curve = Curves.easeOut;
+
+                      final tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+                      final offsetAnimation = animation.drive(tween);
+
+                      return SlideTransition(
+                        position: offsetAnimation,
+                        child: child,
+                      );
+                    },
+                  ),
+                );
+              },
+              child: Container(
+                height: 50,
+                width: 50,
+                decoration: BoxDecoration(
+                  color: Colors.purple.shade50,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(Icons.notifications, color: Colors.purple, size: 28),
+              ),
+            ),
+          ],
+        ),
+      ),
+
     );
   }
 }

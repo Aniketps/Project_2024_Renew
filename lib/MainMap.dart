@@ -16,6 +16,7 @@ import 'package:url_launcher/url_launcher_string.dart';
 
 import 'LoaderSupport.dart';
 import 'StaffProfilePage.dart';
+import 'globle.dart';
 
 class MainMap extends StatefulWidget {
   final String whichStaff;
@@ -43,25 +44,32 @@ class _MainMapState extends State<MainMap> {
   _MainMapState({required this.whichStaff});
   List<StaffLocation> AvailableStaff = [];
 
-  List<StaffLocation> RegisteredNurseMarker = [];
-  List<StaffLocation> LicensdePracticalNurseMarker = [];
-  List<StaffLocation> CertifiedNursAssistentMarker = [];
-  List<StaffLocation> HomeHealthAidesMarker = [];
-  List<StaffLocation> PhysiotherapistsMarker = [];
-  List<StaffLocation> OccupationalTherapistsMarker = [];
-  List<StaffLocation> ParamedicsMarker = [];
-  List<StaffLocation> DisabledCaregiversMarker = [];
-  List<StaffLocation> CooksMarker = [];
+  List<StaffLocation> CleanerMarker = [];
+  List<StaffLocation> GardenerMarker = [];
   List<StaffLocation> HousekeepersMarker = [];
-  List<StaffLocation> CleaningStaffMarker = [];
-  List<StaffLocation> BabysittersMarker = [];
+  List<StaffLocation> PersonalCareAssistantsMarker = [];
   List<StaffLocation> ElderCompanionsMarker = [];
+  List<StaffLocation> ElderlyMarker = [];
+  List<StaffLocation> BabysittersMarker = [];
+  List<StaffLocation> TeacherMarker = [];
+  List<StaffLocation> DriverMarker = [];
   List<StaffLocation> HomeGuardsMarker = [];
   List<StaffLocation> SecurityGuardsMarker = [];
-  List<StaffLocation> PersonalCareAssistantsMarker = [];
-  List<StaffLocation> DriverMarker = [];
-  List<StaffLocation> AdministrativeAssistantsMarker = [];
-  List<StaffLocation> chefmarker = [];
+  List<StaffLocation> ChefMarker = [];
+  List<StaffLocation> EventHelpersMarker = [];
+  List<StaffLocation> BartenderMarker = [];
+  List<StaffLocation> CertifiedNursingAssistantsMarker = [];
+  List<StaffLocation> HomeHealthAidesMarker = [];
+  List<StaffLocation> PhysiotherapistsMarker = [];
+  List<StaffLocation> ACTechnicianMarker = [];
+  List<StaffLocation> ElectricianMarker = [];
+  List<StaffLocation> PlumberMarker = [];
+  List<StaffLocation> CarpenterMarker = [];
+  List<StaffLocation> PainterMarker = [];
+  List<StaffLocation> FitnessTrainerMarker = [];
+  List<StaffLocation> YogaTrainerMarker = [];
+  List<StaffLocation> PhotographerMarker = [];
+
 
   late double lat;
   late double long;
@@ -72,38 +80,29 @@ class _MainMapState extends State<MainMap> {
   @override
   void initState() {
     super.initState();
+    liveLocation();
     _mapController = MapController();
     LoaderCheck = !LoaderCheck;
-    void _liveLocation() {
-      LocationSettings locationSettings = LocationSettings(
-        accuracy: LocationAccuracy.high,
-        distanceFilter: 100,
-      );
-
-      Geolocator.getPositionStream(locationSettings: locationSettings).listen(
-        (Position position) {
-          setState(() async {
-            lat = position.latitude;
-            long = position.longitude;
-            User? user = FirebaseAuth.instance.currentUser;
-
-            await FirebaseFirestore.instance
-                .collection('user')
-                .doc(user?.uid)
-                .update({
-              'lat': position.latitude.toString(),
-              'long': position.longitude.toString(),
-            });
-          });
-        },
-      );
-    }
-
-    ;
-    _liveLocation();
     getStaffLocation();
     LoaderCheck = !LoaderCheck;
     UserCurrentLatLong();
+  }
+  Future<void> liveLocation() async {
+    Position position = await Geolocator.getCurrentPosition(
+      desiredAccuracy: LocationAccuracy.lowest, // fastest
+    );
+        setState(() {
+          lat = position.latitude;
+          long = position.longitude;
+        });
+        User? user = FirebaseAuth.instance.currentUser;
+        await FirebaseFirestore.instance
+            .collection('user')
+            .doc(user?.uid)
+            .update({
+          'lat': position.latitude.toString(),
+          'long': position.longitude.toString(),
+        });
   }
 
   late MapController _mapController;
@@ -202,57 +201,84 @@ class _MainMapState extends State<MainMap> {
                     );
 
                     // Add to corresponding markers list based on profession
-                    switch (professionOfStaff) {
-                      case 'chef':
-                        chefmarker.add(staffLocation);
-                        break;
-                      case 'personal Care Assistants':
-                        PersonalCareAssistantsMarker.add(staffLocation);
-                        break;
-                      case 'driver':
-                        DriverMarker.add(staffLocation);
-                        break;
-                      case 'security Guards':
-                        SecurityGuardsMarker.add(staffLocation);
-                        break;
-                      case 'home Guards':
-                        HomeGuardsMarker.add(staffLocation);
-                        break;
-                      case 'elder Companions':
-                        ElderCompanionsMarker.add(staffLocation);
-                        break;
-                      case 'babysitters':
-                        BabysittersMarker.add(staffLocation);
-                        break;
+                    switch (professionOfStaff.toLowerCase()) {
                       case 'cleaner':
-                        CleaningStaffMarker.add(staffLocation);
+                        CleanerMarker.add(staffLocation);
+                        break;
+                      case 'gardener':
+                        GardenerMarker.add(staffLocation);
                         break;
                       case 'housekeepers':
                         HousekeepersMarker.add(staffLocation);
                         break;
-                      case 'elderly':
+                      case 'personal care assistants':
+                        PersonalCareAssistantsMarker.add(staffLocation);
+                        break;
+                      case 'elder companions':
                         ElderCompanionsMarker.add(staffLocation);
                         break;
-                      case 'paramedics':
-                        ParamedicsMarker.add(staffLocation);
+                      case 'elderly':
+                        ElderlyMarker.add(staffLocation);
                         break;
-                      case 'occupational Therapists':
-                        OccupationalTherapistsMarker.add(staffLocation);
+                      case 'babysitters':
+                        BabysittersMarker.add(staffLocation);
+                        break;
+                      case 'teacher':
+                        TeacherMarker.add(staffLocation);
+                        break;
+                      case 'driver':
+                        DriverMarker.add(staffLocation);
+                        break;
+                      case 'home guards':
+                        HomeGuardsMarker.add(staffLocation);
+                        break;
+                      case 'security guards':
+                        SecurityGuardsMarker.add(staffLocation);
+                        break;
+                      case 'chef':
+                        ChefMarker.add(staffLocation);
+                        break;
+                      case 'event helpers':
+                        EventHelpersMarker.add(staffLocation);
+                        break;
+                      case 'bartender':
+                        BartenderMarker.add(staffLocation);
+                        break;
+                      case 'certified nursing assistants':
+                        CertifiedNursingAssistantsMarker.add(staffLocation);
+                        break;
+                      case 'home health aides':
+                        HomeHealthAidesMarker.add(staffLocation);
                         break;
                       case 'physiotherapists':
                         PhysiotherapistsMarker.add(staffLocation);
                         break;
-                      case 'home Health Aides':
-                        HomeHealthAidesMarker.add(staffLocation);
+                      case 'ac technician':
+                        ACTechnicianMarker.add(staffLocation);
                         break;
-                      case 'certified Nursing Assistants':
-                        CertifiedNursAssistentMarker.add(staffLocation);
+                      case 'electrician':
+                        ElectricianMarker.add(staffLocation);
                         break;
-                      case 'licensed Practical Nurses':
-                        LicensdePracticalNurseMarker.add(staffLocation);
+                      case 'plumber':
+                        PlumberMarker.add(staffLocation);
                         break;
-                      case 'registered Nurses':
-                        RegisteredNurseMarker.add(staffLocation);
+                      case 'carpenter':
+                        CarpenterMarker.add(staffLocation);
+                        break;
+                      case 'painter':
+                        PainterMarker.add(staffLocation);
+                        break;
+                      case 'fitness trainer':
+                        FitnessTrainerMarker.add(staffLocation);
+                        break;
+                      case 'yoga trainer':
+                        YogaTrainerMarker.add(staffLocation);
+                        break;
+                      case 'photographer':
+                        PhotographerMarker.add(staffLocation);
+                        break;
+                      default:
+                      // Optional: handle unknown professions
                         break;
                     }
 
@@ -289,23 +315,31 @@ class _MainMapState extends State<MainMap> {
     super.dispose();
   }
   List<String> items = [
-    "Chef",
-    "Personal Care Assistants",
-    "Driver",
-    "Security Guards",
-    "Home Guards",
-    "Elder Companions",
-    "Babysitters",
     "Cleaner",
+    "Gardener",
     "Housekeepers",
+    "Personal Care Assistants",
+    "Elder Companions",
     "Elderly",
-    "Paramedics",
-    "Occupational Therapists",
-    "Physiotherapists",
-    "Home Health Aides",
+    "Babysitters",
+    "Teacher",
+    "Driver",
+    "Home Guards",
+    "Security Guards",
+    "Chef",
+    "Event Helpers",
+    "Bartender",
     "Certified Nursing Assistants",
-    "Licensed Practical Nurses",
-    "Registered Nurses"
+    "Home Health Aides",
+    "Physiotherapists",
+    "AC Technician",
+    "Electrician",
+    "Plumber",
+    "Carpenter",
+    "Painter",
+    "Fitness Trainer",
+    "Yoga Trainer",
+    "Photographer",
   ];
 
   Widget createMarkerLayer(List<StaffLocation> markerData, Color color) {
@@ -353,7 +387,7 @@ class _MainMapState extends State<MainMap> {
           // App bar section
           Container(
             height: 150,
-            color: Color(0xfffffcc9),
+            color: Globle.theme,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
@@ -363,10 +397,10 @@ class _MainMapState extends State<MainMap> {
                     child: Center(
                       child: Text("Map",
                           style: TextStyle(
-                              fontSize: 20, fontWeight: FontWeight.bold)),
+                              fontSize: 20, fontWeight: FontWeight.bold, color : Colors.white)),
                     ),
                   ),
-                  backgroundColor: Color(0xfffffcc9),
+                  backgroundColor: Globle.theme,
                   automaticallyImplyLeading: false,
                 ),
               ],
@@ -423,7 +457,7 @@ class _MainMapState extends State<MainMap> {
                                                 width: 80.0,
                                                 height: 80.0,
                                                 child: Icon(
-                                                  Icons.location_history_sharp,
+                                                  Icons.my_location,
                                                   color: Colors.green,
                                                   size: 30.0,
                                                 ),
@@ -433,55 +467,32 @@ class _MainMapState extends State<MainMap> {
 
                                           // New data
                                           // Usage of the function for different staff
-                                          createMarkerLayer(
-                                              chefmarker, Colors.yellow),
-                                          createMarkerLayer(
-                                              LicensdePracticalNurseMarker,
-                                              Color.fromARGB(255, 3, 94, 230)),
-                                          createMarkerLayer(
-                                              CertifiedNursAssistentMarker,
-                                              Colors.purple),
-                                          createMarkerLayer(
-                                              HomeHealthAidesMarker,
-                                              Colors.blue),
-                                          createMarkerLayer(
-                                              PhysiotherapistsMarker,
-                                              Colors.black),
-                                          createMarkerLayer(
-                                              OccupationalTherapistsMarker,
-                                              Colors.green),
-                                          createMarkerLayer(
-                                              ParamedicsMarker, Colors.brown),
-                                          createMarkerLayer(
-                                              DisabledCaregiversMarker,
-                                              Colors.pink),
-                                          createMarkerLayer(CooksMarker,
-                                              Color.fromRGBO(240, 181, 177, 1)),
-                                          createMarkerLayer(
-                                              HousekeepersMarker,
-                                              Color.fromARGB(
-                                                  255, 234, 132, 132)),
-                                          createMarkerLayer(CleaningStaffMarker,
-                                              Color.fromARGB(183, 226, 43, 30)),
-                                          createMarkerLayer(BabysittersMarker,
-                                              Color.fromARGB(255, 2, 242, 10)),
-                                          createMarkerLayer(
-                                              ElderCompanionsMarker,
-                                              Color.fromARGB(255, 3, 86, 153)),
-                                          createMarkerLayer(
-                                              HomeGuardsMarker, Colors.red),
-                                          createMarkerLayer(
-                                              SecurityGuardsMarker,
-                                              Colors.blueGrey),
-                                          createMarkerLayer(
-                                              PersonalCareAssistantsMarker,
-                                              Colors.white),
-                                          createMarkerLayer(DriverMarker,
-                                              Color.fromARGB(255, 119, 2, 41)),
-                                          createMarkerLayer(
-                                              AdministrativeAssistantsMarker,
-                                              Color.fromARGB(255, 25, 0, 29)),
-                                        ]),
+                                        createMarkerLayer(CleanerMarker, Colors.yellow),
+                                        createMarkerLayer(GardenerMarker, Colors.green),
+                                        createMarkerLayer(HousekeepersMarker, Colors.blue),
+                                        createMarkerLayer(PersonalCareAssistantsMarker, Colors.pink),
+                                        createMarkerLayer(ElderCompanionsMarker, Colors.brown),
+                                        createMarkerLayer(ElderlyMarker, Colors.grey),
+                                        createMarkerLayer(BabysittersMarker, Colors.orange),
+                                        createMarkerLayer(TeacherMarker, Colors.indigo),
+                                        createMarkerLayer(DriverMarker, Colors.teal),
+                                        createMarkerLayer(HomeGuardsMarker, Colors.red),
+                                        createMarkerLayer(SecurityGuardsMarker, Colors.black),
+                                        createMarkerLayer(ChefMarker, Colors.deepOrange),
+                                        createMarkerLayer(EventHelpersMarker, Colors.cyan),
+                                        createMarkerLayer(BartenderMarker, Colors.deepPurple),
+                                        createMarkerLayer(CertifiedNursingAssistantsMarker, Colors.lightBlue),
+                                        createMarkerLayer(HomeHealthAidesMarker, Colors.lightGreen),
+                                        createMarkerLayer(PhysiotherapistsMarker, Colors.amber),
+                                        createMarkerLayer(ACTechnicianMarker, Colors.blueGrey),
+                                        createMarkerLayer(ElectricianMarker, Colors.lime),
+                                        createMarkerLayer(PlumberMarker, Colors.cyanAccent),
+                                        createMarkerLayer(CarpenterMarker, Colors.brown.shade300),
+                                        createMarkerLayer(PainterMarker, Colors.purple),
+                                        createMarkerLayer(FitnessTrainerMarker, Colors.redAccent),
+                                        createMarkerLayer(YogaTrainerMarker, Colors.greenAccent),
+                                        createMarkerLayer(PhotographerMarker, Colors.pinkAccent),
+                                      ]),
                             ),
                           ),
                           Row(
@@ -492,9 +503,9 @@ class _MainMapState extends State<MainMap> {
                                 child: Row(
                                   children: [
                                     Container(
-                                      width: screenWidth * 0.88,
+                                      width: screenWidth - 16,
                                       decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(50),
+                                        borderRadius: BorderRadius.circular(5),
                                         color: Colors.white,
                                         boxShadow: [
                                           BoxShadow(

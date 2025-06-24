@@ -17,6 +17,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'LoaderSupport.dart';
 import 'TempMap.dart';
+import 'globle.dart';
 
 class BookingScheduleAndPayment extends StatefulWidget {
   var StaffData;
@@ -109,24 +110,8 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
       });
       return;
     }
-
-    // void sendNotificationToStaff() async {
-    //   FirebaseMessaging messaging = FirebaseMessaging.instance;
-    //
-    //   // Sample payload for staff notification
-    //   await messaging.send(
-    //     Message(
-    //       token: staffDeviceToken,  // Get staff device tokens here
-    //       notification: Notification(
-    //         title: 'New Payment Received',
-    //         body: 'A user has completed a payment.',
-    //       ),
-    //     ),
-    //   );
-    // }
-
     Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high);
+        desiredAccuracy: LocationAccuracy.lowest);
 
     setState(() {
       lat = '${position.latitude}';
@@ -167,6 +152,7 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
   TextEditingController Address = TextEditingController();
   bool isAccepted = false;
   bool isAcceptOpen = false;
+  bool loading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -249,7 +235,7 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
           // App bar section
           Container(
             height: 150,
-            color: Color(0xfffffcc9),
+            color: Globle.theme,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
@@ -257,9 +243,9 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                   title: Center(
                     child: Text("Hiring And Payment",
                         style: TextStyle(
-                            fontSize: 20, fontWeight: FontWeight.bold)),
+                            fontSize: 20, fontWeight: FontWeight.bold, color : Colors.white)),
                   ),
-                  backgroundColor: Color(0xfffffcc9),
+                  backgroundColor: Globle.theme,
                   automaticallyImplyLeading: false,
                 ),
               ],
@@ -318,7 +304,7 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                             decoration: BoxDecoration(
                                                 color: Colors.white,
                                                 borderRadius:
-                                                    BorderRadius.circular(15),
+                                                    BorderRadius.circular(5),
                                                 boxShadow: [
                                                   BoxShadow(
                                                       color: Colors.black26,
@@ -460,116 +446,126 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                                   ),
                                                 ),
                                                 Padding(
-                                                  padding:
-                                                      const EdgeInsets.only(
-                                                          left: 20),
+                                                  padding: const EdgeInsets.only(left : 50.0, right : 30),
                                                   child: Row(
-                                                    children: [
-                                                      InkWell(
-                                                        onTap: () {
-                                                          setState(() {
-                                                            HourBased = true;
-                                                            DayBased = false;
-                                                          });
-                                                        },
-                                                        child: Container(
-                                                          height: 30,
-                                                          width: 50,
-                                                          decoration:
-                                                              BoxDecoration(
-                                                                  borderRadius:
+                                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                      children: [
+                                                        Text("Hire on basis of", style: TextStyle(fontSize: 12),),
+                                                        Padding(
+                                                          padding:
+                                                          const EdgeInsets.only(
+                                                              left: 20),
+                                                          child: Row(
+                                                            children: [
+                                                              InkWell(
+                                                                onTap: () {
+                                                                  setState(() {
+                                                                    HourBased = true;
+                                                                    DayBased = false;
+                                                                  });
+                                                                },
+                                                                child: Container(
+                                                                  height: 30,
+                                                                  width: 50,
+                                                                  decoration:
+                                                                  BoxDecoration(
+                                                                      borderRadius:
                                                                       BorderRadius
                                                                           .only(
-                                                                    topLeft: Radius
-                                                                        .circular(
+                                                                        topLeft: Radius
+                                                                            .circular(
                                                                             10),
-                                                                    bottomLeft:
+                                                                        bottomLeft:
                                                                         Radius.circular(
                                                                             10),
-                                                                  ),
-                                                                  color: HourBased
-                                                                      ? Colors
+                                                                      ),
+                                                                      color: HourBased
+                                                                          ? Colors
                                                                           .blue
-                                                                      : Colors
+                                                                          : Colors
                                                                           .white,
-                                                                  boxShadow: [
-                                                                BoxShadow(
-                                                                  color: Colors
-                                                                      .black26,
-                                                                  spreadRadius:
-                                                                      1,
-                                                                  blurRadius: 1,
-                                                                )
-                                                              ]),
-                                                          child: Center(
-                                                              child: Text(
-                                                            "Hour",
-                                                            style: TextStyle(
-                                                                color: HourBased
-                                                                    ? Colors
-                                                                        .white
-                                                                    : Colors
-                                                                        .black,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold),
-                                                          )),
-                                                        ),
-                                                      ),
-                                                      InkWell(
-                                                        onTap: () {
-                                                          setState(() {
-                                                            DayBased = true;
-                                                            HourBased = false;
-                                                          });
-                                                        },
-                                                        child: Container(
-                                                          height: 30,
-                                                          width: 50,
-                                                          decoration:
-                                                              BoxDecoration(
-                                                                  borderRadius:
+                                                                      boxShadow: [
+                                                                        BoxShadow(
+                                                                          color: Colors
+                                                                              .black26,
+                                                                          spreadRadius:
+                                                                          1,
+                                                                          blurRadius: 1,
+                                                                        )
+                                                                      ]),
+                                                                  child: Center(
+                                                                      child: Text(
+                                                                        "Hour",
+                                                                        style: TextStyle(
+                                                                            color: HourBased
+                                                                                ? Colors
+                                                                                .white
+                                                                                : Colors
+                                                                                .black,
+                                                                            fontWeight:
+                                                                            FontWeight
+                                                                                .bold),
+                                                                      )),
+                                                                ),
+                                                              ),
+                                                              InkWell(
+                                                                onTap: () {
+                                                                  setState(() {
+                                                                    DayBased = true;
+                                                                    HourBased = false;
+                                                                  });
+                                                                },
+                                                                child: Container(
+                                                                  height: 30,
+                                                                  width: 50,
+                                                                  decoration:
+                                                                  BoxDecoration(
+                                                                      borderRadius:
                                                                       BorderRadius
                                                                           .only(
-                                                                    topRight: Radius
-                                                                        .circular(
+                                                                        topRight: Radius
+                                                                            .circular(
                                                                             10),
-                                                                    bottomRight:
+                                                                        bottomRight:
                                                                         Radius.circular(
                                                                             10),
-                                                                  ),
-                                                                  color: DayBased
-                                                                      ? Colors
+                                                                      ),
+                                                                      color: DayBased
+                                                                          ? Colors
                                                                           .blue
-                                                                      : Colors
+                                                                          : Colors
                                                                           .white,
-                                                                  boxShadow: [
-                                                                BoxShadow(
-                                                                  color: Colors
-                                                                      .black26,
-                                                                  spreadRadius:
-                                                                      1,
-                                                                  blurRadius: 1,
-                                                                )
-                                                              ]),
-                                                          child: Center(
-                                                              child: Text(
-                                                            "Day",
-                                                            style: TextStyle(
-                                                                color: DayBased
-                                                                    ? Colors
-                                                                        .white
-                                                                    : Colors
-                                                                        .black,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold),
-                                                          )),
+                                                                      boxShadow: [
+                                                                        BoxShadow(
+                                                                          color: Colors
+                                                                              .black26,
+                                                                          spreadRadius:
+                                                                          1,
+                                                                          blurRadius: 1,
+                                                                        )
+                                                                      ]),
+                                                                  child: Center(
+                                                                      child: Text(
+                                                                        "Day",
+                                                                        style: TextStyle(
+                                                                            color: DayBased
+                                                                                ? Colors
+                                                                                .white
+                                                                                : Colors
+                                                                                .black,
+                                                                            fontWeight:
+                                                                            FontWeight
+                                                                                .bold),
+                                                                      )),
+                                                                ),
+                                                              ),
+                                                            ],
+                                                          ),
                                                         ),
-                                                      ),
-                                                    ],
+                                                      ],
                                                   ),
                                                 ),
+                                                SizedBox(height: 8,),
                                                 Padding(
                                                   padding:
                                                       const EdgeInsets.only(
@@ -595,7 +591,7 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                                                   style:
                                                                       TextStyle(
                                                                     fontSize:
-                                                                        10,
+                                                                        12,
                                                                   ),
                                                                 )),
                                                             Padding(
@@ -708,9 +704,9 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                                             ),
                                                             Container(
                                                                 child: Text(
-                                                              " ${price}₹",
+                                                              " ${price} ${StaffData['Currency'] ?? '-'}",
                                                               style: TextStyle(
-                                                                fontSize: 10,
+                                                                fontSize: 12,
                                                               ),
                                                             )),
                                                           ],
@@ -731,13 +727,13 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                                                   style:
                                                                       TextStyle(
                                                                     fontSize:
-                                                                        10,
+                                                                        12,
                                                                   ),
                                                                 )),
                                                             Text(
-                                                              "${(StaffData['Traveling_Charges'] != null) ? StaffData['Traveling_Charges'].toString() : '0'} ₹",
+                                                              "${(StaffData['Traveling_Charges'] != null) ? StaffData['Traveling_Charges'].toString() : '0'} ${StaffData['Currency'] ?? '-'}",
                                                               style: TextStyle(
-                                                                fontSize: 10,
+                                                                fontSize: 12,
                                                               ),
                                                             ),
                                                           ],
@@ -764,7 +760,7 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                                                   "Total",
                                                                   style: TextStyle(
                                                                       fontSize:
-                                                                          10,
+                                                                          12,
                                                                       fontWeight:
                                                                           FontWeight
                                                                               .bold),
@@ -777,15 +773,15 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                                                   "Know More",
                                                                   style: TextStyle(
                                                                       fontSize:
-                                                                          10,
+                                                                          12,
                                                                       fontWeight:
                                                                           FontWeight
                                                                               .bold),
                                                                 )),
                                                             Text(
-                                                              "${total} ₹",
+                                                              "${total} ${StaffData['Currency'] ?? '-'}",
                                                               style: TextStyle(
-                                                                  fontSize: 10,
+                                                                  fontSize: 12,
                                                                   fontWeight:
                                                                       FontWeight
                                                                           .bold),
@@ -1116,6 +1112,9 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                                           .all(5.0),
                                                   child: InkWell(
                                                     onTap: () async {
+                                                      setState(() {
+                                                        loading = true;
+                                                      });
                                                       isAcceptOpen =
                                                       false;
                                                       var UID =
@@ -1207,7 +1206,6 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                                                   staffDocUID =
                                                                       staffDocRef
                                                                           .id;
-                                          
                                                                   // Add data to 'NotificationForUser' collection
                                                                   FirebaseFirestore
                                                                       .instance
@@ -1278,11 +1276,17 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                                                         });
                                                                       }).catchError(
                                                                           (error) {
+                                                                            setState(() {
+                                                                              loading = false;
+                                                                            });
                                                                         print(
                                                                             "Error adding document to NotificationForUser: $error");
                                                                       });
                                                                 }).catchError(
                                                                     (error) {
+                                                                      setState(() {
+                                                                        loading = false;
+                                                                      });
                                                                   print(
                                                                       "Error adding document to NotificationForStaff: $error");
                                                                 });
@@ -1361,7 +1365,10 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                                                 stafftoken);
                                                             prefs.setDouble("SelectedLat", 0.0);
                                                             prefs.setDouble("SelectedLong", 0.0);
-                                          
+
+                                                            setState(() {
+                                                              loading = false;
+                                                            });
                                                             Navigator
                                                                 .push(
                                                               context,
@@ -1377,6 +1384,9 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                                                 msg:
                                                                 "Request has been send");
                                                           } catch (e) {
+                                                            setState(() {
+                                                              loading = false;
+                                                            });
                                                             Fluttertoast
                                                                 .showToast(
                                                               msg: "$e",
@@ -1389,14 +1399,23 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                                             );
                                                           }
                                                         } else {
+                                                          setState(() {
+                                                            loading = false;
+                                                          });
                                                           Fluttertoast
                                                               .showToast(
                                                               msg:
                                                               "Payment Failed");
                                                         }
                                                       } else {
+                                                        setState(() {
+                                                          loading = false;
+                                                        });
                                                         // Handle validation errors
                                                         if (price == 0) {
+                                                          setState(() {
+                                                            loading = false;
+                                                          });
                                                           Fluttertoast
                                                               .showToast(
                                                             msg:
@@ -1409,6 +1428,9 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                                           );
                                                         } else if (WorkDate ==
                                                             '--/--/----') {
+                                                          setState(() {
+                                                            loading = false;
+                                                          });
                                                           Fluttertoast
                                                               .showToast(
                                                             msg:
@@ -1421,6 +1443,9 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                                           );
                                                         } else if (WorkTime ==
                                                             '--:--') {
+                                                          setState(() {
+                                                            loading = false;
+                                                          });
                                                           Fluttertoast
                                                               .showToast(
                                                             msg:
@@ -1433,6 +1458,9 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                                           );
                                                         } else if (city
                                                             .isEmpty) {
+                                                          setState(() {
+                                                            loading = false;
+                                                          });
                                                           Fluttertoast
                                                               .showToast(
                                                             msg:
@@ -1445,6 +1473,9 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                                           );
                                                         } else if (address
                                                             .isEmpty) {
+                                                          setState(() {
+                                                            loading = false;
+                                                          });
                                                           Fluttertoast
                                                               .showToast(
                                                             msg:
@@ -1457,6 +1488,9 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                                           );
                                                         } else if (subAddress
                                                             .isEmpty) {
+                                                          setState(() {
+                                                            loading = false;
+                                                          });
                                                           Fluttertoast
                                                               .showToast(
                                                             msg:
@@ -1468,6 +1502,9 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                                                 .BOTTOM,
                                                           );
                                                         } else {
+                                                          setState(() {
+                                                            loading = false;
+                                                          });
                                                           Fluttertoast
                                                               .showToast(
                                                             msg:
@@ -1897,7 +1934,13 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                 ),
               ),
             ],
+          ),
+          loading
+              ? Padding(
+            padding: const EdgeInsets.only(top: 50.0),
+            child: Center(child: LoaderSupport.loadingAnimation.widget),
           )
+              : Container(),
         ],
       ),
     );

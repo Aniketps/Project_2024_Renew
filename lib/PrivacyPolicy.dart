@@ -55,7 +55,7 @@ class _PrivacyPolicyState extends State<PrivacyPolicy> {
                   // Heading
                   const Text(
                     "Terms of Service",
-                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color : Colors.white),
                   ),
                   const SizedBox(height: 8),
 

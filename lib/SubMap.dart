@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 
+import 'globle.dart';
+
 class SubMap extends StatefulWidget {
   const SubMap({super.key});
 
@@ -74,7 +76,7 @@ class _SubMapState extends State<SubMap> {
                     height: 80.0,
                     child: Icon(
                       Icons.location_history_outlined,
-                      color: Color(0xfffffcc9),
+                      color: Globle.theme,
                       size: 25.0,
                     ),
                   ),

@@ -28,6 +28,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import 'KYC.dart';
 import 'MainMap.dart';
+import 'globle.dart';
 
 class StaffProfilePage extends StatefulWidget {
   final String StaffID;
@@ -113,14 +114,14 @@ class _StaffProfilePage extends State<StaffProfilePage> {
             // App bar section
             Container(
               height: 150,
-              color: Color(0xfffffcc9),
+              color: Globle.theme,
               child: AppBar(
                 title: Center(
                   child: Text("Profile",
                       style:
                           TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
                 ),
-                backgroundColor: Color(0xfffffcc9),
+                backgroundColor: Globle.theme,
                 automaticallyImplyLeading: false,
               ),
             ),
@@ -157,21 +158,21 @@ class _StaffProfilePage extends State<StaffProfilePage> {
           // App bar section
           Container(
             height: 150,
-            color: Color(0xfffffcc9),
+            color: Globle.theme,
             child: AppBar(
               title: Center(
                 child: Text("Profile",
                     style:
                         TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
               ),
-              backgroundColor: Color(0xfffffcc9),
+              backgroundColor: Globle.theme,
               automaticallyImplyLeading: false,
             ),
           ),
           Stack(
             children: [
               Padding(
-                padding: const EdgeInsets.only(top: 100),
+                padding: const EdgeInsets.only(top: 90),
                 child: Container(
                   child: SingleChildScrollView(
                     scrollDirection: Axis.vertical,
@@ -491,7 +492,7 @@ class _UserView extends State<UserView> {
                         width: screenWidth * 0.95,
                         decoration: BoxDecoration(
                             color: Colors.white,
-                            borderRadius: BorderRadius.circular(30),
+                            borderRadius: BorderRadius.circular(8),
                             boxShadow: [
                               BoxShadow(
                                   color: Colors.black26,
@@ -634,73 +635,310 @@ class _UserView extends State<UserView> {
                                         ),
                                       ],
                                     ),
-                                    Padding(
-                                      padding: const EdgeInsets.only(right: 50),
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceEvenly,
-                                        children: [
-                                          Container(
-                                            height: 45,
-                                            width: 120,
-                                            decoration: BoxDecoration(
-                                                color: Colors.white,
-                                                boxShadow: [
-                                                  BoxShadow(
-                                                      color: Colors.black26,
-                                                      spreadRadius: 1,
-                                                      blurRadius: 1)
-                                                ],
-                                                borderRadius:
-                                                    BorderRadius.circular(10)),
-                                            child: Padding(
-                                              padding: const EdgeInsets.only(
-                                                  left: 10, right: 10),
-                                              child: Center(
-                                                  child: Text(
-                                                Skill[0].toUpperCase() +
-                                                    Skill.substring(1),
-                                                overflow: TextOverflow.ellipsis,
-                                                maxLines: 1,
-                                                style: TextStyle(
-                                                  color: Color(0xff089000),
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: 18,
-                                                ),
-                                              )),
-                                            ),
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Container(
+                                          height: 45,
+                                          width: 120,
+                                          decoration: BoxDecoration(
+                                              color: Colors.white,
+                                              boxShadow: [
+                                                BoxShadow(
+                                                    color: Colors.black26,
+                                                    spreadRadius: 1,
+                                                    blurRadius: 1)
+                                              ],
+                                              borderRadius:
+                                                  BorderRadius.circular(10)),
+                                          child: Padding(
+                                            padding: const EdgeInsets.only(
+                                                left: 10, right: 10),
+                                            child: Center(
+                                                child: Text(
+                                              Skill[0].toUpperCase() +
+                                                  Skill.substring(1),
+                                              overflow: TextOverflow.ellipsis,
+                                              maxLines: 1,
+                                              style: TextStyle(
+                                                color: Color(0xff089000),
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 18,
+                                              ),
+                                            )),
                                           ),
-                                         Column(
-                                              children: [
-                                                ElevatedButton(
-                                                    onPressed: () {
-                                                      Navigator.push(
-                                                          context,
-                                                          MaterialPageRoute(
-                                                            builder: (context) =>
-                                                                BookingScheduleAndPayment(
-                                                                  StaffData: StaffData,
-                                                                  StaffID: StaffID,
-                                                                  Skill: Skill,
-                                                                ),
-                                                          ));
-                                                    },
-                                                    style: ElevatedButton.styleFrom(
-                                                        backgroundColor: Colors.red),
-                                                    child: Container(
-                                                      width: 80,
-                                                      child: Center(
-                                                        child: Text(
-                                                          "Select",
-                                                          style: TextStyle(
-                                                            color: Colors.white,
-                                                            fontWeight: FontWeight.bold,
+                                        ),
+                                       InkWell(
+                                           onTap: () {
+                                             Navigator.push(
+                                               context,
+                                               PageRouteBuilder(
+                                                 transitionDuration: const Duration(milliseconds: 500),
+                                                 pageBuilder: (context, animation, secondaryAnimation) => BookingScheduleAndPayment(
+                                                   StaffData: StaffData,
+                                                   StaffID: StaffID,
+                                                   Skill: Skill,
+                                                 ),
+                                                 transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                                                   const begin = Offset(1.0, 0.0); // From bottom
+                                                   const end = Offset.zero;
+                                                   const curve = Curves.easeOut;
+
+                                                   final tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+                                                   final offsetAnimation = animation.drive(tween);
+
+                                                   return SlideTransition(
+                                                     position: offsetAnimation,
+                                                     child: child,
+                                                   );
+                                                 },
+                                               ),
+                                             );
+                                           },
+                                           child: Container(
+                                             height: 50,
+                                             width: 180,
+                                             decoration: BoxDecoration(
+                                               borderRadius: BorderRadius.circular(10),
+                                               color: Colors.black,
+                                             ),
+                                             child: Center(
+                                               child: Text(
+                                                 "Select",
+                                                 style: TextStyle(
+                                                     fontSize: 16,
+                                                     fontWeight:
+                                                     FontWeight.bold, color: Colors.white),
+                                               ),
+                                             ),
+                                           ))
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+
+                            // Contact information
+                            Padding(
+                                  padding: const EdgeInsets.all(6.0),
+                                  child: Container(
+                                    width: screenWidth * 0.95,
+                                    decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        borderRadius: BorderRadius.circular(5),
+                                        boxShadow: [
+                                          BoxShadow(
+                                              color: Colors.black26,
+                                              spreadRadius: 1,
+                                              blurRadius: 1)
+                                        ]),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Padding(
+                                          padding: const EdgeInsets.only(
+                                              left: 20, top: 10, bottom: 5),
+                                          child: Text(
+                                            "Contact Information",
+                                            style: TextStyle(
+                                                fontSize: 18,
+                                                fontWeight: FontWeight.bold),
+                                          ),
+                                        ),
+                                        Divider(),
+                                        Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.center,
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              Row(
+                                                  children: [
+                                                    Padding(
+                                                      padding: const EdgeInsets.all(5.0),
+                                                      child: InkWell(
+                                                        onTap: () async {
+                                                          var phoneNumber =
+                                                          StaffData['Phone_Number1'];
+                                                          final Uri phoneUri = Uri(
+                                                            scheme: 'tel',
+                                                            path: phoneNumber,
+                                                          );
+                                                          if (await canLaunchUrl(
+                                                              phoneUri)) {
+                                                            await launchUrl(phoneUri);
+                                                          } else {
+                                                            Fluttertoast.showToast(msg: "System Problem, Use Staff No. $phoneNumber");
+                                                          }
+                                                        },
+                                                        child: Container(
+                                                          height: 40,
+                                                          width: 40,
+                                                          decoration: BoxDecoration(
+                                                              borderRadius:
+                                                              BorderRadius.circular(60),
+                                                              color: Colors.white,
+                                                              boxShadow: [
+                                                                BoxShadow(
+                                                                    color:
+                                                                    Colors.blueAccent,
+                                                                    blurRadius: 1,
+                                                                    spreadRadius: 1)
+                                                              ]),
+                                                          child: Icon(
+                                                            Icons.call,
+                                                            color: Colors.blue,
                                                           ),
                                                         ),
                                                       ),
-                                                    )),
-                                              ],
-                                          )
+                                                    ),
+                                                    SizedBox(width: 5,),
+                                                    Text("${StaffData['Phone_Number1']?? "No Number"}", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),),
+                                                  ],
+                                              ),
+                                              Row(
+                                                  children: [
+                                                    Padding(
+                                                      padding: const EdgeInsets.all(5.0),
+                                                      child: InkWell(
+                                                        onTap: () async {
+                                                          var phonenumber01 =
+                                                          StaffData["Phone_Number2"];
+                                                          final Uri phoneUri01 = Uri(
+                                                            scheme: 'tel',
+                                                            path: phonenumber01,
+                                                          );
+                                                          if (phonenumber01 != null) {
+                                                            if (await canLaunchUrl(
+                                                                phoneUri01)) {
+                                                              launchUrl(phoneUri01);
+                                                            } else {
+                                                              Fluttertoast.showToast(
+                                                                msg: "Empty",
+                                                                toastLength:
+                                                                Toast.LENGTH_SHORT,
+                                                                gravity:
+                                                                ToastGravity.BOTTOM,
+                                                              );
+                                                            }
+                                                          } else {
+                                                            Fluttertoast.showToast(
+                                                              msg: "Empty",
+                                                              toastLength:
+                                                              Toast.LENGTH_SHORT,
+                                                              gravity: ToastGravity.BOTTOM,
+                                                            );
+                                                          }
+                                                        },
+                                                        child: Container(
+                                                          height: 40,
+                                                          width: 40,
+                                                          decoration: BoxDecoration(
+                                                              borderRadius:
+                                                              BorderRadius.circular(60),
+                                                              color: Colors.white,
+                                                              boxShadow: [
+                                                                BoxShadow(
+                                                                    color:
+                                                                    Colors.greenAccent,
+                                                                    blurRadius: 1,
+                                                                    spreadRadius: 1)
+                                                              ]),
+                                                          child: Icon(
+                                                            Icons.call,
+                                                            color: Colors.green,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    SizedBox(width: 5,),
+                                                    Text("${StaffData['Phone_Number2']?? "No Number"}", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),),
+                                                  ],
+                                              ),
+                                            ],
+                                          ),
+                                        )
+                                      ],
+                                    ),
+                                  ),
+                                  ),
+
+                            // Service Rate
+                            Padding(
+                              padding: const EdgeInsets.all(6.0),
+                              child: Container(
+                                height: screenHeight * 0.18,
+                                width: screenWidth * 0.95,
+                                decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(5),
+                                    boxShadow: [
+                                      BoxShadow(
+                                          color: Colors.black26,
+                                          spreadRadius: 1,
+                                          blurRadius: 1)
+                                    ]),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Padding(
+                                      padding: const EdgeInsets.only(
+                                          left: 20, top: 10, bottom: 5),
+                                      child: Text(
+                                        "Service Rate",
+                                        style: TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                    ),
+                                    Divider(),
+                                    Padding(
+                                      padding: const EdgeInsets.only(
+                                          right: 40, left: 40),
+                                      child: Row(
+                                        children: [
+                                          Container(
+                                              width: screenWidth * 0.5,
+                                              child: Text("Hour based")),
+                                          Text((StaffData['Hour_Rate']
+                                                      .toString() +
+                                                  " ${StaffData['Currency'] ?? '-'}") ??
+                                              '--'),
+                                        ],
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.only(
+                                          right: 40, left: 40),
+                                      child: Row(
+                                        children: [
+                                          Container(
+                                              width: screenWidth * 0.5,
+                                              child: Text("Day based")),
+                                          Text((StaffData['Day_Rate']
+                                                      .toString() +
+                                                  " ${StaffData['Currency'] ?? '-'}") ??
+                                              '--'),
+                                        ],
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.only(
+                                          right: 40, left: 40),
+                                      child: Row(
+                                        children: [
+                                          Container(
+                                              width: screenWidth * 0.5,
+                                              child: Text(
+                                                "Day service shift ${StaffData['Day_Shift'] ?? '--'} hours",
+                                                style: TextStyle(
+                                                    fontSize: 12,
+                                                    color: Colors.blue),
+                                              )),
                                         ],
                                       ),
                                     ),
@@ -717,7 +955,7 @@ class _UserView extends State<UserView> {
                                 width: screenWidth * 0.95,
                                 decoration: BoxDecoration(
                                     color: Colors.white,
-                                    borderRadius: BorderRadius.circular(15),
+                                    borderRadius: BorderRadius.circular(5),
                                     boxShadow: [
                                       BoxShadow(
                                           color: Colors.black26,
@@ -731,9 +969,9 @@ class _UserView extends State<UserView> {
                                       padding: const EdgeInsets.all(8.0),
                                       child: Column(
                                         mainAxisAlignment:
-                                            MainAxisAlignment.center,
+                                        MainAxisAlignment.center,
                                         crossAxisAlignment:
-                                            CrossAxisAlignment.center,
+                                        CrossAxisAlignment.center,
                                         children: [
                                           if (StaffData["Verified"] ==
                                               "unverified") ...[
@@ -771,15 +1009,15 @@ class _UserView extends State<UserView> {
                                                 Text(
                                                   "Verified Documents",
                                                   style:
-                                                      TextStyle(fontSize: 20),
+                                                  TextStyle(fontSize: 20),
                                                 ),
                                                 SizedBox(height: 10),
                                                 Container(
                                                   height: 200,
                                                   width:
-                                                      MediaQuery.sizeOf(context)
-                                                              .width *
-                                                          0.8,
+                                                  MediaQuery.sizeOf(context)
+                                                      .width *
+                                                      0.8,
                                                   decoration: BoxDecoration(
                                                     image: DecorationImage(
                                                       image: NetworkImage(
@@ -792,9 +1030,9 @@ class _UserView extends State<UserView> {
                                                 Container(
                                                   height: 200,
                                                   width:
-                                                      MediaQuery.sizeOf(context)
-                                                              .width *
-                                                          0.8,
+                                                  MediaQuery.sizeOf(context)
+                                                      .width *
+                                                      0.8,
                                                   decoration: BoxDecoration(
                                                     image: DecorationImage(
                                                       image: NetworkImage(
@@ -815,288 +1053,6 @@ class _UserView extends State<UserView> {
                                       ),
                                     ),
                                   ),
-                                ),
-                              ),
-                            ),
-
-                            // Contact information
-                            Padding(
-                                  padding: const EdgeInsets.all(6.0),
-                                  child: Container(
-                                    height: screenHeight * 0.18,
-                                    width: screenWidth * 0.95,
-                                    decoration: BoxDecoration(
-                                        color: Colors.white,
-                                        borderRadius: BorderRadius.circular(15),
-                                        boxShadow: [
-                                          BoxShadow(
-                                              color: Colors.black26,
-                                              spreadRadius: 1,
-                                              blurRadius: 1)
-                                        ]),
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Padding(
-                                          padding: const EdgeInsets.only(
-                                              left: 20, top: 10, bottom: 5),
-                                          child: Text(
-                                            "Contact Information",
-                                            style: TextStyle(
-                                                fontSize: 18,
-                                                fontWeight: FontWeight.bold),
-                                          ),
-                                        ),
-                                        Divider(),
-                                        Row(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.center,
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: [
-                                            Padding(
-                                              padding: const EdgeInsets.all(5.0),
-                                              child: InkWell(
-                                                onTap: () async {
-                                                  var phoneNumber =
-                                                      StaffData['Phone_Number1'];
-                                                  final Uri phoneUri = Uri(
-                                                    scheme: 'tel',
-                                                    path: phoneNumber,
-                                                  );
-                                                  if (await canLaunchUrl(
-                                                      phoneUri)) {
-                                                    await launchUrl(phoneUri);
-                                                  } else {
-                                                    Fluttertoast.showToast(msg: "System Problem, Use Staff No. $phoneNumber");
-                                                  }
-                                                },
-                                                child: Container(
-                                                  height: 60,
-                                                  width: 60,
-                                                  decoration: BoxDecoration(
-                                                      borderRadius:
-                                                          BorderRadius.circular(60),
-                                                      color: Colors.white,
-                                                      boxShadow: [
-                                                        BoxShadow(
-                                                            color:
-                                                                Colors.blueAccent,
-                                                            blurRadius: 1,
-                                                            spreadRadius: 1)
-                                                      ]),
-                                                  child: Icon(
-                                                    Icons.call,
-                                                    color: Colors.blue,
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                            Padding(
-                                              padding: const EdgeInsets.all(5.0),
-                                              child: InkWell(
-                                                onTap: () async {
-                                                  var phonenumber01 =
-                                                      StaffData["Phone_Number2"];
-                                                  final Uri phoneUri01 = Uri(
-                                                    scheme: 'tel',
-                                                    path: phonenumber01,
-                                                  );
-                                                  if (phonenumber01 != null) {
-                                                    if (await canLaunchUrl(
-                                                        phoneUri01)) {
-                                                      launchUrl(phoneUri01);
-                                                    } else {
-                                                      Fluttertoast.showToast(
-                                                        msg: "Empty",
-                                                        toastLength:
-                                                            Toast.LENGTH_SHORT,
-                                                        gravity:
-                                                            ToastGravity.BOTTOM,
-                                                      );
-                                                    }
-                                                  } else {
-                                                    Fluttertoast.showToast(
-                                                      msg: "Empty",
-                                                      toastLength:
-                                                          Toast.LENGTH_SHORT,
-                                                      gravity: ToastGravity.BOTTOM,
-                                                    );
-                                                  }
-                                                },
-                                                child: Container(
-                                                  height: 60,
-                                                  width: 60,
-                                                  decoration: BoxDecoration(
-                                                      borderRadius:
-                                                          BorderRadius.circular(60),
-                                                      color: Colors.white,
-                                                      boxShadow: [
-                                                        BoxShadow(
-                                                            color:
-                                                                Colors.greenAccent,
-                                                            blurRadius: 1,
-                                                            spreadRadius: 1)
-                                                      ]),
-                                                  child: Icon(
-                                                    Icons.call,
-                                                    color: Colors.green,
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                            Padding(
-                                              padding: const EdgeInsets.all(5.0),
-                                              child: InkWell(
-                                                onTap: () async {
-                                                  String subject =
-                                                      "Hiring for work from CareHub";
-                                                  var Gmaildata =
-                                                      StaffData["Email"];
-                                                  final Uri emailUri = Uri(
-                                                    scheme: 'mailto',
-                                                    path: Gmaildata,
-                                                    queryParameters: {
-                                                      'subject': subject,
-                                                    },
-                                                  );
-                                                  if (await canLaunchUrl(
-                                                      emailUri)) {
-                                                    launchUrl(emailUri);
-                                                  } else {
-                                                    Fluttertoast.showToast(
-                                                      msg: "Empty",
-                                                      toastLength:
-                                                          Toast.LENGTH_SHORT,
-                                                      gravity: ToastGravity.BOTTOM,
-                                                    );
-                                                  }
-                                                },
-                                                child: Container(
-                                                  height: 60,
-                                                  width: 60,
-                                                  decoration: BoxDecoration(
-                                                      borderRadius:
-                                                          BorderRadius.circular(60),
-                                                      color: Colors.white,
-                                                      boxShadow: [
-                                                        BoxShadow(
-                                                            color: Colors.redAccent,
-                                                            blurRadius: 1,
-                                                            spreadRadius: 1)
-                                                      ]),
-                                                  child: Icon(
-                                                    Icons.mail,
-                                                    color: Colors.red,
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                            Padding(
-                                              padding: const EdgeInsets.all(5.0),
-                                              child: Container(
-                                                height: 60,
-                                                width: 60,
-                                                decoration: BoxDecoration(
-                                                    borderRadius:
-                                                        BorderRadius.circular(60),
-                                                    color: Colors.white,
-                                                    boxShadow: [
-                                                      BoxShadow(
-                                                          color:
-                                                              Colors.yellowAccent,
-                                                          blurRadius: 1,
-                                                          spreadRadius: 1)
-                                                    ]),
-                                                child: Icon(
-                                                  Icons.message,
-                                                  color: Colors.yellow,
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        )
-                                      ],
-                                    ),
-                                  ),
-                                  ),
-
-                            // Service Rate
-                            Padding(
-                              padding: const EdgeInsets.all(6.0),
-                              child: Container(
-                                height: screenHeight * 0.18,
-                                width: screenWidth * 0.95,
-                                decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(15),
-                                    boxShadow: [
-                                      BoxShadow(
-                                          color: Colors.black26,
-                                          spreadRadius: 1,
-                                          blurRadius: 1)
-                                    ]),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Padding(
-                                      padding: const EdgeInsets.only(
-                                          left: 20, top: 10, bottom: 5),
-                                      child: Text(
-                                        "Service Rate",
-                                        style: TextStyle(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.bold),
-                                      ),
-                                    ),
-                                    Divider(),
-                                    Padding(
-                                      padding: const EdgeInsets.only(
-                                          right: 40, left: 40),
-                                      child: Row(
-                                        children: [
-                                          Container(
-                                              width: screenWidth * 0.5,
-                                              child: Text("Hour based")),
-                                          Text((StaffData['Hour_Rate']
-                                                      .toString() +
-                                                  "₹") ??
-                                              '--'),
-                                        ],
-                                      ),
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.only(
-                                          right: 40, left: 40),
-                                      child: Row(
-                                        children: [
-                                          Container(
-                                              width: screenWidth * 0.5,
-                                              child: Text("Day based")),
-                                          Text((StaffData['Day_Rate']
-                                                      .toString() +
-                                                  "₹") ??
-                                              '--'),
-                                        ],
-                                      ),
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.only(
-                                          right: 40, left: 40),
-                                      child: Row(
-                                        children: [
-                                          Container(
-                                              width: screenWidth * 0.5,
-                                              child: Text(
-                                                "Day service shift ${StaffData['Day_Shift'] ?? '--'} hours",
-                                                style: TextStyle(
-                                                    fontSize: 12,
-                                                    color: Colors.blue),
-                                              )),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
                                 ),
                               ),
                             ),
@@ -2074,7 +2030,7 @@ class _StaffView extends State<StaffView> {
                                               width: screenWidth * 0.5,
                                               child: Text("Hour based")),
                                           Text(
-                                              "${StaffData['Hour_Rate'] ?? '--'} ₹"),
+                                              "${StaffData['Hour_Rate'] ?? '--'} ${StaffData['Currency'] ?? '-'}"),
                                         ],
                                       ),
                                     ),
@@ -2087,7 +2043,7 @@ class _StaffView extends State<StaffView> {
                                               width: screenWidth * 0.5,
                                               child: Text("Day based")),
                                           Text(
-                                              "${StaffData['Day_Rate'] ?? '--'} ₹"),
+                                              "${StaffData['Day_Rate'] ?? '--'} ${StaffData['Currency'] ?? '-'}"),
                                         ],
                                       ),
                                     ),

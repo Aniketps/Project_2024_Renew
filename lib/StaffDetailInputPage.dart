@@ -18,6 +18,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'LoaderSupport.dart';
+import 'globle.dart';
 
 class StaffDetailInputPage extends StatefulWidget {
   final String FirstName;
@@ -142,23 +143,31 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
       required this.Password});
 
   List<String> items = [
-    "Chef",
-    "Personal Care Assistants",
-    "Driver",
-    "Security Guards",
-    "Home Guards",
-    "Elder Companions",
-    "Babysitters",
     "Cleaner",
+    "Gardener",
     "Housekeepers",
+    "Personal Care Assistants",
+    "Elder Companions",
     "Elderly",
-    "Paramedics",
-    "Occupational Therapists",
-    "Physiotherapists",
-    "Home Health Aides",
+    "Babysitters",
+    "Teacher",
+    "Driver",
+    "Home Guards",
+    "Security Guards",
+    "Chef",
+    "Event Helpers",
+    "Bartender",
     "Certified Nursing Assistants",
-    "Licensed Practical Nurses",
-    "Registered Nurses"
+    "Home Health Aides",
+    "Physiotherapists",
+    "AC Technician",
+    "Electrician",
+    "Plumber",
+    "Carpenter",
+    "Painter",
+    "Fitness Trainer",
+    "Yoga Trainer",
+    "Photographer",
   ];
   String? selectedValue;
   String ErrorData = "";
@@ -710,7 +719,6 @@ class _AndroidStaffPageGoogle extends State<AndroidStaffPageGoogle> {
     // TODO: implement initState
     super.initState();
     _getCurrentLocation();
-    _setUserPageStatus(true);
   }
 
   final String FirstName;
@@ -723,23 +731,31 @@ class _AndroidStaffPageGoogle extends State<AndroidStaffPageGoogle> {
       required this.credential});
 
   List<String> items = [
-    "Chef",
-    "Personal Care Assistants",
-    "Driver",
-    "Security Guards",
-    "Home Guards",
-    "Elder Companions",
-    "Babysitters",
     "Cleaner",
+    "Gardener",
     "Housekeepers",
+    "Personal Care Assistants",
+    "Elder Companions",
     "Elderly",
-    "Paramedics",
-    "Occupational Therapists",
-    "Physiotherapists",
-    "Home Health Aides",
+    "Babysitters",
+    "Teacher",
+    "Driver",
+    "Home Guards",
+    "Security Guards",
+    "Chef",
+    "Event Helpers",
+    "Bartender",
     "Certified Nursing Assistants",
-    "Licensed Practical Nurses",
-    "Registered Nurses"
+    "Home Health Aides",
+    "Physiotherapists",
+    "AC Technician",
+    "Electrician",
+    "Plumber",
+    "Carpenter",
+    "Painter",
+    "Fitness Trainer",
+    "Yoga Trainer",
+    "Photographer",
   ];
   String? selectedValue;
   String ErrorData = "";
@@ -1119,11 +1135,12 @@ class _AndroidStaffPageGoogle extends State<AndroidStaffPageGoogle> {
                                           "feature1" : "None",
                                         });
 
-                                        Navigator.pushReplacement(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (context) => StaffProfileHome(),
-                                            ));
+                                        await _setUserPageStatus(true);
+                                        Navigator.pushAndRemoveUntil(
+                                          context,
+                                          MaterialPageRoute(builder: (context) => StaffProfileHome()),
+                                              (Route<dynamic> route) => false, // removes everything before
+                                        );
                                         setState(() {
                                           isLoading = false;
                                         });
@@ -1300,7 +1317,7 @@ class _AndroidView extends State<AndroidView> {
     return Stack(
       children: [
         Container(
-          color: Color(0xffbef0ff),
+          color: Globle.theme,
           height: 320,
           width: double.maxFinite,
         ),

@@ -12,6 +12,7 @@ import 'package:photo_view/photo_view.dart';
 import 'package:video_player/video_player.dart';
 
 import 'LoaderSupport.dart';
+import 'globle.dart';
 
 class StaffVerification extends StatefulWidget {
   final loggedAdmin;
@@ -242,7 +243,7 @@ class _StaffVerification extends State<StaffVerification> {
           padding: EdgeInsets.zero,
           children: [
             DrawerHeader(
-                decoration: BoxDecoration(color: Color(0xfffffcc9)),
+                decoration: BoxDecoration(color: Globle.theme),
                 child: Column(children: [
                   Container(
                     height: 80,
@@ -1175,7 +1176,7 @@ class _StaffVerification extends State<StaffVerification> {
                                         .update({
                                       "Verified": "verified",
                                       "actionTakenBy": loggedAdmin,
-                                      "Feedback": feedbackToStaff.toString()
+                                      "Feedback": feedbackToStaff.text
                                     });
                                     await FirebaseFirestore.instance
                                         .collection(SelectedProf)
@@ -1183,7 +1184,7 @@ class _StaffVerification extends State<StaffVerification> {
                                         .update({
                                       "Verified": "verified",
                                       "actionTakenBy": loggedAdmin,
-                                      "Feedback": feedbackToStaff.toString()
+                                      "Feedback": feedbackToStaff.text
                                     });
                                     setState(() {
                                       isStaffOpen = false;

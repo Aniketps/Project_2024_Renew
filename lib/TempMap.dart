@@ -8,6 +8,8 @@ import 'package:geocoding/geocoding.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'globle.dart';
+
 class TempMap extends StatefulWidget {
   String lat;
   String long;
@@ -46,7 +48,7 @@ class _TempMapState extends State<TempMap> {
     return Scaffold(
       appBar: AppBar(
         title: Text("Destination"),
-        backgroundColor: Color(0xfffffcc9),
+        backgroundColor: Globle.theme,
       ),
       body: Stack(
         children: [
@@ -184,8 +186,8 @@ class _SelectDestinationState extends State<SelectDestination> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text("Select Destination"),
-        backgroundColor: Color(0xfffffcc9),
+        title: Text("Select Destination", style: TextStyle(color : Colors.white),),
+        backgroundColor: Globle.theme,
       ),
       body: Stack(
         children: [

@@ -9,6 +9,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:intl/intl.dart';
 
 import 'LoaderSupport.dart';
+import 'globle.dart';
 
 class Feedbacks extends StatefulWidget {
   @override
@@ -65,7 +66,7 @@ class _Feedbacks extends State<Feedbacks> {
           // App bar section
           Container(
             height: 150,
-            color: Color(0xfffffcc9),
+            color: Globle.theme,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
@@ -75,7 +76,7 @@ class _Feedbacks extends State<Feedbacks> {
                         style: TextStyle(
                             fontSize: 20, fontWeight: FontWeight.bold)),
                   ),
-                  backgroundColor: Color(0xfffffcc9),
+                  backgroundColor: Globle.theme,
                   automaticallyImplyLeading: false,
                 ),
               ],
@@ -455,16 +456,16 @@ class _BlankPageState extends State<BlankPage> {
   Widget _buildHeader() {
     return Container(
       height: 150,
-      color: Color(0xfffffcc9),
+      color: Globle.theme,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
           AppBar(
             title: Center(
               child: Text("New Feedback",
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color : Colors.white)),
             ),
-            backgroundColor: Color(0xfffffcc9),
+            backgroundColor: Globle.theme,
             automaticallyImplyLeading: false,
           ),
         ],

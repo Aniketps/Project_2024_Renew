@@ -18,6 +18,7 @@ import 'MainMap.dart';
 import 'Models/PaymentRecordModel.dart';
 import 'TC.dart';
 import 'client.dart';
+import 'globle.dart';
 import 'main.dart';
 
 class StaffPage extends StatefulWidget {
@@ -58,6 +59,8 @@ class _StaffPage extends State<StaffPage> {
   }
 
   String Skill;
+
+  bool isStaffAvailable = false;
 
   _StaffPage({required this.Skill});
   var StaffData;
@@ -106,7 +109,7 @@ class _StaffPage extends State<StaffPage> {
           padding: EdgeInsets.zero,
           children: [
             DrawerHeader(
-                decoration: BoxDecoration(color: Color(0xfffffcc9)),
+                decoration: BoxDecoration(color: Globle.theme),
                 child: Column(children: [
                   (StaffData != null && StaffData['professionOfStaff'] != null)
                       ? InkWell(
@@ -194,7 +197,7 @@ class _StaffPage extends State<StaffPage> {
                       : Text(
                           "${StaffData['First_name']} ${StaffData['Last_name']}",
                           style: TextStyle(
-                              fontWeight: FontWeight.bold, fontSize: 18),
+                              fontWeight: FontWeight.bold, fontSize: 18, color: Colors.white),
                         ),
                 ])),
             ListTile(
@@ -272,26 +275,25 @@ class _StaffPage extends State<StaffPage> {
           // App bar section
           Container(
             height: 150,
-            color: Color(0xfffffcc9),
+            color: Globle.theme,
             child: AppBar(
-              title: InkWell(
-                  onTap: () {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => MainMap(whichStaff: "All",),
-                        ));
-                  },
-                  child: Container(
-                    width: screenWidth * 0.6,
-                    child: Text(
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 1,
-                        "${Skill[0].toUpperCase() + Skill.substring(1)}",
-                        style: TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold)),
-                  )),
-              backgroundColor: Color(0xfffffcc9),
+              iconTheme: IconThemeData(
+                  color: Colors.white,
+                  size: 35
+              ),
+              title: Padding(
+                padding: const EdgeInsets.only(top: 10.0),
+                child: Container(
+                  width: screenWidth * 0.6,
+                  child: Text(
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                      "${Skill[0].toUpperCase() + Skill.substring(1)}",
+                      style: TextStyle(
+                          fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white)),
+                ),
+              ),
+              backgroundColor: Globle.theme,
               automaticallyImplyLeading: true,
             ),
           ),
@@ -389,13 +391,14 @@ class _StaffPage extends State<StaffPage> {
                       Padding(
                         padding: const EdgeInsets.only(bottom: 5),
                         child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Container(
                               margin: EdgeInsets.symmetric(
                                   horizontal: screenWidth * 0.03),
-                              width: screenWidth * 0.7,
+                              width: screenWidth * 0.73,
                               decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(50),
+                                borderRadius: BorderRadius.circular(5),
                                 color: Colors.white,
                                 boxShadow: [
                                   BoxShadow(
@@ -431,7 +434,7 @@ class _StaffPage extends State<StaffPage> {
                               ),
                             ),
                             Padding(
-                              padding: const EdgeInsets.only(left: 5),
+                              padding: const EdgeInsets.only(right: 8),
                               child: InkWell(
                                 onTap: () {
                                   setState(() {
@@ -442,7 +445,7 @@ class _StaffPage extends State<StaffPage> {
                                   height: 50,
                                   width: screenWidth * 0.18,
                                   decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(20),
+                                    borderRadius: BorderRadius.circular(5),
                                     color: Colors.white,
                                     boxShadow: [
                                       BoxShadow(
@@ -479,14 +482,29 @@ class _StaffPage extends State<StaffPage> {
                                       padding: const EdgeInsets.all(8.0),
                                       child: InkWell(
                                         onTap: () {
+
                                           Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                builder: (context) =>
-                                                    StaffProfilePage(
-                                                        StaffID: chef.id,
-                                                        Skill: Skill),
-                                              ));
+                                            context,
+                                            PageRouteBuilder(
+                                              transitionDuration: const Duration(milliseconds: 500),
+                                              pageBuilder: (context, animation, secondaryAnimation) => StaffProfilePage(
+                                                  StaffID: chef.id,
+                                                  Skill: Skill),
+                                              transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                                                const begin = Offset(1.0, 0.0); // From bottom
+                                                const end = Offset.zero;
+                                                const curve = Curves.easeOut;
+
+                                                final tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+                                                final offsetAnimation = animation.drive(tween);
+
+                                                return SlideTransition(
+                                                  position: offsetAnimation,
+                                                  child: child,
+                                                );
+                                              },
+                                            ),
+                                          );
                                         },
                                         child: Container(
                                           height: screenHeight * 0.15,
@@ -494,7 +512,7 @@ class _StaffPage extends State<StaffPage> {
                                           decoration: BoxDecoration(
                                               color: Colors.white,
                                               borderRadius:
-                                              BorderRadius.circular(20),
+                                              BorderRadius.circular(5),
                                               boxShadow: [
                                                 BoxShadow(
                                                     color: Colors.black26,
@@ -682,13 +700,16 @@ class _StaffPage extends State<StaffPage> {
                                 }
                               }
                             }
+                            if(chefViews.isEmpty){
+                              return Center(child: Text("No Staff", style: TextStyle(fontSize: 24),));
+                            }
                             return ListView(
                               padding: EdgeInsets.zero,
                               children: chefViews,
                             );
                           },
                         ),
-                      )
+                      ),
                     ],
                   ),
                 ),
@@ -799,10 +820,10 @@ class _StaffPage extends State<StaffPage> {
                         children: [
                           Container(
                               height: screenHeight * 0.5,
-                              width: screenWidth * 0.88,
+                              width: screenWidth - 16,
                               decoration: BoxDecoration(
                                   color: Colors.white,
-                                  borderRadius: BorderRadius.circular(20),
+                                  borderRadius: BorderRadius.circular(5),
                                   boxShadow: [
                                     BoxShadow(
                                         color: Colors.black26,
@@ -872,7 +893,7 @@ class _StaffPage extends State<StaffPage> {
                                                 decoration: BoxDecoration(
                                                     color: Colors.white,
                                                     borderRadius:
-                                                    BorderRadius.circular(15),
+                                                    BorderRadius.circular(5),
                                                     boxShadow: [
                                                       BoxShadow(
                                                           color: Colors.black26,

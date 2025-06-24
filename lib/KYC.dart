@@ -9,6 +9,9 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_picker/image_picker.dart';
 
+import 'LoaderSupport.dart';
+import 'globle.dart';
+
 class KYC extends StatefulWidget {
   final String Skill;
   KYC({super.key, required this.Skill});
@@ -52,6 +55,7 @@ class _KYC extends State<KYC> {
     "Registered Nurses":
         "1. Medical Education Certificate (RN Degree)\n2. Licensure\n3. Background Check\n4. CPR Certification"
   };
+  bool loading = false;
 
   String checkprofession() {
     for (var entry in professionRequirements.entries) {
@@ -62,7 +66,6 @@ class _KYC extends State<KYC> {
     return "";
   }
   TextEditingController PhoneNumber = TextEditingController();
-  TextEditingController UPI = TextEditingController();
   TextEditingController FullName = TextEditingController();
 
   @override
@@ -72,7 +75,7 @@ class _KYC extends State<KYC> {
         children: [
           Container(
             height: 150,
-            color: Color(0xfffffcc9),
+            color: Globle.theme,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
@@ -82,10 +85,10 @@ class _KYC extends State<KYC> {
                     child: Center(
                       child: Text("KYC",
                           style: TextStyle(
-                              fontSize: 20, fontWeight: FontWeight.bold)),
+                              fontSize: 20, fontWeight: FontWeight.bold, color : Colors.white)),
                     ),
                   ),
-                  backgroundColor: Color(0xfffffcc9),
+                  backgroundColor: Globle.theme,
                   automaticallyImplyLeading: false,
                 ),
               ],
@@ -133,29 +136,6 @@ class _KYC extends State<KYC> {
                     SizedBox(
                       height: 10,
                     ),
-                    // UPI ID
-                    Container(
-                      height: 50,
-                      width: MediaQuery.sizeOf(context).width * 0.8,
-                      child: TextField(
-                        controller: UPI,
-                        keyboardType: TextInputType.text,
-                        style: TextStyle(fontSize: 14),
-                        decoration: InputDecoration(
-                          contentPadding: EdgeInsets.only(left: 15, right: 15),
-                          hintText: "UPI ID",
-                          labelText: "UPI ID",
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10.0),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10.0),
-                            borderSide: BorderSide(color: Colors.blue),
-                          ),
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: 10),
                     // Phone number
                     Container(
                       height: 50,
@@ -205,12 +185,25 @@ class _KYC extends State<KYC> {
                         children: [
                           InkWell(
                             onTap: () async {
-                              final pickedImage = await ImagePicker()
-                                  .pickImage(source: ImageSource.gallery);
+                              final pickedImage = await ImagePicker().pickImage(source: ImageSource.gallery);
                               if (pickedImage != null) {
-                                setState(() {
-                                  AadharCard = File(pickedImage.path);
-                                });
+                                final file = File(pickedImage.path);
+                                final int fileSize = file.lengthSync(); // size in bytes
+
+                                // 200 KB = 200 * 1024 = 204800 bytes
+                                if (fileSize <= 304800) {
+                                  setState(() {
+                                    AadharCard = file;
+                                  });
+                                } else {
+                                  // Show warning to user
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text('File too large. Please select a file less than 200 KB.'),
+                                      backgroundColor: Colors.red,
+                                    ),
+                                  );
+                                }
                               }
                             },
                             child: Container(
@@ -271,12 +264,23 @@ class _KYC extends State<KYC> {
                         children: [
                           InkWell(
                             onTap: () async {
-                              final pickedImage = await ImagePicker()
-                                  .pickImage(source: ImageSource.gallery);
+                              final pickedImage = await ImagePicker().pickImage(source: ImageSource.gallery);
                               if (pickedImage != null) {
-                                setState(() {
-                                  PassportSizePhoto = File(pickedImage.path);
-                                });
+                                final file = File(pickedImage.path);
+                                final int fileSize = file.lengthSync(); // Size in bytes
+
+                                if (fileSize <= 204800) { // 200 KB = 204800 bytes
+                                  setState(() {
+                                    PassportSizePhoto = file;
+                                  });
+                                } else {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text('File too large. Please select a file size less than 200 KB.'),
+                                      backgroundColor: Colors.red,
+                                    ),
+                                  );
+                                }
                               }
                             },
                             child: Container(
@@ -345,12 +349,24 @@ class _KYC extends State<KYC> {
                         children: [
                           InkWell(
                             onTap: () async {
-                              final pickedImage = await ImagePicker()
-                                  .pickVideo(source: ImageSource.gallery);
-                              if (pickedImage != null) {
-                                setState(() {
-                                  SelfVideo = File(pickedImage.path);
-                                });
+                              final pickedVideo = await ImagePicker().pickVideo(source: ImageSource.gallery);
+                              if (pickedVideo != null) {
+                                final file = File(pickedVideo.path);
+                                final bytes = await file.length();
+
+                                if (bytes <= 5 * 1024 * 1024) { // 5MB = 5 * 1024 * 1024 bytes
+                                  setState(() {
+                                    SelfVideo = file;
+                                  });
+                                } else {
+                                  // Show alert if file is too large
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text("Please select a video smaller than 5MB."),
+                                      backgroundColor: Colors.red,
+                                    ),
+                                  );
+                                }
                               }
                             },
                             child: Container(
@@ -418,12 +434,23 @@ class _KYC extends State<KYC> {
                         children: [
                           InkWell(
                             onTap: () async {
-                              final pickedImage = await ImagePicker()
-                                  .pickImage(source: ImageSource.gallery);
+                              final pickedImage = await ImagePicker().pickImage(source: ImageSource.gallery);
                               if (pickedImage != null) {
-                                setState(() {
-                                  ProfessionVerDoc = File(pickedImage.path);
-                                });
+                                final file = File(pickedImage.path);
+                                final bytes = await file.length();
+
+                                if (bytes <= 200 * 1024) { // 200KB = 200 * 1024 bytes
+                                  setState(() {
+                                    ProfessionVerDoc = file;
+                                  });
+                                } else {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text("Please select a document smaller than 200KB."),
+                                      backgroundColor: Colors.red,
+                                    ),
+                                  );
+                                }
                               }
                             },
                             child: Container(
@@ -468,6 +495,9 @@ class _KYC extends State<KYC> {
                         children: [
                           ElevatedButton(
                               onPressed: () async {
+                                setState(() {
+                                  loading = true;
+                                });
                                 if (PassportSizePhoto != null &&
                                     AadharCard != null &&
                                     SelfVideo != null &&
@@ -505,7 +535,7 @@ class _KYC extends State<KYC> {
                                       .doc(user?.uid)
                                       .update({
                                     'Verified': "pending",
-                                    "UPI" : UPI.text,
+                                    "UPI" : "",
                                     "VerifiedName" : FullName.text,
                                     "VerifiedNumber" : PhoneNumber.text
                                   });
@@ -514,13 +544,19 @@ class _KYC extends State<KYC> {
                                       .doc(user?.uid)
                                       .update({
                                     'Verified': "pending",
-                                    "UPI" : UPI.text,
+                                    "UPI" : "",
                                     "VerifiedName" : FullName.text,
                                     "VerifiedNumber" : PhoneNumber.text
                                   });
                                   Fluttertoast.showToast(msg: "Request Send");
+                                  setState(() {
+                                    loading = false;
+                                  });
                                  Navigator.pop(context);
                                 } else {
+                                  setState(() {
+                                    loading = false;
+                                  });
                                   Fluttertoast.showToast(
                                       msg: "Fill All Details");
                                 }
@@ -533,7 +569,13 @@ class _KYC extends State<KYC> {
                 ),
               ),
             ),
+          ),
+          loading
+              ? Padding(
+            padding: const EdgeInsets.only(top: 50.0),
+            child: Center(child: LoaderSupport.loadingAnimation.widget),
           )
+              : Container(),
         ],
       ),
     );

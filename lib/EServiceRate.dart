@@ -1,9 +1,12 @@
+import 'package:carehub/LoaderSupport.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:currency_picker/currency_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'StaffProfilePage.dart';
+import 'globle.dart';
 
 class EServiceRate extends StatefulWidget {
   var Skill;
@@ -18,9 +21,25 @@ class _EServiceRateState extends State<EServiceRate> {
   TextEditingController DayRate = TextEditingController();
   TextEditingController DayShift = TextEditingController();
   TextEditingController TravelingCharges = TextEditingController();
+  bool loading = false;
 
   var Skill;
   _EServiceRateState({required this.Skill});
+
+  Currency? _selectedCurrency;
+  void _showCurrencyPicker() {
+    showCurrencyPicker(
+      context: context,
+      showFlag: true, // show country flag
+      showCurrencyName: true,
+      showCurrencyCode: true,
+      onSelect: (Currency currency) {
+        setState(() {
+          _selectedCurrency = currency;
+        });
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -34,7 +53,7 @@ class _EServiceRateState extends State<EServiceRate> {
           // App bar section
           Container(
             height: 150,
-            color: Color(0xfffffcc9),
+            color: Globle.theme,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
@@ -44,7 +63,7 @@ class _EServiceRateState extends State<EServiceRate> {
                         style: TextStyle(
                             fontSize: 20, fontWeight: FontWeight.bold)),
                   ),
-                  backgroundColor: Color(0xfffffcc9),
+                  backgroundColor: Globle.theme,
                   automaticallyImplyLeading: false,
                 ),
               ],
@@ -100,7 +119,7 @@ class _EServiceRateState extends State<EServiceRate> {
                                           keyboardType: TextInputType.number,
                                           controller: HourRate,
                                           decoration: InputDecoration(
-                                            labelText: "Hour Rate in ₹",
+                                            labelText: "Hour Rate",
                                             border: OutlineInputBorder(
                                               borderRadius:
                                                   BorderRadius.circular(10),
@@ -120,7 +139,7 @@ class _EServiceRateState extends State<EServiceRate> {
                                           keyboardType: TextInputType.number,
                                           controller: DayRate,
                                           decoration: InputDecoration(
-                                            labelText: "Day service rate in ₹",
+                                            labelText: "Day service rate",
                                             border: OutlineInputBorder(
                                               borderRadius:
                                                   BorderRadius.circular(10),
@@ -160,7 +179,7 @@ class _EServiceRateState extends State<EServiceRate> {
                                           keyboardType: TextInputType.number,
                                           controller: TravelingCharges,
                                           decoration: InputDecoration(
-                                            labelText: "Traveling Charges in ₹",
+                                            labelText: "Traveling Charges",
                                             border: OutlineInputBorder(
                                               borderRadius:
                                                   BorderRadius.circular(10),
@@ -168,6 +187,23 @@ class _EServiceRateState extends State<EServiceRate> {
                                             contentPadding: EdgeInsets.fromLTRB(
                                                 20, 16, 16, 16),
                                           ),
+                                        ),
+                                      ),
+                                    ),
+                                    SizedBox(height: 5,),
+                                    Container(
+                                      width: MediaQuery.of(context).size.width * 0.85, // 80% width
+                                      child: ElevatedButton(
+                                        style: ElevatedButton.styleFrom(
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(5), // Border radius of 5
+                                          ),
+                                        ),
+                                        onPressed: _showCurrencyPicker,
+                                        child: Text(
+                                          _selectedCurrency == null
+                                              ? 'Pick a currency'
+                                              : '${_selectedCurrency!.name} (${_selectedCurrency!.code})',
                                         ),
                                       ),
                                     ),
@@ -180,12 +216,14 @@ class _EServiceRateState extends State<EServiceRate> {
                                         children: [
                                           ElevatedButton(
                                             onPressed: () async {
-                                              // Check if fields are not empty and are valid numbers
+                                              setState(() {
+                                                loading = true;
+                                              });
                                               if (HourRate.text.isNotEmpty &&
                                                   DayRate.text.isNotEmpty &&
                                                   DayShift.text.isNotEmpty &&
                                                   TravelingCharges
-                                                      .text.isNotEmpty) {
+                                                      .text.isNotEmpty && _selectedCurrency != null) {
                                                 try {
                                                   User? user = FirebaseAuth
                                                       .instance.currentUser;
@@ -214,6 +252,7 @@ class _EServiceRateState extends State<EServiceRate> {
                                                       "Day_Shift": dayShift,
                                                       "Traveling_Charges":
                                                           travelingCharges,
+                                                      "Currency" : _selectedCurrency!.code
                                                     });
 
                                                     await FirebaseFirestore
@@ -226,11 +265,17 @@ class _EServiceRateState extends State<EServiceRate> {
                                                       "Day_Shift": dayShift,
                                                       "Traveling_Charges":
                                                           travelingCharges,
+                                                      "Currency" : _selectedCurrency!.code
                                                     });
-
                                                     // Navigate to Staff Profile Page
+                                                    setState(() {
+                                                      loading = false;
+                                                    });
                                                     Navigator.pop(context);
                                                   } else {
+                                                    setState(() {
+                                                      loading = false;
+                                                    });
                                                     Fluttertoast.showToast(
                                                       msg: "No user logged in",
                                                       toastLength:
@@ -240,6 +285,9 @@ class _EServiceRateState extends State<EServiceRate> {
                                                     );
                                                   }
                                                 } catch (e) {
+                                                  setState(() {
+                                                    loading = false;
+                                                  });
                                                   Fluttertoast.showToast(
                                                     msg: "$e",
                                                     toastLength:
@@ -249,6 +297,9 @@ class _EServiceRateState extends State<EServiceRate> {
                                                   );
                                                 }
                                               } else {
+                                                setState(() {
+                                                  loading = false;
+                                                });
                                                 Fluttertoast.showToast(
                                                   msg:
                                                       "Please fill all fields with valid numbers",
@@ -282,7 +333,13 @@ class _EServiceRateState extends State<EServiceRate> {
                 ),
               ),
             ],
+          ),
+          loading
+              ? Padding(
+            padding: const EdgeInsets.only(top: 50.0),
+            child: Center(child: LoaderSupport.loadingAnimation.widget),
           )
+              : Container(),
         ],
       ),
     );

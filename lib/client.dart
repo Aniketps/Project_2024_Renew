@@ -15,6 +15,7 @@ import 'LoginPage.dart';
 import 'MainMap.dart';
 import 'StaffProfilePage.dart';
 import 'TC.dart';
+import 'globle.dart';
 import 'main.dart';
 
 class ActualUser extends StatefulWidget {
@@ -112,7 +113,7 @@ class _ActualUser extends State<ActualUser> {
           // App bar section
           Container(
             height: 150,
-            color: Color(0xfffffcc9),
+            color: Globle.theme,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
@@ -122,10 +123,10 @@ class _ActualUser extends State<ActualUser> {
                     child: Center(
                       child: Text("Profile",
                           style: TextStyle(
-                              fontSize: 20, fontWeight: FontWeight.bold)),
+                              fontSize: 20, fontWeight: FontWeight.bold, color : Colors.white)),
                     ),
                   ),
-                  backgroundColor: Color(0xfffffcc9),
+                  backgroundColor: Globle.theme,
                   automaticallyImplyLeading: false,
                 ),
               ],

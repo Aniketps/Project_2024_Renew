@@ -8,6 +8,7 @@ import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'LoaderSupport.dart';
+import 'globle.dart';
 
 class ClientNotificationPage extends StatefulWidget {
   const ClientNotificationPage({super.key});
@@ -74,7 +75,7 @@ class _ClientNotificationPageState extends State<ClientNotificationPage> {
           // App bar section
           Container(
             height: 150,
-            color: const Color(0xfffffcc9),
+            color: Globle.theme,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
@@ -82,9 +83,9 @@ class _ClientNotificationPageState extends State<ClientNotificationPage> {
                   title: const Center(
                     child: Text("Notifications",
                         style: TextStyle(
-                            fontSize: 20, fontWeight: FontWeight.bold)),
+                            fontSize: 20, fontWeight: FontWeight.bold, color : Colors.white)),
                   ),
-                  backgroundColor: const Color(0xfffffcc9),
+                  backgroundColor: Globle.theme,
                   automaticallyImplyLeading: false,
                 ),
               ],
@@ -397,8 +398,7 @@ class _ClientNotificationPageState extends State<ClientNotificationPage> {
                                                                     ),
                                                                     const Spacer(),
                                                                     Text(
-                                                                        user['totalcost']
-                                                                            .toString(),
+                                                                        "${user['totalcost'].toString()} ${currentStaffData['Currency'] ?? '-'}",
                                                                         style: const TextStyle(
                                                                             fontWeight:
                                                                                 FontWeight.bold)),
@@ -658,6 +658,9 @@ class _ClientNotificationPageState extends State<ClientNotificationPage> {
                                     ),
                                   );
                                 }
+                              }
+                              if(userViews.isEmpty){
+                                return Center(child: Text("There are no any notifications", style: TextStyle(fontSize: 16),));
                               }
                               return Column(children: userViews);
                             },

@@ -2,6 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+import 'globle.dart';
+
 class RatingState extends StatefulWidget {
   final String UID;
   const RatingState({super.key, required this.UID});
@@ -142,7 +144,7 @@ class _RatingStateState extends State<RatingState> {
                 children: [
                   Container(
                     height: 150,
-                    color: Color(0xfffffcc9),
+                    color: Globle.theme,
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
@@ -153,10 +155,10 @@ class _RatingStateState extends State<RatingState> {
                               style: TextStyle(
                                   fontSize: 22,
                                   fontWeight: FontWeight.bold,
-                                  color: Colors.black),
+                                  color: Colors.white),
                             ),
                           ),
-                          backgroundColor: Color(0xfffffcc9),
+                          backgroundColor: Globle.theme,
                           automaticallyImplyLeading: false,
                         ),
                       ],

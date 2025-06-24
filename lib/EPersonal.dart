@@ -5,6 +5,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
+import 'globle.dart';
+
 class EPersonal extends StatefulWidget {
   String Skill;
   EPersonal({required this.Skill});
@@ -34,7 +36,7 @@ class _EPersonal extends State<EPersonal> {
           // App bar section
           Container(
             height: 150,
-            color: Color(0xfffffcc9),
+            color: Globle.theme,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
@@ -42,9 +44,9 @@ class _EPersonal extends State<EPersonal> {
                   title: Center(
                     child: Text("Personal Information",
                         style: TextStyle(
-                            fontSize: 20, fontWeight: FontWeight.bold)),
+                            fontSize: 20, fontWeight: FontWeight.bold, color : Colors.white)),
                   ),
-                  backgroundColor: Color(0xfffffcc9),
+                  backgroundColor: Globle.theme,
                   automaticallyImplyLeading: false,
                 ),
               ],
@@ -282,15 +284,9 @@ class _EPersonal extends State<EPersonal> {
                                                       "DOB": DOB,
                                                       "Gender": gender
                                                     });
-                                                    Navigator.pushReplacement(
+                                                    Navigator.pop(
                                                         context,
-                                                        MaterialPageRoute(
-                                                          builder: (context) =>
-                                                              StaffProfilePage(
-                                                                  StaffID:
-                                                                      currentUID,
-                                                                  Skill: Skill),
-                                                        ));
+                                                        );
                                                   } catch (e) {
                                                     Fluttertoast.showToast(
                                                       msg: "$e",

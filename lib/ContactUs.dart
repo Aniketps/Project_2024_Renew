@@ -7,6 +7,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:intl/intl.dart';
 
 import 'LoaderSupport.dart';
+import 'globle.dart';
 
 class ContactUs extends StatefulWidget {
   @override
@@ -92,7 +93,7 @@ class _ContactUs extends State<ContactUs> {
           // App bar section
           Container(
             height: 150,
-            color: Color(0xfffffcc9),
+            color: Globle.theme,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
@@ -101,10 +102,10 @@ class _ContactUs extends State<ContactUs> {
                     child: Text(
                       "Help Center",
                       style:
-                          TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                          TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color : Colors.white),
                     ),
                   ),
-                  backgroundColor: Color(0xfffffcc9),
+                  backgroundColor: Globle.theme,
                   automaticallyImplyLeading: false,
                 ),
               ],

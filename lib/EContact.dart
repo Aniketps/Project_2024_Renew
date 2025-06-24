@@ -5,6 +5,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
+import 'LoaderSupport.dart';
+import 'globle.dart';
+
 class EContact extends StatefulWidget {
   String Skill;
   EContact({super.key, required this.Skill});
@@ -21,8 +24,8 @@ class _EContact extends State<EContact> {
 
   TextEditingController PrimeryNumber = TextEditingController();
   TextEditingController SeconderyNumber = TextEditingController();
-  TextEditingController Email = TextEditingController();
 
+  bool loading = false;
   List<String> PhoneCode = ["+91", "+1", "+44", "+52", "+86", "+33", "+63"];
 
   List<String> Gender = ["Male", "Female", "Bigender", "Lesbian", "Homosexual"];
@@ -38,7 +41,7 @@ class _EContact extends State<EContact> {
           // App bar section
           Container(
             height: 150,
-            color: const Color(0xfffffcc9),
+            color: Globle.theme,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
@@ -46,9 +49,9 @@ class _EContact extends State<EContact> {
                   title: const Center(
                     child: Text("Contact Information",
                         style: TextStyle(
-                            fontSize: 20, fontWeight: FontWeight.bold)),
+                            fontSize: 20, fontWeight: FontWeight.bold, color : Colors.white)),
                   ),
-                  backgroundColor: const Color(0xfffffcc9),
+                  backgroundColor: Globle.theme,
                   automaticallyImplyLeading: false,
                 ),
               ],
@@ -247,46 +250,6 @@ class _EContact extends State<EContact> {
                                     ),
                                     Padding(
                                       padding: const EdgeInsets.only(
-                                          right: 10, left: 10, top: 10),
-                                      child: Container(
-                                        decoration: BoxDecoration(
-                                            color: Colors.white,
-                                            borderRadius:
-                                                BorderRadius.circular(10),
-                                            boxShadow: const [
-                                              BoxShadow(
-                                                  color: Colors.black26,
-                                                  blurRadius: 1,
-                                                  spreadRadius: 1)
-                                            ]),
-                                        child: Row(
-                                          children: [
-                                            SizedBox(
-                                              height: 50,
-                                              width: screenWidth * 0.60,
-                                              child: TextField(
-                                                controller: Email,
-                                                decoration:
-                                                    const InputDecoration(
-                                                        hintText:
-                                                            "Email", // Placeholder text
-                                                        border:
-                                                            InputBorder.none,
-                                                        contentPadding:
-                                                            EdgeInsets.fromLTRB(
-                                                                20,
-                                                                16,
-                                                                16,
-                                                                16) // Adds border around the text field
-                                                        ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.only(
                                           right: 10, top: 15),
                                       child: Row(
                                         mainAxisAlignment:
@@ -294,11 +257,13 @@ class _EContact extends State<EContact> {
                                         children: [
                                           ElevatedButton(
                                               onPressed: () async {
+                                                setState((){
+                                                  loading = true;
+                                                });
                                                 String PrimeryNum =
                                                     PrimeryNumber.text;
                                                 String SeconderyNum =
                                                     SeconderyNumber.text;
-                                                String email = Email.text;
 
                                                   try {
                                                     User? user = FirebaseAuth
@@ -314,7 +279,6 @@ class _EContact extends State<EContact> {
                                                           PrimeryNum,
                                                       "Phone_Number2":
                                                           SeconderyNum,
-                                                      "Email": email,
                                                     });
                                                     await FirebaseFirestore
                                                         .instance
@@ -325,10 +289,15 @@ class _EContact extends State<EContact> {
                                                           PrimeryNum,
                                                       "Phone_Number2":
                                                           SeconderyNum,
-                                                      "Email": email,
+                                                    });
+                                                    setState((){
+                                                      loading = false;
                                                     });
                                                     Navigator.pop(context);
                                                   } catch (e) {
+                                                    setState((){
+                                                      loading = false;
+                                                    });
                                                     Fluttertoast.showToast(
                                                       msg: "$e",
                                                       toastLength:
@@ -361,7 +330,13 @@ class _EContact extends State<EContact> {
                 ),
               ),
             ],
+          ),
+          loading
+              ? Padding(
+            padding: const EdgeInsets.only(top: 50.0),
+            child: Center(child: LoaderSupport.loadingAnimation.widget),
           )
+              : Container(),
         ],
       ),
     );

@@ -10,6 +10,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import 'LoaderSupport.dart';
 import 'StaffDetailInputPage.dart';
+import 'globle.dart';
 import 'main.dart';
 
 class RegisterPage extends StatefulWidget {
@@ -70,6 +71,8 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
 
     return hasMinLength && hasUppercase && hasLowercase && hasDigit && hasSpecialChar;
   }
+  bool isEmailSignIn = false;
+
 
   _AndroidStaffPage({required this.isStaff});
 
@@ -145,333 +148,418 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                   Padding(
                     padding:
                     const EdgeInsets.only(right: 30, left: 30, top: 20),
-                    child: Container(
-                      height: 45,
-                      width: double.infinity, // Make the container full width
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.green,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10), // Border radius 10
-                          ),
-                        ),
-                        onPressed: () async {
-                          try {
-                            setState(() {
-                              isLoading = true;
-                            });
+                    child: InkWell(
+                      onTap: () async {
+                        try {
+                          setState(() {
+                            isLoading = true;
+                          });
 
-                            // Step 1: Start the Google sign-in process
-                            final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
-                            if (googleUser == null) {
-                              // User canceled the login
-                              setState(() {
-                                isLoading = false;
-                              });
-                              return;
-                            }
-
-                            // Step 2: Get auth credentials from the signed-in user
-                            final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
-
-                            final credential = GoogleAuthProvider.credential(
-                              accessToken: googleAuth.accessToken,
-                              idToken: googleAuth.idToken,
-                            );
-
-                            String? fullName = googleUser?.displayName;
-                            String? firstName;
-                            String? lastName;
-
-                            if (fullName != null && fullName.contains(" ")) {
-                              List<String> names = fullName.split(" ");
-                              setState(() {
-                                firstName = names.first;
-                                lastName = names.sublist(1).join(" ");
-                              });
-                            }else{
-                              Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => AndroidStaffPageGoogle(
-                                    FirstName: "Unknown",
-                                    LastName: "",
-                                    credential : credential
-                                ),
-                              ));
-                            }
-
-                            if(firstName != "" && lastName != ""){
-                              Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => AndroidStaffPageGoogle(
-                                        FirstName: firstName?? '',
-                                        LastName: lastName?? '',
-                                        credential : credential
-                                    ),
-                                  ));
-                            }
-                          } catch (e) {
-                            Fluttertoast.showToast(msg: "Error during Google Sign-In");
-                            print("The error is : ${e}");
-                          } finally {
+                          // Step 1: Start the Google sign-in process
+                          final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+                          if (googleUser == null) {
+                            // User canceled the login
                             setState(() {
                               isLoading = false;
                             });
+                            return;
                           }
-                        },
-                        child: Text("Google", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),),
-                      ),
-                    ),
-                  ),
 
-                  SizedBox(height: 5,),
-                  Padding(
-                    padding:
-                    const EdgeInsets.only(right: 30, left: 30, top: 10),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Divider(thickness: 1, color: Colors.black),
-                        ),
-                        SizedBox(width: 8),
-                        Text("OR", style: TextStyle(fontWeight: FontWeight.bold),),
-                        SizedBox(width: 8),
-                        Expanded(
-                          child: Divider(thickness: 1, color: Colors.black,),
-                        ),
-                      ],
-                    ),
-                  ),
-                  SizedBox(height: 5,),
+                          // Step 2: Get auth credentials from the signed-in user
+                          final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
 
-                  // First name
-                  Padding(
-                    padding: const EdgeInsets.only(right: 30, left: 30, top: 10),
-                    child: Container(
-                      height: 50,
-                      child: TextField(
-                        onChanged: (value) {
-                          bool isValid = true;
-                          for (int i = 0; i < value.length; i++) {
-                            String char = value[i];
-                            if (!(char.contains(RegExp(r'[a-zA-Z]')))) {
-                              isValid = false;
-                              break;
-                            }
+                          final credential = GoogleAuthProvider.credential(
+                            accessToken: googleAuth.accessToken,
+                            idToken: googleAuth.idToken,
+                          );
+
+                          String? fullName = googleUser?.displayName;
+                          String? firstName;
+                          String? lastName;
+
+                          if (fullName != null && fullName.contains(" ")) {
+                            List<String> names = fullName.split(" ");
+                            setState(() {
+                              firstName = names.first;
+                              lastName = names.sublist(1).join(" ");
+                            });
+                          }else{
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => AndroidStaffPageGoogle(
+                                      FirstName: "Unknown",
+                                      LastName: "",
+                                      credential : credential
+                                  ),
+                                ));
                           }
-                          setState(() {
-                            isValidFirstName = isValid;
-                          });
-                        },
-                        controller: FirstName,
-                        decoration: InputDecoration(
-                          labelText: "First name",
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          contentPadding: EdgeInsets.fromLTRB(20, 16, 16, 16),
-                        ),
-                      ),
-                    ),
-                  ),
-                  !isValidFirstName
-                      ? Padding(
-                    padding: const EdgeInsets.only(right: 30, left: 30, top: 5),
-                    child: Row(
-                      children: [
-                        Text(
-                          "Invalid First Name",
-                          style: TextStyle(color: Colors.red),
-                        ),
-                      ],
-                    ),
-                  )
-                      : Container(),
 
-                  // Last name
-                  Padding(
-                    padding: const EdgeInsets.only(right: 30, left: 30, top: 10),
-                    child: Container(
-                      height: 50,
-                      child: TextField(
-                        onChanged: (value) {
-                          bool isValid = true;
-                          for (int i = 0; i < value.length; i++) {
-                            String char = value[i];
-                            if (!(char.contains(RegExp(r'[a-zA-Z]')))) {
-                              isValid = false;
-                              break;
-                            }
+                          if(firstName != "" && lastName != ""){
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => AndroidStaffPageGoogle(
+                                      FirstName: firstName?? '',
+                                      LastName: lastName?? '',
+                                      credential : credential
+                                  ),
+                                ));
                           }
+                        } catch (e) {
+                          Fluttertoast.showToast(msg: "Error during Google Sign-In");
+                          print("The error is : ${e}");
+                        } finally {
                           setState(() {
-                            isValidLastName = isValid;
+                            isLoading = false;
                           });
-                        },
-                        controller: LastName,
-                        decoration: InputDecoration(
-                          labelText: "Last name",
-                          border: OutlineInputBorder(
+                        }
+                      },
+                      child: Container(
+                          height: 45,
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            border: Border.all(width: 1, color: Colors.black12),
                             borderRadius: BorderRadius.circular(10),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.blue.withOpacity(0.3), // optional: softer look
+                                offset: Offset(2, 2), // X: right, Y: bottom
+                                blurRadius: 4,
+                                spreadRadius: 1,
+                              ),
+                            ],
                           ),
-                          contentPadding: EdgeInsets.fromLTRB(20, 16, 16, 16),
-                        ),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Container(
+                                height: 40,
+                                width: 40,
+                                decoration: BoxDecoration(
+                                  image: DecorationImage(
+                                    image: AssetImage("assets/images/google.png"),
+                                    fit: BoxFit.cover, // No scaling
+                                    alignment: Alignment.center,
+                                    scale: 2, // Zoom in (smaller = more zoom)
+                                  ),
+                                ),
+                              ),
+                              Container(
+                                child: Text("Google", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 20),),
+                              )
+                            ],
+                          )
                       ),
                     ),
                   ),
-                  !isValidLastName
-                      ? Padding(
-                    padding: const EdgeInsets.only(right: 30, left: 30, top: 5),
-                    child: Row(
-                      children: [
-                        Text(
-                          "Invalid Last Name",
-                          style: TextStyle(color: Colors.red),
-                        ),
-                      ],
-                    ),
-                  )
-                      : Container(),
 
-                  // Email field
-                  Padding(
-                    padding: const EdgeInsets.only(right: 30, left: 30, top: 10),
-                    child: Container(
-                      height: 50,
-                      child: TextField(
-                        controller: Email,
-                        keyboardType: TextInputType.emailAddress,
-                        onChanged: (value) {
-                          // Check entire email string using RegExp
-                          setState(() {
-                            isValidEmail = RegExp(
-                              r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$",
-                            ).hasMatch(value);
-                          });
-                        },
-                        decoration: InputDecoration(
-                          labelText: "Email",
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          contentPadding: EdgeInsets.fromLTRB(20, 16, 16, 16),
-                        ),
-                      ),
-                    ),
-                  ),
-                  !isValidEmail
-                      ? Padding(
-                    padding: const EdgeInsets.only(right: 30, left: 30, top: 5),
-                    child: Row(
-                      children: [
-                        Text(
-                          "Invalid Email",
-                          style: TextStyle(color: Colors.red),
-                        ),
-                      ],
-                    ),
-                  )
-                      : Container(),
-
-                  // Password
-                  Padding(
-                    padding: const EdgeInsets.only(right: 30, left: 30, top: 10),
-                    child: Container(
-                      height: 50,
-                      child: TextField(
-                        controller: Password1,
-                        obscureText: !_isPasswordVisible,
-                        onChanged: (value) {
-                          setState(() {
-                            isValidPassword = validatePassword(value);
-                          });
-                        },
-                        decoration: InputDecoration(
-                          labelText: "Password",
-                          hintText: "Enter your password",
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide: BorderSide(color: Colors.grey, width: 1),
-                          ),
-                          contentPadding: EdgeInsets.fromLTRB(20, 16, 16, 16),
-                          suffixIcon: IconButton(
-                            icon: Icon(
-                              _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
-                              color: Colors.blueAccent,
-                            ),
-                            onPressed: () {
-                              setState(() {
-                                _isPasswordVisible = !_isPasswordVisible;
-                              });
-                            },
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  !isValidPassword
-                      ? Padding(
-                    padding: const EdgeInsets.only(right: 30, left: 30, top: 10),
-                    child: Row(
-                      children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                  // Sign in by Email
+                  isEmailSignIn
+                      ? Column(
+                    children: [
+                      SizedBox(height: 5,),
+                      Padding(
+                        padding:
+                        const EdgeInsets.only(right: 30, left: 30, top: 10),
+                        child: Row(
                           children: [
-                            Text("Password must include:", style: TextStyle(color: Colors.red)),
-                            Text("• At least 8 characters", style: TextStyle(color: Colors.red, fontSize: 12)),
-                            Text("• Uppercase & lowercase letters", style: TextStyle(color: Colors.red, fontSize: 12)),
-                            Text("• At least 1 digit", style: TextStyle(color: Colors.red, fontSize: 12)),
-                            Text("• At least 1 special character", style: TextStyle(color: Colors.red, fontSize: 12)),
+                            Expanded(
+                              child: Divider(thickness: 1, color: Colors.black),
+                            ),
+                            SizedBox(width: 8),
+                            Text("OR", style: TextStyle(fontWeight: FontWeight.bold),),
+                            SizedBox(width: 8),
+                            Expanded(
+                              child: Divider(thickness: 1, color: Colors.black,),
+                            ),
                           ],
                         ),
-                      ],
-                    ),
-                  )
-                      : Container(),
+                      ),
+                      SizedBox(height: 5,),
 
-
-                  // Confirm Password field
-                  Padding(
-                    padding:
-                        const EdgeInsets.only(right: 30, left: 30, top: 10),
-                    child: Container(
-                      height: 50,
-                      child: TextField(
-                        controller: Password2,
-                        onChanged: (value) {
-                          setState(() {
-                            isPasswordMatch = (value == Password1.text);
-                          });
-                        },
-                        obscureText: true, // Hides the text for password fields
-                        decoration: InputDecoration(
-                          labelText: "Confirm Password", // Label text
-                          hintText:
-                              "Re-enter your password", // Hint text for better guidance
-                          border: OutlineInputBorder(
-                            borderRadius:
-                                BorderRadius.circular(10), // Rounded border
+                      // First name
+                      Padding(
+                        padding: const EdgeInsets.only(right: 30, left: 30, top: 10),
+                        child: Container(
+                          height: 50,
+                          child: TextField(
+                            onChanged: (value) {
+                              bool isValid = true;
+                              for (int i = 0; i < value.length; i++) {
+                                String char = value[i];
+                                if (!(char.contains(RegExp(r'[a-zA-Z]')))) {
+                                  isValid = false;
+                                  break;
+                                }
+                              }
+                              setState(() {
+                                isValidFirstName = isValid;
+                              });
+                            },
+                            controller: FirstName,
+                            decoration: InputDecoration(
+                              labelText: "First name",
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              contentPadding: EdgeInsets.fromLTRB(20, 16, 16, 16),
+                            ),
                           ),
-                          contentPadding: EdgeInsets.fromLTRB(
-                              20, 16, 16, 16), // Padding inside the text field
                         ),
+                      ),
+                      !isValidFirstName
+                          ? Padding(
+                        padding: const EdgeInsets.only(right: 30, left: 30, top: 5),
+                        child: Row(
+                          children: [
+                            Text(
+                              "Invalid First Name",
+                              style: TextStyle(color: Colors.red),
+                            ),
+                          ],
+                        ),
+                      )
+                          : Container(),
+
+                      // Last name
+                      Padding(
+                        padding: const EdgeInsets.only(right: 30, left: 30, top: 10),
+                        child: Container(
+                          height: 50,
+                          child: TextField(
+                            onChanged: (value) {
+                              bool isValid = true;
+                              for (int i = 0; i < value.length; i++) {
+                                String char = value[i];
+                                if (!(char.contains(RegExp(r'[a-zA-Z]')))) {
+                                  isValid = false;
+                                  break;
+                                }
+                              }
+                              setState(() {
+                                isValidLastName = isValid;
+                              });
+                            },
+                            controller: LastName,
+                            decoration: InputDecoration(
+                              labelText: "Last name",
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              contentPadding: EdgeInsets.fromLTRB(20, 16, 16, 16),
+                            ),
+                          ),
+                        ),
+                      ),
+                      !isValidLastName
+                          ? Padding(
+                        padding: const EdgeInsets.only(right: 30, left: 30, top: 5),
+                        child: Row(
+                          children: [
+                            Text(
+                              "Invalid Last Name",
+                              style: TextStyle(color: Colors.red),
+                            ),
+                          ],
+                        ),
+                      )
+                          : Container(),
+
+                      // Email field
+                      Padding(
+                        padding: const EdgeInsets.only(right: 30, left: 30, top: 10),
+                        child: Container(
+                          height: 50,
+                          child: TextField(
+                            controller: Email,
+                            keyboardType: TextInputType.emailAddress,
+                            onChanged: (value) {
+                              // Check entire email string using RegExp
+                              setState(() {
+                                isValidEmail = RegExp(
+                                  r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$",
+                                ).hasMatch(value);
+                              });
+                            },
+                            decoration: InputDecoration(
+                              labelText: "Email",
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              contentPadding: EdgeInsets.fromLTRB(20, 16, 16, 16),
+                            ),
+                          ),
+                        ),
+                      ),
+                      !isValidEmail
+                          ? Padding(
+                        padding: const EdgeInsets.only(right: 30, left: 30, top: 5),
+                        child: Row(
+                          children: [
+                            Text(
+                              "Invalid Email",
+                              style: TextStyle(color: Colors.red),
+                            ),
+                          ],
+                        ),
+                      )
+                          : Container(),
+
+                      // Password
+                      Padding(
+                        padding: const EdgeInsets.only(right: 30, left: 30, top: 10),
+                        child: Container(
+                          height: 50,
+                          child: TextField(
+                            controller: Password1,
+                            obscureText: !_isPasswordVisible,
+                            onChanged: (value) {
+                              setState(() {
+                                isValidPassword = validatePassword(value);
+                              });
+                            },
+                            decoration: InputDecoration(
+                              labelText: "Password",
+                              hintText: "Enter your password",
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                                borderSide: BorderSide(color: Colors.grey, width: 1),
+                              ),
+                              contentPadding: EdgeInsets.fromLTRB(20, 16, 16, 16),
+                              suffixIcon: IconButton(
+                                icon: Icon(
+                                  _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                                  color: Colors.blueAccent,
+                                ),
+                                onPressed: () {
+                                  setState(() {
+                                    _isPasswordVisible = !_isPasswordVisible;
+                                  });
+                                },
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      !isValidPassword
+                          ? Padding(
+                        padding: const EdgeInsets.only(right: 30, left: 30, top: 10),
+                        child: Row(
+                          children: [
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text("Password must include:", style: TextStyle(color: Colors.red)),
+                                Text("• At least 8 characters", style: TextStyle(color: Colors.red, fontSize: 12)),
+                                Text("• Uppercase & lowercase letters", style: TextStyle(color: Colors.red, fontSize: 12)),
+                                Text("• At least 1 digit", style: TextStyle(color: Colors.red, fontSize: 12)),
+                                Text("• At least 1 special character", style: TextStyle(color: Colors.red, fontSize: 12)),
+                              ],
+                            ),
+                          ],
+                        ),
+                      )
+                          : Container(),
+
+                      // Confirm Password field
+                      Padding(
+                        padding:
+                        const EdgeInsets.only(right: 30, left: 30, top: 10),
+                        child: Container(
+                          height: 50,
+                          child: TextField(
+                            controller: Password2,
+                            onChanged: (value) {
+                              setState(() {
+                                isPasswordMatch = (value == Password1.text);
+                              });
+                            },
+                            obscureText: true, // Hides the text for password fields
+                            decoration: InputDecoration(
+                              labelText: "Confirm Password", // Label text
+                              hintText:
+                              "Re-enter your password", // Hint text for better guidance
+                              border: OutlineInputBorder(
+                                borderRadius:
+                                BorderRadius.circular(10), // Rounded border
+                              ),
+                              contentPadding: EdgeInsets.fromLTRB(
+                                  20, 16, 16, 16), // Padding inside the text field
+                            ),
+                          ),
+                        ),
+                      ),
+                      !isPasswordMatch
+                          ? Padding(
+                        padding: const EdgeInsets.only(right: 30, left: 30, top: 5),
+                        child: Row(
+                          children: [
+                            Text(
+                              "Passwords don't match",
+                              style: TextStyle(color: Colors.red),
+                            ),
+                          ],
+                        ),
+                      )
+                          : Container(),
+                    ],
+                  )
+                      : Padding(
+                    padding:
+                    const EdgeInsets.only(right: 30, left: 30, top: 10),
+                    child: InkWell(
+                      onTap: () {
+                        setState(() {
+                          isEmailSignIn = true;
+                        });
+                      },
+                      child: Container(
+                          height: 45,
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            border: Border.all(width: 1, color: Colors.black12),
+                            borderRadius: BorderRadius.circular(10),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.blue.withOpacity(0.3), // optional: softer look
+                                offset: Offset(2, 2), // X: right, Y: bottom
+                                blurRadius: 4,
+                                spreadRadius: 1,
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Padding(
+                                padding: EdgeInsets.only(right : 8.0),
+                                child: Container(
+                                  height: 28,
+                                  width: 28,
+                                  decoration: BoxDecoration(
+                                    image: DecorationImage(
+                                      image: AssetImage("assets/images/email.png"),
+                                      fit: BoxFit.cover, // No scaling
+                                      alignment: Alignment.center,
+                                      scale: 2, // Zoom in (smaller = more zoom)
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              Container(
+                                child: Text("Email", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 19),),
+                              )
+                            ],
+                          )
                       ),
                     ),
                   ),
-                  !isPasswordMatch
-                      ? Padding(
-                    padding: const EdgeInsets.only(right: 30, left: 30, top: 5),
-                    child: Row(
-                      children: [
-                        Text(
-                          "Passwords don't match",
-                          style: TextStyle(color: Colors.red),
-                        ),
-                      ],
-                    ),
-                  )
-                      : Container(),
+
 
                   // Already have account
                   Padding(
@@ -499,7 +587,8 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                   ),
 
                   // Next Button
-                  Padding(
+                  isEmailSignIn
+                      ? Padding(
                     padding:
                     const EdgeInsets.only(right: 30, left: 30, top: 20),
                     child: Container(
@@ -553,10 +642,41 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                         child: Text("Next", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),),
                       ),
                     ),
+                  )
+                      : Container(),
+
+                  // Speed image
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Flexible(
+                        child: InkWell(
+                          onTap: () async {
+                            final Uri uri = Uri.parse("https://carenest.ancientcoders.in");
+                            if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+                              throw 'Could not launch $uri';
+                            }
+                          },
+                          child: Image.asset(
+                            "assets/images/speed.jpg",
+                            fit: BoxFit.contain, // ensures it scales down while keeping proportions
+                            height: 180, // optional: set a max height
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
 
                   SizedBox(height: 20,),
 
+                  Text(
+                    "By Sign up your agree with our",
+                    style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.green,
+                        fontWeight: FontWeight.bold),
+                  ),
                   // Polacy link
                   Padding(
                     padding: const EdgeInsets.only(top: 5, bottom: 5),
@@ -673,6 +793,7 @@ class _AndroidUserPage extends State<AndroidUserPage> {
 
   String lat = '';
   String long = '';
+  bool isEmailSignIn = false;
 
   Future<void> _getCurrentLocation() async {
     bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
@@ -766,356 +887,441 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                   Padding(
                     padding:
                     const EdgeInsets.only(right: 30, left: 30, top: 20),
-                    child: Container(
-                      height: 45,
-                      width: double.infinity, // Make the container full width
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.green,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10), // Border radius 10
-                          ),
-                        ),
-                        onPressed: () async {
-                          try {
-                            setState(() {
-                              isLoading = true;
-                            });
+                    child: InkWell(
+                      onTap: () async {
+                        try {
+                          setState(() {
+                            isLoading = true;
+                          });
 
-                            // Step 1: Start the Google sign-in process
-                            final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
-                            if (googleUser == null) {
-                              // User canceled the login
-                              setState(() {
-                                isLoading = false;
-                              });
-                              return;
-                            }
-
-                            // Step 2: Get auth credentials from the signed-in user
-                            final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
-
-                            final credential = GoogleAuthProvider.credential(
-                              accessToken: googleAuth.accessToken,
-                              idToken: googleAuth.idToken,
-                            );
-
-                            // Step 3: Sign in to Firebase
-                            final UserCredential userCredential =
-                            await FirebaseAuth.instance.signInWithCredential(credential);
-
-                            final User? user = userCredential.user;
-                            String? fullName = googleUser?.displayName;
-
-                            String? firstName;
-                            String? lastName;
-
-                            if (fullName != null && fullName.contains(" ")) {
-                              List<String> names = fullName.split(" ");
-                              firstName = names.first;
-                              lastName = names.sublist(1).join(" "); // handles middle names too
-                            }else{
-                              firstName = "Unknown";
-                              lastName = "";
-                            }
-                            if (user != null) {
-                              // Step 4: Save user info to Firestore
-                              final userDocRef = FirebaseFirestore.instance.collection("user").doc(user.uid);
-                              final docSnapshot = await userDocRef.get();
-
-                              if (!docSnapshot.exists) {
-                                // New user → set full data
-                                await userDocRef.set({
-                                  'Email': user.email,
-                                  'First_name': firstName,
-                                  'Last_name': lastName,
-                                  'lat' : lat,
-                                  'long' : long,
-                                });
-                              } else {
-                                // Existing user → update only what you want (NOT name)
-                                await userDocRef.update({
-                                  'lat' : lat,
-                                  'long' : long,
-                                });
-                              }
-
-                              // Step 5: Navigate to home page
-                              Navigator.pushReplacement(
-                                context,
-                                MaterialPageRoute(builder: (context) => MyHomePage()),
-                              );
-                            }
-
-                          } catch (e) {
-                            Fluttertoast.showToast(msg: "Error during Google Sign-In");
-                            print("The error is : ${e}");
-                          } finally {
+                          // Step 1: Start the Google sign-in process
+                          final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+                          if (googleUser == null) {
+                            // User canceled the login
                             setState(() {
                               isLoading = false;
                             });
+                            return;
                           }
-                        },
-                        child: Text("Google", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),),
-                      ),
-                    ),
-                  ),
 
-                  SizedBox(height: 5,),
-                  Padding(
-                    padding:
-                    const EdgeInsets.only(right: 30, left: 30, top: 10),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Divider(thickness: 1, color: Colors.black),
-                        ),
-                        SizedBox(width: 8),
-                        Text("OR", style: TextStyle(fontWeight: FontWeight.bold),),
-                        SizedBox(width: 8),
-                        Expanded(
-                          child: Divider(thickness: 1, color: Colors.black,),
-                        ),
-                      ],
-                    ),
-                  ),
-                  SizedBox(height: 5,),
+                          // Step 2: Get auth credentials from the signed-in user
+                          final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
 
-                  // First name
-                  Padding(
-                    padding:
-                        const EdgeInsets.only(right: 30, left: 30, top: 10),
-                    child: Container(
-                      height: 50,
-                      child: TextField(
-                        controller: FirstName,
-                        onChanged: (value) {
-                          bool isValid = true;
-                          for (int i = 0; i < value.length; i++) {
-                            String char = value[i];
-                            if (!(char.contains(RegExp(r'[a-zA-Z]')))) {
-                              isValid = false;
-                              break;
-                            }
+                          final credential = GoogleAuthProvider.credential(
+                            accessToken: googleAuth.accessToken,
+                            idToken: googleAuth.idToken,
+                          );
+
+                          // Step 3: Sign in to Firebase
+                          final UserCredential userCredential =
+                          await FirebaseAuth.instance.signInWithCredential(credential);
+
+                          final User? user = userCredential.user;
+                          String? fullName = googleUser?.displayName;
+
+                          String? firstName;
+                          String? lastName;
+
+                          if (fullName != null && fullName.contains(" ")) {
+                            List<String> names = fullName.split(" ");
+                            firstName = names.first;
+                            lastName = names.sublist(1).join(" "); // handles middle names too
+                          }else{
+                            firstName = "Unknown";
+                            lastName = "";
                           }
-                          setState(() {
-                            isValidFirstName = isValid;
-                          });
-                        },
-                        decoration: InputDecoration(
-                            labelText: "First name", // Placeholder text
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            contentPadding: EdgeInsets.fromLTRB(20, 16, 16,
-                                16) // Adds border around the text field
-                            ),
-                      ),
-                    ),
-                  ),
-                  !isValidFirstName
-                      ? Padding(
-                    padding: const EdgeInsets.only(right: 30, left: 30, top: 5),
-                    child: Row(
-                      children: [
-                        Text(
-                          "Invalid First Name",
-                          style: TextStyle(color: Colors.red),
-                        ),
-                      ],
-                    ),
-                  )
-                      : Container(),
+                          if (user != null) {
+                            // Step 4: Save user info to Firestore
+                            final userDocRef = FirebaseFirestore.instance.collection("user").doc(user.uid);
+                            final docSnapshot = await userDocRef.get();
 
-                  // Last name
-                  Padding(
-                    padding:
-                        const EdgeInsets.only(right: 30, left: 30, top: 10),
-                    child: Container(
-                      height: 50,
-                      child: TextField(
-                        controller: LastName,
-                        onChanged: (value) {
-                          bool isValid = true;
-                          for (int i = 0; i < value.length; i++) {
-                            String char = value[i];
-                            if (!(char.contains(RegExp(r'[a-zA-Z]')))) {
-                              isValid = false;
-                              break;
-                            }
-                          }
-                          setState(() {
-                            isValidLastName = isValid;
-                          });
-                        },
-                        decoration: InputDecoration(
-                            labelText: "Last name", // Placeholder text
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            contentPadding: EdgeInsets.fromLTRB(20, 16, 16,
-                                16) // Adds border around the text field
-                            ),
-                      ),
-                    ),
-                  ),
-                  !isValidLastName
-                      ? Padding(
-                    padding: const EdgeInsets.only(right: 30, left: 30, top: 5),
-                    child: Row(
-                      children: [
-                        Text(
-                          "Invalid Last Name",
-                          style: TextStyle(color: Colors.red),
-                        ),
-                      ],
-                    ),
-                  )
-                      : Container(),
-
-                  // Email field
-                  Padding(
-                    padding:
-                        const EdgeInsets.only(right: 30, left: 30, top: 10),
-                    child: Container(
-                      height: 50,
-                      child: TextField(
-                        controller: Email, // Controller for the email input
-                        keyboardType: TextInputType.emailAddress,
-                        onChanged: (value) {
-                          // Check entire email string using RegExp
-                          setState(() {
-                            isValidEmail = RegExp(
-                              r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$",
-                            ).hasMatch(value);
-                          });
-                        },
-                        decoration: InputDecoration(
-                          labelText: "Email", // Label for the TextField
-                          border: OutlineInputBorder(
-                            borderRadius:
-                                BorderRadius.circular(10), // Rounded border
-                          ),
-                          contentPadding: EdgeInsets.fromLTRB(20, 16, 16,
-                              16), // Adds padding inside the TextField
-                        ),
-                      ),
-                    ),
-                  ),
-                  !isValidEmail
-                      ? Padding(
-                    padding: const EdgeInsets.only(right: 30, left: 30, top: 5),
-                    child: Row(
-                      children: [
-                        Text(
-                          "Invalid Email",
-                          style: TextStyle(color: Colors.red),
-                        ),
-                      ],
-                    ),
-                  )
-                      : Container(),
-
-                  // Password
-                  Padding(
-                    padding:
-                        const EdgeInsets.only(right: 30, left: 30, top: 10),
-                    child: Container(
-                      height: 50,
-                      child: TextField(
-                        controller: Password1,
-                        onChanged: (value) {
-                          setState(() {
-                            isValidPassword = validatePassword(value);
-                          });
-                        },
-                        obscureText: !_isPasswordVisible, // Hides the text for password fields
-                        decoration: InputDecoration(
-                          labelText: "Password", // Label text
-                          hintText:
-                              "Enter your password",
-                          suffixIcon: IconButton(
-                            icon: Icon(
-                              _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
-                              color: Colors.green,
-                            ),
-                            onPressed: () {
-                              setState(() {
-                                _isPasswordVisible = !_isPasswordVisible;
+                            if (!docSnapshot.exists) {
+                              // New user → set full data
+                              await userDocRef.set({
+                                'Email': user.email,
+                                'First_name': firstName,
+                                'Last_name': lastName,
+                                'lat' : lat,
+                                'long' : long,
                               });
-                            },
-                          ),// Hint text for better guidance
-                          border: OutlineInputBorder(
-                            borderRadius:
-                                BorderRadius.circular(10), // Rounded border
+                            } else {
+                              // Existing user → update only what you want (NOT name)
+                              await userDocRef.update({
+                                'lat' : lat,
+                                'long' : long,
+                              });
+                            }
+
+                            // Step 5: Navigate to home page
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(builder: (context) => MyHomePage()),
+                            );
+                          }
+
+                        } catch (e) {
+                          Fluttertoast.showToast(msg: "Error during Google Sign-In");
+                          print("The error is : ${e}");
+                        } finally {
+                          setState(() {
+                            isLoading = false;
+                          });
+                        }
+                      },
+                      child: Container(
+                          height: 45,
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            border: Border.all(width: 1, color: Colors.black12),
+                            borderRadius: BorderRadius.circular(10),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.blue.withOpacity(0.3), // optional: softer look
+                                offset: Offset(2, 2), // X: right, Y: bottom
+                                blurRadius: 4,
+                                spreadRadius: 1,
+                              ),
+                            ],
                           ),
-                          contentPadding: EdgeInsets.fromLTRB(
-                              20, 16, 16, 16), // Padding inside the text field
-                        ),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Container(
+                                height: 40,
+                                width: 40,
+                                decoration: BoxDecoration(
+                                  image: DecorationImage(
+                                    image: AssetImage("assets/images/google.png"),
+                                    fit: BoxFit.cover, // No scaling
+                                    alignment: Alignment.center,
+                                    scale: 2, // Zoom in (smaller = more zoom)
+                                  ),
+                                ),
+                              ),
+                              Container(
+                                child: Text("Google", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 20),),
+                              )
+                            ],
+                          )
                       ),
                     ),
                   ),
-                  !isValidPassword
-                      ? Padding(
-                    padding: const EdgeInsets.only(right: 30, left: 30, top: 10),
-                    child: Row(
-                      children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+
+                  // Sign up by Email
+                  isEmailSignIn
+                      ? Column(
+                    children: [
+                      SizedBox(height: 5,),
+                      Padding(
+                        padding:
+                        const EdgeInsets.only(right: 30, left: 30, top: 10),
+                        child: Row(
                           children: [
-                            Text("Password must include:", style: TextStyle(color: Colors.red)),
-                            Text("• At least 8 characters", style: TextStyle(color: Colors.red, fontSize: 12)),
-                            Text("• Uppercase & lowercase letters", style: TextStyle(color: Colors.red, fontSize: 12)),
-                            Text("• At least 1 digit", style: TextStyle(color: Colors.red, fontSize: 12)),
-                            Text("• At least 1 special character", style: TextStyle(color: Colors.red, fontSize: 12)),
+                            Expanded(
+                              child: Divider(thickness: 1, color: Colors.black),
+                            ),
+                            SizedBox(width: 8),
+                            Text("OR", style: TextStyle(fontWeight: FontWeight.bold),),
+                            SizedBox(width: 8),
+                            Expanded(
+                              child: Divider(thickness: 1, color: Colors.black,),
+                            ),
                           ],
                         ),
-                      ],
-                    ),
-                  )
-                      : Container(),
+                      ),
+                      SizedBox(height: 5,),
 
-                  // confirm password
-                  Padding(
-                    padding:
+                      // First name
+                      Padding(
+                        padding:
                         const EdgeInsets.only(right: 30, left: 30, top: 10),
-                    child: Container(
-                      height: 50,
-                      child: TextField(
-                        controller: Password2,
-                        onChanged: (value) {
-                          setState(() {
-                            isPasswordMatch = (value == Password1.text);
-                          });
-                        },
-                        obscureText: true, // Hides the text for password fields
-                        decoration: InputDecoration(
-                          labelText: "Confirm Password", // Label text
-                          hintText:
-                              "Re-enter your password", // Hint text for better guidance
-                          border: OutlineInputBorder(
-                            borderRadius:
-                                BorderRadius.circular(10), // Rounded border
+                        child: Container(
+                          height: 50,
+                          child: TextField(
+                            controller: FirstName,
+                            onChanged: (value) {
+                              bool isValid = true;
+                              for (int i = 0; i < value.length; i++) {
+                                String char = value[i];
+                                if (!(char.contains(RegExp(r'[a-zA-Z]')))) {
+                                  isValid = false;
+                                  break;
+                                }
+                              }
+                              setState(() {
+                                isValidFirstName = isValid;
+                              });
+                            },
+                            decoration: InputDecoration(
+                                labelText: "First name", // Placeholder text
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                contentPadding: EdgeInsets.fromLTRB(20, 16, 16,
+                                    16) // Adds border around the text field
+                            ),
                           ),
-                          contentPadding: EdgeInsets.fromLTRB(
-                              20, 16, 16, 16), // Padding inside the text field
                         ),
+                      ),
+                      !isValidFirstName
+                          ? Padding(
+                        padding: const EdgeInsets.only(right: 30, left: 30, top: 5),
+                        child: Row(
+                          children: [
+                            Text(
+                              "Invalid First Name",
+                              style: TextStyle(color: Colors.red),
+                            ),
+                          ],
+                        ),
+                      )
+                          : Container(),
+
+                      // Last name
+                      Padding(
+                        padding:
+                        const EdgeInsets.only(right: 30, left: 30, top: 10),
+                        child: Container(
+                          height: 50,
+                          child: TextField(
+                            controller: LastName,
+                            onChanged: (value) {
+                              bool isValid = true;
+                              for (int i = 0; i < value.length; i++) {
+                                String char = value[i];
+                                if (!(char.contains(RegExp(r'[a-zA-Z]')))) {
+                                  isValid = false;
+                                  break;
+                                }
+                              }
+                              setState(() {
+                                isValidLastName = isValid;
+                              });
+                            },
+                            decoration: InputDecoration(
+                                labelText: "Last name", // Placeholder text
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                contentPadding: EdgeInsets.fromLTRB(20, 16, 16,
+                                    16) // Adds border around the text field
+                            ),
+                          ),
+                        ),
+                      ),
+                      !isValidLastName
+                          ? Padding(
+                        padding: const EdgeInsets.only(right: 30, left: 30, top: 5),
+                        child: Row(
+                          children: [
+                            Text(
+                              "Invalid Last Name",
+                              style: TextStyle(color: Colors.red),
+                            ),
+                          ],
+                        ),
+                      )
+                          : Container(),
+
+                      // Email field
+                      Padding(
+                        padding:
+                        const EdgeInsets.only(right: 30, left: 30, top: 10),
+                        child: Container(
+                          height: 50,
+                          child: TextField(
+                            controller: Email, // Controller for the email input
+                            keyboardType: TextInputType.emailAddress,
+                            onChanged: (value) {
+                              // Check entire email string using RegExp
+                              setState(() {
+                                isValidEmail = RegExp(
+                                  r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$",
+                                ).hasMatch(value);
+                              });
+                            },
+                            decoration: InputDecoration(
+                              labelText: "Email", // Label for the TextField
+                              border: OutlineInputBorder(
+                                borderRadius:
+                                BorderRadius.circular(10), // Rounded border
+                              ),
+                              contentPadding: EdgeInsets.fromLTRB(20, 16, 16,
+                                  16), // Adds padding inside the TextField
+                            ),
+                          ),
+                        ),
+                      ),
+                      !isValidEmail
+                          ? Padding(
+                        padding: const EdgeInsets.only(right: 30, left: 30, top: 5),
+                        child: Row(
+                          children: [
+                            Text(
+                              "Invalid Email",
+                              style: TextStyle(color: Colors.red),
+                            ),
+                          ],
+                        ),
+                      )
+                          : Container(),
+
+                      // Password
+                      Padding(
+                        padding:
+                        const EdgeInsets.only(right: 30, left: 30, top: 10),
+                        child: Container(
+                          height: 50,
+                          child: TextField(
+                            controller: Password1,
+                            onChanged: (value) {
+                              setState(() {
+                                isValidPassword = validatePassword(value);
+                              });
+                            },
+                            obscureText: !_isPasswordVisible, // Hides the text for password fields
+                            decoration: InputDecoration(
+                              labelText: "Password", // Label text
+                              hintText:
+                              "Enter your password",
+                              suffixIcon: IconButton(
+                                icon: Icon(
+                                  _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                                  color: Colors.green,
+                                ),
+                                onPressed: () {
+                                  setState(() {
+                                    _isPasswordVisible = !_isPasswordVisible;
+                                  });
+                                },
+                              ),// Hint text for better guidance
+                              border: OutlineInputBorder(
+                                borderRadius:
+                                BorderRadius.circular(10), // Rounded border
+                              ),
+                              contentPadding: EdgeInsets.fromLTRB(
+                                  20, 16, 16, 16), // Padding inside the text field
+                            ),
+                          ),
+                        ),
+                      ),
+                      !isValidPassword
+                          ? Padding(
+                        padding: const EdgeInsets.only(right: 30, left: 30, top: 10),
+                        child: Row(
+                          children: [
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text("Password must include:", style: TextStyle(color: Colors.red)),
+                                Text("• At least 8 characters", style: TextStyle(color: Colors.red, fontSize: 12)),
+                                Text("• Uppercase & lowercase letters", style: TextStyle(color: Colors.red, fontSize: 12)),
+                                Text("• At least 1 digit", style: TextStyle(color: Colors.red, fontSize: 12)),
+                                Text("• At least 1 special character", style: TextStyle(color: Colors.red, fontSize: 12)),
+                              ],
+                            ),
+                          ],
+                        ),
+                      )
+                          : Container(),
+
+                      // confirm password
+                      Padding(
+                        padding:
+                        const EdgeInsets.only(right: 30, left: 30, top: 10),
+                        child: Container(
+                          height: 50,
+                          child: TextField(
+                            controller: Password2,
+                            onChanged: (value) {
+                              setState(() {
+                                isPasswordMatch = (value == Password1.text);
+                              });
+                            },
+                            obscureText: true, // Hides the text for password fields
+                            decoration: InputDecoration(
+                              labelText: "Confirm Password", // Label text
+                              hintText:
+                              "Re-enter your password", // Hint text for better guidance
+                              border: OutlineInputBorder(
+                                borderRadius:
+                                BorderRadius.circular(10), // Rounded border
+                              ),
+                              contentPadding: EdgeInsets.fromLTRB(
+                                  20, 16, 16, 16), // Padding inside the text field
+                            ),
+                          ),
+                        ),
+                      ),
+                      !isPasswordMatch
+                          ? Padding(
+                        padding: const EdgeInsets.only(right: 30, left: 30, top: 5),
+                        child: Row(
+                          children: [
+                            Text(
+                              "Passwords don't match",
+                              style: TextStyle(color: Colors.red),
+                            ),
+                          ],
+                        ),
+                      )
+                          : Container(),
+                    ],
+                  )
+                      : Padding(
+                    padding:
+                    const EdgeInsets.only(right: 30, left: 30, top: 10),
+                    child: InkWell(
+                      onTap: () {
+                        setState(() {
+                          isEmailSignIn = true;
+                        });
+                      },
+                      child: Container(
+                          height: 45,
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            border: Border.all(width: 1, color: Colors.black12),
+                            borderRadius: BorderRadius.circular(10),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.blue.withOpacity(0.3), // optional: softer look
+                                offset: Offset(2, 2), // X: right, Y: bottom
+                                blurRadius: 4,
+                                spreadRadius: 1,
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Padding(
+                                padding: EdgeInsets.only(right : 8.0),
+                                child: Container(
+                                  height: 28,
+                                  width: 28,
+                                  decoration: BoxDecoration(
+                                    image: DecorationImage(
+                                      image: AssetImage("assets/images/email.png"),
+                                      fit: BoxFit.cover, // No scaling
+                                      alignment: Alignment.center,
+                                      scale: 2, // Zoom in (smaller = more zoom)
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              Container(
+                                child: Text("Email", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 19),),
+                              )
+                            ],
+                          )
                       ),
                     ),
                   ),
-                  !isPasswordMatch
-                      ? Padding(
-                    padding: const EdgeInsets.only(right: 30, left: 30, top: 5),
-                    child: Row(
-                      children: [
-                        Text(
-                          "Passwords don't match",
-                          style: TextStyle(color: Colors.red),
-                        ),
-                      ],
-                    ),
-                  )
-                      : Container(),
 
                   // Already have account
                   Padding(
@@ -1143,7 +1349,8 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                   ),
 
                   // submit
-                  Padding(
+                  isEmailSignIn
+                      ? Padding(
                     padding:
                     const EdgeInsets.only(right: 30, left: 30, top: 20),
                     child: Container(
@@ -1237,10 +1444,41 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                         child: Text("Submit", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),),
                       ),
                     ),
+                  )
+                      : Container(),
+
+                  // Speed image
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Flexible(
+                        child: InkWell(
+                          onTap: () async {
+                            final Uri uri = Uri.parse("https://carenest.ancientcoders.in");
+                            if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+                              throw 'Could not launch $uri';
+                            }
+                          },
+                          child: Image.asset(
+                            "assets/images/speed.jpg",
+                            fit: BoxFit.contain, // ensures it scales down while keeping proportions
+                            height: 180, // optional: set a max height
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
 
                   SizedBox(height: 20,),
 
+                  Text(
+                    "By Sign up your agree with our",
+                    style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.green,
+                        fontWeight: FontWeight.bold),
+                  ),
                   // Polacy link
                   Padding(
                     padding: const EdgeInsets.only(top: 5, bottom: 5),
@@ -1334,7 +1572,7 @@ class _AndroidView extends State<AndroidView> {
     return Stack(
       children: [
         Container(
-          color: !isStaff ? Color(0xfffffcc9) : Color(0xffbef0ff),
+          color: Globle.theme,
           height: 320,
           width: double.maxFinite,
         ),
