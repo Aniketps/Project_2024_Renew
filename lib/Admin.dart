@@ -1,10 +1,11 @@
 import 'package:carehub/StaffVerifcation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AdminLogin extends StatefulWidget {
+  const AdminLogin({super.key});
+
   @override
   State<AdminLogin> createState() => _AdminLoginState();
 }
@@ -19,11 +20,10 @@ class _AdminLoginState extends State<AdminLogin> {
 
   @override
   Widget build(BuildContext context) {
-    final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
-      backgroundColor: Color(0xFF1A1A2E), // Deep Tech-Themed Background
+      backgroundColor: const Color(0xFF1A1A2E), // Deep Tech-Themed Background
       body: Stack(
         children: [
           Positioned.fill(
@@ -40,7 +40,7 @@ class _AdminLoginState extends State<AdminLogin> {
           Center(
             child: Container(
               width: screenWidth * 0.85,
-              padding: EdgeInsets.all(24),
+              padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
                 color: Colors.white.withOpacity(0.5),
                 borderRadius: BorderRadius.circular(16),
@@ -61,23 +61,23 @@ class _AdminLoginState extends State<AdminLogin> {
                         MainAxisAlignment.center, // Centers everything
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      Icon(
+                      const Icon(
                         Icons.chevron_left, // Displays the < > icon
                         size: 40,
                         color: Color.fromARGB(205, 0, 1, 52),
                       ),
-                      SizedBox(width: 8), // Adjust space between < and HI
+                      const SizedBox(width: 8), // Adjust space between < and HI
                       Text(
-                        "${hi + CodeName}",
-                        style: TextStyle(
+                        hi + CodeName,
+                        style: const TextStyle(
                           fontFamily: 'Georgia', // ✅ Using Georgia Font
                           fontSize: 14, // ✅ Size as per your requirement
                           fontWeight: FontWeight.bold,
                           color: Color.fromARGB(205, 0, 1, 52),
                         ),
                       ),
-                      SizedBox(width: 8), // Adjust space between HI and >
-                      Icon(
+                      const SizedBox(width: 8), // Adjust space between HI and >
+                      const Icon(
                         Icons.chevron_right, // Another < > icon
                         size: 40,
                         color: Color.fromARGB(205, 0, 1, 52),
@@ -91,19 +91,19 @@ class _AdminLoginState extends State<AdminLogin> {
                     style: GoogleFonts.poppins(
                       fontSize: 26,
                       fontWeight: FontWeight.bold,
-                      color: Color.fromARGB(205, 0, 1, 52),
+                      color: const Color.fromARGB(205, 0, 1, 52),
                     ),
                     textAlign: TextAlign.center,
                   ),
-                  SizedBox(height: 20),
+                  const SizedBox(height: 20),
 
                   // ** Username Field **
                   _buildTextField(Icons.person, "Username"),
-                  SizedBox(height: 16),
+                  const SizedBox(height: 16),
 
                   // ** Password Field **
                   _buildPasswordField(),
-                  SizedBox(height: 24),
+                  const SizedBox(height: 24),
 
                   // ** Login Button with Smooth Animation **
                   ElevatedButton(
@@ -119,7 +119,7 @@ class _AdminLoginState extends State<AdminLogin> {
 
                         if (querySnapshot.docs.isEmpty) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text("Incorrect Username")));
+                              const SnackBar(content: Text("Incorrect Username")));
                         } else {
                           var data = querySnapshot.docs.first.data();
                           if (data["Password"] ==
@@ -129,12 +129,12 @@ class _AdminLoginState extends State<AdminLogin> {
                               MaterialPageRoute(
                                   builder: (context) => StaffVerification(
                                         loggedAdmin:
-                                            "${userNameController.text.trim()}",
+                                            userNameController.text.trim(),
                                       )),
                             );
                           } else {
                             ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text("Incorrect Password")));
+                                const SnackBar(content: Text("Incorrect Password")));
                           }
                         }
                       } catch (e) {
@@ -147,7 +147,7 @@ class _AdminLoginState extends State<AdminLogin> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.blueAccent,
                       foregroundColor: Colors.white,
-                      minimumSize: Size(double.infinity, 50),
+                      minimumSize: const Size(double.infinity, 50),
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10)),
                       elevation: 3,
@@ -172,14 +172,14 @@ class _AdminLoginState extends State<AdminLogin> {
     return TextField(
       onChanged: (value) {
         setState(() {
-          CodeName = "${", " + value}";
+          CodeName = ", $value";
         });
       },
       controller: userNameController,
       style: GoogleFonts.poppins(fontSize: 16),
       decoration: InputDecoration(
         hintText: hint,
-        hintStyle: TextStyle(color: Colors.black54),
+        hintStyle: const TextStyle(color: Colors.black54),
         prefixIcon: Icon(icon, color: Colors.blueAccent),
         filled: true,
         fillColor: Colors.blue[50],
@@ -200,8 +200,8 @@ class _AdminLoginState extends State<AdminLogin> {
       style: GoogleFonts.poppins(fontSize: 16),
       decoration: InputDecoration(
         hintText: "Password",
-        hintStyle: TextStyle(color: Colors.black54),
-        prefixIcon: Icon(Icons.lock, color: Colors.blueAccent),
+        hintStyle: const TextStyle(color: Colors.black54),
+        prefixIcon: const Icon(Icons.lock, color: Colors.blueAccent),
         suffixIcon: IconButton(
           icon: Icon(
             _isPasswordVisible ? Icons.visibility : Icons.visibility_off,

@@ -7,18 +7,13 @@ import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:image_picker/image_picker.dart';
 import 'ClientNotificationPage.dart';
-import 'ContactUs.dart';
-import 'Deals.dart';
-import 'Feedback.dart';
 import 'LoaderSupport.dart';
 import 'LoginPage.dart';
-import 'MainMap.dart';
-import 'StaffProfilePage.dart';
-import 'TC.dart';
 import 'globle.dart';
-import 'main.dart';
 
 class ActualUser extends StatefulWidget {
+  const ActualUser({super.key});
+
   @override
   State<StatefulWidget> createState() => _ActualUser();
 }
@@ -27,8 +22,8 @@ class _ActualUser extends State<ActualUser> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _addressController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
-  late TextEditingController _lastName = TextEditingController();
-  late TextEditingController _firstName = TextEditingController();
+  late final TextEditingController _lastName = TextEditingController();
+  late final TextEditingController _firstName = TextEditingController();
   String Profile_pic_url = "";
 
   var userData;
@@ -53,10 +48,8 @@ class _ActualUser extends State<ActualUser> {
           documentID = documentSnapshot.id;
         });
       } else {
-        print("No staff found with ID: $currentUserID");
       }
     } catch (e) {
-      print("Error fetching user by Staff ID: $e");
     }
   }
 
@@ -118,8 +111,8 @@ class _ActualUser extends State<ActualUser> {
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 AppBar(
-                  title: Padding(
-                    padding: const EdgeInsets.only(bottom: 35),
+                  title: const Padding(
+                    padding: EdgeInsets.only(bottom: 35),
                     child: Center(
                       child: Text("Profile",
                           style: TextStyle(
@@ -136,231 +129,229 @@ class _ActualUser extends State<ActualUser> {
             children: [
               Padding(
                 padding: const EdgeInsets.only(top: 120),
-                child: Container(
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.vertical,
-                    child: Column(
-                      children: [
-                        Column(
-                          children: [
-                            isLoading || userData == null
-                                ? Center(child: LoaderSupport.loadingAnimation.widget)
-                                : Center(
-                                    child: Container(
-                                      height: screenHeight * 0.85,
-                                      width: screenWidth * 0.95,
-                                      decoration: BoxDecoration(
-                                        color: Colors.white,
-                                        borderRadius: BorderRadius.circular(15),
-                                        boxShadow: [
-                                          BoxShadow(
-                                              color: Colors.black26,
-                                              spreadRadius: 1,
-                                              blurRadius: 1),
-                                        ],
-                                      ),
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(16.0),
-                                        child: SingleChildScrollView(
-                                          child: Column(
-                                            children: [
-                                              // Profile photo
-                                              Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.center,
-                                                children: [
-                                                  Padding(
-                                                    padding:
-                                                        const EdgeInsets.all(
-                                                            10.0),
-                                                    child: InkWell(
-                                                      onTap: () async {
-                                                        final pickedImage =
-                                                            await ImagePicker()
-                                                                .pickImage(
-                                                                    source: ImageSource
-                                                                        .gallery);
-                                                        if (pickedImage !=
-                                                            null) {
-                                                          setState(() async {
-                                                            File imagePath =
-                                                                File(pickedImage
-                                                                    .path);
-                                                            String? fileName =
-                                                                imagePath.path
-                                                                    .split('/')
-                                                                    .last;
-                                                            User? user =
-                                                                FirebaseAuth
-                                                                    .instance
-                                                                    .currentUser;
-                                                            UploadTask
-                                                                uploadTask =
-                                                                FirebaseStorage
-                                                                    .instance
-                                                                    .ref()
-                                                                    .child(
-                                                                        "${user?.uid}/${fileName}")
-                                                                    .putFile(
-                                                                        imagePath);
-                                                            TaskSnapshot
-                                                                snapshot =
-                                                                await uploadTask;
-                                                            Reference ref =
-                                                                snapshot.ref;
-                                                            String profileURL =
-                                                                await ref
-                                                                    .getDownloadURL();
-
-                                                            if (user != null &&
-                                                                profileURL
-                                                                    .isNotEmpty) {
-                                                              await FirebaseFirestore
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.vertical,
+                  child: Column(
+                    children: [
+                      Column(
+                        children: [
+                          isLoading || userData == null
+                              ? Center(child: LoaderSupport.loadingAnimation.widget)
+                              : Center(
+                                  child: Container(
+                                    height: screenHeight * 0.85,
+                                    width: screenWidth * 0.95,
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(15),
+                                      boxShadow: const [
+                                        BoxShadow(
+                                            color: Colors.black26,
+                                            spreadRadius: 1,
+                                            blurRadius: 1),
+                                      ],
+                                    ),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(16.0),
+                                      child: SingleChildScrollView(
+                                        child: Column(
+                                          children: [
+                                            // Profile photo
+                                            Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: [
+                                                Padding(
+                                                  padding:
+                                                      const EdgeInsets.all(
+                                                          10.0),
+                                                  child: InkWell(
+                                                    onTap: () async {
+                                                      final pickedImage =
+                                                          await ImagePicker()
+                                                              .pickImage(
+                                                                  source: ImageSource
+                                                                      .gallery);
+                                                      if (pickedImage !=
+                                                          null) {
+                                                        setState(() async {
+                                                          File imagePath =
+                                                              File(pickedImage
+                                                                  .path);
+                                                          String? fileName =
+                                                              imagePath.path
+                                                                  .split('/')
+                                                                  .last;
+                                                          User? user =
+                                                              FirebaseAuth
                                                                   .instance
-                                                                  .collection(
-                                                                      'user')
-                                                                  .doc(user.uid)
-                                                                  .update({
-                                                                "Profile_Pic":
-                                                                    profileURL,
-                                                              });
-                                                              // Show a confirmation message
-                                                              ScaffoldMessenger
-                                                                      .of(context)
-                                                                  .showSnackBar(
-                                                                SnackBar(
-                                                                    content: Text(
-                                                                        "Information updated successfully!")),
-                                                              );
-                                                              Navigator
-                                                                  .pushReplacement(
-                                                                      context,
-                                                                      MaterialPageRoute(
-                                                                        builder:
-                                                                            (context) =>
-                                                                                ActualUser(),
-                                                                      ));
-                                                            }
-                                                          });
-                                                        }
-                                                      },
-                                                      child: Container(
-                                                        height: 100,
-                                                        width: 100,
-                                                        decoration:
-                                                            BoxDecoration(
-                                                          color: Colors.white,
-                                                          borderRadius:
-                                                              BorderRadius
-                                                                  .circular(80),
-                                                          boxShadow: [
-                                                            BoxShadow(
-                                                                color: Colors
-                                                                    .black26,
-                                                                spreadRadius: 1,
-                                                                blurRadius: 1),
-                                                          ],
-                                                          image:
-                                                              DecorationImage(
-                                                            image: Profile_pic_url ==
-                                                                    ""
-                                                                ? NetworkImage(
-                                                                    "https://media.istockphoto.com/id/1300845620/vector/user-icon-flat-isolated-on-white-background-user-symbol-vector-illustration.jpg?s=612x612&w=0&k=20&c=yBeyba0hUkh14_jgv1OKqIH0CCSWU_4ckRkAoy2p73o=")
-                                                                : NetworkImage(
-                                                                    Profile_pic_url),
-                                                            fit: BoxFit.cover,
-                                                          ),
+                                                                  .currentUser;
+                                                          UploadTask
+                                                              uploadTask =
+                                                              FirebaseStorage
+                                                                  .instance
+                                                                  .ref()
+                                                                  .child(
+                                                                      "${user?.uid}/${fileName}")
+                                                                  .putFile(
+                                                                      imagePath);
+                                                          TaskSnapshot
+                                                              snapshot =
+                                                              await uploadTask;
+                                                          Reference ref =
+                                                              snapshot.ref;
+                                                          String profileURL =
+                                                              await ref
+                                                                  .getDownloadURL();
+
+                                                          if (user != null &&
+                                                              profileURL
+                                                                  .isNotEmpty) {
+                                                            await FirebaseFirestore
+                                                                .instance
+                                                                .collection(
+                                                                    'user')
+                                                                .doc(user.uid)
+                                                                .update({
+                                                              "Profile_Pic":
+                                                                  profileURL,
+                                                            });
+                                                            // Show a confirmation message
+                                                            ScaffoldMessenger
+                                                                    .of(context)
+                                                                .showSnackBar(
+                                                              const SnackBar(
+                                                                  content: Text(
+                                                                      "Information updated successfully!")),
+                                                            );
+                                                            Navigator
+                                                                .pushReplacement(
+                                                                    context,
+                                                                    MaterialPageRoute(
+                                                                      builder:
+                                                                          (context) =>
+                                                                              const ActualUser(),
+                                                                    ));
+                                                          }
+                                                        });
+                                                      }
+                                                    },
+                                                    child: Container(
+                                                      height: 100,
+                                                      width: 100,
+                                                      decoration:
+                                                          BoxDecoration(
+                                                        color: Colors.white,
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(80),
+                                                        boxShadow: const [
+                                                          BoxShadow(
+                                                              color: Colors
+                                                                  .black26,
+                                                              spreadRadius: 1,
+                                                              blurRadius: 1),
+                                                        ],
+                                                        image:
+                                                            DecorationImage(
+                                                          image: Profile_pic_url ==
+                                                                  ""
+                                                              ? const NetworkImage(
+                                                                  "https://media.istockphoto.com/id/1300845620/vector/user-icon-flat-isolated-on-white-background-user-symbol-vector-illustration.jpg?s=612x612&w=0&k=20&c=yBeyba0hUkh14_jgv1OKqIH0CCSWU_4ckRkAoy2p73o=")
+                                                              : NetworkImage(
+                                                                  Profile_pic_url),
+                                                          fit: BoxFit.cover,
                                                         ),
                                                       ),
                                                     ),
-                                                  )
-                                                ],
-                                              ),
-
-                                              // Notifications
-                                              Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.center,
-                                                children: [
-                                                  InkWell(
-                                                    onTap: () {
-                                                      Navigator.push(
-                                                        context,
-                                                        MaterialPageRoute(
-                                                          builder: (context) =>
-                                                              ClientNotificationPage(),
-                                                        ),
-                                                      );
-                                                    },
-                                                    child: Icon(
-                                                        Icons.notifications),
                                                   ),
-                                                ],
-                                              ),
+                                                )
+                                              ],
+                                            ),
 
-                                              SizedBox(height: 20),
+                                            // Notifications
+                                            Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: [
+                                                InkWell(
+                                                  onTap: () {
+                                                    Navigator.push(
+                                                      context,
+                                                      MaterialPageRoute(
+                                                        builder: (context) =>
+                                                            const ClientNotificationPage(),
+                                                      ),
+                                                    );
+                                                  },
+                                                  child: const Icon(
+                                                      Icons.notifications),
+                                                ),
+                                              ],
+                                            ),
 
-                                              // Input fields for email, address, phone, and services
-                                              Row(
-                                                children: [
-                                                  // SizedBox(width: 10),
-                                                  Expanded(
-                                                    child: TextField(
-                                                      enabled: false,
-                                                      controller:
-                                                          _emailController,
-                                                      decoration:
-                                                          InputDecoration(
-                                                              labelText:
-                                                                  "Email"),
-                                                    ),
+                                            const SizedBox(height: 20),
+
+                                            // Input fields for email, address, phone, and services
+                                            Row(
+                                              children: [
+                                                // SizedBox(width: 10),
+                                                Expanded(
+                                                  child: TextField(
+                                                    enabled: false,
+                                                    controller:
+                                                        _emailController,
+                                                    decoration:
+                                                        const InputDecoration(
+                                                            labelText:
+                                                                "Email"),
                                                   ),
-                                                ],
-                                              ),
-                                              SizedBox(height: 20,),
-                                              _buildTextFieldWithIcon(
-                                                  _lastName,
-                                                  'First Name',
-                                                  'First_name',
-                                                  Icons.done_outline),
-                                              SizedBox(height: 20),
-                                              _buildTextFieldWithIcon(
-                                                  _firstName,
-                                                  'Last Name',
-                                                  'Last_name',
-                                                  Icons.done_outline),
-                                              SizedBox(height: 20),
-                                              _buildTextFieldWithIcon(
-                                                  _addressController,
-                                                  'City',
-                                                  'City',
-                                                  Icons.done_outline),
-                                              SizedBox(height: 20),
-                                              _buildTextFieldWithIcon(
-                                                  _phoneController,
-                                                  'Phone Number',
-                                                  'Phone_Number1',
-                                                  Icons.done_outline),
-                                              SizedBox(height: 40),
+                                                ),
+                                              ],
+                                            ),
+                                            const SizedBox(height: 20,),
+                                            _buildTextFieldWithIcon(
+                                                _lastName,
+                                                'First Name',
+                                                'First_name',
+                                                Icons.done_outline),
+                                            const SizedBox(height: 20),
+                                            _buildTextFieldWithIcon(
+                                                _firstName,
+                                                'Last Name',
+                                                'Last_name',
+                                                Icons.done_outline),
+                                            const SizedBox(height: 20),
+                                            _buildTextFieldWithIcon(
+                                                _addressController,
+                                                'City',
+                                                'City',
+                                                Icons.done_outline),
+                                            const SizedBox(height: 20),
+                                            _buildTextFieldWithIcon(
+                                                _phoneController,
+                                                'Phone Number',
+                                                'Phone_Number1',
+                                                Icons.done_outline),
+                                            const SizedBox(height: 40),
 
-                                              // Logout button
-                                              ElevatedButton(
-                                                onPressed: _logout,
-                                                child: Text("Logout"),
-                                                style: ElevatedButton.styleFrom(
-                                                    backgroundColor:
-                                                        Colors.greenAccent),
-                                              ),
-                                            ],
-                                          ),
+                                            // Logout button
+                                            ElevatedButton(
+                                              onPressed: _logout,
+                                              style: ElevatedButton.styleFrom(
+                                                  backgroundColor:
+                                                      Colors.greenAccent),
+                                              child: const Text("Logout"),
+                                            ),
+                                          ],
                                         ),
                                       ),
                                     ),
                                   ),
-                          ],
-                        ),
-                      ],
-                    ),
+                                ),
+                        ],
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -379,7 +370,7 @@ class _ActualUser extends State<ActualUser> {
         Expanded(
           child: TextField(
             controller: controller,
-            keyboardType: label == "Phone Number"? TextInputType.numberWithOptions() : TextInputType.text,
+            keyboardType: label == "Phone Number"? const TextInputType.numberWithOptions() : TextInputType.text,
             decoration: InputDecoration(labelText: label),
           ),
         ),
@@ -396,7 +387,7 @@ class _ActualUser extends State<ActualUser> {
                 });
                 // Show a confirmation message
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text("Information updated successfully!")),
+                  const SnackBar(content: Text("Information updated successfully!")),
                 );
               }
             },

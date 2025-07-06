@@ -7,6 +7,8 @@ import 'package:geolocator/geolocator.dart';
 import 'globle.dart';
 
 class TC extends StatefulWidget {
+  const TC({super.key});
+
   @override
   State<StatefulWidget> createState() => _TC();
 }
@@ -19,8 +21,8 @@ class _TC extends State<TC> {
   void initState() {
     super.initState();
     searchTermsAndConditions();
-    void _liveLocation() {
-      LocationSettings locationSettings = LocationSettings(
+    void liveLocation() {
+      LocationSettings locationSettings = const LocationSettings(
         accuracy: LocationAccuracy.high,
         distanceFilter: 100,
       );
@@ -44,8 +46,7 @@ class _TC extends State<TC> {
       );
     }
 
-    ;
-    _liveLocation();
+    liveLocation();
   }
 
   Future<void> searchTermsAndConditions() async {
@@ -75,7 +76,7 @@ class _TC extends State<TC> {
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 AppBar(
-                  title: Center(
+                  title: const Center(
                     child: Text("Terms & Conditions",
                         style: TextStyle(
                             fontSize: 20, fontWeight: FontWeight.bold, color : Colors.white)),
@@ -90,110 +91,108 @@ class _TC extends State<TC> {
             children: [
               Padding(
                 padding: const EdgeInsets.only(top: 150),
-                child: Container(
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.vertical,
-                    child: Column(
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Container(
-                            height: screenHeight,
-                            width: screenWidth,
-                            decoration: BoxDecoration(
-                                color: Colors.white,
-                                boxShadow: [
-                                  BoxShadow(
-                                      color: Colors.black26,
-                                      blurRadius: 1,
-                                      spreadRadius: 1)
-                                ],
-                                borderRadius: BorderRadius.circular(10)),
-                            child: Column(
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Text("Discaimer",
-                                      style: TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.bold)),
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.only(
-                                      right: 15, left: 15),
-                                  child: Divider(),
-                                ),
-                                Container(
-                                  height: screenHeight * 0.78,
-                                  width: screenWidth * 0.9,
-                                  child: ListView.builder(
-                                    padding: EdgeInsets.zero,
-                                    itemCount: documents.length,
-                                    itemBuilder: (context, index) {
-                                      return Container(
-                                        width: screenWidth * 0.85,
-                                        margin: EdgeInsets.all(5),
-                                        decoration: BoxDecoration(
-                                            color: Colors.white,
-                                            borderRadius:
-                                                BorderRadius.circular(10),
-                                            boxShadow: [
-                                              BoxShadow(
-                                                  color: Colors.black26,
-                                                  spreadRadius: 1,
-                                                  blurRadius: 1)
-                                            ]),
-                                        child: Padding(
-                                          padding: const EdgeInsets.all(8.0),
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment
-                                                        .spaceBetween,
-                                                children: [
-                                                  Text(documents[index]['Term'],
-                                                      style: TextStyle(
-                                                          fontSize: 16)),
-                                                  InkWell(
-                                                    onTap: () {
-                                                      setState(() {
-                                                        _expandedList[index] =
-                                                            !_expandedList[
-                                                                index];
-                                                      });
-                                                    },
-                                                    child: Icon(
-                                                        CupertinoIcons.plus),
-                                                  ),
-                                                ],
-                                              ),
-                                              if (_expandedList[index])
-                                                Column(
-                                                  children: [
-                                                    Divider(),
-                                                    Text(
-                                                        documents[index]
-                                                            ['Condition'],
-                                                        style: TextStyle(
-                                                            fontSize: 14)),
-                                                  ],
-                                                )
-                                            ],
-                                          ),
-                                        ),
-                                      );
-                                    },
-                                  ),
-                                ),
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.vertical,
+                  child: Column(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Container(
+                          height: screenHeight,
+                          width: screenWidth,
+                          decoration: BoxDecoration(
+                              color: Colors.white,
+                              boxShadow: const [
+                                BoxShadow(
+                                    color: Colors.black26,
+                                    blurRadius: 1,
+                                    spreadRadius: 1)
                               ],
-                            ),
+                              borderRadius: BorderRadius.circular(10)),
+                          child: Column(
+                            children: [
+                              const Padding(
+                                padding: EdgeInsets.all(8.0),
+                                child: Text("Discaimer",
+                                    style: TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold)),
+                              ),
+                              const Padding(
+                                padding: EdgeInsets.only(
+                                    right: 15, left: 15),
+                                child: Divider(),
+                              ),
+                              SizedBox(
+                                height: screenHeight * 0.78,
+                                width: screenWidth * 0.9,
+                                child: ListView.builder(
+                                  padding: EdgeInsets.zero,
+                                  itemCount: documents.length,
+                                  itemBuilder: (context, index) {
+                                    return Container(
+                                      width: screenWidth * 0.85,
+                                      margin: const EdgeInsets.all(5),
+                                      decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          borderRadius:
+                                              BorderRadius.circular(10),
+                                          boxShadow: const [
+                                            BoxShadow(
+                                                color: Colors.black26,
+                                                spreadRadius: 1,
+                                                blurRadius: 1)
+                                          ]),
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
+                                              children: [
+                                                Text(documents[index]['Term'],
+                                                    style: const TextStyle(
+                                                        fontSize: 16)),
+                                                InkWell(
+                                                  onTap: () {
+                                                    setState(() {
+                                                      _expandedList[index] =
+                                                          !_expandedList[
+                                                              index];
+                                                    });
+                                                  },
+                                                  child: const Icon(
+                                                      CupertinoIcons.plus),
+                                                ),
+                                              ],
+                                            ),
+                                            if (_expandedList[index])
+                                              Column(
+                                                children: [
+                                                  const Divider(),
+                                                  Text(
+                                                      documents[index]
+                                                          ['Condition'],
+                                                      style: const TextStyle(
+                                                          fontSize: 14)),
+                                                ],
+                                              )
+                                          ],
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                            ],
                           ),
-                        )
-                      ],
-                    ),
+                        ),
+                      )
+                    ],
                   ),
                 ),
               ),

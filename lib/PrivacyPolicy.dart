@@ -6,6 +6,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class PrivacyPolicy extends StatefulWidget {
+  const PrivacyPolicy({super.key});
+
   @override
   State<PrivacyPolicy> createState() => _PrivacyPolicyState();
 }
@@ -25,7 +27,7 @@ class _PrivacyPolicyState extends State<PrivacyPolicy> {
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
-        builder: (context) => LoginPage(),
+        builder: (context) => const LoginPage(),
       ),
     );
   }

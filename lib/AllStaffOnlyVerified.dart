@@ -1,11 +1,8 @@
 import 'package:carehub/ContactedUs.dart';
-import 'package:carehub/LoginPage.dart';
 import 'package:carehub/RegistreredUsers.dart';
 import 'package:carehub/StaffVerifcation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:photo_view/photo_view.dart';
@@ -16,10 +13,9 @@ import 'globle.dart';
 
 class Allstaffonlyverified extends StatefulWidget {
   final loggedAdmin;
-  Allstaffonlyverified({required this.loggedAdmin});
+  const Allstaffonlyverified({super.key, required this.loggedAdmin});
   @override
-  State<StatefulWidget> createState() =>
-      _Allstaffonlyverified(loggedAdmin: loggedAdmin);
+  State<StatefulWidget> createState() => _Allstaffonlyverified(loggedAdmin: loggedAdmin);
 }
 
 class Staff {
@@ -34,7 +30,6 @@ class Staff {
         return null;
       }
     } catch (e) {
-      print("Error fetching staff data: $e");
       return null;
     }
   }
@@ -162,10 +157,7 @@ class _Allstaffonlyverified extends State<Allstaffonlyverified> {
           .getDownloadURL()
           .catchError((_) => '');
     } catch (e) {
-      print("Error fetching verification data: $e");
     }
-
-    print("Test 8");
     setState(() => isLoading = false);
   }
 
@@ -192,7 +184,7 @@ class _Allstaffonlyverified extends State<Allstaffonlyverified> {
     };
 
     if (!fieldMethods.containsKey(fieldNeed)) {
-      return Text("Invalid Field Name");
+      return const Text("Invalid Field Name");
     }
 
     return FutureBuilder<String>(
@@ -235,14 +227,14 @@ class _Allstaffonlyverified extends State<Allstaffonlyverified> {
                     width: 80,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(80),
-                      boxShadow: [
+                      boxShadow: const [
                         BoxShadow(
                           blurRadius: 1,
                           spreadRadius: 1,
                           color: Colors.black26,
                         ),
                       ],
-                      image: DecorationImage(
+                      image: const DecorationImage(
                         image: NetworkImage(
                             "https://firebasestorage.googleapis.com/v0/b/carehub-af7ec.appspot.com/o/carenest.png?alt=media&token=6d6df551-5264-42a6-a58c-d02e66040e43"),
                         fit: BoxFit.cover,
@@ -251,18 +243,18 @@ class _Allstaffonlyverified extends State<Allstaffonlyverified> {
                     ),
                   ),
                   Text(
-                    "${loggedAdmin}",
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                    "$loggedAdmin",
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                   )
                 ])),
             ListTile(
-              leading: Icon(Icons.work),
-              title: Text('Registared Staff'),
+              leading: const Icon(Icons.work),
+              title: const Text('Registared Staff'),
               onTap: () {},
             ),
             ListTile(
-              leading: Icon(Icons.person),
-              title: Text('Registared User'),
+              leading: const Icon(Icons.person),
+              title: const Text('Registared User'),
               onTap: () {
                 Navigator.pushReplacement(
                     context,
@@ -273,10 +265,10 @@ class _Allstaffonlyverified extends State<Allstaffonlyverified> {
                     ));
               },
             ),
-            Divider(),
+            const Divider(),
             ListTile(
-              leading: Icon(Icons.headset_mic),
-              title: Text('Contacted Us'),
+              leading: const Icon(Icons.headset_mic),
+              title: const Text('Contacted Us'),
               onTap: () {
                 Navigator.pushReplacement(
                     context,
@@ -288,8 +280,8 @@ class _Allstaffonlyverified extends State<Allstaffonlyverified> {
               },
             ),
             ListTile(
-              leading: Icon(Icons.verified_user),
-              title: Text('Pending Verifications'),
+              leading: const Icon(Icons.verified_user),
+              title: const Text('Pending Verifications'),
               onTap: () {
                 Navigator.pushReplacement(
                     context,
@@ -301,8 +293,8 @@ class _Allstaffonlyverified extends State<Allstaffonlyverified> {
               },
             ),
             ListTile(
-              leading: Icon(Icons.feedback),
-              title: Text('Feedbacks'),
+              leading: const Icon(Icons.feedback),
+              title: const Text('Feedbacks'),
               onTap: () {},
             ),
           ],
@@ -328,14 +320,14 @@ class _Allstaffonlyverified extends State<Allstaffonlyverified> {
                                 _scaffoldKey.currentState?.openDrawer();
                               });
                             },
-                            child: Icon(
+                            child: const Icon(
                               Icons.menu,
                             ),
                           ),
-                          SizedBox(
+                          const SizedBox(
                             width: 20,
                           ),
-                          Text("CareNest Management",
+                          const Text("CareNest Management",
                               style: TextStyle(
                                   fontSize: 20, fontWeight: FontWeight.bold)),
                         ],
@@ -353,233 +345,231 @@ class _Allstaffonlyverified extends State<Allstaffonlyverified> {
             children: [
               Padding(
                 padding: const EdgeInsets.only(top: 95),
-                child: Container(
-                  child: Column(
-                    children: [
-                      // Search bar
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 5),
-                        child: Row(
-                          children: [
-                            Container(
-                              margin: EdgeInsets.symmetric(
-                                  horizontal: screenWidth * 0.03),
-                              width: screenWidth * 0.7,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(50),
-                                color: Colors.white,
-                                boxShadow: [
-                                  BoxShadow(
-                                      spreadRadius: 1,
-                                      color: Colors.black26,
-                                      blurRadius: 1)
-                                ],
+                child: Column(
+                  children: [
+                    // Search bar
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 5),
+                      child: Row(
+                        children: [
+                          Container(
+                            margin: EdgeInsets.symmetric(
+                                horizontal: screenWidth * 0.03),
+                            width: screenWidth * 0.7,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(50),
+                              color: Colors.white,
+                              boxShadow: const [
+                                BoxShadow(
+                                    spreadRadius: 1,
+                                    color: Colors.black26,
+                                    blurRadius: 1)
+                              ],
+                            ),
+                            child: Row(
+                              children: [
+                                const Padding(
+                                  padding: EdgeInsets.only(left: 10),
+                                  child: Icon(Icons.search,
+                                      color: Colors.blue, size: 25),
+                                ),
+                                Expanded(
+                                  child: TextField(
+                                    onChanged: (value) {
+                                      setState(() {
+                                        Searched = value;
+                                      });
+                                    },
+                                    decoration: const InputDecoration(
+                                      border: InputBorder.none,
+                                      hintText:
+                                          'Search by Name, Email, City, Profession',
+                                      hintStyle: TextStyle(fontSize: 12),
+                                      contentPadding:
+                                          EdgeInsets.symmetric(
+                                              horizontal: 10),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(left: 5),
+                            child: InkWell(
+                              onTap: () {
+                                setState(() {
+                                  isFilterOpen = !isFilterOpen;
+                                });
+                              },
+                              child: Container(
+                                height: 50,
+                                width: screenWidth * 0.18,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(20),
+                                  color: Colors.white,
+                                  boxShadow: const [
+                                    BoxShadow(
+                                        spreadRadius: 1,
+                                        color: Colors.black26,
+                                        blurRadius: 1),
+                                  ],
+                                ),
+                                child: const Icon(Icons.filter_list_sharp,
+                                    size: 30, color: Colors.blue),
                               ),
-                              child: Row(
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const Padding(
+                      padding: EdgeInsets.all(8.0),
+                      child: Text(
+                        "All Verified Staff",
+                        style: TextStyle(fontSize: 16),
+                      ),
+                    ),
+                    Expanded(
+                      child: StreamBuilder<QuerySnapshot>(
+                        stream: FirebaseFirestore.instance
+                            .collection("user")
+                            .snapshots(),
+                        builder: (context, snapshot) {
+                          List<Row> staffViews = [];
+                          if (snapshot.hasData) {
+                            final staffs =
+                                snapshot.data?.docs.reversed.toList();
+
+                            Row generateRow(final staffData, var staff) {
+                              return Row(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   Padding(
-                                    padding: const EdgeInsets.only(left: 10),
-                                    child: Icon(Icons.search,
-                                        color: Colors.blue, size: 25),
-                                  ),
-                                  Expanded(
-                                    child: TextField(
-                                      onChanged: (value) {
-                                        setState(() {
-                                          Searched = value;
-                                        });
-                                      },
-                                      decoration: InputDecoration(
-                                        border: InputBorder.none,
-                                        hintText:
-                                            'Search by Name, Email, City, Profession',
-                                        hintStyle: TextStyle(fontSize: 12),
-                                        contentPadding:
-                                            const EdgeInsets.symmetric(
-                                                horizontal: 10),
+                                    padding:
+                                        const EdgeInsets.only(bottom: 5.0),
+                                    child: Container(
+                                      height: 70,
+                                      width: screenWidth * 0.9,
+                                      decoration: BoxDecoration(
+                                        borderRadius:
+                                            BorderRadius.circular(15),
+                                        border: Border.all(
+                                            color: Colors.blue, width: 1),
+                                      ),
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Container(
+                                              height: 40,
+                                              width: 40,
+                                              decoration: BoxDecoration(
+                                                borderRadius:
+                                                    BorderRadius.circular(40),
+                                                image: DecorationImage(
+                                                  image: NetworkImage(
+                                                      staffData[
+                                                              'Profile_Pic'] ??
+                                                          ''),
+                                                  fit: BoxFit.cover,
+                                                ),
+                                              ),
+                                            ),
+                                            Text(
+                                              "${staffData["First_name"]} ${staffData["Last_name"]}"
+                                                          .length >
+                                                      12
+                                                  ? "${staffData["First_name"]} ${staffData["Last_name"]}"
+                                                          .substring(0, 10) +
+                                                      "..."
+                                                  : "${staffData["First_name"]} ${staffData["Last_name"]}",
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                            Text(
+                                              staffData["professionOfStaff"]
+                                                          .length >
+                                                      7
+                                                  ? "${staffData["professionOfStaff"].substring(0, 7)}..."
+                                                  : "${staffData["professionOfStaff"][0].toUpperCase()}${staffData["professionOfStaff"].substring(1)}",
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                            ElevatedButton(
+                                              onPressed: () {
+                                                isStaffOpen = true;
+                                                setState(() {
+                                                  SelectedProf = staffData[
+                                                      "professionOfStaff"];
+                                                  SelectedUID = staff.id;
+                                                });
+                                                getStaffverificationdata(
+                                                    staff.id);
+                                              },
+                                              child: const Text("Check"),
+                                            ),
+                                          ],
+                                        ),
                                       ),
                                     ),
                                   ),
                                 ],
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.only(left: 5),
-                              child: InkWell(
-                                onTap: () {
-                                  setState(() {
-                                    isFilterOpen = !isFilterOpen;
-                                  });
-                                },
-                                child: Container(
-                                  height: 50,
-                                  width: screenWidth * 0.18,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(20),
-                                    color: Colors.white,
-                                    boxShadow: [
-                                      BoxShadow(
-                                          spreadRadius: 1,
-                                          color: Colors.black26,
-                                          blurRadius: 1),
-                                    ],
-                                  ),
-                                  child: Icon(Icons.filter_list_sharp,
-                                      size: 30, color: Colors.blue),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Text(
-                          "All Verified Staff",
-                          style: TextStyle(fontSize: 16),
-                        ),
-                      ),
-                      Expanded(
-                        child: StreamBuilder<QuerySnapshot>(
-                          stream: FirebaseFirestore.instance
-                              .collection("user")
-                              .snapshots(),
-                          builder: (context, snapshot) {
-                            List<Row> staffViews = [];
-                            if (snapshot.hasData) {
-                              final staffs =
-                                  snapshot.data?.docs.reversed.toList();
+                              );
+                            }
 
-                              Row generateRow(final staffData, var staff) {
-                                return Row(
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Padding(
-                                      padding:
-                                          const EdgeInsets.only(bottom: 5.0),
-                                      child: Container(
-                                        height: 70,
-                                        width: screenWidth * 0.9,
-                                        decoration: BoxDecoration(
-                                          borderRadius:
-                                              BorderRadius.circular(15),
-                                          border: Border.all(
-                                              color: Colors.blue, width: 1),
-                                        ),
-                                        child: Padding(
-                                          padding: const EdgeInsets.all(8.0),
-                                          child: Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              Container(
-                                                height: 40,
-                                                width: 40,
-                                                decoration: BoxDecoration(
-                                                  borderRadius:
-                                                      BorderRadius.circular(40),
-                                                  image: DecorationImage(
-                                                    image: NetworkImage(
-                                                        staffData[
-                                                                'Profile_Pic'] ??
-                                                            ''),
-                                                    fit: BoxFit.cover,
-                                                  ),
-                                                ),
-                                              ),
-                                              Text(
-                                                "${staffData["First_name"]} ${staffData["Last_name"]}"
-                                                            .length >
-                                                        12
-                                                    ? "${staffData["First_name"]} ${staffData["Last_name"]}"
-                                                            .substring(0, 10) +
-                                                        "..."
-                                                    : "${staffData["First_name"]} ${staffData["Last_name"]}",
-                                                overflow: TextOverflow.ellipsis,
-                                              ),
-                                              Text(
-                                                staffData["professionOfStaff"]
-                                                            .length >
-                                                        7
-                                                    ? "${staffData["professionOfStaff"].substring(0, 7)}..."
-                                                    : "${staffData["professionOfStaff"][0].toUpperCase()}${staffData["professionOfStaff"].substring(1)}",
-                                                overflow: TextOverflow.ellipsis,
-                                              ),
-                                              ElevatedButton(
-                                                onPressed: () {
-                                                  isStaffOpen = true;
-                                                  setState(() {
-                                                    SelectedProf = staffData[
-                                                        "professionOfStaff"];
-                                                    SelectedUID = staff.id;
-                                                  });
-                                                  getStaffverificationdata(
-                                                      staff.id);
-                                                },
-                                                child: Text("Check"),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                );
-                              }
+                            bool matchesSearch(
+                                Map<String, dynamic> staffData) {
+                              String lowerSearch = Searched.toLowerCase();
+                              return Searched.isEmpty ||
+                                  staffData['First_name']
+                                          ?.toLowerCase()
+                                          .startsWith(lowerSearch) ==
+                                      true ||
+                                  staffData['City']
+                                          ?.toLowerCase()
+                                          .startsWith(lowerSearch) ==
+                                      true ||
+                                  staffData['professionOfStaff']
+                                          ?.toLowerCase()
+                                          .startsWith(lowerSearch) ==
+                                      true ||
+                                  staffData['Last_name']
+                                          ?.toLowerCase()
+                                          .startsWith(lowerSearch) ==
+                                      true ||
+                                  staffData['Email']
+                                          ?.toLowerCase()
+                                          .startsWith(lowerSearch) ==
+                                      true;
+                            }
 
-                              bool matchesSearch(
-                                  Map<String, dynamic> staffData) {
-                                String lowerSearch = Searched.toLowerCase();
-                                return Searched.isEmpty ||
-                                    staffData['First_name']
-                                            ?.toLowerCase()
-                                            .startsWith(lowerSearch) ==
-                                        true ||
-                                    staffData['City']
-                                            ?.toLowerCase()
-                                            .startsWith(lowerSearch) ==
-                                        true ||
-                                    staffData['professionOfStaff']
-                                            ?.toLowerCase()
-                                            .startsWith(lowerSearch) ==
-                                        true ||
-                                    staffData['Last_name']
-                                            ?.toLowerCase()
-                                            .startsWith(lowerSearch) ==
-                                        true ||
-                                    staffData['Email']
-                                            ?.toLowerCase()
-                                            .startsWith(lowerSearch) ==
-                                        true;
-                              }
+                            bool matchesFilter(
+                                Map<String, dynamic> staffData) {
+                              return staffData.containsKey('Verified') &&
+                                  (!isFilterAdded &&
+                                      staffData['Verified'] == 'verified');
+                            }
 
-                              bool matchesFilter(
-                                  Map<String, dynamic> staffData) {
-                                return staffData.containsKey('Verified') &&
-                                    (!isFilterAdded &&
-                                        staffData['Verified'] == 'verified');
-                              }
+                            for (var staff in staffs!) {
+                              final staffData =
+                                  staff.data() as Map<String, dynamic>;
 
-                              for (var staff in staffs!) {
-                                final staffData =
-                                    staff.data() as Map<String, dynamic>;
-
-                                if (matchesSearch(staffData) &&
-                                    matchesFilter(staffData)) {
-                                  staffViews.add(generateRow(staffData, staff));
-                                }
+                              if (matchesSearch(staffData) &&
+                                  matchesFilter(staffData)) {
+                                staffViews.add(generateRow(staffData, staff));
                               }
                             }
-                            return ListView(
-                              padding: EdgeInsets.zero,
-                              children: staffViews,
-                            );
-                          },
-                        ),
-                      )
-                    ],
-                  ),
+                          }
+                          return ListView(
+                            padding: EdgeInsets.zero,
+                            children: staffViews,
+                          );
+                        },
+                      ),
+                    )
+                  ],
                 ),
               ),
             ],
@@ -607,16 +597,16 @@ class _Allstaffonlyverified extends State<Allstaffonlyverified> {
                                         isStaffOpen = false;
                                       });
                                     },
-                                    child: Icon(Icons.close))
+                                    child: const Icon(Icons.close))
                               ],
                             ),
                           ),
-                          Container(
+                          SizedBox(
                             width: screenWidth * 0.8,
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
+                                const Text(
                                   "Registared Data",
                                   style: TextStyle(
                                       fontWeight: FontWeight.bold,
@@ -628,7 +618,7 @@ class _Allstaffonlyverified extends State<Allstaffonlyverified> {
                                   builder: (context, snapshot) {
                                     if (snapshot.connectionState ==
                                         ConnectionState.waiting) {
-                                      return CircularProgressIndicator();
+                                      return const CircularProgressIndicator();
                                     } else if (snapshot.hasError) {
                                       return Text("Error: ${snapshot.error}");
                                     } else {
@@ -652,10 +642,10 @@ class _Allstaffonlyverified extends State<Allstaffonlyverified> {
                                     }
                                   },
                                 ),
-                                SizedBox(
+                                const SizedBox(
                                   height: 5,
                                 ),
-                                Text("Full Name",
+                                const Text("Full Name",
                                     style: TextStyle(
                                         fontSize: 14,
                                         fontWeight: FontWeight.bold)),
@@ -665,127 +655,127 @@ class _Allstaffonlyverified extends State<Allstaffonlyverified> {
                                     getData("LastName")
                                   ],
                                 ),
-                                SizedBox(
+                                const SizedBox(
                                   height: 5,
                                 ),
-                                Text(
+                                const Text(
                                   "Email",
                                   style: TextStyle(
                                       fontSize: 14,
                                       fontWeight: FontWeight.bold),
                                 ),
                                 getData("Email"),
-                                SizedBox(
+                                const SizedBox(
                                   height: 5,
                                 ),
-                                Text(
+                                const Text(
                                   "City",
                                   style: TextStyle(
                                       fontSize: 14,
                                       fontWeight: FontWeight.bold),
                                 ),
                                 getData("City"),
-                                SizedBox(
+                                const SizedBox(
                                   height: 5,
                                 ),
-                                Text(
+                                const Text(
                                   "Date Of Registered : ",
                                   style: TextStyle(
                                       fontSize: 14,
                                       fontWeight: FontWeight.bold),
                                 ),
                                 getData("DateOfRegistered"),
-                                SizedBox(
+                                const SizedBox(
                                   height: 5,
                                 ),
-                                Text(
+                                const Text(
                                   "Day Rate",
                                   style: TextStyle(
                                       fontSize: 14,
                                       fontWeight: FontWeight.bold),
                                 ),
                                 getData("DayRate"),
-                                SizedBox(
+                                const SizedBox(
                                   height: 5,
                                 ),
-                                Text(
+                                const Text(
                                   "Day Shift",
                                   style: TextStyle(
                                       fontSize: 14,
                                       fontWeight: FontWeight.bold),
                                 ),
                                 getData("DayShift"),
-                                SizedBox(
+                                const SizedBox(
                                   height: 5,
                                 ),
-                                Text(
+                                const Text(
                                   "Phone Number",
                                   style: TextStyle(
                                       fontSize: 14,
                                       fontWeight: FontWeight.bold),
                                 ),
                                 getData("PhoneNumber"),
-                                SizedBox(
+                                const SizedBox(
                                   height: 5,
                                 ),
-                                Text(
+                                const Text(
                                   "Rating",
                                   style: TextStyle(
                                       fontSize: 14,
                                       fontWeight: FontWeight.bold),
                                 ),
                                 getData("Rating"),
-                                SizedBox(
+                                const SizedBox(
                                   height: 5,
                                 ),
-                                Text(
+                                const Text(
                                   "Status",
                                   style: TextStyle(
                                       fontSize: 14,
                                       fontWeight: FontWeight.bold),
                                 ),
                                 getData("Status"),
-                                SizedBox(
+                                const SizedBox(
                                   height: 5,
                                 ),
-                                Text(
+                                const Text(
                                   "Traveling Charges",
                                   style: TextStyle(
                                       fontSize: 14,
                                       fontWeight: FontWeight.bold),
                                 ),
                                 getData("TravelingCharges"),
-                                SizedBox(
+                                const SizedBox(
                                   height: 5,
                                 ),
-                                Text(
+                                const Text(
                                   "Verified",
                                   style: TextStyle(
                                       fontSize: 14,
                                       fontWeight: FontWeight.bold),
                                 ),
                                 getData("Verified"),
-                                SizedBox(
+                                const SizedBox(
                                   height: 5,
                                 ),
-                                Text(
+                                const Text(
                                   "Lat",
                                   style: TextStyle(
                                       fontSize: 14,
                                       fontWeight: FontWeight.bold),
                                 ),
                                 getData("Lat"),
-                                SizedBox(
+                                const SizedBox(
                                   height: 5,
                                 ),
-                                Text(
+                                const Text(
                                   "Long",
                                   style: TextStyle(
                                       fontSize: 14,
                                       fontWeight: FontWeight.bold),
                                 ),
                                 getData("Long"),
-                                Text(
+                                const Text(
                                   "Action Taken By",
                                   style: TextStyle(
                                       fontSize: 14,
@@ -795,7 +785,7 @@ class _Allstaffonlyverified extends State<Allstaffonlyverified> {
                               ],
                             ),
                           ),
-                          Text("Personal ID Document"),
+                          const Text("Personal ID Document"),
                           Padding(
                             padding: const EdgeInsets.all(8.0),
                             child: Stack(
@@ -825,7 +815,7 @@ class _Allstaffonlyverified extends State<Allstaffonlyverified> {
                                         builder: (context) => Dialog(
                                           backgroundColor: Colors
                                               .transparent, // Remove black background
-                                          insetPadding: EdgeInsets.all(
+                                          insetPadding: const EdgeInsets.all(
                                               0), // Remove extra padding
                                           child: GestureDetector(
                                             onTap: () => Navigator.pop(
@@ -858,12 +848,12 @@ class _Allstaffonlyverified extends State<Allstaffonlyverified> {
                                       );
                                     },
                                     child: Container(
-                                      padding: EdgeInsets.all(4),
-                                      decoration: BoxDecoration(
+                                      padding: const EdgeInsets.all(4),
+                                      decoration: const BoxDecoration(
                                         color: Colors.black54,
                                         shape: BoxShape.circle,
                                       ),
-                                      child: Icon(
+                                      child: const Icon(
                                         Icons.fullscreen,
                                         color: Colors.white,
                                         size: 24,
@@ -874,7 +864,7 @@ class _Allstaffonlyverified extends State<Allstaffonlyverified> {
                               ],
                             ),
                           ),
-                          Text("Photo"),
+                          const Text("Photo"),
                           Padding(
                             padding: const EdgeInsets.all(8.0),
                             child: Stack(
@@ -904,7 +894,7 @@ class _Allstaffonlyverified extends State<Allstaffonlyverified> {
                                         builder: (context) => Dialog(
                                           backgroundColor: Colors
                                               .transparent, // Remove black background
-                                          insetPadding: EdgeInsets.all(
+                                          insetPadding: const EdgeInsets.all(
                                               0), // Remove extra padding
                                           child: GestureDetector(
                                             onTap: () => Navigator.pop(
@@ -937,12 +927,12 @@ class _Allstaffonlyverified extends State<Allstaffonlyverified> {
                                       );
                                     },
                                     child: Container(
-                                      padding: EdgeInsets.all(4),
-                                      decoration: BoxDecoration(
+                                      padding: const EdgeInsets.all(4),
+                                      decoration: const BoxDecoration(
                                         color: Colors.black54,
                                         shape: BoxShape.circle,
                                       ),
-                                      child: Icon(
+                                      child: const Icon(
                                         Icons.fullscreen,
                                         color: Colors.white,
                                         size: 24,
@@ -953,7 +943,7 @@ class _Allstaffonlyverified extends State<Allstaffonlyverified> {
                               ],
                             ),
                           ),
-                          Text("Self Video"),
+                          const Text("Self Video"),
                           Padding(
                             padding: const EdgeInsets.all(8.0),
                             child: isLoading
@@ -963,7 +953,7 @@ class _Allstaffonlyverified extends State<Allstaffonlyverified> {
                                         border: Border.all(
                                             width: 1, color: Colors.blue),
                                         borderRadius: BorderRadius.circular(5)),
-                                    child: Center(
+                                    child: const Center(
                                         child: CircularProgressIndicator()),
                                   )
                                 : Stack(
@@ -984,7 +974,7 @@ class _Allstaffonlyverified extends State<Allstaffonlyverified> {
                                               builder: (context) => Dialog(
                                                 backgroundColor:
                                                     Colors.transparent,
-                                                insetPadding: EdgeInsets.all(0),
+                                                insetPadding: const EdgeInsets.all(0),
                                                 child: GestureDetector(
                                                   onTap: () =>
                                                       Navigator.pop(context),
@@ -1009,12 +999,12 @@ class _Allstaffonlyverified extends State<Allstaffonlyverified> {
                                             );
                                           },
                                           child: Container(
-                                            padding: EdgeInsets.all(4),
-                                            decoration: BoxDecoration(
+                                            padding: const EdgeInsets.all(4),
+                                            decoration: const BoxDecoration(
                                               color: Colors.black54,
                                               shape: BoxShape.circle,
                                             ),
-                                            child: Icon(
+                                            child: const Icon(
                                               Icons.fullscreen,
                                               color: Colors.white,
                                               size: 24,
@@ -1025,7 +1015,7 @@ class _Allstaffonlyverified extends State<Allstaffonlyverified> {
                                     ],
                                   ),
                           ),
-                          Text("Professional Document"),
+                          const Text("Professional Document"),
                           Padding(
                             padding: const EdgeInsets.all(8.0),
                             child: Stack(
@@ -1055,7 +1045,7 @@ class _Allstaffonlyverified extends State<Allstaffonlyverified> {
                                         builder: (context) => Dialog(
                                           backgroundColor: Colors
                                               .transparent, // Remove black background
-                                          insetPadding: EdgeInsets.all(
+                                          insetPadding: const EdgeInsets.all(
                                               0), // Remove extra padding
                                           child: GestureDetector(
                                             onTap: () => Navigator.pop(
@@ -1088,12 +1078,12 @@ class _Allstaffonlyverified extends State<Allstaffonlyverified> {
                                       );
                                     },
                                     child: Container(
-                                      padding: EdgeInsets.all(4),
-                                      decoration: BoxDecoration(
+                                      padding: const EdgeInsets.all(4),
+                                      decoration: const BoxDecoration(
                                         color: Colors.black54,
                                         shape: BoxShape.circle,
                                       ),
-                                      child: Icon(
+                                      child: const Icon(
                                         Icons.fullscreen,
                                         color: Colors.white,
                                         size: 24,
@@ -1111,7 +1101,7 @@ class _Allstaffonlyverified extends State<Allstaffonlyverified> {
                               style: GoogleFonts.poppins(fontSize: 16),
                               decoration: InputDecoration(
                                 hintText: "Feedback to Staff",
-                                hintStyle: TextStyle(color: Colors.black54),
+                                hintStyle: const TextStyle(color: Colors.black54),
                                 filled: true,
                                 fillColor: Colors.blueAccent[350],
                                 border: OutlineInputBorder(
@@ -1147,11 +1137,11 @@ class _Allstaffonlyverified extends State<Allstaffonlyverified> {
                                       isStaffOpen = false;
                                     });
                                     ScaffoldMessenger.of(context).showSnackBar(
-                                        SnackBar(
+                                        const SnackBar(
                                             content: Text(
                                                 "Staff Document Rejected")));
                                   },
-                                  child: Text("Reject")),
+                                  child: const Text("Reject")),
                               ElevatedButton(
                                   onPressed: () async {
                                     await FirebaseFirestore.instance
@@ -1174,11 +1164,11 @@ class _Allstaffonlyverified extends State<Allstaffonlyverified> {
                                       isStaffOpen = false;
                                     });
                                     ScaffoldMessenger.of(context).showSnackBar(
-                                        SnackBar(
+                                        const SnackBar(
                                             content: Text(
                                                 "Staff Documents Accepted")));
                                   },
-                                  child: Text("Accept"))
+                                  child: const Text("Accept"))
                             ],
                           )
                         ],
@@ -1191,12 +1181,12 @@ class _Allstaffonlyverified extends State<Allstaffonlyverified> {
               ? Positioned(
                   right: 0,
                   child: Container(
-                    margin: EdgeInsets.only(top: 147),
+                    margin: const EdgeInsets.only(top: 147),
                     height: 200,
                     width: 200,
                     decoration: BoxDecoration(
                         color: Colors.white,
-                        borderRadius: BorderRadius.only(
+                        borderRadius: const BorderRadius.only(
                             bottomLeft: Radius.circular(15),
                             topLeft: Radius.circular(15)),
                         border: Border.all(color: Colors.blue, width: 1)),
@@ -1205,12 +1195,12 @@ class _Allstaffonlyverified extends State<Allstaffonlyverified> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
+                          const Text(
                             "Verification Status",
                             style: TextStyle(
                                 fontSize: 18, fontWeight: FontWeight.bold),
                           ),
-                          SizedBox(
+                          const SizedBox(
                             height: 5,
                           ),
                           Column(
@@ -1228,15 +1218,15 @@ class _Allstaffonlyverified extends State<Allstaffonlyverified> {
                                           ? Colors.green
                                           : Colors.white,
                                       borderRadius:
-                                          BorderRadius.all(Radius.circular(10)),
-                                      boxShadow: [
+                                          const BorderRadius.all(Radius.circular(10)),
+                                      boxShadow: const [
                                         BoxShadow(
                                             blurRadius: 1,
                                             color: Colors.blue,
                                             spreadRadius: 1)
                                       ]),
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(8.0),
+                                  child: const Padding(
+                                    padding: EdgeInsets.all(8.0),
                                     child: Text("Rejected"),
                                   ),
                                 ),
@@ -1317,7 +1307,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
         : Container(
             height: 200,
             color: Colors.black,
-            child: Center(
+            child: const Center(
               child: CircularProgressIndicator(),
             ),
           );

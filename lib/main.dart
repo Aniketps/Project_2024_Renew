@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:ui';
 
 import 'package:app_settings/app_settings.dart';
 import 'package:carehub/Admin.dart';
@@ -7,7 +6,6 @@ import 'package:carehub/Deals.dart';
 import 'package:carehub/PrivacyPolicy.dart';
 import 'package:carehub/StaffPage.dart';
 import 'package:carehub/Feedback.dart';
-import 'package:carehub/StaffVerifcation.dart';
 import 'package:carehub/services/NotificationService.dart';
 import 'package:carehub/services/fcm_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -65,15 +63,15 @@ void showNoInternetDialog(BuildContext context) {
   showDialog(
     context: context,
     builder: (context) => AlertDialog(
-      title: Text("No Internet Connection"),
-      content: Text("Please turn on your internet to use the app."),
+      title: const Text("No Internet Connection"),
+      content: const Text("Please turn on your internet to use the app."),
       actions: [
         TextButton(
           onPressed: () {
             Navigator.pop(context);
             checkInternet(context); // Retry
           },
-          child: Text("Retry"),
+          child: const Text("Retry"),
         ),
       ],
     ),
@@ -145,7 +143,7 @@ class MyApp extends StatelessWidget {
 
           checkInternet(context);
 
-          return LoginPage();
+          return const LoginPage();
         },
       ),
     );
@@ -153,6 +151,8 @@ class MyApp extends StatelessWidget {
 }
 
 class MyHomePage extends StatefulWidget {
+  const MyHomePage({super.key});
+
   @override
   State<MyHomePage> createState() => _MyHomePageState();
 }
@@ -173,7 +173,9 @@ class _MyHomePageState extends State<MyHomePage> {
     _checkAndUpdate();
     FcmService.FirebaseInit();
     SearchStaff();
+    updateToken();
   }
+
   void _showSnack(String text) {
     if (_scaffoldKey.currentContext != null) {
       ScaffoldMessenger.of(_scaffoldKey.currentContext!)
@@ -190,7 +192,6 @@ class _MyHomePageState extends State<MyHomePage> {
         await InAppUpdate.completeFlexibleUpdate(); // completes silently
       }
     } catch (e) {
-      print("Start $e End");
       if (e.toString() ==
           'PlatformException(TASK_FAILURE, -10: Install Error(-10): The app is not owned by any user on this device. An app is "owned" if it has been acquired from Play. (https://developer.android.com/reference/com/google/android/play/core/install/model/InstallErrorCode#ERROR_APP_NOT_OWNED), null, null)'){
         _showSnack('Update failed: Testing Version');
@@ -200,6 +201,24 @@ class _MyHomePageState extends State<MyHomePage> {
       }
     }
   }
+  void updateToken() {
+    final user = FirebaseAuth.instance.currentUser;
+
+    if (user == null) return; // Always check for null
+
+    FirebaseMessaging.instance.onTokenRefresh.listen((newToken) {
+      FirebaseFirestore.instance
+          .collection("user")
+          .doc(user.uid)
+          .update({
+        'token': newToken,
+      })
+          .then((_) => print("✅ Token updated successfully"))
+          .catchError((e) => print("❌ Failed to update token: $e"));
+    });
+  }
+
+
 
   Future<void> _liveLocation() async {
     try {
@@ -258,7 +277,6 @@ class _MyHomePageState extends State<MyHomePage> {
         });
       }
     } catch (e) {
-      print("Live location error: $e");
     }
   }
 
@@ -399,7 +417,7 @@ class _MyHomePageState extends State<MyHomePage> {
   late String currentUserID;
 
   Future<void> SearchStaff() async {
-    User? user1 = await FirebaseAuth.instance.currentUser;
+    User? user1 = FirebaseAuth.instance.currentUser;
     currentUserID = user1?.uid ?? '';
     CollectionReference user = FirebaseFirestore.instance.collection('user');
     try {
@@ -413,21 +431,17 @@ class _MyHomePageState extends State<MyHomePage> {
         double lat = double.tryParse(StaffData["lat"].toString()) ?? 0.0;
         double long = double.tryParse(StaffData["long"].toString()) ?? 0.0;
         await getCurrentLocationName(lat, long);
-      } else {
-        print("No staff found with ID: $currentUserID");
       }
     } catch (e) {
-      print("Error fetching user by Staff ID: $e");
     }
   }
 
   Future<void> getCurrentLocationName(double lat, double long) async {
       List<Placemark> placemarks = await placemarkFromCoordinates(lat, long);
       if (placemarks.isNotEmpty) {
-        String place = "${placemarks.first.locality}" ?? "Location...";
-        print("Got Location $place");
+        String place = "${placemarks.first.locality}";
         setState(() {
-          CurrentLocation = "CareNest \nin ${place}";
+          CurrentLocation = "CareNest \nin $place";
         });
       }
   }
@@ -483,7 +497,7 @@ class _MyHomePageState extends State<MyHomePage> {
                             width: 80,
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(80),
-                              boxShadow: [
+                              boxShadow: const [
                                 BoxShadow(
                                   blurRadius: 1,
                                   spreadRadius: 1,
@@ -505,7 +519,7 @@ class _MyHomePageState extends State<MyHomePage> {
                               context,
                               PageRouteBuilder(
                                 transitionDuration: const Duration(milliseconds: 500),
-                                pageBuilder: (context, animation, secondaryAnimation) => ActualUser(),
+                                pageBuilder: (context, animation, secondaryAnimation) => const ActualUser(),
                                 transitionsBuilder: (context, animation, secondaryAnimation, child) {
                                   const begin = Offset(0.0, 1.0); // From bottom
                                   const end = Offset.zero;
@@ -529,7 +543,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                   width: 80,
                                   decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(80),
-                                    boxShadow: [
+                                    boxShadow: const [
                                       BoxShadow(
                                         blurRadius: 1,
                                         spreadRadius: 1,
@@ -549,7 +563,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                   width: 80,
                                   decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(80),
-                                    boxShadow: [
+                                    boxShadow: const [
                                       BoxShadow(
                                         blurRadius: 1,
                                         spreadRadius: 1,
@@ -557,16 +571,16 @@ class _MyHomePageState extends State<MyHomePage> {
                                       ),
                                     ],
                                   ),
-                                  child: Icon(CupertinoIcons.profile_circled))),
+                                  child: const Icon(CupertinoIcons.profile_circled))),
                   (StaffData == null)
-                      ? Text(
+                      ? const Text(
                           "Empty",
                           style: TextStyle(
                               fontWeight: FontWeight.bold, fontSize: 18),
                         )
                       : Text(
                           "${StaffData['First_name']} ${StaffData['Last_name']}",
-                          style: TextStyle(
+                          style: const TextStyle(
                               fontWeight: FontWeight.bold, fontSize: 18, color: Colors.white),
                         ),
                 ])),
@@ -576,7 +590,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   context,
                   PageRouteBuilder(
                     transitionDuration: const Duration(milliseconds: 500),
-                    pageBuilder: (context, animation, secondaryAnimation) => AdminLogin(),
+                    pageBuilder: (context, animation, secondaryAnimation) => const AdminLogin(),
                     transitionsBuilder: (context, animation, secondaryAnimation, child) {
                       const begin = Offset(1.0, 0.0); // From bottom
                       const end = Offset.zero;
@@ -594,15 +608,15 @@ class _MyHomePageState extends State<MyHomePage> {
                 );
               },
               child: ListTile(
-                leading: Icon(Icons.home),
-                title: Text('Home'),
+                leading: const Icon(Icons.home),
+                title: const Text('Home'),
                 onTap: () {
 
                   Navigator.pushReplacement(
                     context,
                     PageRouteBuilder(
                       transitionDuration: const Duration(milliseconds: 500),
-                      pageBuilder: (context, animation, secondaryAnimation) => MyHomePage(),
+                      pageBuilder: (context, animation, secondaryAnimation) => const MyHomePage(),
                       transitionsBuilder: (context, animation, secondaryAnimation, child) {
                         const begin = Offset(1.0, 0.0); // From bottom
                         const end = Offset.zero;
@@ -622,15 +636,15 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
             ),
             ListTile(
-              leading: Icon(Icons.history),
-              title: Text('Deals'),
+              leading: const Icon(Icons.history),
+              title: const Text('Deals'),
               onTap: () {
 
                 Navigator.push(
                   context,
                   PageRouteBuilder(
                     transitionDuration: const Duration(milliseconds: 500),
-                    pageBuilder: (context, animation, secondaryAnimation) => Deals(),
+                    pageBuilder: (context, animation, secondaryAnimation) => const Deals(),
                     transitionsBuilder: (context, animation, secondaryAnimation, child) {
                       const begin = Offset(1.0, 0.0);// From bottom
                       const end = Offset.zero;
@@ -648,17 +662,17 @@ class _MyHomePageState extends State<MyHomePage> {
                 );
               },
             ),
-            Divider(),
+            const Divider(),
             ListTile(
-              leading: Icon(Icons.headset_mic),
-              title: Text('Contact Us'),
+              leading: const Icon(Icons.headset_mic),
+              title: const Text('Contact Us'),
               onTap: () {
 
                 Navigator.push(
                   context,
                   PageRouteBuilder(
                     transitionDuration: const Duration(milliseconds: 500),
-                    pageBuilder: (context, animation, secondaryAnimation) => ContactUs(),
+                    pageBuilder: (context, animation, secondaryAnimation) => const ContactUs(),
                     transitionsBuilder: (context, animation, secondaryAnimation, child) {
                       const begin = Offset(1.0, 0.0);
                       const end = Offset.zero;
@@ -699,8 +713,8 @@ class _MyHomePageState extends State<MyHomePage> {
               },
             ),
             ListTile(
-              leading: Icon(Icons.library_books),
-              title: Text('Terms and Conditions'),
+              leading: const Icon(Icons.library_books),
+              title: const Text('Terms and Conditions'),
               onTap: () {
                 Navigator.push(
                   context,
@@ -725,14 +739,14 @@ class _MyHomePageState extends State<MyHomePage> {
               },
             ),
             ListTile(
-              leading: Icon(Icons.feedback),
-              title: Text('Feedback'),
+              leading: const Icon(Icons.feedback),
+              title: const Text('Feedback'),
               onTap: () {
                 Navigator.push(
                   context,
                   PageRouteBuilder(
                     transitionDuration: const Duration(milliseconds: 500),
-                    pageBuilder: (context, animation, secondaryAnimation) => Feedbacks(),
+                    pageBuilder: (context, animation, secondaryAnimation) => const Feedbacks(),
                     transitionsBuilder: (context, animation, secondaryAnimation, child) {
                       const begin = Offset(1.0, 0.0);
                       const end = Offset.zero;
@@ -750,10 +764,10 @@ class _MyHomePageState extends State<MyHomePage> {
                 );
               },
             ),
-            Divider(),
+            const Divider(),
             ListTile(
-              leading: Icon(Icons.logout),
-              title: Text('Logout'),
+              leading: const Icon(Icons.logout),
+              title: const Text('Logout'),
               onTap: () async {
                 await GoogleSignIn().signOut();
                 await FirebaseAuth.instance.signOut();
@@ -762,7 +776,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   context,
                   PageRouteBuilder(
                     transitionDuration: const Duration(milliseconds: 500),
-                    pageBuilder: (context, animation, secondaryAnimation) => LoginPage(),
+                    pageBuilder: (context, animation, secondaryAnimation) => const LoginPage(),
                     transitionsBuilder: (context, animation, secondaryAnimation, child) {
                       const begin = Offset(1.0, 0.0);
                       const end = Offset.zero;
@@ -790,16 +804,16 @@ class _MyHomePageState extends State<MyHomePage> {
             height: 150,
             color: Globle.theme,
             child: AppBar(
-              iconTheme: IconThemeData(
+              iconTheme: const IconThemeData(
                 color: Colors.white,
                 size: 35
               ),
               title: Column(
                 children: [
-                  SizedBox(height: 10,),
+                  const SizedBox(height: 10,),
                   Text(
-                    "$CurrentLocation",
-                    style: TextStyle(
+                    CurrentLocation,
+                    style: const TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
                       color: Colors.white, // Standard clickable link color
@@ -854,7 +868,7 @@ class _MyHomePageState extends State<MyHomePage> {
                               fit: BoxFit.cover, // Adjust the fit if necessary
                             ),
                             borderRadius: BorderRadius.circular(50),
-                            boxShadow: [
+                            boxShadow: const [
                               BoxShadow(
                                   color: Colors.black26,
                                   spreadRadius: 1,
@@ -869,7 +883,7 @@ class _MyHomePageState extends State<MyHomePage> {
                             context,
                             PageRouteBuilder(
                               transitionDuration: const Duration(milliseconds: 500),
-                              pageBuilder: (context, animation, secondaryAnimation) => ActualUser(),
+                              pageBuilder: (context, animation, secondaryAnimation) => const ActualUser(),
                               transitionsBuilder: (context, animation, secondaryAnimation, child) {
                                 const begin = Offset(1.0, 0.0);
                                 const end = Offset.zero;
@@ -900,7 +914,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                   )
                                 : null,
                             borderRadius: BorderRadius.circular(50),
-                            boxShadow: [
+                            boxShadow: const [
                               BoxShadow(
                                   color: Colors.black26,
                                   spreadRadius: 1,
@@ -930,7 +944,7 @@ class _MyHomePageState extends State<MyHomePage> {
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(8),
                                 color: Colors.white,
-                                boxShadow: [
+                                boxShadow: const [
                                   BoxShadow(
                                       spreadRadius: 1,
                                       color: Colors.black26,
@@ -939,8 +953,8 @@ class _MyHomePageState extends State<MyHomePage> {
                               ),
                               child: Row(
                                 children: [
-                                  Padding(
-                                    padding: const EdgeInsets.only(left: 10),
+                                  const Padding(
+                                    padding: EdgeInsets.only(left: 10),
                                     child: Icon(Icons.search,
                                         color: Colors.blue, size: 25),
                                   ),
@@ -951,11 +965,11 @@ class _MyHomePageState extends State<MyHomePage> {
                                           SearchGlobal = value;
                                         });
                                       },
-                                      decoration: InputDecoration(
+                                      decoration: const InputDecoration(
                                         border: InputBorder.none,
                                         hintText: 'Search...',
                                         contentPadding:
-                                            const EdgeInsets.symmetric(
+                                            EdgeInsets.symmetric(
                                                 horizontal: 10),
                                       ),
                                     ),
@@ -1049,7 +1063,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                                     ),
                                                     color: Colors.white,
                                                     borderRadius: BorderRadius.circular(8),
-                                                    boxShadow: [
+                                                    boxShadow: const [
                                                       BoxShadow(
                                                           color: Colors.black26,
                                                           blurRadius: 1,
@@ -1057,10 +1071,10 @@ class _MyHomePageState extends State<MyHomePage> {
                                                     ],
                                                   ),
                                                 ),
-                                                SizedBox(height: 5,),
-                                                Text("${HomeServices[index]}", style: GoogleFonts.roboto(fontSize: 16, fontWeight: FontWeight.bold),),
-                                                SizedBox(height: 2,),
-                                                Text("${HomeServicesDesc[index]}", style: GoogleFonts.roboto(fontSize: 16),),
+                                                const SizedBox(height: 5,),
+                                                Text(HomeServices[index], style: GoogleFonts.roboto(fontSize: 16, fontWeight: FontWeight.bold),),
+                                                const SizedBox(height: 2,),
+                                                Text(HomeServicesDesc[index], style: GoogleFonts.roboto(fontSize: 16),),
                                               ],
                                             ),
                                           )
@@ -1095,8 +1109,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                               PageRouteBuilder(
                                                 transitionDuration: const Duration(milliseconds: 500),
                                                 pageBuilder: (context, animation, secondaryAnimation) => StaffPage(
-                                                    Skill: HomeServices[index]
-                                                        .toLowerCase()),
+                                                    Skill: HomeServices[index].toLowerCase()),
                                                 transitionsBuilder: (context, animation, secondaryAnimation, child) {
                                                   const begin = Offset(1.0, 0.0);
                                                   const end = Offset.zero;
@@ -1130,7 +1143,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                                     ),
                                                     color: Colors.white,
                                                     borderRadius: BorderRadius.circular(8),
-                                                    boxShadow: [
+                                                    boxShadow: const [
                                                       BoxShadow(
                                                           color: Colors.black26,
                                                           blurRadius: 1,
@@ -1138,10 +1151,10 @@ class _MyHomePageState extends State<MyHomePage> {
                                                     ],
                                                   ),
                                                 ),
-                                                SizedBox(height: 5,),
-                                                Text("${HomeServices[index]}", style: GoogleFonts.roboto(fontSize: 16, fontWeight: FontWeight.bold),),
-                                                SizedBox(height: 2,),
-                                                Text("${HomeServicesDesc[index]}", style: GoogleFonts.roboto(fontSize: 16),),
+                                                const SizedBox(height: 5,),
+                                                Text(HomeServices[index], style: GoogleFonts.roboto(fontSize: 16, fontWeight: FontWeight.bold),),
+                                                const SizedBox(height: 2,),
+                                                Text(HomeServicesDesc[index], style: GoogleFonts.roboto(fontSize: 16),),
                                               ],
                                             ),
                                           )
@@ -1210,7 +1223,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                                     ),
                                                     color: Colors.white,
                                                     borderRadius: BorderRadius.circular(8),
-                                                    boxShadow: [
+                                                    boxShadow: const [
                                                       BoxShadow(
                                                           color: Colors.black26,
                                                           blurRadius: 1,
@@ -1218,10 +1231,10 @@ class _MyHomePageState extends State<MyHomePage> {
                                                     ],
                                                   ),
                                                 ),
-                                                SizedBox(height: 5,),
-                                                Text("${ChildcareEducation[index]}", style: GoogleFonts.roboto(fontSize: 16, fontWeight: FontWeight.bold),),
-                                                SizedBox(height: 2,),
-                                                Text("${ChildcareEducationDesc[index]}", style: GoogleFonts.roboto(fontSize: 16),),
+                                                const SizedBox(height: 5,),
+                                                Text(ChildcareEducation[index], style: GoogleFonts.roboto(fontSize: 16, fontWeight: FontWeight.bold),),
+                                                const SizedBox(height: 2,),
+                                                Text(ChildcareEducationDesc[index], style: GoogleFonts.roboto(fontSize: 16),),
                                               ],
                                             ),
                                           )
@@ -1290,7 +1303,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                                     ),
                                                     color: Colors.white,
                                                     borderRadius: BorderRadius.circular(8),
-                                                    boxShadow: [
+                                                    boxShadow: const [
                                                       BoxShadow(
                                                           color: Colors.black26,
                                                           blurRadius: 1,
@@ -1298,10 +1311,10 @@ class _MyHomePageState extends State<MyHomePage> {
                                                     ],
                                                   ),
                                                 ),
-                                                SizedBox(height: 5,),
-                                                Text("${ElderlyPersonalCare[index]}", style: GoogleFonts.roboto(fontSize: 16, fontWeight: FontWeight.bold),),
-                                                SizedBox(height: 2,),
-                                                Text("${ElderlyPersonalCareDesc[index]}", style: GoogleFonts.roboto(fontSize: 16),),
+                                                const SizedBox(height: 5,),
+                                                Text(ElderlyPersonalCare[index], style: GoogleFonts.roboto(fontSize: 16, fontWeight: FontWeight.bold),),
+                                                const SizedBox(height: 2,),
+                                                Text(ElderlyPersonalCareDesc[index], style: GoogleFonts.roboto(fontSize: 16),),
                                               ],
                                             ),
                                           )
@@ -1370,7 +1383,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                                     ),
                                                     color: Colors.white,
                                                     borderRadius: BorderRadius.circular(8),
-                                                    boxShadow: [
+                                                    boxShadow: const [
                                                       BoxShadow(
                                                           color: Colors.black26,
                                                           blurRadius: 1,
@@ -1378,10 +1391,10 @@ class _MyHomePageState extends State<MyHomePage> {
                                                     ],
                                                   ),
                                                 ),
-                                                SizedBox(height: 5,),
-                                                Text("${CookingHospitality[index]}", style: GoogleFonts.roboto(fontSize: 16, fontWeight: FontWeight.bold),),
-                                                SizedBox(height: 2,),
-                                                Text("${CookingHospitalityDesc[index]}", style: GoogleFonts.roboto(fontSize: 16),),
+                                                const SizedBox(height: 5,),
+                                                Text(CookingHospitality[index], style: GoogleFonts.roboto(fontSize: 16, fontWeight: FontWeight.bold),),
+                                                const SizedBox(height: 2,),
+                                                Text(CookingHospitalityDesc[index], style: GoogleFonts.roboto(fontSize: 16),),
                                               ],
                                             ),
                                           )
@@ -1450,7 +1463,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                                     ),
                                                     color: Colors.white,
                                                     borderRadius: BorderRadius.circular(8),
-                                                    boxShadow: [
+                                                    boxShadow: const [
                                                       BoxShadow(
                                                           color: Colors.black26,
                                                           blurRadius: 1,
@@ -1458,10 +1471,10 @@ class _MyHomePageState extends State<MyHomePage> {
                                                     ],
                                                   ),
                                                 ),
-                                                SizedBox(height: 5,),
-                                                Text("${MedicalHealthcare[index]}", style: GoogleFonts.roboto(fontSize: 16, fontWeight: FontWeight.bold),),
-                                                SizedBox(height: 2,),
-                                                Text("${MedicalHealthcareDesc[index]}", style: GoogleFonts.roboto(fontSize: 16),),
+                                                const SizedBox(height: 5,),
+                                                Text(MedicalHealthcare[index], style: GoogleFonts.roboto(fontSize: 16, fontWeight: FontWeight.bold),),
+                                                const SizedBox(height: 2,),
+                                                Text(MedicalHealthcareDesc[index], style: GoogleFonts.roboto(fontSize: 16),),
                                               ],
                                             ),
                                           )
@@ -1531,7 +1544,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                                     ),
                                                     color: Colors.white,
                                                     borderRadius: BorderRadius.circular(8),
-                                                    boxShadow: [
+                                                    boxShadow: const [
                                                       BoxShadow(
                                                           color: Colors.black26,
                                                           blurRadius: 1,
@@ -1539,10 +1552,10 @@ class _MyHomePageState extends State<MyHomePage> {
                                                     ],
                                                   ),
                                                 ),
-                                                SizedBox(height: 5,),
-                                                Text("${SkilledTechnical[index]}", style: GoogleFonts.roboto(fontSize: 16, fontWeight: FontWeight.bold),),
-                                                SizedBox(height: 2,),
-                                                Text("${SkilledTechnicalDesc[index]}", style: GoogleFonts.roboto(fontSize: 16),),
+                                                const SizedBox(height: 5,),
+                                                Text(SkilledTechnical[index], style: GoogleFonts.roboto(fontSize: 16, fontWeight: FontWeight.bold),),
+                                                const SizedBox(height: 2,),
+                                                Text(SkilledTechnicalDesc[index], style: GoogleFonts.roboto(fontSize: 16),),
                                               ],
                                             ),
                                           )
@@ -1611,7 +1624,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                                     ),
                                                     color: Colors.white,
                                                     borderRadius: BorderRadius.circular(8),
-                                                    boxShadow: [
+                                                    boxShadow: const [
                                                       BoxShadow(
                                                           color: Colors.black26,
                                                           blurRadius: 1,
@@ -1619,10 +1632,10 @@ class _MyHomePageState extends State<MyHomePage> {
                                                     ],
                                                   ),
                                                 ),
-                                                SizedBox(height: 5,),
-                                                Text("${SecuritySupport[index]}", style: GoogleFonts.roboto(fontSize: 16, fontWeight: FontWeight.bold),),
-                                                SizedBox(height: 2,),
-                                                Text("${SecuritySupportDesc[index]}", style: GoogleFonts.roboto(fontSize: 16),),
+                                                const SizedBox(height: 5,),
+                                                Text(SecuritySupport[index], style: GoogleFonts.roboto(fontSize: 16, fontWeight: FontWeight.bold),),
+                                                const SizedBox(height: 2,),
+                                                Text(SecuritySupportDesc[index], style: GoogleFonts.roboto(fontSize: 16),),
                                               ],
                                             ),
                                           )
@@ -1691,7 +1704,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                                     ),
                                                     color: Colors.white,
                                                     borderRadius: BorderRadius.circular(8),
-                                                    boxShadow: [
+                                                    boxShadow: const [
                                                       BoxShadow(
                                                           color: Colors.black26,
                                                           blurRadius: 1,
@@ -1699,10 +1712,10 @@ class _MyHomePageState extends State<MyHomePage> {
                                                     ],
                                                   ),
                                                 ),
-                                                SizedBox(height: 5,),
-                                                Text("${CreativeWellness[index]}", style: GoogleFonts.roboto(fontSize: 16, fontWeight: FontWeight.bold),),
-                                                SizedBox(height: 2,),
-                                                Text("${CreativeWellnessDesc[index]}", style: GoogleFonts.roboto(fontSize: 16),),
+                                                const SizedBox(height: 5,),
+                                                Text(CreativeWellness[index], style: GoogleFonts.roboto(fontSize: 16, fontWeight: FontWeight.bold),),
+                                                const SizedBox(height: 2,),
+                                                Text(CreativeWellnessDesc[index], style: GoogleFonts.roboto(fontSize: 16),),
                                               ],
                                             ),
                                           )
@@ -1792,7 +1805,7 @@ class _MyHomePageState extends State<MyHomePage> {
                               decoration: BoxDecoration(
                                   color: Colors.white,
                                   borderRadius: BorderRadius.circular(5),
-                                  boxShadow: [
+                                  boxShadow: const [
                                     BoxShadow(
                                         color: Colors.black26,
                                         spreadRadius: 1,
@@ -1812,13 +1825,13 @@ class _MyHomePageState extends State<MyHomePage> {
 
                                   if (!snapshot.hasData ||
                                       snapshot.data!.docs.isEmpty) {
-                                    return Center(
+                                    return const Center(
                                       child: Text("No Users Found"),
                                     );
                                   }
 
                                   if (SearchGlobal.isEmpty) {
-                                    return Center(child: Text("Empty"));
+                                    return const Center(child: Text("Empty"));
                                   }
 
                                   return ListView.builder(
@@ -1873,7 +1886,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                                     color: Colors.white,
                                                     borderRadius:
                                                     BorderRadius.circular(5),
-                                                    boxShadow: [
+                                                    boxShadow: const [
                                                       BoxShadow(
                                                           color: Colors.black26,
                                                           spreadRadius: 1,
@@ -1904,7 +1917,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                                       padding:
                                                       const EdgeInsets.only(
                                                           left: 10),
-                                                      child: Container(
+                                                      child: SizedBox(
                                                           width: 150,
                                                           child: Text(
                                                             "${data['First_name']} ${data['Last_name']}",
@@ -1922,7 +1935,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                                             .toUpperCase() +
                                                             data['City']
                                                                 .substring(1),
-                                                        style: TextStyle(
+                                                        style: const TextStyle(
                                                             color: Colors.green,
                                                             fontWeight:
                                                             FontWeight.bold),
@@ -1977,7 +1990,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                                     color: Colors.white,
                                                     borderRadius:
                                                     BorderRadius.circular(15),
-                                                    boxShadow: [
+                                                    boxShadow: const [
                                                       BoxShadow(
                                                           color: Colors.black26,
                                                           spreadRadius: 1,
@@ -2008,7 +2021,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                                       padding:
                                                       const EdgeInsets.only(
                                                           left: 10),
-                                                      child: Container(
+                                                      child: SizedBox(
                                                           width: 150,
                                                           child: Text(
                                                             "${data['First_name']} ${data['Last_name']}",
@@ -2026,7 +2039,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                                             .toUpperCase() +
                                                             data['City']
                                                                 .substring(1),
-                                                        style: TextStyle(
+                                                        style: const TextStyle(
                                                             color: Colors.green,
                                                             fontWeight:
                                                             FontWeight.bold),
@@ -2053,7 +2066,7 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       bottomNavigationBar: Container(
         height: 70,
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.only(
             topLeft: Radius.circular(16),
@@ -2077,7 +2090,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   context,
                   PageRouteBuilder(
                     transitionDuration: const Duration(milliseconds: 500),
-                    pageBuilder: (context, animation, secondaryAnimation) => MyHomePage(),
+                    pageBuilder: (context, animation, secondaryAnimation) => const MyHomePage(),
                     transitionsBuilder: (context, animation, secondaryAnimation, child) {
                       const begin = Offset(0.0, 1.0); // From bottom
                       const end = Offset.zero;
@@ -2101,7 +2114,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   color: Colors.blue.shade50,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(Icons.home, color: Colors.blueAccent, size: 28),
+                child: const Icon(Icons.home, color: Colors.blueAccent, size: 28),
               ),
             ),
             InkWell(
@@ -2111,7 +2124,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   context,
                   PageRouteBuilder(
                     transitionDuration: const Duration(milliseconds: 500),
-                    pageBuilder: (context, animation, secondaryAnimation) => MainMap(whichStaff: "All"),
+                    pageBuilder: (context, animation, secondaryAnimation) => const MainMap(whichStaff: "All"),
                     transitionsBuilder: (context, animation, secondaryAnimation, child) {
                       const begin = Offset(0.0, 1.0); // From bottom
                       const end = Offset.zero;
@@ -2135,7 +2148,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   color: Colors.green.shade50,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(Icons.map, color: Colors.green, size: 28),
+                child: const Icon(Icons.map, color: Colors.green, size: 28),
               ),
             ),
             InkWell(
@@ -2145,7 +2158,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   context,
                   PageRouteBuilder(
                     transitionDuration: const Duration(milliseconds: 500),
-                    pageBuilder: (context, animation, secondaryAnimation) => ClientNotificationPage(),
+                    pageBuilder: (context, animation, secondaryAnimation) => const ClientNotificationPage(),
                     transitionsBuilder: (context, animation, secondaryAnimation, child) {
                       const begin = Offset(0.0, 1.0); // From bottom
                       const end = Offset.zero;
@@ -2169,7 +2182,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   color: Colors.purple.shade50,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(Icons.notifications, color: Colors.purple, size: 28),
+                child: const Icon(Icons.notifications, color: Colors.purple, size: 28),
               ),
             ),
           ],

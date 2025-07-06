@@ -6,7 +6,6 @@ class FcmService{
         (message){
           print(message.notification?.title);
           print(message.notification?.body);
-
         }
     );
   }

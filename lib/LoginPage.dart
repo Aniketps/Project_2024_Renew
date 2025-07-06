@@ -23,6 +23,8 @@ Future<bool> _setUserPageStatus(bool value) async {
 }
 
 class LoginPage extends StatefulWidget {
+  const LoginPage({super.key});
+
   @override
   State<StatefulWidget> createState() => _LoginPage();
 }
@@ -73,7 +75,7 @@ class _LoginPage extends State<LoginPage> {
     // Wait and retry if location is still disabled
     if (!serviceEnabled) {
       // Retry after a short delay
-      await Future.delayed(Duration(seconds: 1));
+      await Future.delayed(const Duration(seconds: 1));
       serviceEnabled = await Geolocator.isLocationServiceEnabled();
 
       if (!serviceEnabled) {
@@ -106,7 +108,7 @@ class _LoginPage extends State<LoginPage> {
   }
 
   void _startLiveLocation() {
-    final locationSettings = LocationSettings(
+    const locationSettings = LocationSettings(
       accuracy: LocationAccuracy.high,
       distanceFilter: 100,
     );
@@ -139,15 +141,6 @@ class _LoginPage extends State<LoginPage> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     return prefs.getBool("Staff")?? false;
 
-    User? user = FirebaseAuth.instance.currentUser;
-    if (user == null) return false;
-
-    final doc = await FirebaseFirestore.instance
-        .collection('user')
-        .doc(user.uid)
-        .get();
-
-    return doc.data()?['isStaff'] == true;
   }
 
   Future<void> checkLogin(Future<bool> isStaffFuture) async {
@@ -185,7 +178,7 @@ class _LoginPage extends State<LoginPage> {
       });
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (_) => MyHomePage()),
+        MaterialPageRoute(builder: (_) => const MyHomePage()),
       );
     }
     setState(() {
@@ -231,7 +224,7 @@ class _LoginPage extends State<LoginPage> {
     return Scaffold(
         backgroundColor: Colors.white,
         body: isLoading
-            ? Loader()
+            ? const Loader()
             : AndroidView(
                     lat: lat,
                     long: long,
@@ -240,6 +233,8 @@ class _LoginPage extends State<LoginPage> {
 }
 
 class Loader extends StatefulWidget {
+  const Loader({super.key});
+
   @override
   State<StatefulWidget> createState() => _Loader();
 }
@@ -272,7 +267,7 @@ class _Loader extends State<Loader> with SingleTickerProviderStateMixin {
     final screenWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
-      backgroundColor: Color(0xFF0D1B2A),
+      backgroundColor: const Color(0xFF0D1B2A),
       body: Center(
         child: Container(
           width: screenWidth * 0.8,
@@ -314,7 +309,7 @@ class AndroidStaffPage extends StatefulWidget {
   String lat;
   String long;
   final bool isStaff;
-  AndroidStaffPage({required this.lat, required this.long, required this.isStaff});
+  AndroidStaffPage({super.key, required this.lat, required this.long, required this.isStaff});
   @override
   State<StatefulWidget> createState() => _AndroidStaffPage(lat: lat, long: long, isStaff: isStaff);
 }
@@ -345,7 +340,7 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
           Center(
             child: Container(
               width: screenWidth,
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 color: Colors.white,
                 boxShadow: [
                   BoxShadow(
@@ -357,7 +352,7 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                 ],),
               child: Column(
                 children: [
-                  SizedBox(height: 10,),
+                  const SizedBox(height: 10,),
                   Padding(
                     padding:
                     const EdgeInsets.only(right: 30, left: 30, top: 10),
@@ -366,15 +361,15 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                         Container(
                           height: 80,
                           width: 80,
-                          margin: EdgeInsets.only(bottom: 10, top: 20),
+                          margin: const EdgeInsets.only(bottom: 10, top: 20),
                           decoration: BoxDecoration(
                             color: Colors.black,
                             borderRadius: BorderRadius.circular(80),
-                            boxShadow: [
+                            boxShadow: const [
                               BoxShadow(
                                   color: Colors.black12, spreadRadius: 2, blurRadius: 1),
                             ],
-                            image: DecorationImage(
+                            image: const DecorationImage(
                               image: AssetImage("assets/images/logo.png"),
                               fit: BoxFit.none, // No scaling
                               alignment: Alignment.center,
@@ -382,9 +377,9 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                             ),
                           ),
                         ),
-                        SizedBox(width: 10,),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 16.0),
+                        const SizedBox(width: 10,),
+                        const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 16.0),
                           child: Text(
                             "CARENEST \nSTAFF SIGN IN",
                             textAlign: TextAlign.start,
@@ -431,7 +426,7 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                             idToken: googleAuth.idToken,
                           );
 
-                          String? fullName = googleUser?.displayName;
+                          String? fullName = googleUser.displayName;
                           String? firstName;
                           String? lastName;
 
@@ -466,14 +461,14 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                           if (querySnapshot.docs.isNotEmpty) {
                             final doc = querySnapshot.docs.first;
                             final userDocRef = FirebaseFirestore.instance.collection("user").doc(doc.id);
-                            print("Email exists in documents");
 
                             if (doc.data().containsKey("professionOfStaff")) {
-                              print("Current entity is staff");
                               await FirebaseAuth.instance.signInWithCredential(credential);
+                              String? token = await FirebaseMessaging.instance.getToken();
                               await userDocRef.update({
                                 'lat': lat,
                                 'long': long,
+                                'token'  : token,
                               });
                               await _setUserPageStatus(true);
                               Navigator.push(
@@ -483,19 +478,17 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                                 ),
                               );
                             } else {
-                              print("Current entity is user");
                               // Login to user side
                               await FirebaseAuth.instance.signInWithCredential(credential);
                               await _setUserPageStatus(false);
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => MyHomePage(),
+                                  builder: (context) => const MyHomePage(),
                                 ),
                               );
                             }
                           } else {
-                            print("Email does not exists in documents");
                             // Create new user document
                             if (fn.isNotEmpty && ln.isNotEmpty) {
                               await _setUserPageStatus(true);
@@ -514,7 +507,6 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
 
                         } catch (e) {
                           Fluttertoast.showToast(msg: "Error during Google Sign-In");
-                          print("The error is : ${e}");
                         } finally {
                           setState(() {
                             isLoading = false;
@@ -531,7 +523,7 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                             boxShadow: [
                               BoxShadow(
                                 color: Colors.blue.withOpacity(0.3), // optional: softer look
-                                offset: Offset(2, 2), // X: right, Y: bottom
+                                offset: const Offset(2, 2), // X: right, Y: bottom
                                 blurRadius: 4,
                                 spreadRadius: 1,
                               ),
@@ -544,7 +536,7 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                               Container(
                                 height: 40,
                                 width: 40,
-                                decoration: BoxDecoration(
+                                decoration: const BoxDecoration(
                                   image: DecorationImage(
                                     image: AssetImage("assets/images/google.png"),
                                     fit: BoxFit.cover, // No scaling
@@ -553,9 +545,7 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                                   ),
                                 ),
                               ),
-                              Container(
-                                child: Text("Google", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 20),),
-                              )
+                              const Text("Google", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 20),)
                             ],
                           )
                       ),
@@ -566,10 +556,10 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                   isEmailSignIn
                       ? Column(
                     children: [
-                      SizedBox(height: 5,),
-                      Padding(
+                      const SizedBox(height: 5,),
+                      const Padding(
                         padding:
-                        const EdgeInsets.only(right: 30, left: 30, top: 10),
+                        EdgeInsets.only(right: 30, left: 30, top: 10),
                         child: Row(
                           children: [
                             Expanded(
@@ -584,13 +574,13 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                           ],
                         ),
                       ),
-                      SizedBox(height: 5,),
+                      const SizedBox(height: 5,),
 
                       // Email input field
                       Padding(
                         padding:
                         const EdgeInsets.only(right: 30, left: 30, top: 10),
-                        child: Container(
+                        child: SizedBox(
                           height: 60,
                           child: TextField(
                             controller: Email,
@@ -610,15 +600,15 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                                 borderRadius:
                                 BorderRadius.circular(10), // Rounded border
                               ),
-                              contentPadding: EdgeInsets.fromLTRB(20, 16, 16,
+                              contentPadding: const EdgeInsets.fromLTRB(20, 16, 16,
                                   16), // Adds padding inside the TextField
                             ),
                           ),
                         ),
                       ),
                       !isValidEmail
-                          ? Padding(
-                        padding: const EdgeInsets.only(right: 30, left: 30, top: 5),
+                          ? const Padding(
+                        padding: EdgeInsets.only(right: 30, left: 30, top: 5),
                         child: Row(
                           children: [
                             Text(
@@ -634,7 +624,7 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                       Padding(
                         padding:
                         const EdgeInsets.only(right: 30, left: 30, top: 20),
-                        child: Container(
+                        child: SizedBox(
                           height: 60,
                           child: TextField(
                             controller:
@@ -646,7 +636,7 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                                 borderRadius:
                                 BorderRadius.circular(10), // Rounded border
                               ),
-                              contentPadding: EdgeInsets.fromLTRB(
+                              contentPadding: const EdgeInsets.fromLTRB(
                                   20, 16, 16, 16), // Padding inside the TextField
                             ),
                           ),
@@ -673,7 +663,7 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                                         msg: "Please Enter email address");
                                   }
                                 },
-                                child: Text(
+                                child: const Text(
                                   "Forgot password?",
                                   style: TextStyle(
                                       fontSize: 12,
@@ -688,7 +678,7 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                       Padding(
                         padding:
                         const EdgeInsets.only(right: 30, left: 30, top: 20),
-                        child: Container(
+                        child: SizedBox(
                           height: 45,
                           width: double.infinity, // Make the container full width
                           child: ElevatedButton(
@@ -760,7 +750,6 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                                   setState(() {
                                     isLoading = false;
                                   });
-                                  print(e);
                                   Fluttertoast.showToast(
                                     msg: "Invalid Data",
                                     toastLength: Toast.LENGTH_SHORT,
@@ -778,7 +767,7 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                                 );
                               }
                             },
-                            child: Text("Submit", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),),
+                            child: const Text("Submit", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),),
                           ),
                         ),
                       ),
@@ -803,7 +792,7 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                             boxShadow: [
                               BoxShadow(
                                 color: Colors.blue.withOpacity(0.3), // optional: softer look
-                                offset: Offset(2, 2), // X: right, Y: bottom
+                                offset: const Offset(2, 2), // X: right, Y: bottom
                                 blurRadius: 4,
                                 spreadRadius: 1,
                               ),
@@ -814,11 +803,11 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Padding(
-                                padding: EdgeInsets.only(right : 8.0),
+                                padding: const EdgeInsets.only(right : 8.0),
                                 child: Container(
                                   height: 28,
                                   width: 28,
-                                  decoration: BoxDecoration(
+                                  decoration: const BoxDecoration(
                                     image: DecorationImage(
                                       image: AssetImage("assets/images/email.png"),
                                       fit: BoxFit.cover, // No scaling
@@ -828,9 +817,7 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                                   ),
                                 ),
                               ),
-                              Container(
-                                child: Text("Email", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 19),),
-                              )
+                              const Text("Email", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 19),)
                             ],
                           )
                       ),
@@ -851,7 +838,7 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                                     builder: (context) => RegisterPage(isStaff: isStaff,),
                                   ));
                             },
-                            child: Text(
+                            child: const Text(
                               "Don't have an account?",
                               style: TextStyle(
                                   fontSize: 12,
@@ -885,7 +872,7 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                     ],
                   ),
 
-                  Text(
+                  const Text(
                     "By Sign in your agree with our",
                     style: TextStyle(
                         fontSize: 12,
@@ -905,7 +892,7 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                                 throw 'Could not launch ${"https://carenest.ancientcoders.in/Privacy_Policy.html"}';
                               }
                             },
-                            child: Text(
+                            child: const Text(
                               "Privacy Policy, ",
                               style: TextStyle(
                                   fontSize: 12,
@@ -919,7 +906,7 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                                 throw 'Could not launch ${"https://carenest.ancientcoders.in/Terms_Conditions.html"}';
                               }
                             },
-                            child: Text(
+                            child: const Text(
                               "Terms & Conditions, ",
                               style: TextStyle(
                                   fontSize: 12,
@@ -933,7 +920,7 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                                 throw 'Could not launch ${"https://carenest.ancientcoders.in/Refund_Policy.html"}';
                               }
                             },
-                            child: Text(
+                            child: const Text(
                               "Refund Policy",
                               style: TextStyle(
                                   fontSize: 12,
@@ -966,7 +953,7 @@ class AndroidUserPage extends StatefulWidget {
   String long;
 
   final bool isStaff;
-  AndroidUserPage({required this.lat, required this.long, required this.isStaff});
+  AndroidUserPage({super.key, required this.lat, required this.long, required this.isStaff});
   @override
   State<StatefulWidget> createState() => _AndroidUserPage(lat: lat, long: long, isStaff: isStaff);
 }
@@ -997,7 +984,7 @@ class _AndroidUserPage extends State<AndroidUserPage> {
           Center(
             child: Container(
               width: screenWidth,
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                   color: Colors.white,
                 boxShadow: [
                   BoxShadow(
@@ -1009,7 +996,7 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                 ],),
               child: Column(
                 children: [
-                  SizedBox(height: 10,),
+                  const SizedBox(height: 10,),
                   Padding(
                     padding:
                     const EdgeInsets.only(right: 30, left: 30, top: 10),
@@ -1018,15 +1005,15 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                         Container(
                           height: 80,
                           width: 80,
-                          margin: EdgeInsets.only(bottom: 10, top: 20),
+                          margin: const EdgeInsets.only(bottom: 10, top: 20),
                           decoration: BoxDecoration(
                             color: Colors.black,
                             borderRadius: BorderRadius.circular(80),
-                            boxShadow: [
+                            boxShadow: const [
                               BoxShadow(
                                   color: Colors.black12, spreadRadius: 2, blurRadius: 1),
                             ],
-                            image: DecorationImage(
+                            image: const DecorationImage(
                               image: AssetImage("assets/images/logo.png"),
                               fit: BoxFit.none, // No scaling
                               alignment: Alignment.center,
@@ -1034,9 +1021,9 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                             ),
                           ),
                         ),
-                        SizedBox(width: 10,),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 16.0),
+                        const SizedBox(width: 10,),
+                        const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 16.0),
                           child: Text(
                             "CARENEST \nCUSTOMER SIGN IN",
                             textAlign: TextAlign.start,
@@ -1088,7 +1075,7 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                           await FirebaseAuth.instance.signInWithCredential(credential);
 
                           final User? user = userCredential.user;
-                          String? fullName = googleUser?.displayName;
+                          String? fullName = googleUser.displayName;
 
                           String? firstName;
                           String? lastName;
@@ -1105,9 +1092,9 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                             // Step 4: Save user info to Firestore
                             final userDocRef = FirebaseFirestore.instance.collection("user").doc(user.uid);
                             final docSnapshot = await userDocRef.get();
+                            String? token = await FirebaseMessaging.instance.getToken();
 
                             if (!docSnapshot.exists) {
-                              // New user → set full data
                               await userDocRef.set({
                                 'Email': user.email,
                                 'First_name': firstName,
@@ -1115,12 +1102,14 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                                 'Last_name': lastName,
                                 'lat' : lat,
                                 'long' : long,
+                                'token' : token
                               });
                             } else {
                               // Existing user → update only what you want (NOT name)
                               await userDocRef.update({
                                 'lat' : lat,
                                 'long' : long,
+                                'token' : token
                               });
                             }
 
@@ -1128,13 +1117,12 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                             // Step 5: Navigate to home page
                             Navigator.pushReplacement(
                               context,
-                              MaterialPageRoute(builder: (context) => MyHomePage()),
+                              MaterialPageRoute(builder: (context) => const MyHomePage()),
                             );
                           }
 
                         } catch (e) {
                           Fluttertoast.showToast(msg: "Error during Google Sign-In");
-                          print("The error is : ${e}");
                         } finally {
                           setState(() {
                             isLoading = false;
@@ -1151,7 +1139,7 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                             boxShadow: [
                               BoxShadow(
                                 color: Colors.blue.withOpacity(0.3), // optional: softer look
-                                offset: Offset(2, 2), // X: right, Y: bottom
+                                offset: const Offset(2, 2), // X: right, Y: bottom
                                 blurRadius: 4,
                                 spreadRadius: 1,
                               ),
@@ -1164,7 +1152,7 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                               Container(
                                 height: 40,
                                 width: 40,
-                                decoration: BoxDecoration(
+                                decoration: const BoxDecoration(
                                   image: DecorationImage(
                                     image: AssetImage("assets/images/google.png"),
                                     fit: BoxFit.cover, // No scaling
@@ -1173,9 +1161,7 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                                   ),
                                 ),
                               ),
-                              Container(
-                                child: Text("Google", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 20),),
-                              )
+                              const Text("Google", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 20),)
                             ],
                           )
                       ),
@@ -1186,10 +1172,10 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                   isEmailSignIn
                       ? Column(
                     children: [
-                      SizedBox(height: 5,),
-                      Padding(
+                      const SizedBox(height: 5,),
+                      const Padding(
                         padding:
-                        const EdgeInsets.only(right: 30, left: 30, top: 10),
+                        EdgeInsets.only(right: 30, left: 30, top: 10),
                         child: Row(
                           children: [
                             Expanded(
@@ -1204,13 +1190,13 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                           ],
                         ),
                       ),
-                      SizedBox(height: 5,),
+                      const SizedBox(height: 5,),
 
                       // Email Input box
                       Padding(
                         padding:
                         const EdgeInsets.only(right: 30, left: 30, top: 10),
-                        child: Container(
+                        child: SizedBox(
                           height: 60,
                           child: TextField(
                             controller: Email,
@@ -1230,7 +1216,7 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                                 borderRadius:
                                 BorderRadius.circular(10), // Rounded border
                               ),
-                              contentPadding: EdgeInsets.fromLTRB(20, 16, 16,
+                              contentPadding: const EdgeInsets.fromLTRB(20, 16, 16,
                                   16), // Adds padding inside the TextField
                               enabledBorder: OutlineInputBorder(
                                 borderRadius:
@@ -1248,7 +1234,7 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                               focusedBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(
                                     10), // Rounded border when focused
-                                borderSide: BorderSide(
+                                borderSide: const BorderSide(
                                     color: Colors.blue,
                                     width:
                                     2), // Border color and width when the TextField is focused
@@ -1258,8 +1244,8 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                         ),
                       ),
                       !isValidEmail
-                          ? Padding(
-                        padding: const EdgeInsets.only(right: 30, left: 30, top: 5),
+                          ? const Padding(
+                        padding: EdgeInsets.only(right: 30, left: 30, top: 5),
                         child: Row(
                           children: [
                             Text(
@@ -1275,7 +1261,7 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                       Padding(
                         padding:
                         const EdgeInsets.only(right: 30, left: 30, top: 20),
-                        child: Container(
+                        child: SizedBox(
                           height: 60,
                           child: TextField(
                             controller: Password,
@@ -1298,11 +1284,11 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                               ),
                               focusedBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(10),
-                                borderSide: BorderSide(
+                                borderSide: const BorderSide(
                                     color: Colors.blue,
                                     width: 2), // Border when focused
                               ),
-                              contentPadding: EdgeInsets.fromLTRB(20, 16, 16,
+                              contentPadding: const EdgeInsets.fromLTRB(20, 16, 16,
                                   16), // Adds padding inside the TextField
                             ),
                           ),
@@ -1329,7 +1315,7 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                                         msg: "Please Enter email address");
                                   }
                                 },
-                                child: Text(
+                                child: const Text(
                                   "Forgot password?",
                                   style: TextStyle(
                                       fontSize: 12,
@@ -1344,7 +1330,7 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                       Padding(
                         padding:
                         const EdgeInsets.only(right: 30, left: 30, top: 20),
-                        child: Container(
+                        child: SizedBox(
                           height: 45,
                           width: double.infinity, // Make the container full width
                           child: ElevatedButton(
@@ -1367,7 +1353,7 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                                   User? user = userCredential.user;
                                   if (user!.emailVerified) {
                                     String? fcmToken = await FirebaseMessaging.instance.getToken();
-                                    await FirebaseFirestore.instance.collection("user").doc(user?.uid).update({
+                                    await FirebaseFirestore.instance.collection("user").doc(user.uid).update({
                                       'lat': lat,
                                       'long': long,
                                       'token': fcmToken,
@@ -1375,7 +1361,7 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                                     await _setUserPageStatus(false);
                                     Navigator.pushReplacement(
                                       context,
-                                      MaterialPageRoute(builder: (context) => MyHomePage()),
+                                      MaterialPageRoute(builder: (context) => const MyHomePage()),
                                     );
                                     setState(() {
                                       isLoading = false;
@@ -1426,7 +1412,7 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                                 Fluttertoast.showToast(msg: "Invalid data");
                               }
                             },
-                            child: Text("Submit", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),),
+                            child: const Text("Submit", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),),
                           ),
                         ),
                       ),
@@ -1451,7 +1437,7 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                             boxShadow: [
                               BoxShadow(
                                 color: Colors.blue.withOpacity(0.3), // optional: softer look
-                                offset: Offset(2, 2), // X: right, Y: bottom
+                                offset: const Offset(2, 2), // X: right, Y: bottom
                                 blurRadius: 4,
                                 spreadRadius: 1,
                               ),
@@ -1462,11 +1448,11 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Padding(
-                                padding: EdgeInsets.only(right : 8.0),
+                                padding: const EdgeInsets.only(right : 8.0),
                                 child: Container(
                                   height: 28,
                                   width: 28,
-                                  decoration: BoxDecoration(
+                                  decoration: const BoxDecoration(
                                     image: DecorationImage(
                                       image: AssetImage("assets/images/email.png"),
                                       fit: BoxFit.cover, // No scaling
@@ -1476,9 +1462,7 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                                   ),
                                 ),
                               ),
-                              Container(
-                                child: Text("Email", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 19),),
-                              )
+                              const Text("Email", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 19),)
                             ],
                           )
                       ),
@@ -1499,7 +1483,7 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                                     builder: (context) => RegisterPage(isStaff: isStaff,),
                                   ));
                             },
-                            child: Text(
+                            child: const Text(
                               "Don't have an account?",
                               style: TextStyle(
                                   fontSize: 12,
@@ -1533,7 +1517,7 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                     ],
                   ),
 
-                  Text(
+                  const Text(
                     "By Sign in your agree with our",
                     style: TextStyle(
                         fontSize: 12,
@@ -1553,7 +1537,7 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                                 throw 'Could not launch ${"https://carenest.ancientcoders.in/Privacy_Policy.html"}';
                               }
                             },
-                            child: Text(
+                            child: const Text(
                               "Privacy Policy, ",
                               style: TextStyle(
                                   fontSize: 12,
@@ -1567,7 +1551,7 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                                 throw 'Could not launch ${"https://carenest.ancientcoders.in/Terms_Conditions.html"}';
                               }
                             },
-                            child: Text(
+                            child: const Text(
                               "Terms & Conditions, ",
                               style: TextStyle(
                                   fontSize: 12,
@@ -1581,7 +1565,7 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                                 throw 'Could not launch ${"https://carenest.ancientcoders.in/Refund_Policy.html"}';
                               }
                             },
-                            child: Text(
+                            child: const Text(
                               "Refund Policy",
                               style: TextStyle(
                                   fontSize: 12,
@@ -1613,7 +1597,7 @@ class AndroidView extends StatefulWidget {
   String lat;
   String long;
 
-  AndroidView({required this.lat, required this.long});
+  AndroidView({super.key, required this.lat, required this.long});
   @override
   State<StatefulWidget> createState() => _AndroidView(lat: lat, long: long);
 }
@@ -1653,12 +1637,6 @@ class _AndroidView extends State<AndroidView> {
     double screenWidth = MediaQuery.sizeOf(context).width;
     double screenHeight = MediaQuery.sizeOf(context).height;
 
-    Color StaffColorTrue = Color(0xFF4C9EEB);
-    Color StaffColorFalse = Color(0xFFB0BEC5);
-    Color StaffColor = isStaff? StaffColorTrue : StaffColorFalse;
-    Color UserColorTrue = Color(0xFF4C9EEB);
-    Color UserColorFalse = Color(0xFFB0BEC5);
-    Color UserColor = isStaff? UserColorFalse : UserColorTrue;
 
     return sawAd? Stack(
       children: [
@@ -1692,7 +1670,7 @@ class _AndroidView extends State<AndroidView> {
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(50),
-                        boxShadow: [
+                        boxShadow: const [
                           BoxShadow(
                             color: Colors.black12,
                             spreadRadius: 2,
@@ -1704,7 +1682,7 @@ class _AndroidView extends State<AndroidView> {
                         children: [
                           // Animated background
                           AnimatedAlign(
-                            duration: Duration(milliseconds: 300),
+                            duration: const Duration(milliseconds: 300),
                             alignment: isStaff ? Alignment.centerLeft : Alignment.centerRight,
                             curve: Curves.easeInOut,
                             child: Container(
@@ -1785,7 +1763,7 @@ class _AndroidView extends State<AndroidView> {
     Container(
       height: screenHeight,
       width: screenWidth,
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
           color: Colors.white
       ),
       child: Column(
@@ -1806,7 +1784,7 @@ class _AndroidView extends State<AndroidView> {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Text(
+            const Text(
               "Welcome to CareNest",
               style: TextStyle(
                 fontWeight: FontWeight.bold,
@@ -1815,13 +1793,13 @@ class _AndroidView extends State<AndroidView> {
               ),
               textAlign: TextAlign.center,
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             Image.asset(
               "assets/images/logo2.png",
               height: 180,
               width: 180,
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             Text(
               "Smart Hiring for Daily Needs",
               style: TextStyle(
@@ -1831,7 +1809,7 @@ class _AndroidView extends State<AndroidView> {
               ),
               textAlign: TextAlign.center,
             ),
-            SizedBox(height: 12),
+            const SizedBox(height: 12),
             Text(
               "CareNest connects you with trusted, verified staff for short-term jobs like nursing, driving, cooking, and more.",
               style: TextStyle(
@@ -1841,7 +1819,7 @@ class _AndroidView extends State<AndroidView> {
               ),
               textAlign: TextAlign.center,
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             Row(
               mainAxisAlignment: imageCount == 1? MainAxisAlignment.end : MainAxisAlignment.spaceBetween,
               children: [
@@ -1857,8 +1835,8 @@ class _AndroidView extends State<AndroidView> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
+                  child: const Padding(
+                    padding: EdgeInsets.all(8.0),
                     child: Text("Next", style: TextStyle(color: Colors.black),),
                   ),
                 ),
@@ -1880,7 +1858,7 @@ class _AndroidView extends State<AndroidView> {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Text(
+                const Text(
                   "Live Staff Around You",
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
@@ -1889,13 +1867,13 @@ class _AndroidView extends State<AndroidView> {
                   ),
                   textAlign: TextAlign.center,
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 Image.asset(
                   "assets/images/liveLocation.jpg",
                   height: 250,
                   width: 250,
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 Text(
                   "Find Help Nearby in Real-Time",
                   style: TextStyle(
@@ -1905,7 +1883,7 @@ class _AndroidView extends State<AndroidView> {
                   ),
                   textAlign: TextAlign.center,
                 ),
-                SizedBox(height: 12),
+                const SizedBox(height: 12),
                 Text(
                   "Instantly view available staff near you on the map—filtered by profession and rating.",
                   style: TextStyle(
@@ -1915,7 +1893,7 @@ class _AndroidView extends State<AndroidView> {
                   ),
                   textAlign: TextAlign.center,
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 Row(
                   mainAxisAlignment: imageCount == 1? MainAxisAlignment.end : MainAxisAlignment.spaceBetween,
                   children: [
@@ -1935,7 +1913,7 @@ class _AndroidView extends State<AndroidView> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      child: Text("Prev", style: TextStyle(color: Colors.black),),
+                      child: const Text("Prev", style: TextStyle(color: Colors.black),),
                     ),
                     ElevatedButton(
                       onPressed: () {
@@ -1949,8 +1927,8 @@ class _AndroidView extends State<AndroidView> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
+                      child: const Padding(
+                        padding: EdgeInsets.all(8.0),
                         child: Text("Next", style: TextStyle(color: Colors.black),),
                       ),
                     ),
@@ -1973,7 +1951,7 @@ class _AndroidView extends State<AndroidView> {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Text(
+                const Text(
                   "Quick Hiring Process",
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
@@ -1982,13 +1960,13 @@ class _AndroidView extends State<AndroidView> {
                   ),
                   textAlign: TextAlign.center,
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 Image.asset(
                   "assets/images/hire.jpg",
                   height: 250,
                   width: 250,
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 Text(
                   "Easy Booking, Your Way",
                   style: TextStyle(
@@ -1998,7 +1976,7 @@ class _AndroidView extends State<AndroidView> {
                   ),
                   textAlign: TextAlign.center,
                 ),
-                SizedBox(height: 12),
+                const SizedBox(height: 12),
                 Text(
                   "Choose who you need, when, and for how long. Fill a short form and get connected fast.",
                   style: TextStyle(
@@ -2008,7 +1986,7 @@ class _AndroidView extends State<AndroidView> {
                   ),
                   textAlign: TextAlign.center,
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 Row(
                   mainAxisAlignment: imageCount == 1? MainAxisAlignment.end : MainAxisAlignment.spaceBetween,
                   children: [
@@ -2028,8 +2006,8 @@ class _AndroidView extends State<AndroidView> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
+                      child: const Padding(
+                        padding: EdgeInsets.all(8.0),
                         child: Text("Prev", style: TextStyle(color: Colors.black),),
                       ),
                     ),
@@ -2045,8 +2023,8 @@ class _AndroidView extends State<AndroidView> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
+                      child: const Padding(
+                        padding: EdgeInsets.all(8.0),
                         child: Text("Next", style: TextStyle(color: Colors.black),),
                       ),
                     ),
@@ -2069,7 +2047,7 @@ class _AndroidView extends State<AndroidView> {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Text(
+                const Text(
                   "Verified & Trusted Professionals",
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
@@ -2078,13 +2056,13 @@ class _AndroidView extends State<AndroidView> {
                   ),
                   textAlign: TextAlign.center,
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 Image.asset(
                   "assets/images/kyc.jpg",
                   height: 250,
                   width: 250,
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 Text(
                   "Only KYC-Verified Staff",
                   style: TextStyle(
@@ -2094,7 +2072,7 @@ class _AndroidView extends State<AndroidView> {
                   ),
                   textAlign: TextAlign.center,
                 ),
-                SizedBox(height: 12),
+                const SizedBox(height: 12),
                 Text(
                   "Every staff member completes a strict KYC process for safety and trust.",
                   style: TextStyle(
@@ -2104,7 +2082,7 @@ class _AndroidView extends State<AndroidView> {
                   ),
                   textAlign: TextAlign.center,
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 Row(
                   mainAxisAlignment: imageCount == 1? MainAxisAlignment.end : MainAxisAlignment.spaceBetween,
                   children: [
@@ -2124,8 +2102,8 @@ class _AndroidView extends State<AndroidView> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
+                      child: const Padding(
+                        padding: EdgeInsets.all(8.0),
                         child: Text("Prev", style: TextStyle(color: Colors.black),),
                       ),
                     ),
@@ -2141,8 +2119,8 @@ class _AndroidView extends State<AndroidView> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
+                      child: const Padding(
+                        padding: EdgeInsets.all(8.0),
                         child: Text("Next", style: TextStyle(color: Colors.black),),
                       ),
                     ),
@@ -2165,7 +2143,7 @@ class _AndroidView extends State<AndroidView> {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Text(
+                const Text(
                   "For Staff: Get Started with KYC",
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
@@ -2174,13 +2152,13 @@ class _AndroidView extends State<AndroidView> {
                   ),
                   textAlign: TextAlign.center,
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 Image.asset(
                   "assets/images/staffVerification.jpg",
                   height: 250,
                   width: 250,
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 Text(
                   "Join as Staff – It's Simple!",
                   style: TextStyle(
@@ -2190,7 +2168,7 @@ class _AndroidView extends State<AndroidView> {
                   ),
                   textAlign: TextAlign.center,
                 ),
-                SizedBox(height: 12),
+                const SizedBox(height: 12),
                 Text(
                   "Register your profession, complete your KYC, and get listed on the platform.",
                   style: TextStyle(
@@ -2200,7 +2178,7 @@ class _AndroidView extends State<AndroidView> {
                   ),
                   textAlign: TextAlign.center,
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 Row(
                   mainAxisAlignment: imageCount == 1? MainAxisAlignment.end : MainAxisAlignment.spaceBetween,
                   children: [
@@ -2220,8 +2198,8 @@ class _AndroidView extends State<AndroidView> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
+                      child: const Padding(
+                        padding: EdgeInsets.all(8.0),
                         child: Text("Prev", style: TextStyle(color: Colors.black),),
                       ),
                     ),
@@ -2237,8 +2215,8 @@ class _AndroidView extends State<AndroidView> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
+                      child: const Padding(
+                        padding: EdgeInsets.all(8.0),
                         child: Text("Next", style: TextStyle(color: Colors.black),),
                       ),
                     ),
@@ -2261,7 +2239,7 @@ class _AndroidView extends State<AndroidView> {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Text(
+                const Text(
                   "Go Online When You're Free",
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
@@ -2270,13 +2248,13 @@ class _AndroidView extends State<AndroidView> {
                   ),
                   textAlign: TextAlign.center,
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 Image.asset(
                   "assets/images/onoff.png",
                   height: 250,
                   width: 250,
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 Text(
                   "Flexible Working, Your Control",
                   style: TextStyle(
@@ -2286,7 +2264,7 @@ class _AndroidView extends State<AndroidView> {
                   ),
                   textAlign: TextAlign.center,
                 ),
-                SizedBox(height: 12),
+                const SizedBox(height: 12),
                 Text(
                   "You control your availability—go online when you're ready to work, offline when you're not.",
                   style: TextStyle(
@@ -2296,7 +2274,7 @@ class _AndroidView extends State<AndroidView> {
                   ),
                   textAlign: TextAlign.center,
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 Row(
                   mainAxisAlignment: imageCount == 1? MainAxisAlignment.end : MainAxisAlignment.spaceBetween,
                   children: [
@@ -2316,8 +2294,8 @@ class _AndroidView extends State<AndroidView> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
+                      child: const Padding(
+                        padding: EdgeInsets.all(8.0),
                         child: Text("Prev", style: TextStyle(color: Colors.black),),
                       ),
                     ),
@@ -2334,8 +2312,8 @@ class _AndroidView extends State<AndroidView> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
+                      child: const Padding(
+                        padding: EdgeInsets.all(8.0),
                         child: Text("Finish", style: TextStyle(color: Colors.white),),
                       ),
                     )
@@ -2351,8 +2329,8 @@ class _AndroidView extends State<AndroidView> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
+                      child: const Padding(
+                        padding: EdgeInsets.all(8.0),
                         child: Text("Next", style: TextStyle(color: Colors.black),),
                       ),
                     ),
@@ -2375,7 +2353,7 @@ class _AndroidView extends State<AndroidView> {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Text(
+                const Text(
                   "Get Job Requests in Real Time",
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
@@ -2384,13 +2362,13 @@ class _AndroidView extends State<AndroidView> {
                   ),
                   textAlign: TextAlign.center,
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 Image.asset(
                   "assets/images/notification.jpg",
                   height: 250,
                   width: 250,
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 Text(
                   "Earn Instantly, Get Hired Fast",
                   style: TextStyle(
@@ -2400,7 +2378,7 @@ class _AndroidView extends State<AndroidView> {
                   ),
                   textAlign: TextAlign.center,
                 ),
-                SizedBox(height: 12),
+                const SizedBox(height: 12),
                 Text(
                   "Get notified when users need your service. Accept jobs, start earning.",
                   style: TextStyle(
@@ -2410,7 +2388,7 @@ class _AndroidView extends State<AndroidView> {
                   ),
                   textAlign: TextAlign.center,
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 Row(
                   mainAxisAlignment: imageCount == 1? MainAxisAlignment.end : MainAxisAlignment.spaceBetween,
                   children: [
@@ -2430,8 +2408,8 @@ class _AndroidView extends State<AndroidView> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
+                      child: const Padding(
+                        padding: EdgeInsets.all(8.0),
                         child: Text("Prev", style: TextStyle(color: Colors.black),),
                       ),
                     ),
@@ -2447,8 +2425,8 @@ class _AndroidView extends State<AndroidView> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
+                      child: const Padding(
+                        padding: EdgeInsets.all(8.0),
                         child: Text("Next", style: TextStyle(color: Colors.black),),
                       ),
                     ),
@@ -2469,7 +2447,7 @@ class _AndroidView extends State<AndroidView> {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Text(
+                const Text(
                   "Please tell us who you are",
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
@@ -2478,12 +2456,12 @@ class _AndroidView extends State<AndroidView> {
                   ),
                   textAlign: TextAlign.center,
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Icon(Icons.search, color: Colors.blueGrey[700]),
-                    SizedBox(width: 8),
+                    const SizedBox(width: 8),
                     Text(
                       "Looking to hire someone?",
                       style: TextStyle(
@@ -2494,12 +2472,12 @@ class _AndroidView extends State<AndroidView> {
                     ),
                   ],
                 ),
-                SizedBox(height: 8),
+                const SizedBox(height: 8),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Icon(Icons.work_outline, color: Colors.blueGrey[700]),
-                    SizedBox(width: 8),
+                    const SizedBox(width: 8),
                     Text(
                       "Need a part-time job?",
                       style: TextStyle(
@@ -2510,7 +2488,7 @@ class _AndroidView extends State<AndroidView> {
                     ),
                   ],
                 ),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
                 Text(
                   "Tap the button that matches you best",
                   style: TextStyle(
@@ -2520,7 +2498,7 @@ class _AndroidView extends State<AndroidView> {
                   ),
                   textAlign: TextAlign.center,
                 ),
-                SizedBox(height: 24),
+                const SizedBox(height: 24),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -2532,8 +2510,8 @@ class _AndroidView extends State<AndroidView> {
                           setIntroRead(true);
                         });
                       },
-                      icon: Icon(Icons.work, color: Colors.white),
-                      label: Text(
+                      icon: const Icon(Icons.work, color: Colors.white),
+                      label: const Text(
                         "I want to work",
                         style: TextStyle(fontWeight: FontWeight.w600),
                       ),
@@ -2542,7 +2520,7 @@ class _AndroidView extends State<AndroidView> {
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
-                        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                         elevation: 2,
                         foregroundColor: Colors.white,
                       ),
@@ -2555,8 +2533,8 @@ class _AndroidView extends State<AndroidView> {
                           setIntroRead(true);
                         });
                       },
-                      icon: Icon(Icons.person_search, color: Colors.white),
-                      label: Text(
+                      icon: const Icon(Icons.person_search, color: Colors.white),
+                      label: const Text(
                         "I need help",
                         style: TextStyle(fontWeight: FontWeight.w600),
                       ),
@@ -2565,14 +2543,14 @@ class _AndroidView extends State<AndroidView> {
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
-                        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                         elevation: 2,
                         foregroundColor: Colors.white,
                       ),
                     ),
                   ],
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 Row(
                   mainAxisAlignment: imageCount == 1
                       ? MainAxisAlignment.end
@@ -2586,8 +2564,8 @@ class _AndroidView extends State<AndroidView> {
                           imageCount--;
                         });
                       },
-                      icon: Icon(Icons.arrow_back, color: Colors.black87),
-                      label: Text(
+                      icon: const Icon(Icons.arrow_back, color: Colors.black87),
+                      label: const Text(
                         "Back",
                         style: TextStyle(
                           color: Colors.black87,
@@ -2599,7 +2577,7 @@ class _AndroidView extends State<AndroidView> {
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
-                        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                         elevation: 0,
                       ),
                     ),

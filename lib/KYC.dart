@@ -1,10 +1,8 @@
 import 'dart:io';
 
-import 'package:carehub/main.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_picker/image_picker.dart';
@@ -14,7 +12,7 @@ import 'globle.dart';
 
 class KYC extends StatefulWidget {
   final String Skill;
-  KYC({super.key, required this.Skill});
+  const KYC({super.key, required this.Skill});
   @override
   State<StatefulWidget> createState() => _KYC(Skill: Skill);
 }
@@ -80,8 +78,8 @@ class _KYC extends State<KYC> {
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 AppBar(
-                  title: Padding(
-                    padding: const EdgeInsets.only(bottom: 25),
+                  title: const Padding(
+                    padding: EdgeInsets.only(bottom: 25),
                     child: Center(
                       child: Text("KYC",
                           style: TextStyle(
@@ -105,22 +103,22 @@ class _KYC extends State<KYC> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    SizedBox(height: 10),
-                    Text(
+                    const SizedBox(height: 10),
+                    const Text(
                       "Personal Information",
                       style: TextStyle(fontSize: 20, color: Colors.black),
                     ),
-                    SizedBox(height: 10),
+                    const SizedBox(height: 10),
                     // Full name
-                    Container(
+                    SizedBox(
                       height: 50,
                       width: MediaQuery.sizeOf(context).width * 0.8,
                       child: TextField(
                         controller: FullName,
                         keyboardType: TextInputType.text,
-                        style: TextStyle(fontSize: 14),
+                        style: const TextStyle(fontSize: 14),
                         decoration: InputDecoration(
-                          contentPadding: EdgeInsets.only(left: 15, right: 15),
+                          contentPadding: const EdgeInsets.only(left: 15, right: 15),
                           hintText: "Full Name",
                           labelText: "Full Name",
                           border: OutlineInputBorder(
@@ -128,24 +126,24 @@ class _KYC extends State<KYC> {
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10.0),
-                            borderSide: BorderSide(color: Colors.blue),
+                            borderSide: const BorderSide(color: Colors.blue),
                           ),
                         ),
                       ),
                     ),
-                    SizedBox(
+                    const SizedBox(
                       height: 10,
                     ),
                     // Phone number
-                    Container(
+                    SizedBox(
                       height: 50,
                       width: MediaQuery.sizeOf(context).width * 0.8,
                       child: TextField(
                         controller: PhoneNumber,
                         keyboardType: TextInputType.text,
-                        style: TextStyle(fontSize: 14),
+                        style: const TextStyle(fontSize: 14),
                         decoration: InputDecoration(
-                          contentPadding: EdgeInsets.only(left: 15, right: 15),
+                          contentPadding: const EdgeInsets.only(left: 15, right: 15),
                           hintText: "Phone Number",
                           labelText: "Phone Number",
                           border: OutlineInputBorder(
@@ -153,19 +151,19 @@ class _KYC extends State<KYC> {
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10.0),
-                            borderSide: BorderSide(color: Colors.blue),
+                            borderSide: const BorderSide(color: Colors.blue),
                           ),
                         ),
                       ),
                     ),
-                    SizedBox(height: 10),
-                    Container(
+                    const SizedBox(height: 10),
+                    SizedBox(
                         width: MediaQuery.sizeOf(context).width * 0.8,
-                        child: Divider()),
+                        child: const Divider()),
                     // Aadhar guidelines
-                    Container(
+                    SizedBox(
                       width: MediaQuery.sizeOf(context).width * 0.8,
-                      child: Text(
+                      child: const Text(
                         "Guidelines for Uploading Your Aadhar Card:\n\n"
                         "1. The Aadhar card image should be clear and easily readable.\n"
                         "2. Ensure there is no glare, blur, or shadows that obscure the details.\n"
@@ -176,9 +174,9 @@ class _KYC extends State<KYC> {
                             fontSize: 12, fontStyle: FontStyle.italic),
                       ),
                     ),
-                    SizedBox(height: 10),
+                    const SizedBox(height: 10),
                     // Aadhar picker
-                    Container(
+                    SizedBox(
                       width: MediaQuery.sizeOf(context).width * 0.8,
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -198,7 +196,7 @@ class _KYC extends State<KYC> {
                                 } else {
                                   // Show warning to user
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
+                                    const SnackBar(
                                       content: Text('File too large. Please select a file less than 200 KB.'),
                                       backgroundColor: Colors.red,
                                     ),
@@ -212,37 +210,36 @@ class _KYC extends State<KYC> {
                                 decoration: BoxDecoration(
                                     color: Colors.white,
                                     borderRadius: BorderRadius.circular(15),
-                                    boxShadow: [
+                                    boxShadow: const [
                                       BoxShadow(
                                         color: Colors.blue,
                                         blurRadius: 1,
                                         spreadRadius: 0.7,
                                       )
                                     ]),
-                                child: Center(child: Text("Select Aadhar"))),
+                                child: const Center(child: Text("Select Aadhar"))),
                           ),
                           Text(
                             AadharCard == null
                                 ? "Not Selected"
                                 : (AadharCard!.path.split('/').last.length > 10
-                                    ? AadharCard!.path
+                                    ? '${AadharCard!.path
                                             .split('/')
                                             .last
-                                            .substring(0, 13) +
-                                        '...' // Truncate and add ellipsis
+                                            .substring(0, 13)}...' // Truncate and add ellipsis
                                     : AadharCard!.path.split('/').last),
                           )
                         ],
                       ),
                     ),
-                    SizedBox(height: 10),
-                    Container(
+                    const SizedBox(height: 10),
+                    SizedBox(
                         width: MediaQuery.sizeOf(context).width * 0.8,
-                        child: Divider()),
+                        child: const Divider()),
                     // Photo Guidelines
-                    Container(
+                    SizedBox(
                       width: MediaQuery.sizeOf(context).width * 0.8,
-                      child: Text(
+                      child: const Text(
                         "Guidelines for Uploading Your Passport Size Photo:\n\n"
                         "1. Ensure the photo is clear, with no blur or pixelation.\n"
                         "2. The photo should be recent (taken within the last 6 months).\n"
@@ -255,9 +252,9 @@ class _KYC extends State<KYC> {
                             fontSize: 12, fontStyle: FontStyle.italic),
                       ),
                     ),
-                    SizedBox(height: 10),
+                    const SizedBox(height: 10),
                     // Photo picker
-                    Container(
+                    SizedBox(
                       width: MediaQuery.sizeOf(context).width * 0.8,
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -275,7 +272,7 @@ class _KYC extends State<KYC> {
                                   });
                                 } else {
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
+                                    const SnackBar(
                                       content: Text('File too large. Please select a file size less than 200 KB.'),
                                       backgroundColor: Colors.red,
                                     ),
@@ -289,14 +286,14 @@ class _KYC extends State<KYC> {
                                 decoration: BoxDecoration(
                                     color: Colors.white,
                                     borderRadius: BorderRadius.circular(15),
-                                    boxShadow: [
+                                    boxShadow: const [
                                       BoxShadow(
                                         color: Colors.blue,
                                         blurRadius: 1,
                                         spreadRadius: 0.7,
                                       )
                                     ]),
-                                child: Center(child: Text("Select Photo"))),
+                                child: const Center(child: Text("Select Photo"))),
                           ),
                           Text(
                             PassportSizePhoto == null
@@ -306,24 +303,23 @@ class _KYC extends State<KYC> {
                                             .last
                                             .length >
                                         10
-                                    ? PassportSizePhoto!.path
+                                    ? '${PassportSizePhoto!.path
                                             .split('/')
                                             .last
-                                            .substring(0, 13) +
-                                        '...' // Truncate and add ellipsis
+                                            .substring(0, 13)}...' // Truncate and add ellipsis
                                     : PassportSizePhoto!.path.split('/').last),
                           )
                         ],
                       ),
                     ),
-                    SizedBox(height: 10),
-                    Container(
+                    const SizedBox(height: 10),
+                    SizedBox(
                         width: MediaQuery.sizeOf(context).width * 0.8,
-                        child: Divider()),
+                        child: const Divider()),
                     // Video Guidelines
-                    Container(
+                    SizedBox(
                       width: MediaQuery.sizeOf(context).width * 0.8,
-                      child: Text(
+                      child: const Text(
                         "Guidelines for Uploading Your Staff Verification Video:\n\n"
                         "1. The video should be between 10 to 15 seconds long.\n"
                         "2. Record the video in a well-lit, quiet environment with no background noise.\n"
@@ -340,9 +336,9 @@ class _KYC extends State<KYC> {
                             fontSize: 12, fontStyle: FontStyle.italic),
                       ),
                     ),
-                    SizedBox(height: 10),
+                    const SizedBox(height: 10),
                     // Video picker
-                    Container(
+                    SizedBox(
                       width: MediaQuery.sizeOf(context).width * 0.8,
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -361,7 +357,7 @@ class _KYC extends State<KYC> {
                                 } else {
                                   // Show alert if file is too large
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
+                                    const SnackBar(
                                       content: Text("Please select a video smaller than 5MB."),
                                       backgroundColor: Colors.red,
                                     ),
@@ -375,59 +371,58 @@ class _KYC extends State<KYC> {
                                 decoration: BoxDecoration(
                                     color: Colors.white,
                                     borderRadius: BorderRadius.circular(15),
-                                    boxShadow: [
+                                    boxShadow: const [
                                       BoxShadow(
                                         color: Colors.blue,
                                         blurRadius: 1,
                                         spreadRadius: 0.7,
                                       )
                                     ]),
-                                child: Center(child: Text("Select Video"))),
+                                child: const Center(child: Text("Select Video"))),
                           ),
                           Text(
                             SelfVideo == null
                                 ? "Not Selected"
                                 : (SelfVideo!.path.split('/').last.length > 10
-                                    ? SelfVideo!.path
+                                    ? '${SelfVideo!.path
                                             .split('/')
                                             .last
-                                            .substring(0, 13) +
-                                        '...' // Truncate and add ellipsis
+                                            .substring(0, 13)}...' // Truncate and add ellipsis
                                     : SelfVideo!.path.split('/').last),
                           )
                         ],
                       ),
                     ),
-                    SizedBox(height: 10),
-                    Container(
+                    const SizedBox(height: 10),
+                    SizedBox(
                         width: MediaQuery.sizeOf(context).width * 0.8,
-                        child: Divider()),
+                        child: const Divider()),
 
-                    Container(
+                    SizedBox(
                       width: MediaQuery.sizeOf(context).width * 0.8,
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
+                          const Text(
                             "Profession Verification",
                             style: TextStyle(fontSize: 20),
                           ),
-                          Text(
+                          const Text(
                             "Please provide at least one of the following documents to verify your Chef profession.",
                             style: TextStyle(
                                 fontSize: 12, fontStyle: FontStyle.italic),
                           ),
                           Text(
                             checkprofession(),
-                            style: TextStyle(
+                            style: const TextStyle(
                                 fontSize: 12, fontStyle: FontStyle.italic),
                           )
                         ],
                       ),
                     ),
-                    SizedBox(height: 10),
-                    Container(
+                    const SizedBox(height: 10),
+                    SizedBox(
                       width: MediaQuery.sizeOf(context).width * 0.8,
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -445,7 +440,7 @@ class _KYC extends State<KYC> {
                                   });
                                 } else {
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
+                                    const SnackBar(
                                       content: Text("Please select a document smaller than 200KB."),
                                       backgroundColor: Colors.red,
                                     ),
@@ -459,14 +454,14 @@ class _KYC extends State<KYC> {
                                 decoration: BoxDecoration(
                                     color: Colors.white,
                                     borderRadius: BorderRadius.circular(15),
-                                    boxShadow: [
+                                    boxShadow: const [
                                       BoxShadow(
                                         color: Colors.blue,
                                         blurRadius: 1,
                                         spreadRadius: 0.7,
                                       )
                                     ]),
-                                child: Center(child: Text("Select Document"))),
+                                child: const Center(child: Text("Select Document"))),
                           ),
                           Text(
                             ProfessionVerDoc == null
@@ -476,18 +471,17 @@ class _KYC extends State<KYC> {
                                             .last
                                             .length >
                                         10
-                                    ? ProfessionVerDoc!.path
+                                    ? '${ProfessionVerDoc!.path
                                             .split('/')
                                             .last
-                                            .substring(0, 13) +
-                                        '...' // Truncate and add ellipsis
+                                            .substring(0, 13)}...' // Truncate and add ellipsis
                                     : ProfessionVerDoc!.path.split('/').last),
                           )
                         ],
                       ),
                     ),
-                    SizedBox(height: 10),
-                    Container(
+                    const SizedBox(height: 10),
+                    SizedBox(
                       width: MediaQuery.sizeOf(context).width * 0.8,
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -503,32 +497,38 @@ class _KYC extends State<KYC> {
                                     SelfVideo != null &&
                                     ProfessionVerDoc != null) {
                                   User? user =
-                                      await FirebaseAuth.instance.currentUser;
+                                      FirebaseAuth.instance.currentUser;
 
-                                  UploadTask uploadTask = FirebaseStorage
+                                  FirebaseStorage
                                       .instance
                                       .ref()
                                       .child(
                                           "VerificationDoc/PassportPhoto/${user?.uid}")
                                       .putFile(PassportSizePhoto!);
 
-                                  uploadTask = FirebaseStorage.instance
+                                  FirebaseStorage
+                                      .instance
                                       .ref()
                                       .child(
-                                          "VerificationDoc/AadharCard/${user?.uid}")
+                                      "VerificationDoc/AadharCard/${user?.uid}")
                                       .putFile(AadharCard!);
 
-                                  uploadTask = FirebaseStorage.instance
+                                  FirebaseStorage
+                                      .instance
                                       .ref()
                                       .child(
-                                          "VerificationDoc/SelfVideo/${user?.uid}")
+                                      "VerificationDoc/SelfVideo/${user?.uid}")
                                       .putFile(SelfVideo!);
 
-                                  uploadTask = FirebaseStorage.instance
+                                  FirebaseStorage
+                                      .instance
                                       .ref()
                                       .child(
-                                          "VerificationDoc/ProfessionalDoc/${user?.uid}")
+                                      "VerificationDoc/ProfessionalDoc/${user?.uid}")
                                       .putFile(ProfessionVerDoc!);
+
+
+
 
                                   await FirebaseFirestore.instance
                                       .collection(Skill.toLowerCase())
@@ -561,7 +561,7 @@ class _KYC extends State<KYC> {
                                       msg: "Fill All Details");
                                 }
                               },
-                              child: Text("Submit"))
+                              child: const Text("Submit"))
                         ],
                       ),
                     )

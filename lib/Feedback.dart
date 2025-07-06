@@ -1,9 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_storage/firebase_storage.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_launcher_icons/utils.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:intl/intl.dart';
@@ -12,6 +9,8 @@ import 'LoaderSupport.dart';
 import 'globle.dart';
 
 class Feedbacks extends StatefulWidget {
+  const Feedbacks({super.key});
+
   @override
   State<StatefulWidget> createState() => _Feedbacks();
 }
@@ -33,7 +32,7 @@ class _Feedbacks extends State<Feedbacks> {
   }
 
   void _liveLocation() {
-    LocationSettings locationSettings = LocationSettings(
+    LocationSettings locationSettings = const LocationSettings(
       accuracy: LocationAccuracy.high,
       distanceFilter: 100,
     );
@@ -71,7 +70,7 @@ class _Feedbacks extends State<Feedbacks> {
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 AppBar(
-                  title: Center(
+                  title: const Center(
                     child: Text("Feedbacks",
                         style: TextStyle(
                             fontSize: 20, fontWeight: FontWeight.bold)),
@@ -86,250 +85,248 @@ class _Feedbacks extends State<Feedbacks> {
             children: [
               Padding(
                 padding: const EdgeInsets.only(top: 150),
-                child: Container(
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.vertical,
-                    child: Column(
-                      children: [
-                        Column(
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Container(
-                                height: screenHeight * 0.6,
-                                width: screenWidth,
-                                decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(10),
-                                    boxShadow: [
-                                      BoxShadow(
-                                          spreadRadius: 1,
-                                          blurRadius: 1,
-                                          color: Colors.black26)
-                                    ]),
-                                child: Column(
-                                  children: [
-                                    Padding(
-                                      padding: const EdgeInsets.only(
-                                          left: 15, top: 5),
-                                      child: Row(
-                                        children: [
-                                          Text(
-                                            'Recent Feedbacks',
-                                            style: TextStyle(
-                                              color: Colors.black,
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 18,
-                                            ),
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.vertical,
+                  child: Column(
+                    children: [
+                      Column(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Container(
+                              height: screenHeight * 0.6,
+                              width: screenWidth,
+                              decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(10),
+                                  boxShadow: const [
+                                    BoxShadow(
+                                        spreadRadius: 1,
+                                        blurRadius: 1,
+                                        color: Colors.black26)
+                                  ]),
+                              child: Column(
+                                children: [
+                                  const Padding(
+                                    padding: EdgeInsets.only(
+                                        left: 15, top: 5),
+                                    child: Row(
+                                      children: [
+                                        Text(
+                                          'Recent Feedbacks',
+                                          style: TextStyle(
+                                            color: Colors.black,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 18,
                                           ),
-                                        ],
-                                      ),
+                                        ),
+                                      ],
                                     ),
-                                    Padding(
-                                      padding: const EdgeInsets.only(
-                                          left: 15, top: 5, right: 15),
-                                      child: Divider(color: Colors.black),
-                                    ),
-                                    Expanded(
-                                      child: StreamBuilder(
-                                        stream: FirebaseFirestore.instance
-                                            .collection("Feedbacks")
-                                            .snapshots(),
-                                        builder: (context, snapshot) {
-                                          // Error check
-                                          if (snapshot.hasError) {
-                                            return Text("Something went wrong");
-                                          }
+                                  ),
+                                  const Padding(
+                                    padding: EdgeInsets.only(
+                                        left: 15, top: 5, right: 15),
+                                    child: Divider(color: Colors.black),
+                                  ),
+                                  Expanded(
+                                    child: StreamBuilder(
+                                      stream: FirebaseFirestore.instance
+                                          .collection("Feedbacks")
+                                          .snapshots(),
+                                      builder: (context, snapshot) {
+                                        // Error check
+                                        if (snapshot.hasError) {
+                                          return const Text("Something went wrong");
+                                        }
 
-                                          // Loading state
-                                          if (snapshot.connectionState ==
-                                              ConnectionState.waiting) {
-                                            return Center(
-                                                child:
-                                                LoaderSupport.loadingAnimation.widget);
-                                          }
+                                        // Loading state
+                                        if (snapshot.connectionState ==
+                                            ConnectionState.waiting) {
+                                          return Center(
+                                              child:
+                                              LoaderSupport.loadingAnimation.widget);
+                                        }
 
-                                          // No data available
-                                          if (!snapshot.hasData ||
-                                              snapshot.data!.docs.isEmpty) {
-                                            return Text(
-                                                "No feedbacks available.");
-                                          }
+                                        // No data available
+                                        if (!snapshot.hasData ||
+                                            snapshot.data!.docs.isEmpty) {
+                                          return const Text(
+                                              "No feedbacks available.");
+                                        }
 
-                                          var feedbacks = snapshot.data!.docs;
-                                          int count = 0;
+                                        var feedbacks = snapshot.data!.docs;
+                                        int count = 0;
 
-                                          if (uid == "") {
-                                            return Center(
-                                                child:
-                                                    CircularProgressIndicator());
-                                          } else {
-                                            List<Widget> feedbackWidgets =
-                                                feedbacks
-                                                    .where((feedback) =>
-                                                        uid ==
-                                                        feedback['UserUID'])
-                                                    .map<Widget>((feedback) {
-                                              count++;
-                                              var subject =
-                                                  feedback['Subject'] ??
-                                                      "No Subject";
-                                              bool status =
-                                                  feedback['Status'] ?? false;
-                                              var timestamp =
-                                                  feedback['DateTime'] ??
-                                                      "---------";
+                                        if (uid == "") {
+                                          return const Center(
+                                              child:
+                                                  CircularProgressIndicator());
+                                        } else {
+                                          List<Widget> feedbackWidgets =
+                                              feedbacks
+                                                  .where((feedback) =>
+                                                      uid ==
+                                                      feedback['UserUID'])
+                                                  .map<Widget>((feedback) {
+                                            count++;
+                                            var subject =
+                                                feedback['Subject'] ??
+                                                    "No Subject";
+                                            bool status =
+                                                feedback['Status'] ?? false;
+                                            var timestamp =
+                                                feedback['DateTime'] ??
+                                                    "---------";
 
-                                              return Padding(
-                                                padding: const EdgeInsets.only(
-                                                    right: 15,
-                                                    left: 15,
-                                                    bottom: 8),
-                                                child: Container(
-                                                  height: 50,
-                                                  decoration: BoxDecoration(
-                                                    color: Colors.white,
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            15),
-                                                    boxShadow: [
-                                                      BoxShadow(
-                                                        color: Colors.black26,
-                                                        blurRadius: 1,
-                                                        spreadRadius: 1,
-                                                      ),
-                                                    ],
-                                                  ),
-                                                  child: Padding(
-                                                    padding:
-                                                        const EdgeInsets.only(
-                                                            right: 15,
-                                                            left: 15),
-                                                    child: Row(
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment
-                                                              .spaceBetween,
-                                                      children: [
-                                                        Row(
-                                                          children: [
-                                                            Padding(
-                                                              padding:
-                                                                  const EdgeInsets
-                                                                      .only(
-                                                                      right:
-                                                                          10),
-                                                              child: Container(
-                                                                height: 22,
-                                                                width: 22,
-                                                                decoration:
-                                                                    BoxDecoration(
-                                                                  color: status
-                                                                      ? Colors
-                                                                          .white
-                                                                      : Colors
-                                                                          .green,
-                                                                  borderRadius:
-                                                                      BorderRadius
-                                                                          .circular(
-                                                                              22),
-                                                                  boxShadow: [
-                                                                    BoxShadow(
-                                                                      color: status
-                                                                          ? Colors
-                                                                              .white
-                                                                          : Colors
-                                                                              .black26,
-                                                                      blurRadius:
-                                                                          1,
-                                                                      spreadRadius:
-                                                                          1,
-                                                                    ),
-                                                                  ],
-                                                                  image: status
-                                                                      ? DecorationImage(
-                                                                          image:
-                                                                              NetworkImage("https://firebasestorage.googleapis.com/v0/b/carehub-af7ec.appspot.com/o/currect%20icon.png?alt=media&token=b3c6c4e9-5283-4d50-8e39-965695c07808"),
-                                                                          fit: BoxFit
-                                                                              .cover,
-                                                                        )
-                                                                      : null,
-                                                                ),
+                                            return Padding(
+                                              padding: const EdgeInsets.only(
+                                                  right: 15,
+                                                  left: 15,
+                                                  bottom: 8),
+                                              child: Container(
+                                                height: 50,
+                                                decoration: BoxDecoration(
+                                                  color: Colors.white,
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          15),
+                                                  boxShadow: const [
+                                                    BoxShadow(
+                                                      color: Colors.black26,
+                                                      blurRadius: 1,
+                                                      spreadRadius: 1,
+                                                    ),
+                                                  ],
+                                                ),
+                                                child: Padding(
+                                                  padding:
+                                                      const EdgeInsets.only(
+                                                          right: 15,
+                                                          left: 15),
+                                                  child: Row(
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .spaceBetween,
+                                                    children: [
+                                                      Row(
+                                                        children: [
+                                                          Padding(
+                                                            padding:
+                                                                const EdgeInsets
+                                                                    .only(
+                                                                    right:
+                                                                        10),
+                                                            child: Container(
+                                                              height: 22,
+                                                              width: 22,
+                                                              decoration:
+                                                                  BoxDecoration(
+                                                                color: status
+                                                                    ? Colors
+                                                                        .white
+                                                                    : Colors
+                                                                        .green,
+                                                                borderRadius:
+                                                                    BorderRadius
+                                                                        .circular(
+                                                                            22),
+                                                                boxShadow: [
+                                                                  BoxShadow(
+                                                                    color: status
+                                                                        ? Colors
+                                                                            .white
+                                                                        : Colors
+                                                                            .black26,
+                                                                    blurRadius:
+                                                                        1,
+                                                                    spreadRadius:
+                                                                        1,
+                                                                  ),
+                                                                ],
+                                                                image: status
+                                                                    ? const DecorationImage(
+                                                                        image:
+                                                                            NetworkImage("https://firebasestorage.googleapis.com/v0/b/carehub-af7ec.appspot.com/o/currect%20icon.png?alt=media&token=b3c6c4e9-5283-4d50-8e39-965695c07808"),
+                                                                        fit: BoxFit
+                                                                            .cover,
+                                                                      )
+                                                                    : null,
                                                               ),
                                                             ),
-                                                            Container(
-                                                                width: 100,
-                                                                child: Text(
-                                                                  subject,
-                                                                  style: TextStyle(
-                                                                      fontWeight:
-                                                                          FontWeight
-                                                                              .bold),
-                                                                  overflow:
-                                                                      TextOverflow
-                                                                          .ellipsis,
-                                                                )),
-                                                          ],
-                                                        ),
-                                                        Text("$timestamp",
-                                                            style: TextStyle(
-                                                                fontSize: 12)),
-                                                      ],
-                                                    ),
+                                                          ),
+                                                          SizedBox(
+                                                              width: 100,
+                                                              child: Text(
+                                                                subject,
+                                                                style: const TextStyle(
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .bold),
+                                                                overflow:
+                                                                    TextOverflow
+                                                                        .ellipsis,
+                                                              )),
+                                                        ],
+                                                      ),
+                                                      Text("$timestamp",
+                                                          style: const TextStyle(
+                                                              fontSize: 12)),
+                                                    ],
                                                   ),
                                                 ),
-                                              );
-                                            }).toList(); // Explicitly convert to List<Widget>
-
-                                            if (count == 0) {
-                                              return Text(
-                                                  "No feedback for this user.");
-                                            }
-
-                                            return ListView(
-                                              padding: EdgeInsets.zero,
-                                              children: feedbackWidgets,
+                                              ),
                                             );
+                                          }).toList(); // Explicitly convert to List<Widget>
+
+                                          if (count == 0) {
+                                            return const Text(
+                                                "No feedback for this user.");
                                           }
-                                        },
-                                      ),
+
+                                          return ListView(
+                                            padding: EdgeInsets.zero,
+                                            children: feedbackWidgets,
+                                          );
+                                        }
+                                      },
                                     ),
-                                  ],
-                                ),
+                                  ),
+                                ],
                               ),
                             ),
-                            ElevatedButton(
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) => BlankPage()),
-                                );
-                              },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.red,
-                                padding: EdgeInsets.symmetric(
-                                    horizontal: 40, vertical: 5),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(5),
-                                ),
-                              ),
-                              child: Text(
-                                "New",
-                                style: TextStyle(
-                                    color: Colors.white, fontSize: 20),
+                          ),
+                          ElevatedButton(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => const BlankPage()),
+                              );
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.red,
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 40, vertical: 5),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(5),
                               ),
                             ),
-                            SizedBox(height: 260),
-                            Container(
-                              width: double.infinity,
-                              child: AppBar(
-                                backgroundColor: Colors.lightGreen,
-                              ),
+                            child: const Text(
+                              "New",
+                              style: TextStyle(
+                                  color: Colors.white, fontSize: 20),
                             ),
-                          ],
-                        ),
-                      ],
-                    ),
+                          ),
+                          const SizedBox(height: 260),
+                          SizedBox(
+                            width: double.infinity,
+                            child: AppBar(
+                              backgroundColor: Colors.lightGreen,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -361,7 +358,7 @@ class FeedbackItem extends StatelessWidget {
       decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(10),
-          boxShadow: [
+          boxShadow: const [
             BoxShadow(
               color: Colors.black26,
               spreadRadius: 2,
@@ -370,25 +367,25 @@ class FeedbackItem extends StatelessWidget {
           ]),
       child: Row(
         children: [
-          SizedBox(width: 10),
+          const SizedBox(width: 10),
           Image.network(
             imageUrl,
             width: 20,
             height: 20,
           ),
-          SizedBox(width: 20),
+          const SizedBox(width: 20),
           Text(
             title,
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 17,
               fontWeight: FontWeight.bold,
               color: Colors.black,
             ),
           ),
-          SizedBox(width: 20),
+          const SizedBox(width: 20),
           Text(
             time,
-            style: TextStyle(color: Colors.black, fontSize: 13),
+            style: const TextStyle(color: Colors.black, fontSize: 13),
           ),
         ],
       ),
@@ -397,6 +394,8 @@ class FeedbackItem extends StatelessWidget {
 }
 
 class BlankPage extends StatefulWidget {
+  const BlankPage({super.key});
+
   @override
   _BlankPageState createState() => _BlankPageState();
 }
@@ -433,7 +432,7 @@ class _BlankPageState extends State<BlankPage> {
           // Header section
           _buildHeader(),
           Padding(
-            padding: EdgeInsets.only(top: 150),
+            padding: const EdgeInsets.only(top: 150),
             child: SingleChildScrollView(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 15.0),
@@ -461,7 +460,7 @@ class _BlankPageState extends State<BlankPage> {
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
           AppBar(
-            title: Center(
+            title: const Center(
               child: Text("New Feedback",
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color : Colors.white)),
             ),
@@ -476,12 +475,12 @@ class _BlankPageState extends State<BlankPage> {
   // Method to build the feedback form
   Widget _buildFeedbackForm(double screenWidth, double screenHeight) {
     return Container(
-      padding: EdgeInsets.all(10),
-      margin: EdgeInsets.only(top: 10),
+      padding: const EdgeInsets.all(10),
+      margin: const EdgeInsets.only(top: 10),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(10),
-        boxShadow: [
+        boxShadow: const [
           BoxShadow(
             color: Colors.black26,
             blurRadius: 4,
@@ -522,7 +521,7 @@ class _BlankPageState extends State<BlankPage> {
       decoration: BoxDecoration(
         color: Colors.grey[100],
         borderRadius: BorderRadius.circular(8),
-        boxShadow: [
+        boxShadow: const [
           BoxShadow(
             color: Colors.black12,
             spreadRadius: 1,
@@ -535,7 +534,7 @@ class _BlankPageState extends State<BlankPage> {
         controller: _descriptionController, // Attach controller
         maxLines: null, // Allows for multi-line input
         expands: true,
-        decoration: InputDecoration(
+        decoration: const InputDecoration(
           hintText: "Enter your feedback here...",
           border: InputBorder.none,
         ),
@@ -559,12 +558,12 @@ class _BlankPageState extends State<BlankPage> {
     return InkWell(
       onTap: _clearFields, // Attach clear method
       child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 30, vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
         decoration: BoxDecoration(
           color: Colors.redAccent,
           borderRadius: BorderRadius.circular(5),
         ),
-        child: Text(
+        child: const Text(
           "Clear All",
           style: TextStyle(
             color: Colors.white,
@@ -581,7 +580,7 @@ class _BlankPageState extends State<BlankPage> {
       onPressed: () async {
         String title = _titleController.text;
         String description = _descriptionController.text;
-        User? user = await FirebaseAuth.instance.currentUser;
+        User? user = FirebaseAuth.instance.currentUser;
         String? userUID = user?.uid;
         DateTime now = DateTime.now();
         String formattedDate = DateFormat('dd MMM yyyy hh:mm a').format(now);
@@ -602,12 +601,12 @@ class _BlankPageState extends State<BlankPage> {
       },
       style: ElevatedButton.styleFrom(
         backgroundColor: Colors.greenAccent,
-        padding: EdgeInsets.symmetric(horizontal: 30, vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(5),
         ),
       ),
-      child: Text(
+      child: const Text(
         "Post",
         style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
       ),

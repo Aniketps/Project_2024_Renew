@@ -1,18 +1,16 @@
 import 'dart:async';
-import 'dart:math';
 import 'package:carehub/ClientNotificationPage.dart';
-import 'package:carehub/services/getServerKey.dart';
 import 'package:carehub/services/sendNotificationService.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:phone_numbers_parser/phone_numbers_parser.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'LoaderSupport.dart';
@@ -46,37 +44,76 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
   @override
   void initState() {
     super.initState();
-    timer = Timer.periodic(Duration(seconds: 1), (Timer t) {
-      setState(() {
-        LoadingText = loadingMessages[index];
-        index = (index + 1) % loadingMessages.length;
-      });
+    contactFocusNode.addListener(() {
+      if (!contactFocusNode.hasFocus) {
+        _formatPhoneNumberOnBlur();
+      }
     });
     Loader = true;
     _liveLocation();
     _getCurrentLocation();
     Loader = false;
+    UID = FirebaseAuth.instance.currentUser!.uid;
   }
+
+  Future<void> _formatPhoneNumberOnBlur() async {
+    final raw = contactController.text.trim();
+    if (raw.isEmpty) return;
+
+    try {
+      // Reverse geocode to get ISO country code
+      List<Placemark> placemarks = await placemarkFromCoordinates(
+        double.parse(lat),
+        double.parse(long),
+      );
+
+      if (placemarks.isNotEmpty) {
+        String? code = placemarks.first.isoCountryCode;
+
+        // Find matching IsoCode enum value from string
+        IsoCode? isoCode = IsoCode.values.firstWhere(
+              (e) => e.name.toUpperCase() == code,
+          orElse: () => IsoCode.US, // fallback
+        );
+
+        // Parse and format the phone number
+        final parsed = PhoneNumber.parse(
+          raw,
+          callerCountry: isoCode,
+        );
+        final formatted = parsed.international;
+
+        contactController.text = formatted;
+        contactController.selection = TextSelection.collapsed(offset: formatted.length);
+      }
+    } catch (e) {
+      print("Invalid number format: $e");
+    }
+  }
+
+
+  var UID = "";
+
   void _liveLocation() {
-    LocationSettings locationSettings = LocationSettings(
+    LocationSettings locationSettings = const LocationSettings(
       accuracy: LocationAccuracy.high,
       distanceFilter: 100,
     );
 
     Geolocator.getPositionStream(locationSettings: locationSettings).listen(
-          (Position position) async {
+      (Position position) async {
         setState(() {
           lat = position.latitude.toString();
           long = position.longitude.toString();
         });
         User? user = FirebaseAuth.instance.currentUser;
         await FirebaseFirestore.instance
-              .collection('user')
-              .doc(user?.uid)
-              .update({
-            'lat': lat,
-            'long': long,
-          });
+            .collection('user')
+            .doc(user?.uid)
+            .update({
+          'lat': lat,
+          'long': long,
+        });
       },
     );
   }
@@ -128,12 +165,13 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
   TextEditingController hours = TextEditingController();
   Future<bool> getShareLocation() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    if(prefs.getDouble("SelectedLat") == 0.0){
+    if (prefs.getDouble("SelectedLat") == 0.0) {
       return false;
-    }else{
+    } else {
       return true;
     }
   }
+
   var total;
   bool Loader = true;
   bool DayBased = false;
@@ -150,9 +188,16 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
   TextEditingController City = TextEditingController();
   TextEditingController SubAddress = TextEditingController();
   TextEditingController Address = TextEditingController();
+  final TextEditingController contactController = TextEditingController();
+  final FocusNode contactFocusNode = FocusNode();
   bool isAccepted = false;
   bool isAcceptOpen = false;
   bool loading = false;
+  bool isManually = false;
+
+  Map<String, bool> isSelected = {};
+  bool isSelectedInitialized = false;
+  int initialCount = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -174,7 +219,7 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
 
     String WorkDate = (pickedDate != null)
         ? "${pickedDate!.day}/${pickedDate!.month}/${pickedDate!.year}"
-        : '--/--/----';
+        : '';
 
 // Calculate End Time and Date based on HourBased or DayBased
     DateTime endDateTime;
@@ -182,8 +227,7 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
     if (HourBased) {
       // Ensure pickedDate and pickedTime are not null
       if (pickedDate != null && pickedTime != null) {
-        int hoursToAdd =
-            int.tryParse(hours.text) ?? count; // Use count as a fallback;
+        int hoursToAdd = int.tryParse(hours.text) ?? count;
         DateTime startDateTime = DateTime(
           pickedDate!.year,
           pickedDate!.month,
@@ -200,8 +244,7 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
     } else {
       // For day-based, add the number of days to pickedDate
       if (pickedDate != null && pickedTime != null) {
-        int hoursToAdd =
-            int.tryParse(hours.text) ?? count; // Use count as a fallback;
+        int hoursToAdd = int.tryParse(hours.text) ?? count;
         DateTime startDateTime = DateTime(
           pickedDate!.year,
           pickedDate!.month,
@@ -210,7 +253,7 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
           pickedTime!.minute,
         );
         int shift = int.parse(StaffData['Day_Shift'].toString());
-        endDateTime = startDateTime.add(Duration(hours: hoursToAdd * shift));
+        endDateTime = startDateTime.add(Duration(days: hoursToAdd));
       } else {
         // Handle case where pickedDate is null
         endDateTime = DateTime.now(); // Fallback to current date if null
@@ -240,10 +283,12 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 AppBar(
-                  title: Center(
+                  title: const Center(
                     child: Text("Hiring And Payment",
                         style: TextStyle(
-                            fontSize: 20, fontWeight: FontWeight.bold, color : Colors.white)),
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white)),
                   ),
                   backgroundColor: Globle.theme,
                   automaticallyImplyLeading: false,
@@ -255,1681 +300,1814 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
             children: [
               Padding(
                 padding: const EdgeInsets.only(top: 150),
-                child: Container(
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.vertical,
-                    child: Column(
-                      children: [
-                        lat == ''
-                            ? Padding(
-                                padding: const EdgeInsets.only(top: 200.0),
-                                child: Center(
-                                    child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Padding(
-                                        padding: const EdgeInsets.only(top : 10.0),
-                                        child: Center(
-                                          child: LoaderSupport.loadingAnimation.widget,
-                                        )
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.vertical,
+                  child: Column(
+                    children: [
+                      lat == ''
+                          ? Padding(
+                              padding: const EdgeInsets.only(top: 200.0),
+                              child: Center(
+                                  child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Padding(
+                                      padding:
+                                          const EdgeInsets.only(top: 10.0),
+                                      child: Center(
+                                        child: LoaderSupport
+                                            .loadingAnimation.widget,
+                                      )),
+                                  Padding(
+                                    padding: const EdgeInsets.all(10.0),
+                                    child: Text(
+                                      LoadingText,
+                                      style: GoogleFonts.audiowide(
+                                        color: const Color(0xFF00FFFF), // Neon Blue
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 18,
+                                      ),
                                     ),
-                                    Padding(
-                                      padding: const EdgeInsets.all(10.0),
-                                      child: Text(
-                                        LoadingText,
-                                        style: GoogleFonts.audiowide(
-                                          color: Color(0xFF00FFFF),  // Neon Blue
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 18,
+                                  )
+                                ],
+                              )),
+                            )
+                          : Stack(
+                              children: [
+                                SingleChildScrollView(
+                                  scrollDirection: Axis.vertical,
+                                  child: Column(
+                                    children: [
+                                      //Information
+                                      Padding(
+                                        padding: const EdgeInsets.only(
+                                            top: 3, right: 10, left: 10),
+                                        child: Container(
+                                          width: screenWidth * 0.95,
+                                          height: screenHeight * 0.3,
+                                          decoration: BoxDecoration(
+                                              color: Colors.white,
+                                              borderRadius:
+                                                  BorderRadius.circular(5),
+                                              boxShadow: [
+                                                const BoxShadow(
+                                                    color: Colors.black26,
+                                                    spreadRadius: 1,
+                                                    blurRadius: 1)
+                                              ]),
+                                          child: Column(
+                                            children: [
+                                              Padding(
+                                                padding:
+                                                    const EdgeInsets.all(8.0),
+                                                child: Row(
+                                                  children: [
+                                                    Column(
+                                                      children: [
+                                                        Container(
+                                                          height: 60,
+                                                          width: 60,
+                                                          decoration:
+                                                              BoxDecoration(
+                                                            image:
+                                                                DecorationImage(
+                                                              image: NetworkImage(
+                                                                  StaffData[
+                                                                      'Profile_Pic']),
+                                                              fit: BoxFit
+                                                                  .cover, // Adjust the fit if necessary
+                                                            ),
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        80),
+                                                            color:
+                                                                Colors.orange,
+                                                          ),
+                                                        )
+                                                      ],
+                                                    ),
+                                                    Padding(
+                                                      padding:
+                                                          const EdgeInsets
+                                                              .all(8.0),
+                                                      child: Column(
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment
+                                                                .start,
+                                                        children: [
+                                                          Container(
+                                                              width: 120,
+                                                              child: Text(
+                                                                "${StaffData['First_name']} ${StaffData['Last_name']}",
+                                                                overflow:
+                                                                    TextOverflow
+                                                                        .ellipsis,
+                                                                style: const TextStyle(
+                                                                    fontSize:
+                                                                        16,
+                                                                    color: Colors
+                                                                        .black,
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .bold),
+                                                              )),
+                                                          Text(
+                                                              StaffData[
+                                                                      "Status"]
+                                                                  ? "Online"
+                                                                  : "Offline",
+                                                              style:
+                                                                  const TextStyle(
+                                                                fontSize: 10,
+                                                                color: Colors
+                                                                    .green,
+                                                              )),
+                                                          Text(
+                                                              "Current time is ${TimeOfDay.now().hourOfPeriod == 0 ? 12 : TimeOfDay.now().hourOfPeriod}:${TimeOfDay.now().minute.toString().padLeft(2, '0')} ${TimeOfDay.now().period == DayPeriod.am ? 'AM' : 'PM'}",
+                                                              style:
+                                                                  const TextStyle(
+                                                                fontSize: 10,
+                                                                color: Colors
+                                                                    .blue,
+                                                              )),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                    Container(
+                                                      height: 60,
+                                                      width: 110,
+                                                      decoration: BoxDecoration(
+                                                          borderRadius:
+                                                              BorderRadius
+                                                                  .circular(
+                                                                      10),
+                                                          color: Colors.white,
+                                                          boxShadow: [
+                                                            const BoxShadow(
+                                                                color: Colors
+                                                                    .black26,
+                                                                blurRadius: 1,
+                                                                spreadRadius:
+                                                                    1)
+                                                          ]),
+                                                      child: Column(
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment
+                                                                .center,
+                                                        children: [
+                                                          Padding(
+                                                            padding:
+                                                                const EdgeInsets
+                                                                    .only(
+                                                                    left: 5),
+                                                            child: Text(
+                                                              "${StaffData['professionOfStaff'][0].toUpperCase()}${StaffData['professionOfStaff'].substring(1)}",
+                                                              overflow:
+                                                                  TextOverflow
+                                                                      .ellipsis,
+                                                              style: const TextStyle(
+                                                                  fontSize:
+                                                                      16,
+                                                                  color: Colors
+                                                                      .red,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .bold),
+                                                            ),
+                                                          ),
+                                                          Text(
+                                                            StaffData["City"],
+                                                            style: const TextStyle(
+                                                                fontSize: 14,
+                                                                color: Colors
+                                                                    .black,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                              Padding(
+                                                padding:
+                                                    const EdgeInsets.only(
+                                                        left: 50.0,
+                                                        right: 30),
+                                                child: Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment
+                                                          .spaceBetween,
+                                                  children: [
+                                                    const Text(
+                                                      "Hire on basis of",
+                                                      style: TextStyle(
+                                                          fontSize: 12),
+                                                    ),
+                                                    Padding(
+                                                      padding:
+                                                          const EdgeInsets
+                                                              .only(left: 20),
+                                                      child: Row(
+                                                        children: [
+                                                          InkWell(
+                                                            onTap: () {
+                                                              setState(() {
+                                                                HourBased =
+                                                                    true;
+                                                                DayBased =
+                                                                    false;
+                                                              });
+                                                            },
+                                                            child: Container(
+                                                              height: 30,
+                                                              width: 50,
+                                                              decoration:
+                                                                  BoxDecoration(
+                                                                      borderRadius:
+                                                                          const BorderRadius
+                                                                              .only(
+                                                                        topLeft:
+                                                                            Radius.circular(10),
+                                                                        bottomLeft:
+                                                                            Radius.circular(10),
+                                                                      ),
+                                                                      color: HourBased
+                                                                          ? Colors.blue
+                                                                          : Colors.white,
+                                                                      boxShadow: [
+                                                                    const BoxShadow(
+                                                                      color: Colors
+                                                                          .black26,
+                                                                      spreadRadius:
+                                                                          1,
+                                                                      blurRadius:
+                                                                          1,
+                                                                    )
+                                                                  ]),
+                                                              child: Center(
+                                                                  child: Text(
+                                                                "Hour",
+                                                                style: TextStyle(
+                                                                    color: HourBased
+                                                                        ? Colors
+                                                                            .white
+                                                                        : Colors
+                                                                            .black,
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .bold),
+                                                              )),
+                                                            ),
+                                                          ),
+                                                          InkWell(
+                                                            onTap: () {
+                                                              setState(() {
+                                                                DayBased =
+                                                                    true;
+                                                                HourBased =
+                                                                    false;
+                                                              });
+                                                            },
+                                                            child: Container(
+                                                              height: 30,
+                                                              width: 50,
+                                                              decoration:
+                                                                  BoxDecoration(
+                                                                      borderRadius:
+                                                                          const BorderRadius
+                                                                              .only(
+                                                                        topRight:
+                                                                            Radius.circular(10),
+                                                                        bottomRight:
+                                                                            Radius.circular(10),
+                                                                      ),
+                                                                      color: DayBased
+                                                                          ? Colors.blue
+                                                                          : Colors.white,
+                                                                      boxShadow: [
+                                                                    const BoxShadow(
+                                                                      color: Colors
+                                                                          .black26,
+                                                                      spreadRadius:
+                                                                          1,
+                                                                      blurRadius:
+                                                                          1,
+                                                                    )
+                                                                  ]),
+                                                              child: Center(
+                                                                  child: Text(
+                                                                "Day",
+                                                                style: TextStyle(
+                                                                    color: DayBased
+                                                                        ? Colors
+                                                                            .white
+                                                                        : Colors
+                                                                            .black,
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .bold),
+                                                              )),
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                              const SizedBox(
+                                                height: 8,
+                                              ),
+                                              Padding(
+                                                padding:
+                                                    const EdgeInsets.only(
+                                                        left: 50,
+                                                        right: 10,
+                                                        top: 5),
+                                                child: Column(
+                                                  children: [
+                                                    Padding(
+                                                      padding:
+                                                          const EdgeInsets
+                                                              .all(2.0),
+                                                      child: Row(
+                                                        children: [
+                                                          Container(
+                                                              width:
+                                                                  screenWidth *
+                                                                      0.38,
+                                                              child: Text(
+                                                                HourBased
+                                                                    ? "Hour"
+                                                                    : "Day",
+                                                                style:
+                                                                    const TextStyle(
+                                                                  fontSize:
+                                                                      12,
+                                                                ),
+                                                              )),
+                                                          Padding(
+                                                            padding: EdgeInsets.only(
+                                                                right:
+                                                                    screenWidth *
+                                                                        0.05),
+                                                            child: Container(
+                                                              height: 20,
+                                                              width:
+                                                                  screenWidth *
+                                                                      0.16,
+                                                              decoration: BoxDecoration(
+                                                                  color: Colors
+                                                                      .white,
+                                                                  borderRadius: BorderRadius.circular(5),
+                                                                  boxShadow: [
+                                                                    const BoxShadow(
+                                                                        color: Colors
+                                                                            .black26,
+                                                                        blurRadius:
+                                                                            1,
+                                                                        spreadRadius:
+                                                                            1)
+                                                                  ]),
+                                                              child: Row(
+                                                                crossAxisAlignment:
+                                                                    CrossAxisAlignment
+                                                                        .center,
+                                                                mainAxisAlignment:
+                                                                    MainAxisAlignment
+                                                                        .center,
+                                                                children: [
+                                                                  InkWell(
+                                                                    onTap:
+                                                                        () {
+                                                                      setState(
+                                                                          () {
+                                                                        if (count !=
+                                                                            1) {
+                                                                          count -=
+                                                                              1;
+                                                                        }
+                                                                      });
+                                                                    },
+                                                                    child:
+                                                                        const Padding(
+                                                                      padding: EdgeInsets
+                                                                          .only(
+                                                                          right:
+                                                                              1,
+                                                                          left:
+                                                                              1),
+                                                                      child:
+                                                                          Icon(
+                                                                        CupertinoIcons
+                                                                            .minus,
+                                                                        size:
+                                                                            15,
+                                                                      ),
+                                                                    ),
+                                                                  ),
+                                                                  Padding(
+                                                                    padding: const EdgeInsets
+                                                                        .only(
+                                                                        right:
+                                                                            2,
+                                                                        left:
+                                                                            2),
+                                                                    child:
+                                                                        Text(
+                                                                      "${count}",
+                                                                      style: const TextStyle(
+                                                                          fontSize:
+                                                                              12),
+                                                                    ),
+                                                                  ),
+                                                                  InkWell(
+                                                                    onTap:
+                                                                        () {
+                                                                      setState(
+                                                                          () {
+                                                                        if (count <
+                                                                            12) {
+                                                                          count +=
+                                                                              1;
+                                                                        }
+                                                                      });
+                                                                    },
+                                                                    child:
+                                                                        const Padding(
+                                                                      padding: EdgeInsets
+                                                                          .only(
+                                                                          right:
+                                                                              1,
+                                                                          left:
+                                                                              1),
+                                                                      child:
+                                                                          Icon(
+                                                                        CupertinoIcons
+                                                                            .plus,
+                                                                        size:
+                                                                            15,
+                                                                      ),
+                                                                    ),
+                                                                  ),
+                                                                ],
+                                                              ),
+                                                            ),
+                                                          ),
+                                                          Container(
+                                                              child: Text(
+                                                            " ${price} ${StaffData['Currency'] ?? '-'}",
+                                                            style: const TextStyle(
+                                                              fontSize: 12,
+                                                            ),
+                                                          )),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                    Padding(
+                                                      padding:
+                                                          const EdgeInsets
+                                                              .all(2.0),
+                                                      child: Row(
+                                                        children: [
+                                                          Container(
+                                                              width:
+                                                                  screenWidth *
+                                                                      0.619,
+                                                              child: const Text(
+                                                                "Traveling Charges",
+                                                                style:
+                                                                    TextStyle(
+                                                                  fontSize:
+                                                                      12,
+                                                                ),
+                                                              )),
+                                                          Text(
+                                                            "${(StaffData['Traveling_Charges'] != null) ? StaffData['Traveling_Charges'].toString() : '0'} ${StaffData['Currency'] ?? '-'}",
+                                                            style: const TextStyle(
+                                                              fontSize: 12,
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                    const Padding(
+                                                      padding:
+                                                          EdgeInsets
+                                                              .only(
+                                                              right: 30),
+                                                      child: Divider(),
+                                                    ),
+                                                    Padding(
+                                                      padding:
+                                                          const EdgeInsets
+                                                              .only(
+                                                              top: 2.0,
+                                                              left: 2,
+                                                              bottom: 2,
+                                                              right: 18),
+                                                      child: Row(
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment
+                                                                .spaceBetween,
+                                                        children: [
+                                                          Container(
+                                                              width:
+                                                                  screenWidth *
+                                                                      0.2,
+                                                              child: const Text(
+                                                                "Total",
+                                                                style: TextStyle(
+                                                                    fontSize:
+                                                                        12,
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .bold),
+                                                              )),
+                                                          Text(
+                                                            "${total} ${StaffData['Currency'] ?? '-'}",
+                                                            style: const TextStyle(
+                                                                fontSize: 12,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ],
+                                          ),
                                         ),
                                       ),
-                                    )
-                                  ],
-                                )),
-                              )
-                            : Stack(
-                                children: [
-                                  SingleChildScrollView(
-                                    scrollDirection: Axis.vertical,
-                                    child: Column(
-                                      children: [
-                                        //Information
-                                        Padding(
-                                          padding: const EdgeInsets.only(
-                                              top: 3, right: 10, left: 10),
+
+                                      // Schedule
+                                      Padding(
+                                        padding: const EdgeInsets.only(
+                                            top: 5, right: 10, left: 10),
+                                        child: Container(
+                                          width: screenWidth * 0.95,
+                                          height: screenHeight * 0.2,
+                                          decoration: BoxDecoration(
+                                              color: Colors.white,
+                                              borderRadius:
+                                                  BorderRadius.circular(5),
+                                              boxShadow: [
+                                                const BoxShadow(
+                                                    color: Colors.black26,
+                                                    spreadRadius: 1,
+                                                    blurRadius: 1)
+                                              ]),
+                                          child: Padding(
+                                            padding:
+                                                const EdgeInsets.only(left: 10),
+                                            child: Column(
+                                              children: [
+                                                Container(
+                                                  width: screenWidth * 0.9,
+                                                  child: Row(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: [
+                                                      Container(
+                                                        width:
+                                                            screenWidth * 0.6,
+                                                        height: 60,
+                                                        child: const Row(
+                                                          crossAxisAlignment:
+                                                              CrossAxisAlignment
+                                                                  .center,
+                                                          children: [
+                                                            Text(
+                                                              "Schedule",
+                                                              style: TextStyle(
+                                                                  fontSize:
+                                                                      16,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .bold),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                      Padding(
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .only(top: 5),
+                                                        child: Container(
+                                                          width:
+                                                              (screenWidth *
+                                                                      0.3) -
+                                                                  2,
+                                                          height: 50,
+                                                          decoration: BoxDecoration(
+                                                              color: Colors
+                                                                  .white,
+                                                              borderRadius:
+                                                                  BorderRadius
+                                                                      .circular(
+                                                                          10),
+                                                              boxShadow: [
+                                                                const BoxShadow(
+                                                                  color: Colors
+                                                                      .black26,
+                                                                  spreadRadius:
+                                                                      1,
+                                                                  blurRadius:
+                                                                      1,
+                                                                )
+                                                              ]),
+                                                          child: const Padding(
+                                                            padding:
+                                                                EdgeInsets
+                                                                    .all(5.0),
+                                                            child: Text(
+                                                              "GUERANTEE ON TIME",
+                                                              style: TextStyle(
+                                                                  fontSize:
+                                                                      10),
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      )
+                                                    ],
+                                                  ),
+                                                ),
+                                                Container(
+                                                  width: screenWidth * 0.9,
+                                                  height: 60,
+                                                  child: Row(
+                                                    children: [
+                                                      Container(
+                                                        width: screenWidth *
+                                                            0.23,
+                                                        height: 30,
+                                                        child: InkWell(
+                                                            onTap: () async {
+                                                              DateTime?
+                                                                  selectedDate =
+                                                                  await showDatePicker(
+                                                                context:
+                                                                    context,
+                                                                firstDate:
+                                                                    DateTime
+                                                                        .now(),
+                                                                lastDate: DateTime
+                                                                        .now()
+                                                                    .add(const Duration(
+                                                                        days:
+                                                                            12)),
+                                                                initialDate:
+                                                                    DateTime
+                                                                        .now(),
+                                                              );
+                                                              if (selectedDate !=
+                                                                  null) {
+                                                                setState(() {
+                                                                  pickedDate =
+                                                                      selectedDate;
+                                                                });
+                                                              }
+                                                            },
+                                                            child: const Text(
+                                                              "Select Date",
+                                                              style: TextStyle(
+                                                                  fontSize:
+                                                                      12,
+                                                                  color: Colors
+                                                                      .blue),
+                                                            )),
+                                                      ),
+                                                      Container(
+                                                        width: screenWidth *
+                                                            0.23,
+                                                        height: 30,
+                                                        child: InkWell(
+                                                            onTap: () async {
+                                                              TimeOfDay?
+                                                                  selectedTime =
+                                                                  await showTimePicker(
+                                                                context:
+                                                                    context,
+                                                                initialTime:
+                                                                    TimeOfDay
+                                                                        .now(),
+                                                              );
+                                                              if (selectedTime !=
+                                                                  null) {
+                                                                setState(() {
+                                                                  pickedTime =
+                                                                      selectedTime;
+                                                                });
+                                                              }
+                                                            },
+                                                            child: const Text(
+                                                              "Select Time",
+                                                              style: TextStyle(
+                                                                  fontSize:
+                                                                      12,
+                                                                  color: Colors
+                                                                      .blue),
+                                                            )),
+                                                      ),
+                                                      Container(
+                                                        width: screenWidth *
+                                                            0.24,
+                                                        height: 30,
+                                                        child: Text(
+                                                          WorkDate,
+                                                          style: const TextStyle(
+                                                              fontSize: 12),
+                                                        ),
+                                                      ),
+                                                      Container(
+                                                        width: (screenWidth *
+                                                                0.2) -
+                                                            2,
+                                                        height: 30,
+                                                        child: Text(
+                                                          pickedTime != null
+                                                              ? WorkTime
+                                                              : '',
+                                                          style: const TextStyle(
+                                                              fontSize: 12),
+                                                        ),
+                                                      )
+                                                    ],
+                                                  ),
+                                                ),
+                                                Container(
+                                                  width: screenWidth * 0.9,
+                                                  child: Row(
+                                                    children: [
+                                                      Container(
+                                                        width: screenWidth *
+                                                            0.15,
+                                                        height: 30,
+                                                        child: const Text(
+                                                          "Due to",
+                                                          style: TextStyle(
+                                                            fontSize: 12,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      Container(
+                                                        width: screenWidth *
+                                                            0.31,
+                                                        height: 30,
+                                                        child: InkWell(
+                                                          onTap: () {
+                                                            setState(() {
+                                                              EnterAddress =
+                                                                  true;
+                                                            });
+                                                          },
+                                                          child: Text(
+                                                            (City.text.isEmpty &&
+                                                                    Address
+                                                                        .text
+                                                                        .isEmpty)
+                                                                ? "Select Address"
+                                                                : "Change Address",
+                                                            style: const TextStyle(
+                                                                fontSize: 12,
+                                                                color: Colors
+                                                                    .blue),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      Container(
+                                                        width: screenWidth *
+                                                            0.24,
+                                                        height: 30,
+                                                        child: Text(
+                                                          pickedDate != null
+                                                              // Adding 12 days to the pickedDate and displaying day, month, and year
+                                                              ? WorkDateEnd
+                                                              : "",
+                                                          style: const TextStyle(
+                                                              fontSize: 12),
+                                                        ),
+                                                      ),
+                                                      Container(
+                                                        width: (screenWidth *
+                                                                0.2) -
+                                                            2,
+                                                        height: 30,
+                                                        child: Text(
+                                                          WorkTimeEnd,
+                                                          style: const TextStyle(
+                                                              fontSize: 12),
+                                                        ),
+                                                      )
+                                                    ],
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+
+                                      // Hire
+                                      Padding(
+                                        padding: const EdgeInsets.only(
+                                            top: 10, right: 10, left: 10),
+                                        child: InkWell(
+                                          onTap: () async {
+                                            setState(() {
+                                              loading = true;
+                                            });
+                                            isAcceptOpen = false;
+                                            var UID = FirebaseAuth.instance.currentUser?.uid;
+                                            String city = City.text;
+                                            String address = Address.text;
+                                            String subAddress =
+                                                SubAddress.text;
+                                            String place = Place;
+                                            SharedPreferences prefs =
+                                                await SharedPreferences
+                                                    .getInstance();
+
+                                            if (price != 0 &&
+                                                WorkDate != '--/--/----' &&
+                                                WorkTime != '--:--' &&
+                                                city.isNotEmpty &&
+                                                address.isNotEmpty &&
+                                                subAddress.isNotEmpty &&
+                                                place.isNotEmpty &&
+                                                prefs.getDouble(
+                                                        "SelectedLat") !=
+                                                    0.0 &&
+                                                prefs.getDouble(
+                                                        "SelectedLong") !=
+                                                    0.0) {
+
+                                              if ("Payment Successful" ==
+                                                  "Payment Successful") {
+                                                try {
+                                                  // Add data to 'NotificationForStaff' collection
+                                                  FirebaseFirestore.instance
+                                                      .collection(
+                                                          'NotificationForStaff')
+                                                      .add({
+                                                    'userUID': UID,
+                                                    'Scheduled_City': city,
+                                                    'Scheduled_Address':
+                                                        address,
+                                                    'Scheduled_Sub_Address':
+                                                        subAddress,
+                                                    'Scheduled_Place': place,
+                                                    "Client_Coordinates_lat":
+                                                        ShareCoordinates
+                                                            ? prefs
+                                                                .getDouble(
+                                                                    "SelectedLat")
+                                                                .toString()
+                                                            : "",
+                                                    "Client_Coordinates_long":
+                                                        ShareCoordinates
+                                                            ? prefs
+                                                                .getDouble(
+                                                                    "SelectedLong")
+                                                                .toString()
+                                                            : "",
+                                                    'staffUID': StaffID,
+                                                    'professionOfStaff':
+                                                        Skill,
+                                                    'status':
+                                                        'Received a Request',
+                                                    'timeofdeal':
+                                                        "${DateTime.now().day} ${DateFormat.MMM().format(DateTime.now())} ${DateTime.now().year} ${DateFormat.jm().format(DateTime.now())}",
+                                                    'totalcost': total,
+                                                    'ServiceBase': HourBased
+                                                        ? 'Hour'
+                                                        : 'Day',
+                                                    'hours': "${count}",
+                                                    'ScheduledDate': WorkDate,
+                                                    'ScheduledTime': WorkTime,
+                                                    'PlatformTax': '1.5%',
+                                                    'ScheduledDateEnd':
+                                                        WorkDateEnd,
+                                                    'clientContact' : contactController.text,
+                                                    'ScheduledTimeEnd':
+                                                        WorkTimeEnd,
+                                                  }).then((staffDocRef) {
+                                                    String staffDocUID =
+                                                        staffDocRef.id;
+                                                    // Add data to 'NotificationForUser' collection
+                                                    FirebaseFirestore.instance
+                                                        .collection(
+                                                            'NotificationForUser')
+                                                        .add({
+                                                      'userUID': UID,
+                                                      'staffUID': StaffID,
+                                                      'status':
+                                                          'Request sent',
+                                                      'Scheduled_City': city,
+                                                      'Scheduled_Address':
+                                                          address,
+                                                      'Scheduled_Sub_Address':
+                                                          subAddress,
+                                                      'Scheduled_Place':
+                                                          place,
+                                                      "Client_Coordinates_lat":
+                                                          ShareCoordinates
+                                                              ? prefs
+                                                                  .getDouble(
+                                                                      "SelectedLat")
+                                                                  .toString()
+                                                              : "",
+                                                      "Client_Coordinates_long":
+                                                          ShareCoordinates
+                                                              ? prefs
+                                                                  .getDouble(
+                                                                      "SelectedLong")
+                                                                  .toString()
+                                                              : "",
+                                                      'professionOfStaff':
+                                                          Skill,
+                                                      'timeofdeal':
+                                                          "${DateTime.now().day} ${DateFormat.MMM().format(DateTime.now())} ${DateTime.now().year} ${DateFormat.jm().format(DateTime.now())}",
+                                                      'DocUID': staffDocUID,
+                                                      'totalcost': total,
+                                                      'ServiceBase': HourBased
+                                                          ? 'Hour'
+                                                          : 'Day',
+                                                      'hours': "${count}",
+                                                      'ScheduledDate':
+                                                          WorkDate,
+                                                      'ScheduledTime':
+                                                          WorkTime,
+                                                      'PlatformTax': '1.5%',
+                                                      'ScheduledDateEnd':
+                                                          WorkDateEnd,
+                                                      'ScheduledTimeEnd':
+                                                          WorkTimeEnd,
+                                                      'clientContact' : contactController.text,
+                                                    }).then((userDocRef) {
+                                                      String userDocUID =
+                                                          userDocRef.id;
+
+                                                      // Update 'NotificationForStaff' with the 'DocUID' from 'NotificationForUser'
+                                                      FirebaseFirestore
+                                                          .instance
+                                                          .collection(
+                                                              'NotificationForStaff')
+                                                          .doc(staffDocUID)
+                                                          .update({
+                                                        'DocUID': userDocUID,
+                                                      });
+                                                    }).catchError((error) {
+                                                      setState(() {
+                                                        loading = false;
+                                                      });
+                                                      print(
+                                                          "Error adding document to NotificationForUser: $error");
+                                                    });
+                                                  }).catchError((error) {
+                                                    setState(() {
+                                                      loading = false;
+                                                    });
+                                                    print(
+                                                        "Error adding document to NotificationForStaff: $error");
+                                                  });
+
+                                                  User? user =
+                                                      await FirebaseAuth
+                                                          .instance
+                                                          .currentUser;
+                                                  var userDoc =
+                                                      await FirebaseFirestore
+                                                          .instance
+                                                          .collection("user")
+                                                          .doc(user?.uid)
+                                                          .get();
+                                                  var staffDoc =
+                                                      await FirebaseFirestore
+                                                          .instance
+                                                          .collection("user")
+                                                          .doc(StaffID)
+                                                          .get();
+                                                  var usertoken = userDoc
+                                                      .data()?['token'];
+                                                  var stafftoken = staffDoc
+                                                      .data()?['token'];
+
+
+                                                  // Generate unique IDs for the notifications
+                                                  int notificationId1 = DateTime
+                                                          .now()
+                                                      .millisecondsSinceEpoch; // Unique ID based on timestamp
+                                                  int notificationId2 =
+                                                      notificationId1 +
+                                                          1; // Increment to ensure uniqueness for the second notification
+
+                                                  // Send first notification
+                                                  String uid = FirebaseAuth.instance.currentUser!.uid;
+
+                                                  // Access document using UID
+                                                  DocumentSnapshot<Map<String, dynamic>> doc = await FirebaseFirestore.instance
+                                                      .collection("user").doc(uid).get();
+
+                                                  sendNotificationService
+                                                      .sendNotificationUsingApi(
+                                                          body:
+                                                              "✅ ${StaffData['First_name']} ${StaffData['Last_name']} has been notified. They'll connect with you soon. Thanks for choosing CareNest 💙",
+                                                          data: {
+                                                            "screen":
+                                                                "ClientNotificationPage",
+                                                            "notificationId":
+                                                                notificationId1
+                                                                    .toString(), // Include notification ID in the data if needed
+                                                          },
+                                                          title: "🌟 Your Request Is in Good Hands",
+                                                          token: usertoken);
+                                                  // Send second notification
+
+                                                  sendNotificationService
+                                                      .sendNotificationUsingApi(
+                                                          body: "CareNest client ${doc['First_name']} ${doc['Last_name']} has reached out for your help. Tap to view details.",
+                                                          data: {
+                                                            "screen":
+                                                                "StaffNotificationPage",
+                                                            "notificationId":
+                                                                notificationId2
+                                                                    .toString(),
+                                                            "hire":
+                                                                "true" // Include notification ID in the data if needed
+                                                          },
+                                                          title: "🛎️ New Job Opportunity",
+                                                          token: stafftoken);
+                                                  prefs.setDouble(
+                                                      "SelectedLat", 0.0);
+                                                  prefs.setDouble(
+                                                      "SelectedLong", 0.0);
+
+                                                  setState(() {
+                                                    loading = false;
+                                                  });
+                                                  Navigator.push(
+                                                    context,
+                                                    MaterialPageRoute(
+                                                      builder: (context) =>
+                                                          const ClientNotificationPage(),
+                                                    ),
+                                                  );
+
+                                                  Fluttertoast.showToast(
+                                                      msg:
+                                                          "Request has been send");
+                                                } catch (e) {
+                                                  setState(() {
+                                                    loading = false;
+                                                  });
+                                                  Fluttertoast.showToast(
+                                                    msg: "$e",
+                                                    toastLength:
+                                                        Toast.LENGTH_SHORT,
+                                                    gravity:
+                                                        ToastGravity.BOTTOM,
+                                                  );
+                                                }
+                                              } else {
+                                                setState(() {
+                                                  loading = false;
+                                                });
+                                                Fluttertoast.showToast(
+                                                    msg: "Payment Failed");
+                                              }
+                                            } else {
+                                              setState(() {
+                                                loading = false;
+                                              });
+                                              // Handle validation errors
+                                              if (price == 0) {
+                                                setState(() {
+                                                  loading = false;
+                                                });
+                                                Fluttertoast.showToast(
+                                                  msg:
+                                                      "User did not set service rate",
+                                                  toastLength:
+                                                      Toast.LENGTH_SHORT,
+                                                  gravity:
+                                                      ToastGravity.BOTTOM,
+                                                );
+                                              } else if (WorkDate == '') {
+                                                setState(() {
+                                                  loading = false;
+                                                });
+                                                Fluttertoast.showToast(
+                                                  msg: "Please Select Date",
+                                                  toastLength:
+                                                      Toast.LENGTH_SHORT,
+                                                  gravity:
+                                                      ToastGravity.BOTTOM,
+                                                );
+                                              } else if (WorkTime ==
+                                                  '--:--') {
+                                                setState(() {
+                                                  loading = false;
+                                                });
+                                                Fluttertoast.showToast(
+                                                  msg: "Please Select Time",
+                                                  toastLength:
+                                                      Toast.LENGTH_SHORT,
+                                                  gravity:
+                                                      ToastGravity.BOTTOM,
+                                                );
+                                              } else if (city.isEmpty) {
+                                                setState(() {
+                                                  loading = false;
+                                                });
+                                                Fluttertoast.showToast(
+                                                  msg: "Please Enter Address",
+                                                  toastLength:
+                                                      Toast.LENGTH_SHORT,
+                                                  gravity:
+                                                      ToastGravity.BOTTOM,
+                                                );
+                                              } else if (address.isEmpty) {
+                                                setState(() {
+                                                  loading = false;
+                                                });
+                                                Fluttertoast.showToast(
+                                                  msg: "Invalid Address",
+                                                  toastLength:
+                                                      Toast.LENGTH_SHORT,
+                                                  gravity:
+                                                      ToastGravity.BOTTOM,
+                                                );
+                                              } else if (subAddress.isEmpty) {
+                                                setState(() {
+                                                  loading = false;
+                                                });
+                                                Fluttertoast.showToast(
+                                                  msg: "Invalid Sub Address",
+                                                  toastLength:
+                                                      Toast.LENGTH_SHORT,
+                                                  gravity:
+                                                      ToastGravity.BOTTOM,
+                                                );
+                                              } else {
+                                                setState(() {
+                                                  loading = false;
+                                                });
+                                                Fluttertoast.showToast(
+                                                  msg: "Invalid Place",
+                                                  toastLength:
+                                                      Toast.LENGTH_SHORT,
+                                                  gravity:
+                                                      ToastGravity.BOTTOM,
+                                                );
+                                              }
+                                            }
+                                          },
                                           child: Container(
-                                            width: screenWidth * 0.95,
-                                            height: screenHeight * 0.3,
+                                            height: 50,
+                                            width: screenWidth,
                                             decoration: BoxDecoration(
-                                                color: Colors.white,
+                                                color: Colors.black,
                                                 borderRadius:
                                                     BorderRadius.circular(5),
                                                 boxShadow: [
-                                                  BoxShadow(
+                                                  const BoxShadow(
                                                       color: Colors.black26,
                                                       spreadRadius: 1,
                                                       blurRadius: 1)
                                                 ]),
-                                            child: Column(
-                                              children: [
+                                            child: const Center(
+                                                child: Text(
+                                              "Hire Now",
+                                              style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 20,
+                                                  fontWeight:
+                                                      FontWeight.bold),
+                                            )),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                EnterAddress
+                                    ? Center(
+                                        child: Container(
+                                          width: screenWidth - 16,
+                                          decoration: BoxDecoration(
+                                            color: Colors.white,
+                                            borderRadius:
+                                                BorderRadius.circular(5),
+                                            boxShadow: [
+                                              const BoxShadow(
+                                                color: Colors.black26,
+                                                blurRadius: 5,
+                                                spreadRadius: 2,
+                                              ),
+                                            ],
+                                          ),
+                                          child: Column(
+                                            children: [
+                                              Padding(
+                                                padding:
+                                                    const EdgeInsets.all(10),
+                                                child: Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment
+                                                          .spaceBetween,
+                                                  children: [
+                                                    Text(
+                                                      "Your Location",
+                                                      style:
+                                                          GoogleFonts.sanchez(
+                                                              fontSize: 20),
+                                                    ),
+                                                    InkWell(
+                                                      onTap: () {
+                                                        setState(() {
+                                                          EnterAddress =
+                                                              false;
+                                                          isManually = false;
+                                                        });
+                                                      },
+                                                      onLongPress: () {
+                                                        Navigator.push(
+                                                            context,
+                                                            MaterialPageRoute(
+                                                              builder:
+                                                                  (context) =>
+                                                                      SelectDestination(),
+                                                            ));
+                                                      },
+                                                      child: Container(
+                                                        height: 30,
+                                                        width: 30,
+                                                        decoration: BoxDecoration(
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        30),
+                                                            color:
+                                                                Colors.white,
+                                                            boxShadow: [
+                                                              const BoxShadow(
+                                                                  color: Colors
+                                                                      .black26,
+                                                                  blurRadius:
+                                                                      1,
+                                                                  spreadRadius:
+                                                                      1)
+                                                            ]),
+                                                        child:
+                                                            const Icon(Icons.close),
+                                                      ),
+                                                    )
+                                                  ],
+                                                ),
+                                              ),
+                                              const Padding(
+                                                padding:
+                                                    EdgeInsets.only(
+                                                        right: 10, left: 10),
+                                                child: Divider(),
+                                              ),
+                                              isManually
+                                                  ? Column(children: [
                                                 Padding(
                                                   padding:
-                                                      const EdgeInsets.all(8.0),
-                                                  child: Row(
-                                                    children: [
-                                                      Column(
-                                                        children: [
-                                                          Container(
-                                                            height: 60,
-                                                            width: 60,
+                                                  const EdgeInsets
+                                                      .only(left :10, right : 10),
+                                                  child: Container(
+                                                    height: 50,
+                                                    child: TextField(
+                                                      controller: contactController,
+                                                      focusNode: contactFocusNode,
+                                                      keyboardType: const TextInputType.numberWithOptions(),
+                                                      decoration:
+                                                      InputDecoration(
+                                                          labelText:
+                                                          "Phone no.", // Placeholder text
+                                                          border:
+                                                          OutlineInputBorder(
+                                                            borderRadius:
+                                                            BorderRadius.circular(5),
+                                                          ),
+                                                          contentPadding: const EdgeInsets.fromLTRB(
+                                                              20,
+                                                              16,
+                                                              16,
+                                                              16) // Adds border around the text field
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                                      Padding(
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .only(right :10, left : 10, top: 10),
+                                                        child: Container(
+                                                          height: 50,
+                                                          child: TextField(
+                                                            controller: City,
                                                             decoration:
-                                                                BoxDecoration(
-                                                              image:
-                                                                  DecorationImage(
-                                                                image: NetworkImage(
-                                                                    StaffData[
-                                                                        'Profile_Pic']),
-                                                                fit: BoxFit
-                                                                    .cover, // Adjust the fit if necessary
-                                                              ),
-                                                              borderRadius:
-                                                                  BorderRadius
-                                                                      .circular(
-                                                                          80),
-                                                              color:
-                                                                  Colors.orange,
-                                                            ),
+                                                                InputDecoration(
+                                                                    labelText:
+                                                                        "City", // Placeholder text
+                                                                    border:
+                                                                        OutlineInputBorder(
+                                                                      borderRadius:
+                                                                          BorderRadius.circular(5),
+                                                                    ),
+                                                                    contentPadding: const EdgeInsets.fromLTRB(
+                                                                        20,
+                                                                        16,
+                                                                        16,
+                                                                        16) // Adds border around the text field
+                                                                    ),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      Padding(
+                                                        padding:
+                                                        const EdgeInsets
+                                                            .only(right :10, left : 10, top: 10),
+                                                        child: Container(
+                                                          height: 45,
+                                                          child: TextField(
+                                                            controller:
+                                                                SubAddress,
+                                                            decoration:
+                                                                InputDecoration(
+                                                                    labelText:
+                                                                        "Building/House/Flat/Floor no", // Placeholder text
+                                                                    border:
+                                                                        OutlineInputBorder(
+                                                                      borderRadius:
+                                                                          BorderRadius.circular(5),
+                                                                    ),
+                                                                    contentPadding: const EdgeInsets.fromLTRB(
+                                                                        20,
+                                                                        16,
+                                                                        16,
+                                                                        16) // Adds border around the text field
+                                                                    ),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                Padding(
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .only(
+                                                                right: 10,
+                                                                left: 10,
+                                                                top: 10),
+                                                        child: Container(
+                                                          height: 45,
+                                                          child: TextField(
+                                                            controller:
+                                                                Address,
+                                                            decoration:
+                                                                InputDecoration(
+                                                                    labelText:
+                                                                        "Address", // Placeholder text
+                                                                    border:
+                                                                        OutlineInputBorder(
+                                                                      borderRadius:
+                                                                          BorderRadius.circular(5),
+                                                                    ),
+                                                                    contentPadding: const EdgeInsets.fromLTRB(
+                                                                        20,
+                                                                        16,
+                                                                        16,
+                                                                        16) // Adds border around the text field
+                                                                    ),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      Row(
+                                                        children: [
+                                                          Padding(
+                                                            padding:
+                                                                const EdgeInsets
+                                                                    .only(
+                                                                    right: 5,
+                                                                    left: 10,
+                                                                    top: 5),
+                                                            child:
+                                                                ElevatedButton(
+                                                                    onPressed:
+                                                                        () {
+                                                                      setState(
+                                                                          () {
+                                                                        Home =
+                                                                            !Home;
+                                                                        Office =
+                                                                            false;
+                                                                      });
+                                                                    },
+                                                                    style: ElevatedButton
+                                                                        .styleFrom(
+                                                                      backgroundColor: Home
+                                                                          ? Colors.blue
+                                                                          : Colors.white,
+                                                                    ),
+                                                                    child:
+                                                                        Text(
+                                                                      "Home",
+                                                                      style: TextStyle(
+                                                                          color: Home
+                                                                              ? Colors.white
+                                                                              : Colors.blue),
+                                                                    )),
+                                                          ),
+                                                          Padding(
+                                                            padding:
+                                                                const EdgeInsets
+                                                                    .only(
+                                                                    right: 10,
+                                                                    left: 5,
+                                                                    top: 5),
+                                                            child:
+                                                                ElevatedButton(
+                                                                    onPressed:
+                                                                        () {
+                                                                      setState(
+                                                                          () {
+                                                                        Office =
+                                                                            !Office;
+                                                                        Home =
+                                                                            false;
+                                                                      });
+                                                                    },
+                                                                    style: ElevatedButton
+                                                                        .styleFrom(
+                                                                      backgroundColor: Office
+                                                                          ? Colors.blue
+                                                                          : Colors.white,
+                                                                    ),
+                                                                    child:
+                                                                        Text(
+                                                                      "Office",
+                                                                      style: TextStyle(
+                                                                          color: Office
+                                                                              ? Colors.white
+                                                                              : Colors.blue),
+                                                                    )),
                                                           )
                                                         ],
                                                       ),
                                                       Padding(
                                                         padding:
                                                             const EdgeInsets
-                                                                .all(8.0),
-                                                        child: Column(
-                                                          crossAxisAlignment:
-                                                              CrossAxisAlignment
-                                                                  .start,
-                                                          children: [
-                                                            Container(
-                                                                width: 120,
-                                                                child: Text(
-                                                                  "${StaffData['First_name']} ${StaffData['Last_name']}",
-                                                                  overflow:
-                                                                      TextOverflow
-                                                                          .ellipsis,
-                                                                  style: TextStyle(
-                                                                      fontSize:
-                                                                          16,
-                                                                      color: Colors
-                                                                          .black,
-                                                                      fontWeight:
-                                                                          FontWeight
-                                                                              .bold),
-                                                                )),
-                                                            Text(
-                                                                StaffData[
-                                                                        "Status"]
-                                                                    ? "Available"
-                                                                    : "Busy",
-                                                                style:
-                                                                    TextStyle(
-                                                                  fontSize: 10,
-                                                                  color: Colors
-                                                                      .green,
-                                                                )),
-                                                            Text(
-                                                                "Current time is ${TimeOfDay.now().hourOfPeriod == 0 ? 12 : TimeOfDay.now().hourOfPeriod}:${TimeOfDay.now().minute.toString().padLeft(2, '0')} ${TimeOfDay.now().period == DayPeriod.am ? 'AM' : 'PM'}",
-                                                                style:
-                                                                    TextStyle(
-                                                                  fontSize: 10,
-                                                                  color: Colors
-                                                                      .blue,
-                                                                )),
-                                                          ],
-                                                        ),
-                                                      ),
-                                                      Container(
-                                                        height: 60,
-                                                        width: 110,
-                                                        decoration: BoxDecoration(
-                                                            borderRadius:
-                                                                BorderRadius
-                                                                    .circular(
-                                                                        10),
-                                                            color: Colors.white,
-                                                            boxShadow: [
-                                                              BoxShadow(
-                                                                  color: Colors
-                                                                      .black26,
-                                                                  blurRadius: 1,
-                                                                  spreadRadius:
-                                                                      1)
-                                                            ]),
-                                                        child: Column(
-                                                          children: [
-                                                            Padding(
-                                                              padding:
-                                                                  const EdgeInsets
-                                                                      .only(
-                                                                      left: 5),
-                                                              child: Text(
-                                                                "${StaffData['professionOfStaff'][0].toUpperCase()}${StaffData['professionOfStaff'].substring(1)}",
-                                                                overflow:
-                                                                    TextOverflow
-                                                                        .ellipsis,
-                                                                style: TextStyle(
-                                                                    fontSize:
-                                                                        16,
-                                                                    color: Colors
-                                                                        .red,
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .bold),
-                                                              ),
-                                                            ),
-                                                            Text(
-                                                              StaffData["City"],
-                                                              style: TextStyle(
-                                                                  fontSize: 14,
-                                                                  color: Colors
-                                                                      .black,
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .bold),
-                                                            ),
-                                                          ],
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                                Padding(
-                                                  padding: const EdgeInsets.only(left : 50.0, right : 30),
-                                                  child: Row(
-                                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                      children: [
-                                                        Text("Hire on basis of", style: TextStyle(fontSize: 12),),
-                                                        Padding(
-                                                          padding:
-                                                          const EdgeInsets.only(
-                                                              left: 20),
-                                                          child: Row(
-                                                            children: [
-                                                              InkWell(
-                                                                onTap: () {
-                                                                  setState(() {
-                                                                    HourBased = true;
-                                                                    DayBased = false;
-                                                                  });
-                                                                },
-                                                                child: Container(
-                                                                  height: 30,
-                                                                  width: 50,
-                                                                  decoration:
-                                                                  BoxDecoration(
-                                                                      borderRadius:
-                                                                      BorderRadius
-                                                                          .only(
-                                                                        topLeft: Radius
-                                                                            .circular(
-                                                                            10),
-                                                                        bottomLeft:
-                                                                        Radius.circular(
-                                                                            10),
-                                                                      ),
-                                                                      color: HourBased
-                                                                          ? Colors
-                                                                          .blue
-                                                                          : Colors
-                                                                          .white,
-                                                                      boxShadow: [
-                                                                        BoxShadow(
-                                                                          color: Colors
-                                                                              .black26,
-                                                                          spreadRadius:
-                                                                          1,
-                                                                          blurRadius: 1,
-                                                                        )
-                                                                      ]),
-                                                                  child: Center(
-                                                                      child: Text(
-                                                                        "Hour",
-                                                                        style: TextStyle(
-                                                                            color: HourBased
-                                                                                ? Colors
-                                                                                .white
-                                                                                : Colors
-                                                                                .black,
-                                                                            fontWeight:
-                                                                            FontWeight
-                                                                                .bold),
-                                                                      )),
-                                                                ),
-                                                              ),
-                                                              InkWell(
-                                                                onTap: () {
-                                                                  setState(() {
-                                                                    DayBased = true;
-                                                                    HourBased = false;
-                                                                  });
-                                                                },
-                                                                child: Container(
-                                                                  height: 30,
-                                                                  width: 50,
-                                                                  decoration:
-                                                                  BoxDecoration(
-                                                                      borderRadius:
-                                                                      BorderRadius
-                                                                          .only(
-                                                                        topRight: Radius
-                                                                            .circular(
-                                                                            10),
-                                                                        bottomRight:
-                                                                        Radius.circular(
-                                                                            10),
-                                                                      ),
-                                                                      color: DayBased
-                                                                          ? Colors
-                                                                          .blue
-                                                                          : Colors
-                                                                          .white,
-                                                                      boxShadow: [
-                                                                        BoxShadow(
-                                                                          color: Colors
-                                                                              .black26,
-                                                                          spreadRadius:
-                                                                          1,
-                                                                          blurRadius: 1,
-                                                                        )
-                                                                      ]),
-                                                                  child: Center(
-                                                                      child: Text(
-                                                                        "Day",
-                                                                        style: TextStyle(
-                                                                            color: DayBased
-                                                                                ? Colors
-                                                                                .white
-                                                                                : Colors
-                                                                                .black,
-                                                                            fontWeight:
-                                                                            FontWeight
-                                                                                .bold),
-                                                                      )),
-                                                                ),
-                                                              ),
-                                                            ],
-                                                          ),
-                                                        ),
-                                                      ],
-                                                  ),
-                                                ),
-                                                SizedBox(height: 8,),
-                                                Padding(
-                                                  padding:
-                                                      const EdgeInsets.only(
-                                                          left: 50,
-                                                          right: 10,
-                                                          top: 5),
-                                                  child: Column(
-                                                    children: [
-                                                      Padding(
-                                                        padding:
-                                                            const EdgeInsets
-                                                                .all(2.0),
-                                                        child: Row(
-                                                          children: [
-                                                            Container(
-                                                                width:
-                                                                    screenWidth *
-                                                                        0.38,
-                                                                child: Text(
-                                                                  HourBased
-                                                                      ? "Hour"
-                                                                      : "Day",
-                                                                  style:
-                                                                      TextStyle(
-                                                                    fontSize:
-                                                                        12,
-                                                                  ),
-                                                                )),
-                                                            Padding(
-                                                              padding: EdgeInsets.only(
-                                                                  right:
-                                                                      screenWidth *
-                                                                          0.05),
-                                                              child: Container(
-                                                                height: 20,
-                                                                width:
-                                                                    screenWidth *
-                                                                        0.16,
-                                                                decoration: BoxDecoration(
-                                                                    color: Colors
-                                                                        .white,
-                                                                    borderRadius: BorderRadius.circular(5),
-                                                                    boxShadow: [
-                                                                      BoxShadow(
-                                                                          color: Colors
-                                                                              .black26,
-                                                                          blurRadius:
-                                                                              1,
-                                                                          spreadRadius:
-                                                                              1)
-                                                                    ]),
-                                                                child: Row(
-                                                                  crossAxisAlignment:
-                                                                      CrossAxisAlignment
-                                                                          .center,
-                                                                  mainAxisAlignment:
-                                                                      MainAxisAlignment
-                                                                          .center,
-                                                                  children: [
-                                                                    InkWell(
-                                                                      onTap:
-                                                                          () {
-                                                                        setState(
-                                                                            () {
-                                                                          if (count !=
-                                                                              1) {
-                                                                            count -=
-                                                                                1;
-                                                                          }
-                                                                        });
-                                                                      },
-                                                                      child:
-                                                                          Padding(
-                                                                        padding: const EdgeInsets
-                                                                            .only(
-                                                                            right:
-                                                                                1,
-                                                                            left:
-                                                                                1),
-                                                                        child:
-                                                                            Icon(
-                                                                          CupertinoIcons
-                                                                              .minus,
-                                                                          size:
-                                                                              15,
-                                                                        ),
-                                                                      ),
-                                                                    ),
-                                                                    Padding(
-                                                                      padding: const EdgeInsets
-                                                                          .only(
-                                                                          right:
-                                                                              2,
-                                                                          left:
-                                                                              2),
-                                                                      child:
-                                                                          Text(
-                                                                        "${count}",
-                                                                        style: TextStyle(
-                                                                            fontSize:
-                                                                                12),
-                                                                      ),
-                                                                    ),
-                                                                    InkWell(
-                                                                      onTap:
-                                                                          () {
-                                                                        setState(
-                                                                            () {
-                                                                          if (count <
-                                                                              12) {
-                                                                            count +=
-                                                                                1;
-                                                                          }
-                                                                        });
-                                                                      },
-                                                                      child:
-                                                                          Padding(
-                                                                        padding: const EdgeInsets
-                                                                            .only(
-                                                                            right:
-                                                                                1,
-                                                                            left:
-                                                                                1),
-                                                                        child:
-                                                                            Icon(
-                                                                          CupertinoIcons
-                                                                              .plus,
-                                                                          size:
-                                                                              15,
-                                                                        ),
-                                                                      ),
-                                                                    ),
-                                                                  ],
-                                                                ),
-                                                              ),
-                                                            ),
-                                                            Container(
-                                                                child: Text(
-                                                              " ${price} ${StaffData['Currency'] ?? '-'}",
-                                                              style: TextStyle(
-                                                                fontSize: 12,
-                                                              ),
-                                                            )),
-                                                          ],
-                                                        ),
-                                                      ),
-                                                      Padding(
-                                                        padding:
-                                                            const EdgeInsets
-                                                                .all(2.0),
-                                                        child: Row(
-                                                          children: [
-                                                            Container(
-                                                                width:
-                                                                    screenWidth *
-                                                                        0.6,
-                                                                child: Text(
-                                                                  "Traveling Charges",
-                                                                  style:
-                                                                      TextStyle(
-                                                                    fontSize:
-                                                                        12,
-                                                                  ),
-                                                                )),
-                                                            Text(
-                                                              "${(StaffData['Traveling_Charges'] != null) ? StaffData['Traveling_Charges'].toString() : '0'} ${StaffData['Currency'] ?? '-'}",
-                                                              style: TextStyle(
-                                                                fontSize: 12,
-                                                              ),
-                                                            ),
-                                                          ],
-                                                        ),
-                                                      ),
-                                                      Padding(
-                                                        padding:
-                                                            const EdgeInsets
                                                                 .only(
-                                                                right: 30),
-                                                        child: Divider(),
+                                                                right: 10,
+                                                                left: 10,
+                                                                top: 5),
+                                                        child: Row(
+                                                            mainAxisAlignment:
+                                                                MainAxisAlignment
+                                                                    .spaceBetween,
+                                                            children: [
+                                                              Row(
+                                                                children: [
+                                                                  InkWell(
+                                                                    onTap:
+                                                                        () {
+                                                                      setState(
+                                                                          () {
+                                                                        Navigator.push(
+                                                                            context,
+                                                                            MaterialPageRoute(
+                                                                              builder: (context) => SelectDestination(),
+                                                                            ));
+                                                                      });
+                                                                    },
+                                                                    child:
+                                                                        Container(
+                                                                      height:
+                                                                          50,
+                                                                      width: screenWidth -
+                                                                          40,
+                                                                      decoration:
+                                                                          BoxDecoration(
+                                                                        color:
+                                                                            const Color(0xff2874f0),
+                                                                        borderRadius:
+                                                                            BorderRadius.circular(5),
+                                                                      ),
+                                                                      child:
+                                                                          const Row(
+                                                                        mainAxisAlignment:
+                                                                            MainAxisAlignment.center,
+                                                                        crossAxisAlignment:
+                                                                            CrossAxisAlignment.center,
+                                                                        children: [
+                                                                          Icon(Icons.my_location,
+                                                                              color: Colors.white),
+                                                                          SizedBox(width: 5),
+                                                                          Text("Use my current location",
+                                                                              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                                                                        ],
+                                                                      ),
+                                                                    ),
+                                                                  )
+                                                                ],
+                                                              )
+                                                            ]),
                                                       ),
                                                       Padding(
                                                         padding:
                                                             const EdgeInsets
-                                                                .all(2.0),
-                                                        child: Row(
-                                                          children: [
-                                                            Container(
-                                                                width:
-                                                                    screenWidth *
-                                                                        0.2,
-                                                                child: Text(
-                                                                  "Total",
-                                                                  style: TextStyle(
-                                                                      fontSize:
-                                                                          12,
-                                                                      fontWeight:
-                                                                          FontWeight
-                                                                              .bold),
-                                                                )),
-                                                            Container(
-                                                                width:
-                                                                    screenWidth *
-                                                                        0.4,
-                                                                child: Text(
-                                                                  "Know More",
-                                                                  style: TextStyle(
-                                                                      fontSize:
-                                                                          12,
-                                                                      fontWeight:
-                                                                          FontWeight
-                                                                              .bold),
-                                                                )),
-                                                            Text(
-                                                              "${total} ${StaffData['Currency'] ?? '-'}",
-                                                              style: TextStyle(
-                                                                  fontSize: 12,
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .bold),
-                                                            ),
-                                                          ],
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ),
-
-                                        // Schedule
-                                        Padding(
-                                          padding: const EdgeInsets.only(
-                                              top: 5, right: 10, left: 10),
-                                          child: Container(
-                                            width: screenWidth * 0.95,
-                                            height: screenHeight * 0.2,
-                                            decoration: BoxDecoration(
-                                                color: Colors.white,
-                                                borderRadius:
-                                                    BorderRadius.circular(15),
-                                                boxShadow: [
-                                                  BoxShadow(
-                                                      color: Colors.black26,
-                                                      spreadRadius: 1,
-                                                      blurRadius: 1)
-                                                ]),
-                                            child: Padding(
-                                              padding:
-                                                  EdgeInsets.only(left: 10),
-                                              child: Column(
-                                                children: [
-                                                  Container(
-                                                    width: screenWidth * 0.9,
-                                                    child: Row(
-                                                      crossAxisAlignment:
-                                                          CrossAxisAlignment
-                                                              .start,
-                                                      children: [
-                                                        Container(
-                                                          width:
-                                                              screenWidth * 0.4,
-                                                          height: 60,
-                                                          child: Row(
-                                                            crossAxisAlignment:
-                                                                CrossAxisAlignment
-                                                                    .center,
-                                                            children: [
-                                                              Text(
-                                                                "Schedule",
-                                                                style: TextStyle(
-                                                                    fontSize:
-                                                                        16,
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .bold),
-                                                              ),
-                                                            ],
-                                                          ),
-                                                        ),
-                                                        Container(
-                                                          width:
-                                                              screenWidth * 0.2,
-                                                          height: 60,
-                                                          child: Row(
-                                                            crossAxisAlignment:
-                                                                CrossAxisAlignment
-                                                                    .center,
-                                                            children: [
-                                                              Text(
-                                                                "Know more",
-                                                                style: TextStyle(
-                                                                    fontSize:
-                                                                        11,
-                                                                    color: Colors
-                                                                        .green),
-                                                              ),
-                                                            ],
-                                                          ),
-                                                        ),
-                                                        Padding(
-                                                          padding:
-                                                              const EdgeInsets
-                                                                  .only(top: 5),
-                                                          child: Container(
-                                                            width:
-                                                                (screenWidth *
-                                                                        0.3) -
-                                                                    2,
-                                                            height: 50,
-                                                            decoration: BoxDecoration(
-                                                                color: Colors
-                                                                    .white,
-                                                                borderRadius:
-                                                                    BorderRadius
-                                                                        .circular(
-                                                                            10),
-                                                                boxShadow: [
-                                                                  BoxShadow(
-                                                                    color: Colors
-                                                                        .black26,
-                                                                    spreadRadius:
-                                                                        1,
-                                                                    blurRadius:
-                                                                        1,
-                                                                  )
-                                                                ]),
-                                                            child: Padding(
-                                                              padding:
-                                                                  const EdgeInsets
-                                                                      .all(5.0),
-                                                              child: Text(
-                                                                "GUERANTEE ON TIME",
-                                                                style: TextStyle(
-                                                                    fontSize:
-                                                                        10),
-                                                              ),
-                                                            ),
-                                                          ),
-                                                        )
-                                                      ],
-                                                    ),
-                                                  ),
-                                                  Container(
-                                                    width: screenWidth * 0.9,
-                                                    height: 60,
-                                                    child: Row(
-                                                      children: [
-                                                        Container(
-                                                          width: screenWidth *
-                                                              0.23,
-                                                          height: 30,
-                                                          child: InkWell(
-                                                              onTap: () async {
-                                                                DateTime?
-                                                                    selectedDate =
-                                                                    await showDatePicker(
-                                                                  context:
-                                                                      context,
-                                                                  firstDate:
-                                                                      DateTime
-                                                                          .now(),
-                                                                  lastDate: DateTime
-                                                                          .now()
-                                                                      .add(Duration(
-                                                                          days:
-                                                                              12)),
-                                                                  initialDate:
-                                                                      DateTime
-                                                                          .now(),
-                                                                );
-                                                                if (selectedDate !=
-                                                                    null) {
-                                                                  setState(() {
-                                                                    pickedDate =
-                                                                        selectedDate;
-                                                                  });
-                                                                }
-                                                              },
-                                                              child: Text(
-                                                                "Select Date",
-                                                                style: TextStyle(
-                                                                    fontSize:
-                                                                        12,
-                                                                    color: Colors
-                                                                        .blue),
-                                                              )),
-                                                        ),
-                                                        Container(
-                                                          width: screenWidth *
-                                                              0.23,
-                                                          height: 30,
-                                                          child: InkWell(
-                                                              onTap: () async {
-                                                                TimeOfDay?
-                                                                    selectedTime =
-                                                                    await showTimePicker(
-                                                                  context:
-                                                                      context,
-                                                                  initialTime:
-                                                                      TimeOfDay
-                                                                          .now(),
-                                                                );
-                                                                if (selectedTime !=
-                                                                    null) {
-                                                                  setState(() {
-                                                                    pickedTime =
-                                                                        selectedTime;
-                                                                  });
-                                                                }
-                                                              },
-                                                              child: Text(
-                                                                "Select Time",
-                                                                style: TextStyle(
-                                                                    fontSize:
-                                                                        12,
-                                                                    color: Colors
-                                                                        .blue),
-                                                              )),
-                                                        ),
-                                                        Container(
-                                                          width: screenWidth *
-                                                              0.24,
-                                                          height: 30,
-                                                          child: Text(
-                                                            WorkDate,
-                                                            style: TextStyle(
-                                                                fontSize: 12),
-                                                          ),
-                                                        ),
-                                                        Container(
-                                                          width: (screenWidth *
-                                                                  0.2) -
-                                                              2,
-                                                          height: 30,
-                                                          child: Text(
-                                                            pickedTime != null
-                                                                ? WorkTime
-                                                                : '--:--',
-                                                            style: TextStyle(
-                                                                fontSize: 12),
-                                                          ),
-                                                        )
-                                                      ],
-                                                    ),
-                                                  ),
-                                                  Container(
-                                                    width: screenWidth * 0.9,
-                                                    child: Row(
-                                                      children: [
-                                                        Container(
-                                                          width: screenWidth *
-                                                              0.15,
-                                                          height: 30,
-                                                          child: Text(
-                                                            "Due to",
-                                                            style: TextStyle(
-                                                              fontSize: 12,
-                                                            ),
-                                                          ),
-                                                        ),
-                                                        Container(
-                                                          width: screenWidth *
-                                                              0.31,
-                                                          height: 30,
-                                                          child: InkWell(
-                                                            onTap: () {
-                                                              setState(() {
-                                                                EnterAddress =
-                                                                    true;
-                                                              });
-                                                            },
-                                                            child: Text(
-                                                              (City.text.isEmpty &&
-                                                                      Address
-                                                                          .text
-                                                                          .isEmpty)
-                                                                  ? "Select Address"
-                                                                  : "Change Address",
-                                                              style: TextStyle(
-                                                                  fontSize: 12,
-                                                                  color: Colors
-                                                                      .blue),
-                                                            ),
-                                                          ),
-                                                        ),
-                                                        Container(
-                                                          width: screenWidth *
-                                                              0.24,
-                                                          height: 30,
-                                                          child: Text(
-                                                            pickedDate != null
-                                                                // Adding 12 days to the pickedDate and displaying day, month, and year
-                                                                ? WorkDateEnd
-                                                                : "--/--/----",
-                                                            style: TextStyle(
-                                                                fontSize: 12),
-                                                          ),
-                                                        ),
-                                                        Container(
-                                                          width: (screenWidth *
-                                                                  0.2) -
-                                                              2,
-                                                          height: 30,
-                                                          child: Text(
-                                                            WorkTimeEnd,
-                                                            style: TextStyle(
-                                                                fontSize: 12),
-                                                          ),
-                                                        )
-                                                      ],
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-
-                                        // Payment
-                                        Padding(
-                                          padding: const EdgeInsets.only(
-                                              top: 10, right: 10, left: 10),
-                                          child: Container(
-                                            width: screenWidth * 0.95,
-                                            decoration: BoxDecoration(
-                                                color: Colors.white,
-                                                borderRadius:
-                                                    BorderRadius.circular(
-                                                        10),
-                                                boxShadow: [
-                                                  BoxShadow(
-                                                      color:
-                                                          Colors.black26,
-                                                      spreadRadius: 1,
-                                                      blurRadius: 1)
-                                                ]),
-                                            child: Column(
-                                              children: [
-                                                Padding(
-                                                  padding:
-                                                      const EdgeInsets
-                                                          .all(5.0),
-                                                  child: InkWell(
-                                                    onTap: () async {
-                                                      setState(() {
-                                                        loading = true;
-                                                      });
-                                                      isAcceptOpen =
-                                                      false;
-                                                      var UID =
-                                                          FirebaseAuth
-                                                              .instance
-                                                              .currentUser
-                                                              ?.uid;
-                                                      String city =
-                                                          City.text;
-                                                      String address =
-                                                          Address.text;
-                                                      String subAddress =
-                                                          SubAddress.text;
-                                                      String place =
-                                                          Place;
-                                                      SharedPreferences prefs = await SharedPreferences.getInstance();
-                                          
-                                                      if (price != 0 &&
-                                                          WorkDate !=
-                                                              '--/--/----' &&
-                                                          WorkTime !=
-                                                              '--:--' &&
-                                                          city
-                                                              .isNotEmpty &&
-                                                          address
-                                                              .isNotEmpty &&
-                                                          subAddress
-                                                              .isNotEmpty &&
-                                                          place
-                                                              .isNotEmpty && prefs.getDouble("SelectedLat") != 0.0 && prefs.getDouble("SelectedLong") != 0.0 ) {
-                                                        // Payment logic
-                                          
-                                                        if ("Payment Successful" ==
-                                                            "Payment Successful") {
-                                                          try {
-                                                            // Add data to 'NotificationForStaff' collection
-                                                            FirebaseFirestore
-                                                                .instance
-                                                                .collection(
-                                                                'NotificationForStaff')
-                                                                .add({
-                                                              'userUID':
-                                                              UID,
-                                                              'Scheduled_City':
-                                                              city,
-                                                              'Scheduled_Address':
-                                                              address,
-                                                              'Scheduled_Sub_Address':
-                                                              subAddress,
-                                                              'Scheduled_Place':
-                                                              place,
-                                                              "Client_Coordinates_lat":
-                                                              ShareCoordinates
-                                                                  ? prefs.getDouble("SelectedLat").toString()
-                                                                  : "",
-                                                              "Client_Coordinates_long":
-                                                              ShareCoordinates
-                                                                  ? prefs.getDouble("SelectedLong").toString()
-                                                                  : "",
-                                                              'staffUID':
-                                                              StaffID,
-                                                              'professionOfStaff':
-                                                              Skill,
-                                                              'status':
-                                                              'Received a Request',
-                                                              'timeofdeal':
-                                                              "${DateTime.now().day} ${DateFormat.MMM().format(DateTime.now())} ${DateTime.now().year} ${DateFormat.jm().format(DateTime.now())}",
-                                                              'totalcost':
-                                                              total,
-                                                              'ServiceBase':
-                                                              HourBased
-                                                                  ? 'Hour'
-                                                                  : 'Day',
-                                                              'hours':
-                                                              "${count}",
-                                                              'ScheduledDate':
-                                                              WorkDate,
-                                                              'ScheduledTime':
-                                                              WorkTime,
-                                                              'PlatformTax':
-                                                              '1.5%',
-                                                              'ScheduledDateEnd':
-                                                              WorkDateEnd,
-                                                              'ScheduledTimeEnd':
-                                                              WorkTimeEnd,
-                                                            }).then(
-                                                                    (staffDocRef) {
-                                                                  String
-                                                                  staffDocUID =
-                                                                      staffDocRef
-                                                                          .id;
-                                                                  // Add data to 'NotificationForUser' collection
-                                                                  FirebaseFirestore
-                                                                      .instance
-                                                                      .collection(
-                                                                      'NotificationForUser')
-                                                                      .add({
-                                                                    'userUID':
-                                                                    UID,
-                                                                    'staffUID':
-                                                                    StaffID,
-                                                                    'status':
-                                                                    'Request sent',
-                                                                    'Scheduled_City':
-                                                                    city,
-                                                                    'Scheduled_Address':
-                                                                    address,
-                                                                    'Scheduled_Sub_Address':
-                                                                    subAddress,
-                                                                    'Scheduled_Place':
-                                                                    place,
-                                                                    "Client_Coordinates_lat":
-                                                                    ShareCoordinates
-                                                                        ? prefs.getDouble("SelectedLat").toString()
-                                                                        : "",
-                                                                    "Client_Coordinates_long": ShareCoordinates
-                                                                        ? prefs.getDouble("SelectedLong").toString()
-                                                                        : "",
-                                                                    'professionOfStaff':
-                                                                    Skill,
-                                                                    'timeofdeal':
-                                                                    "${DateTime.now().day} ${DateFormat.MMM().format(DateTime.now())} ${DateTime.now().year} ${DateFormat.jm().format(DateTime.now())}",
-                                                                    'DocUID':
-                                                                    staffDocUID,
-                                                                    'totalcost':
-                                                                    total,
-                                                                    'ServiceBase': HourBased
-                                                                        ? 'Hour'
-                                                                        : 'Day',
-                                                                    'hours':
-                                                                    "${count}",
-                                                                    'ScheduledDate':
-                                                                    WorkDate,
-                                                                    'ScheduledTime':
-                                                                    WorkTime,
-                                                                    'PlatformTax':
-                                                                    '1.5%',
-                                                                    'ScheduledDateEnd':
-                                                                    WorkDateEnd,
-                                                                    'ScheduledTimeEnd':
-                                                                    WorkTimeEnd,
-                                                                  }).then(
-                                                                          (userDocRef) {
-                                                                        String
-                                                                        userDocUID =
-                                                                            userDocRef
-                                                                                .id;
-                                          
-                                                                        // Update 'NotificationForStaff' with the 'DocUID' from 'NotificationForUser'
-                                                                        FirebaseFirestore
-                                                                            .instance
-                                                                            .collection(
-                                                                            'NotificationForStaff')
-                                                                            .doc(
-                                                                            staffDocUID)
-                                                                            .update({
-                                                                          'DocUID':
-                                                                          userDocUID,
-                                                                        });
-                                                                      }).catchError(
-                                                                          (error) {
-                                                                            setState(() {
-                                                                              loading = false;
-                                                                            });
-                                                                        print(
-                                                                            "Error adding document to NotificationForUser: $error");
-                                                                      });
-                                                                }).catchError(
-                                                                    (error) {
-                                                                      setState(() {
-                                                                        loading = false;
-                                                                      });
-                                                                  print(
-                                                                      "Error adding document to NotificationForStaff: $error");
+                                                                .all(8.0),
+                                                        child: InkWell(
+                                                          onTap: () async {
+                                                            SharedPreferences
+                                                                prefs =
+                                                                await SharedPreferences
+                                                                    .getInstance();
+                                                            double? lat = prefs.getDouble("SelectedLat");
+                                                            double? long = prefs.getDouble("SelectedLong");
+                                                            // Save Address Information
+                                                            if (City.text.isNotEmpty &&
+                                                                Address.text.isNotEmpty &&
+                                                                SubAddress.text.isNotEmpty &&
+                                                                contactController.text.isNotEmpty &&
+                                                                lat != 0.0 &&
+                                                                long != 0.0) {
+                                                              List<Placemark> placemarks = await placemarkFromCoordinates(lat!, long!);
+                                                              if (placemarks.isNotEmpty) {
+                                                                String localityName = '';
+                                                                setState(() {
+                                                                  localityName = "${placemarks.first.street},${placemarks.first.locality}";
                                                                 });
-                                          
-                                                            User? user =
-                                                            await FirebaseAuth
-                                                                .instance
-                                                                .currentUser;
-                                                            var userDoc = await FirebaseFirestore
-                                                                .instance
-                                                                .collection(
-                                                                "user")
-                                                                .doc(user
-                                                                ?.uid)
-                                                                .get();
-                                                            var staffDoc = await FirebaseFirestore
-                                                                .instance
-                                                                .collection(
-                                                                "user")
-                                                                .doc(
-                                                                StaffID)
-                                                                .get();
-                                                            var usertoken =
-                                                            userDoc.data()?[
-                                                            'token'];
-                                                            var stafftoken =
-                                                            staffDoc.data()?[
-                                                            'token'];
-                                          
-                                                            GetServerKey
-                                                            getServerKey =
-                                                            GetServerKey();
-                                                            String
-                                                            accessToken =
-                                                            await getServerKey
-                                                                .getServerKeyToken();
-                                          
-                                                            // Generate unique IDs for the notifications
-                                                            int notificationId1 =
-                                                                DateTime.now()
-                                                                    .millisecondsSinceEpoch; // Unique ID based on timestamp
-                                                            int notificationId2 =
-                                                                notificationId1 +
-                                                                    1; // Increment to ensure uniqueness for the second notification
-                                          
-                                                            // Send first notification
-                                                            sendNotificationService
-                                                                .sendNotificationUsingApi(
-                                                                body:
-                                                                'Send Successful',
-                                                                data: {
-                                                                  "screen":
-                                                                  "ClientNotificationPage",
-                                                                  "notificationId":
-                                                                  notificationId1.toString(), // Include notification ID in the data if needed
-                                                                },
-                                                                title:
-                                                                "Booking",
-                                                                token:
-                                                                usertoken);
-                                                            // Send second notification
-                                                            sendNotificationService
-                                                                .sendNotificationUsingApi(
-                                                                body:
-                                                                'You have a new request',
-                                                                data: {
-                                                                  "screen":
-                                                                  "StaffNotificationPage",
-                                                                  "notificationId":
-                                                                  notificationId2.toString(),
-                                                                  "hire" : "true"// Include notification ID in the data if needed
-                                                                },
-                                                                title:
-                                                                "Hiring",
-                                                                token:
-                                                                stafftoken);
-                                                            prefs.setDouble("SelectedLat", 0.0);
-                                                            prefs.setDouble("SelectedLong", 0.0);
-
-                                                            setState(() {
-                                                              loading = false;
-                                                            });
-                                                            Navigator
-                                                                .push(
-                                                              context,
-                                                              MaterialPageRoute(
-                                                                builder:
-                                                                    (context) =>
-                                                                    ClientNotificationPage(),
-                                                              ),
-                                                            );
-                                          
-                                                            Fluttertoast
-                                                                .showToast(
-                                                                msg:
-                                                                "Request has been send");
-                                                          } catch (e) {
-                                                            setState(() {
-                                                              loading = false;
-                                                            });
-                                                            Fluttertoast
-                                                                .showToast(
-                                                              msg: "$e",
-                                                              toastLength:
-                                                              Toast
-                                                                  .LENGTH_SHORT,
-                                                              gravity:
-                                                              ToastGravity
-                                                                  .BOTTOM,
-                                                            );
-                                                          }
-                                                        } else {
-                                                          setState(() {
-                                                            loading = false;
-                                                          });
-                                                          Fluttertoast
-                                                              .showToast(
-                                                              msg:
-                                                              "Payment Failed");
-                                                        }
-                                                      } else {
-                                                        setState(() {
-                                                          loading = false;
-                                                        });
-                                                        // Handle validation errors
-                                                        if (price == 0) {
-                                                          setState(() {
-                                                            loading = false;
-                                                          });
-                                                          Fluttertoast
-                                                              .showToast(
-                                                            msg:
-                                                            "User did not set service rate",
-                                                            toastLength: Toast
-                                                                .LENGTH_SHORT,
-                                                            gravity:
-                                                            ToastGravity
-                                                                .BOTTOM,
-                                                          );
-                                                        } else if (WorkDate ==
-                                                            '--/--/----') {
-                                                          setState(() {
-                                                            loading = false;
-                                                          });
-                                                          Fluttertoast
-                                                              .showToast(
-                                                            msg:
-                                                            "Invalid Date",
-                                                            toastLength: Toast
-                                                                .LENGTH_SHORT,
-                                                            gravity:
-                                                            ToastGravity
-                                                                .BOTTOM,
-                                                          );
-                                                        } else if (WorkTime ==
-                                                            '--:--') {
-                                                          setState(() {
-                                                            loading = false;
-                                                          });
-                                                          Fluttertoast
-                                                              .showToast(
-                                                            msg:
-                                                            "Invalid Time",
-                                                            toastLength: Toast
-                                                                .LENGTH_SHORT,
-                                                            gravity:
-                                                            ToastGravity
-                                                                .BOTTOM,
-                                                          );
-                                                        } else if (city
-                                                            .isEmpty) {
-                                                          setState(() {
-                                                            loading = false;
-                                                          });
-                                                          Fluttertoast
-                                                              .showToast(
-                                                            msg:
-                                                            "Invalid City",
-                                                            toastLength: Toast
-                                                                .LENGTH_SHORT,
-                                                            gravity:
-                                                            ToastGravity
-                                                                .BOTTOM,
-                                                          );
-                                                        } else if (address
-                                                            .isEmpty) {
-                                                          setState(() {
-                                                            loading = false;
-                                                          });
-                                                          Fluttertoast
-                                                              .showToast(
-                                                            msg:
-                                                            "Invalid Address",
-                                                            toastLength: Toast
-                                                                .LENGTH_SHORT,
-                                                            gravity:
-                                                            ToastGravity
-                                                                .BOTTOM,
-                                                          );
-                                                        } else if (subAddress
-                                                            .isEmpty) {
-                                                          setState(() {
-                                                            loading = false;
-                                                          });
-                                                          Fluttertoast
-                                                              .showToast(
-                                                            msg:
-                                                            "Invalid Sub Address",
-                                                            toastLength: Toast
-                                                                .LENGTH_SHORT,
-                                                            gravity:
-                                                            ToastGravity
-                                                                .BOTTOM,
-                                                          );
-                                                        } else {
-                                                          setState(() {
-                                                            loading = false;
-                                                          });
-                                                          Fluttertoast
-                                                              .showToast(
-                                                            msg:
-                                                            "Invalid Place",
-                                                            toastLength: Toast
-                                                                .LENGTH_SHORT,
-                                                            gravity:
-                                                            ToastGravity
-                                                                .BOTTOM,
-                                                          );
-                                                        }
-                                                      }
-                                                    },
-                                                    child: Container(
-                                                      height: 50,
-                                                      width: screenWidth *
-                                                          0.9,
-                                                      decoration: BoxDecoration(
-                                                          color: Colors
-                                                              .green,
-                                                          borderRadius:
-                                                              BorderRadius
-                                                                  .circular(
-                                                                      10),
-                                                          boxShadow: [
-                                                            BoxShadow(
-                                                                color: Colors
-                                                                    .black26,
-                                                                spreadRadius:
-                                                                    1,
-                                                                blurRadius:
-                                                                    1)
-                                                          ]),
-                                                      child: Center(
-                                                          child: Text(
-                                                        "Hire Now",
-                                                        style: TextStyle(
-                                                            color: Colors
-                                                                .white, fontSize: 20, fontWeight: FontWeight.bold),
-                                                      )),
-                                                    ),
-                                                  ),
-                                                )
-                                              ],
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  EnterAddress
-                                      ? Center(
-                                          child: Container(
-                                            width: screenWidth * 0.9,
-                                            decoration: BoxDecoration(
-                                              color: Colors.white,
-                                              borderRadius:
-                                                  BorderRadius.circular(10),
-                                              boxShadow: [
-                                                BoxShadow(
-                                                  color: Colors.black26,
-                                                  blurRadius: 5,
-                                                  spreadRadius: 2,
-                                                ),
-                                              ],
-                                            ),
-                                            child: Column(
-                                              children: [
-                                                Padding(
-                                                  padding:
-                                                      const EdgeInsets.all(10),
-                                                  child: Row(
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment
-                                                            .spaceBetween,
-                                                    children: [
-                                                      Text(
-                                                        "Your Location",
-                                                        style: GoogleFonts.sanchez(fontSize: 20),
-                                                      ),
-                                                      InkWell(
-                                                        onTap: () {
-                                                          setState(() {
-                                                            EnterAddress =
-                                                                false;
-                                                          });
-                                                        },
-                                                        onLongPress: (){
-                                                          Navigator.push(context, MaterialPageRoute(builder: (context) => SelectDestination(),));
-                                                        },
-                                                        child: Container(
-                                                          height: 30,
-                                                          width: 30,
-                                                          decoration: BoxDecoration(
+                                                                FirebaseFirestore.instance.collection('Addresses').doc(UID).collection("UserAddresses").add({
+                                                                  "placeType" : Place,
+                                                                  "address" : Address.text,
+                                                                  "city" : City.text,
+                                                                  "subAddress" : SubAddress.text,
+                                                                  "contact" : contactController.text,
+                                                                  'lat' : lat,
+                                                                  "long" : long,
+                                                                  "localName" : localityName
+                                                                });
+                                                                setState(() {
+                                                                  EnterAddress = false;
+                                                                  isManually = false;
+                                                                });
+                                                                Fluttertoast.showToast(msg: "Address Saved");
+                                                              }else{
+                                                                FirebaseFirestore.instance.collection('Addresses').doc(UID).collection("UserAddresses").add({
+                                                                  "placeType" : Place,
+                                                                  "address" : Address.text,
+                                                                  "city" : City.text,
+                                                                  "contact" : contactController.text,
+                                                                  "subAddress" : SubAddress.text,
+                                                                  'lat' : lat,
+                                                                  "long" : long,
+                                                                  "localName" : ""
+                                                                });
+                                                                setState(() {
+                                                                  EnterAddress = false;
+                                                                  isManually = false;
+                                                                });
+                                                                Fluttertoast.showToast(msg: "Address Saved");
+                                                              }
+                                                            } else {
+                                                              if(City.text.isEmpty){
+                                                                Fluttertoast.showToast(msg: "Please Enter City");
+                                                              }else if(Address.text.isEmpty){
+                                                                Fluttertoast.showToast(msg: "Please Enter Address");
+                                                              }else if(contactController.text.isEmpty){
+                                                                Fluttertoast.showToast(msg: "Please Enter Phone Number");
+                                                              }else if(SubAddress.text.isEmpty){
+                                                                Fluttertoast.showToast(msg: "Please Enter Building/House/flat");
+                                                              }else{
+                                                                Fluttertoast.showToast(msg: "Please Select Location from Map");
+                                                              }
+                                                            }
+                                                          },
+                                                          child: Container(
+                                                            height: 50,
+                                                            width:
+                                                                screenWidth -
+                                                                    40,
+                                                            decoration:
+                                                                BoxDecoration(
+                                                              color: Colors
+                                                                  .green,
                                                               borderRadius:
                                                                   BorderRadius
                                                                       .circular(
-                                                                          30),
-                                                              color:
-                                                                  Colors.white,
-                                                              boxShadow: [
-                                                                BoxShadow(
-                                                                    color: Colors
-                                                                        .black26,
-                                                                    blurRadius:
-                                                                        1,
-                                                                    spreadRadius:
-                                                                        1)
-                                                              ]),
-                                                          child: Icon(Icons
-                                                              .close),
-                                                        ),
-                                                      )
-                                                    ],
-                                                  ),
-                                                ),
-                                                Padding(
-                                                  padding:
-                                                      const EdgeInsets.only(
-                                                          right: 10, left: 10),
-                                                  child: Divider(),
-                                                ),
-                                                Padding(
-                                                  padding:
-                                                      const EdgeInsets.all(10),
-                                                  child: Container(
-                                                    height: 50,
-                                                    child: TextField(
-                                                      controller: City,
-                                                      decoration:
-                                                          InputDecoration(
-                                                              labelText:
-                                                                  "City", // Placeholder text
-                                                              border:
-                                                                  OutlineInputBorder(
-                                                                borderRadius:
-                                                                    BorderRadius
-                                                                        .circular(
-                                                                            15),
-                                                              ),
-                                                              contentPadding:
-                                                                  EdgeInsets
-                                                                      .fromLTRB(
-                                                                          20,
-                                                                          16,
-                                                                          16,
-                                                                          16) // Adds border around the text field
-                                                              ),
-                                                    ),
-                                                  ),
-                                                ),
-                                                Padding(
-                                                  padding:
-                                                      const EdgeInsets.only(
-                                                          right: 10,
-                                                          left: 10,
-                                                          top: 5),
-                                                  child: Container(
-                                                    height: 45,
-                                                    child: TextField(
-                                                      controller: SubAddress,
-                                                      decoration:
-                                                          InputDecoration(
-                                                              labelText:
-                                                                  "Building/House/Flat/Floor no", // Placeholder text
-                                                              border:
-                                                                  OutlineInputBorder(
-                                                                borderRadius:
-                                                                    BorderRadius
-                                                                        .circular(
-                                                                            15),
-                                                              ),
-                                                              contentPadding:
-                                                                  EdgeInsets
-                                                                      .fromLTRB(
-                                                                          20,
-                                                                          16,
-                                                                          16,
-                                                                          16) // Adds border around the text field
-                                                              ),
-                                                    ),
-                                                  ),
-                                                ),
-                                                Padding(
-                                                  padding:
-                                                      const EdgeInsets.only(
-                                                          right: 10,
-                                                          left: 10,
-                                                          top: 10),
-                                                  child: Container(
-                                                    height: 45,
-                                                    child: TextField(
-                                                      controller: Address,
-                                                      decoration:
-                                                          InputDecoration(
-                                                              labelText:
-                                                                  "Address", // Placeholder text
-                                                              border:
-                                                                  OutlineInputBorder(
-                                                                borderRadius:
-                                                                    BorderRadius
-                                                                        .circular(
-                                                                            15),
-                                                              ),
-                                                              contentPadding:
-                                                                  EdgeInsets
-                                                                      .fromLTRB(
-                                                                          20,
-                                                                          16,
-                                                                          16,
-                                                                          16) // Adds border around the text field
-                                                              ),
-                                                    ),
-                                                  ),
-                                                ),
-                                                Row(
-                                                  children: [
-                                                    Padding(
-                                                      padding:
-                                                          const EdgeInsets.only(
-                                                              right: 5,
-                                                              left: 10,
-                                                              top: 5),
-                                                      child: ElevatedButton(
-                                                          onPressed: () {
-                                                            setState(() {
-                                                              Home = !Home;
-                                                              Office = false;
-                                                            });
-                                                          },
-                                                          style: ElevatedButton
-                                                              .styleFrom(
-                                                            backgroundColor:
-                                                                Home
-                                                                    ? Colors
-                                                                        .blue
-                                                                    : Colors
-                                                                        .white,
-                                                          ),
-                                                          child: Text(
-                                                            "Home",
-                                                            style: TextStyle(
-                                                                color: Home
-                                                                    ? Colors
-                                                                        .white
-                                                                    : Colors
-                                                                        .blue),
-                                                          )),
-                                                    ),
-                                                    Padding(
-                                                      padding:
-                                                          const EdgeInsets.only(
-                                                              right: 10,
-                                                              left: 5,
-                                                              top: 5),
-                                                      child: ElevatedButton(
-                                                          onPressed: () {
-                                                            setState(() {
-                                                              Office = !Office;
-                                                              Home = false;
-                                                            });
-                                                          },
-                                                          style: ElevatedButton
-                                                              .styleFrom(
-                                                            backgroundColor:
-                                                                Office
-                                                                    ? Colors
-                                                                        .blue
-                                                                    : Colors
-                                                                        .white,
-                                                          ),
-                                                          child: Text(
-                                                            "Office",
-                                                            style: TextStyle(
-                                                                color: Office
-                                                                    ? Colors
-                                                                        .white
-                                                                    : Colors
-                                                                        .blue),
-                                                          )),
-                                                    )
-                                                  ],
-                                                ),
-                                                Padding(
-                                                  padding:
-                                                      const EdgeInsets.only(
-                                                          right: 10,
-                                                          left: 10,
-                                                          top: 5),
-                                                  child: Row(
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment.spaceBetween,
-                                                    children: [
-                                                      InkWell(
-                                                      onTap: () async {
-                                                        SharedPreferences prefs = await SharedPreferences.getInstance();
-                                                        if((prefs.getString("City") ?? "").isNotEmpty &&
-                                                            (prefs.getString("Place") ?? "").isNotEmpty &&
-                                                            (prefs.getString("Address") ?? "").isNotEmpty &&
-                                                            (prefs.getString("subAddress") ?? "").isNotEmpty){
-                                                          setState(() {
-                                                            City = TextEditingController(text: prefs.getString("City") ?? "");
-                                                            Place = prefs.getString("Place") ?? "";
-                                                            Address = TextEditingController(text: prefs.getString("Address") ?? "");
-                                                            SubAddress = TextEditingController(text: prefs.getString("subAddress") ?? "");
-                                                          });
-                                                        }else{
-                                                          Fluttertoast.showToast(msg: "No Data Available");
-                                                        }
-                                                      },
-                                                        child: Container(
-                                                          decoration: BoxDecoration(
-                                                              color: Colors.white,
-                                                            border: Border.all(width: 1, color: Colors.blue),
-                                                              borderRadius: BorderRadius.circular(10)
-                                                          ),
-                                                            child: Padding(
-                                                              padding: const EdgeInsets.only(top: 5, bottom: 5, left: 20, right: 20),
-                                                              child: Text("Import"),
+                                                                          5),
                                                             ),
+                                                            child: const Center(
+                                                                child: Text(
+                                                              "Save Address",
+                                                              style: TextStyle(
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .bold,
+                                                                  fontSize:
+                                                                      14,
+                                                                  color: Colors
+                                                                      .white),
+                                                            )),
+                                                          ),
                                                         ),
                                                       ),
-                                                      Row(
-                                                          children: [
-                                                            Padding(
-                                                              padding:
-                                                              const EdgeInsets
-                                                                  .all(8.0),
-                                                              child: Text(
-                                                                "Select Mark from Map",
-                                                                style: TextStyle(
-                                                                    fontWeight:
-                                                                    FontWeight
-                                                                        .bold,
-                                                                    fontSize: 10),
-                                                              ),
-                                                            ),
-                                                            InkWell(
-                                                              onTap: () {
-                                                                setState(() {
-                                                                  Navigator.push(context, MaterialPageRoute(builder: (context) => SelectDestination(),));
-                                                                });
-                                                              },
-                                                              child: Container(
-                                                                height: 40,
-                                                                width: 40,
-                                                                decoration:
-                                                                BoxDecoration(
-                                                                  color:
-                                                                  Colors.green,
-                                                                  boxShadow: [
-                                                                    BoxShadow(
-                                                                        color: Colors
-                                                                            .redAccent,
-                                                                        spreadRadius:
-                                                                        1,
-                                                                        blurRadius: 1)
-                                                                  ],
-                                                                  borderRadius:
-                                                                  BorderRadius
-                                                                      .circular(
-                                                                      40),
-                                                                ),
-                                                                child: Icon(Icons
-                                                                    .my_location),
-                                                              ),
-                                                            )
-                                                          ],
-                                                      )
-                                                    ]
-                                                  ),
-                                                ),
-                                                Padding(
-                                                  padding:
-                                                      const EdgeInsets.all(8.0),
-                                                  child: InkWell(
-                                                    onTap: () async{
-                                                      SharedPreferences prefs = await SharedPreferences.getInstance();
-                                                        // Save Address Information
-                                                        if(City.text.isNotEmpty && Address.text.isNotEmpty && SubAddress.text.isNotEmpty){
-                                                          prefs.setString("City", City.text);
-                                                          prefs.setString("Address", Address.text);
-                                                          prefs.setString("subAddress", SubAddress.text);
-                                                          prefs.setString("Place", Place);
-                                                          EnterAddress = false;
-                                                          Fluttertoast.showToast(msg: "Address Saved");
-                                                        }else{
-                                                          Fluttertoast.showToast(msg: "Fill All the fields");
-                                                        }
-                                                    },
-                                                    child: Container(
-                                                      height: 45,
-                                                      width: screenWidth * 0.65,
-                                                      decoration: BoxDecoration(
+                                                    ])
+                                                  : InkWell(
+                                                      onTap: () {
+                                                        setState(() {
+                                                          isManually = true;
+                                                        });
+                                                      },
+                                                      child: Container(
+                                                        height: 50,
+                                                        width:
+                                                            screenWidth - 50,
+                                                        decoration:
+                                                            BoxDecoration(
+                                                          color: Colors.white,
                                                           borderRadius:
                                                               BorderRadius
-                                                                  .circular(15),
-                                                          color: Colors.green,
+                                                                  .circular(
+                                                                      5),
                                                           boxShadow: [
-                                                            BoxShadow(
-                                                                color: Colors
-                                                                    .black26,
-                                                                blurRadius: 1,
-                                                                spreadRadius: 1)
-                                                          ]),
-                                                      child: Center(
-                                                          child: Text(
-                                                        "Save Address",
-                                                        style: TextStyle(
-                                                            fontWeight:
-                                                                FontWeight.bold,
-                                                            fontSize: 14),
-                                                      )),
+                                                            const BoxShadow(
+                                                              color: Colors
+                                                                  .black26,
+                                                              blurRadius: 2,
+                                                              spreadRadius: 1,
+                                                            ),
+                                                          ],
+                                                        ),
+                                                        child: const Center(
+                                                            child: Text(
+                                                                "New Address",
+                                                                style: TextStyle(
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .bold))),
+                                                      ),
                                                     ),
-                                                  ),
+                                              Container(
+                                                height: 400,
+                                                child: Column(
+                                                  children: [
+                                                    Expanded(
+                                                      child: StreamBuilder<QuerySnapshot>(
+                                                        stream: FirebaseFirestore
+                                                            .instance
+                                                            .collection("Addresses")
+                                                            .doc(UID)
+                                                            .collection(
+                                                            "UserAddresses")
+                                                            .snapshots(),
+                                                        builder: (context, snapshot) {
+                                                          List<Row> addressesViews = [];
+                                                          if (snapshot.hasData) {
+                                                            final addresses = snapshot.data?.docs.reversed.toList();
+                                                            if (!isSelectedInitialized || addresses?.length != initialCount) {
+                                                              // Only initialize once when data is first loaded
+                                                              for (var address in addresses!) {
+                                                                isSelected[address.id.toString()] = false;
+                                                              }
+                                                              isSelectedInitialized = true;
+                                                              initialCount = addresses.length;
+                                                            }
+                                                            for (var address in addresses!) {
+                                                              Row row = Row(
+                                                                mainAxisAlignment: MainAxisAlignment.center,
+                                                                children: [
+                                                                  Padding(
+                                                                    padding: const EdgeInsets.only(top : 8.0),
+                                                                    child: Container(
+                                                                      width: screenWidth - 50,
+                                                                      decoration:
+                                                                      BoxDecoration(
+                                                                        color: Colors.white,
+                                                                        borderRadius:
+                                                                        BorderRadius
+                                                                            .circular(
+                                                                            5),
+                                                                        boxShadow: [
+                                                                          const BoxShadow(
+                                                                            color: Colors
+                                                                                .black26,
+                                                                            blurRadius: 2,
+                                                                            spreadRadius: 1,
+                                                                          ),
+                                                                        ],
+                                                                      ),
+                                                                      child: Padding(
+                                                                        padding: const EdgeInsets.all(8.0),
+                                                                        child: Column(
+                                                                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                                                          children: [
+                                                                            Row(
+                                                                              mainAxisAlignment: MainAxisAlignment.start,
+                                                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                                                              children: [
+                                                                                const Icon(CupertinoIcons.location_solid, color: Colors.black, size: 20,),
+                                                                                const SizedBox(width: 5,),
+                                                                                Column(
+                                                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                                                  children: [
+                                                                                    Text("${address["city"]?? "No City Name"}", style: const TextStyle(fontWeight: FontWeight.bold),),
+                                                                                    SizedBox(
+                                                                                        width: screenWidth - 100,
+                                                                                        child: Text("${address["subAddress"]?? ""}, ${address["localName"]?? ""}, ${address["address"]?? ""}, ${address["city"]?? ""} ")),
+                                                                                    Text("${address["contact"]?? "No Contact"}"),
+                                                                                  ],
+                                                                                )
+                                                                              ],
+                                                                            ),
+                                                                            const Divider(),
+                                                                            Row(
+                                                                              mainAxisAlignment: MainAxisAlignment.end,
+                                                                              crossAxisAlignment: CrossAxisAlignment.center,
+                                                                              children: [
+                                                                                InkWell(
+                                                                                  onTap : () async {
+                                                                                    SharedPreferences prefs = await SharedPreferences.getInstance();
+                                                                                    setState(() {
+                                                                                      City.text = address["city"];
+                                                                                      Address.text = address["address"];
+                                                                                      SubAddress.text = address["subAddress"];
+                                                                                      Place = address["placeType"];
+                                                                                      contactController.text = address["contact"];
+                                                                                    });
+                                                                                    prefs.setDouble("SelectedLat", address["lat"]);
+                                                                                    prefs.setDouble("SelectedLong", address["long"]);
+                                                                                    Fluttertoast.showToast(msg: "Location Selected");
+                                                                                    print("Before ${isSelected[address.id]}");
+                                                                                    setState(() {
+                                                                                      EnterAddress = false;
+                                                                                      isSelected.updateAll((_, __)=> false);
+                                                                                      isSelected[address.id.toString()] = true;
+                                                                                    });
+                                                                                  },
+                                                                                  child: Container(
+                                                                                    height: 35,
+                                                                                    width: 100,
+                                                                                    decoration:
+                                                                                    BoxDecoration(
+                                                                                      color: isSelected[address.id.toString()] == true? Colors.blue : Colors.green,
+                                                                                      borderRadius:
+                                                                                      BorderRadius.circular(5),
+                                                                                      boxShadow: [
+                                                                                        const BoxShadow(
+                                                                                          color: Colors
+                                                                                              .black26,
+                                                                                          blurRadius: 1,
+                                                                                          spreadRadius: 1,
+                                                                                        ),
+                                                                                      ],
+                                                                                    ),
+                                                                                    child: Center(child: Text(isSelected[address.id.toString()] == true? "Selected " : "Select", style:const TextStyle(color: Colors.white, fontWeight: FontWeight.bold))),
+                                                                                  ),
+                                                                                ),
+                                                                              ],
+                                                                            ),
+                                                                          ],
+                                                                        ),
+                                                                      ),
+                                                                    ),
+                                                                  )
+                                                                ],
+                                                              );
+                                                              addressesViews.add(row);
+                                                            }
+                                                          }
+                                                          return ListView(
+                                                            padding: EdgeInsets.zero,
+                                                            children: addressesViews,
+                                                          );
+                                                        },
+                                                      ),
+                                                    ),
+                                                  ],
                                                 ),
-                                              ],
-                                            ),
+                                              ),
+                                            ],
                                           ),
-                                        )
-                                      : Container(),
-                                ],
-                              )
-                      ],
-                    ),
+                                        ),
+                                      )
+                                    : Container(),
+                              ],
+                            )
+                    ],
                   ),
                 ),
               ),
@@ -1937,9 +2115,9 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
           ),
           loading
               ? Padding(
-            padding: const EdgeInsets.only(top: 50.0),
-            child: Center(child: LoaderSupport.loadingAnimation.widget),
-          )
+                  padding: const EdgeInsets.only(top: 50.0),
+                  child: Center(child: LoaderSupport.loadingAnimation.widget),
+                )
               : Container(),
         ],
       ),

@@ -1,7 +1,7 @@
 name: carehub
 description: A new Flutter project.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
-version: 1.0.2+17
+version: 1.0.3+19
 environment:
   sdk: '>=3.3.0 <4.0.0'
 dependencies:
@@ -41,6 +41,8 @@ dependencies:
   loading_animation_widget: ^1.3.0
   internet_connection_checker_plus: ^2.7.1
   currency_picker: ^2.0.21
+  flutter_libphonenumber: ^2.5.1
+  phone_numbers_parser: ^9.0.3
 
 
 dev_dependencies:
@@ -55,6 +57,7 @@ flutter:
     - assets/sound.wav
     - assets/Professions/
     - assets/icons/
+    - assets/service-account.json
   # fonts:
   #   - family: Schyler
   #     fonts:

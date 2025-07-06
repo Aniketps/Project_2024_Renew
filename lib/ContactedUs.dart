@@ -2,7 +2,6 @@ import 'package:carehub/AllStaffOnlyVerified.dart';
 import 'package:carehub/RegistreredUsers.dart';
 import 'package:carehub/StaffVerifcation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -10,7 +9,7 @@ import 'globle.dart';
 
 class ContactedUse extends StatefulWidget {
   final loggedAdmin;
-  ContactedUse({required this.loggedAdmin});
+  const ContactedUse({super.key, required this.loggedAdmin});
   @override
   State<StatefulWidget> createState() =>
       _ContactedUse(loggedAdmin: loggedAdmin);
@@ -42,7 +41,6 @@ class _ContactedUse extends State<ContactedUse> {
   Widget build(BuildContext context) {
     final mediaquery = MediaQuery.of(context);
     final screenWidth = mediaquery.size.width;
-    final screenHeight = mediaquery.size.height;
     return Scaffold(
       key: _scaffoldKey,
       drawer: Drawer(
@@ -58,14 +56,14 @@ class _ContactedUse extends State<ContactedUse> {
                     width: 80,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(80),
-                      boxShadow: [
+                      boxShadow: const [
                         BoxShadow(
                           blurRadius: 1,
                           spreadRadius: 1,
                           color: Colors.black26,
                         ),
                       ],
-                      image: DecorationImage(
+                      image: const DecorationImage(
                         image: NetworkImage(
                             "https://firebasestorage.googleapis.com/v0/b/carehub-af7ec.appspot.com/o/carenest.png?alt=media&token=6d6df551-5264-42a6-a58c-d02e66040e43"),
                         fit: BoxFit.cover,
@@ -74,13 +72,13 @@ class _ContactedUse extends State<ContactedUse> {
                     ),
                   ),
                   Text(
-                    "${loggedAdmin}",
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                    "$loggedAdmin",
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                   )
                 ])),
             ListTile(
-              leading: Icon(Icons.work),
-              title: Text('Registared Staff'),
+              leading: const Icon(Icons.work),
+              title: const Text('Registared Staff'),
               onTap: () {
                 Navigator.pushReplacement(
                     context,
@@ -92,8 +90,8 @@ class _ContactedUse extends State<ContactedUse> {
               },
             ),
             ListTile(
-              leading: Icon(Icons.person),
-              title: Text('Registared User'),
+              leading: const Icon(Icons.person),
+              title: const Text('Registared User'),
               onTap: () {
                 Navigator.pushReplacement(
                     context,
@@ -104,15 +102,15 @@ class _ContactedUse extends State<ContactedUse> {
                     ));
               },
             ),
-            Divider(),
+            const Divider(),
             ListTile(
-              leading: Icon(Icons.headset_mic),
-              title: Text('Contacted Us'),
+              leading: const Icon(Icons.headset_mic),
+              title: const Text('Contacted Us'),
               onTap: () {},
             ),
             ListTile(
-              leading: Icon(Icons.verified_user),
-              title: Text('Pending Verifications'),
+              leading: const Icon(Icons.verified_user),
+              title: const Text('Pending Verifications'),
               onTap: () {
                 Navigator.pushReplacement(
                     context,
@@ -124,8 +122,8 @@ class _ContactedUse extends State<ContactedUse> {
               },
             ),
             ListTile(
-              leading: Icon(Icons.feedback),
-              title: Text('Feedbacks'),
+              leading: const Icon(Icons.feedback),
+              title: const Text('Feedbacks'),
               onTap: () {},
             ),
           ],
@@ -151,14 +149,14 @@ class _ContactedUse extends State<ContactedUse> {
                                 _scaffoldKey.currentState?.openDrawer();
                               });
                             },
-                            child: Icon(
+                            child: const Icon(
                               Icons.menu,
                             ),
                           ),
-                          SizedBox(
+                          const SizedBox(
                             width: 20,
                           ),
-                          Text("CareNest Management",
+                          const Text("CareNest Management",
                               style: TextStyle(
                                   fontSize: 20, fontWeight: FontWeight.bold)),
                         ],
@@ -189,7 +187,7 @@ class _ContactedUse extends State<ContactedUse> {
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(50),
                           color: Colors.white,
-                          boxShadow: [
+                          boxShadow: const [
                             BoxShadow(
                                 spreadRadius: 1,
                                 color: Colors.black26,
@@ -198,8 +196,8 @@ class _ContactedUse extends State<ContactedUse> {
                         ),
                         child: Row(
                           children: [
-                            Padding(
-                              padding: const EdgeInsets.only(left: 10),
+                            const Padding(
+                              padding: EdgeInsets.only(left: 10),
                               child: Icon(Icons.search,
                                   color: Colors.blue, size: 25),
                             ),
@@ -210,10 +208,10 @@ class _ContactedUse extends State<ContactedUse> {
                                     Searched = value;
                                   });
                                 },
-                                decoration: InputDecoration(
+                                decoration: const InputDecoration(
                                   border: InputBorder.none,
                                   hintText: 'Search...',
-                                  contentPadding: const EdgeInsets.symmetric(
+                                  contentPadding: EdgeInsets.symmetric(
                                       horizontal: 10),
                                 ),
                               ),
@@ -235,14 +233,14 @@ class _ContactedUse extends State<ContactedUse> {
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(20),
                               color: Colors.white,
-                              boxShadow: [
+                              boxShadow: const [
                                 BoxShadow(
                                     spreadRadius: 1,
                                     color: Colors.black26,
                                     blurRadius: 1),
                               ],
                             ),
-                            child: Icon(Icons.filter_list_sharp,
+                            child: const Icon(Icons.filter_list_sharp,
                                 size: 30, color: Colors.blue),
                           ),
                         ),
@@ -283,153 +281,151 @@ class _ContactedUse extends State<ContactedUse> {
                                         padding: const EdgeInsets.all(8.0),
                                         child: Row(
                                           children: [
-                                            Container(
-                                              child: Column(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.start,
-                                                children: [
-                                                  Text(
-                                                    "Date: ${staffData["DateTime"]}",
-                                                    style: TextStyle(
+                                            Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  "Date: ${staffData["DateTime"]}",
+                                                  style: TextStyle(
+                                                      fontSize: 16,
+                                                      fontWeight:
+                                                          FontWeight.w500,
+                                                      color:
+                                                          Colors.grey[700]),
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                  maxLines:
+                                                      2, // Limit to two lines if necessary
+                                                ),
+                                                const SizedBox(height: 4),
+                                                SizedBox(
+                                                  width: (screenWidth * 0.9) *
+                                                      0.9,
+                                                  child: Text(
+                                                    "Title: ${staffData['Title']}",
+                                                    style: const TextStyle(
+                                                        fontSize: 18,
+                                                        fontWeight:
+                                                            FontWeight.bold),
+                                                    softWrap:
+                                                        true, // Ensure the text wraps to the next line if needed
+                                                    overflow:
+                                                        TextOverflow.visible,
+                                                  ),
+                                                ),
+                                                const SizedBox(height: 4),
+                                                SizedBox(
+                                                  width: (screenWidth * 0.9) *
+                                                      0.9,
+                                                  child: Text(
+                                                    "From: ${staffData["Name"]}",
+                                                    softWrap: true,
+                                                    style: const TextStyle(
                                                         fontSize: 16,
                                                         fontWeight:
-                                                            FontWeight.w500,
-                                                        color:
-                                                            Colors.grey[700]),
+                                                            FontWeight.w500),
                                                     overflow:
                                                         TextOverflow.ellipsis,
                                                     maxLines:
                                                         2, // Limit to two lines if necessary
                                                   ),
-                                                  SizedBox(height: 4),
-                                                  Container(
-                                                    width: (screenWidth * 0.9) *
-                                                        0.9,
-                                                    child: Text(
-                                                      "Title: ${staffData['Title']}",
-                                                      style: TextStyle(
-                                                          fontSize: 18,
-                                                          fontWeight:
-                                                              FontWeight.bold),
-                                                      softWrap:
-                                                          true, // Ensure the text wraps to the next line if needed
-                                                      overflow:
-                                                          TextOverflow.visible,
-                                                    ),
-                                                  ),
-                                                  SizedBox(height: 4),
-                                                  Container(
-                                                    width: (screenWidth * 0.9) *
-                                                        0.9,
-                                                    child: Text(
-                                                      "From: ${staffData["Name"]}",
-                                                      softWrap: true,
+                                                ),
+                                                const SizedBox(height: 4),
+                                                Row(
+                                                  children: [
+                                                    const Text(
+                                                      "Email: ",
                                                       style: TextStyle(
                                                           fontSize: 16,
                                                           fontWeight:
-                                                              FontWeight.w500),
-                                                      overflow:
-                                                          TextOverflow.ellipsis,
-                                                      maxLines:
-                                                          2, // Limit to two lines if necessary
+                                                              FontWeight
+                                                                  .bold),
                                                     ),
+                                                    GestureDetector(
+                                                      onTap: () =>
+                                                          launchEmail(
+                                                              staffData[
+                                                                  "Email"],
+                                                              staffData[
+                                                                  "Title"]),
+                                                      child: Expanded(
+                                                        child: Text(
+                                                          staffData["Email"],
+                                                          softWrap: true,
+                                                          style: const TextStyle(
+                                                            fontSize: 16,
+                                                            fontStyle:
+                                                                FontStyle
+                                                                    .italic,
+                                                            color:
+                                                                Colors.blue,
+                                                            decoration:
+                                                                TextDecoration
+                                                                    .underline,
+                                                          ),
+                                                          overflow: TextOverflow
+                                                              .ellipsis, // Prevent overflow with ellipsis
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                                const SizedBox(height: 4),
+                                                const Text(
+                                                  "Query:",
+                                                  style: TextStyle(
+                                                      fontSize: 16,
+                                                      fontWeight:
+                                                          FontWeight.bold),
+                                                ),
+                                                SizedBox(
+                                                  width: (screenWidth * 0.9) *
+                                                      0.9,
+                                                  child: Text(
+                                                    staffData["Query"],
+                                                    textAlign:
+                                                        TextAlign.justify,
+                                                    style: const TextStyle(
+                                                      fontSize: 16,
+                                                      color: Colors.black87,
+                                                    ),
+                                                    softWrap:
+                                                        true, // Ensure the text wraps to the next line if needed
+                                                    overflow: TextOverflow
+                                                        .visible, // Allow text to wrap instead of truncating
                                                   ),
-                                                  SizedBox(height: 4),
-                                                  Row(
-                                                    children: [
-                                                      Text(
-                                                        "Email: ",
-                                                        style: TextStyle(
+                                                ),
+                                                staffData.containsKey(
+                                                        "actionTakenBy")
+                                                    ? Text(
+                                                        "Action Taken by: ${staffData["actionTakenBy"]}",
+                                                        softWrap: true,
+                                                        style: const TextStyle(
                                                             fontSize: 16,
                                                             fontWeight:
                                                                 FontWeight
                                                                     .bold),
-                                                      ),
-                                                      GestureDetector(
-                                                        onTap: () =>
-                                                            launchEmail(
-                                                                staffData[
-                                                                    "Email"],
-                                                                staffData[
-                                                                    "Title"]),
-                                                        child: Expanded(
-                                                          child: Text(
-                                                            staffData["Email"],
-                                                            softWrap: true,
-                                                            style: TextStyle(
-                                                              fontSize: 16,
-                                                              fontStyle:
-                                                                  FontStyle
-                                                                      .italic,
-                                                              color:
-                                                                  Colors.blue,
-                                                              decoration:
-                                                                  TextDecoration
-                                                                      .underline,
-                                                            ),
-                                                            overflow: TextOverflow
-                                                                .ellipsis, // Prevent overflow with ellipsis
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                  SizedBox(height: 4),
-                                                  Text(
-                                                    "Query:",
-                                                    style: TextStyle(
-                                                        fontSize: 16,
-                                                        fontWeight:
-                                                            FontWeight.bold),
-                                                  ),
-                                                  Container(
-                                                    width: (screenWidth * 0.9) *
-                                                        0.9,
-                                                    child: Text(
-                                                      staffData["Query"],
-                                                      textAlign:
-                                                          TextAlign.justify,
-                                                      style: TextStyle(
-                                                        fontSize: 16,
-                                                        color: Colors.black87,
-                                                      ),
-                                                      softWrap:
-                                                          true, // Ensure the text wraps to the next line if needed
-                                                      overflow: TextOverflow
-                                                          .visible, // Allow text to wrap instead of truncating
-                                                    ),
-                                                  ),
-                                                  staffData.containsKey(
-                                                          "actionTakenBy")
-                                                      ? Text(
-                                                          "Action Taken by: ${staffData["actionTakenBy"]}",
-                                                          softWrap: true,
-                                                          style: TextStyle(
-                                                              fontSize: 16,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold),
-                                                        )
-                                                      : Container(),
-                                                  ElevatedButton(
-                                                      onPressed: () async {
-                                                        await FirebaseFirestore
-                                                            .instance
-                                                            .collection(
-                                                                "HelpCenter")
-                                                            .doc(staff.id)
-                                                            .update({
-                                                          "Status": Change,
-                                                          "actionTakenBy":
-                                                              loggedAdmin,
-                                                        });
-                                                      },
-                                                      child:
-                                                          Text("Action Taken"))
-                                                ],
-                                              ),
+                                                      )
+                                                    : Container(),
+                                                ElevatedButton(
+                                                    onPressed: () async {
+                                                      await FirebaseFirestore
+                                                          .instance
+                                                          .collection(
+                                                              "HelpCenter")
+                                                          .doc(staff.id)
+                                                          .update({
+                                                        "Status": Change,
+                                                        "actionTakenBy":
+                                                            loggedAdmin,
+                                                      });
+                                                    },
+                                                    child:
+                                                        const Text("Action Taken"))
+                                              ],
                                             )
                                           ],
                                         ),
@@ -482,12 +478,12 @@ class _ContactedUse extends State<ContactedUse> {
               ? Positioned(
                   right: 0,
                   child: Container(
-                    margin: EdgeInsets.only(top: 147),
+                    margin: const EdgeInsets.only(top: 147),
                     height: 200,
                     width: 200,
                     decoration: BoxDecoration(
                         color: Colors.white,
-                        borderRadius: BorderRadius.only(
+                        borderRadius: const BorderRadius.only(
                             bottomLeft: Radius.circular(15),
                             topLeft: Radius.circular(15)),
                         border: Border.all(color: Colors.blue, width: 1)),
@@ -496,12 +492,12 @@ class _ContactedUse extends State<ContactedUse> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
+                          const Text(
                             "Query Type",
                             style: TextStyle(
                                 fontSize: 18, fontWeight: FontWeight.bold),
                           ),
-                          SizedBox(
+                          const SizedBox(
                             height: 5,
                           ),
                           Column(
@@ -519,15 +515,15 @@ class _ContactedUse extends State<ContactedUse> {
                                           ? Colors.green
                                           : Colors.white,
                                       borderRadius:
-                                          BorderRadius.all(Radius.circular(10)),
-                                      boxShadow: [
+                                          const BorderRadius.all(Radius.circular(10)),
+                                      boxShadow: const [
                                         BoxShadow(
                                             blurRadius: 1,
                                             color: Colors.blue,
                                             spreadRadius: 1)
                                       ]),
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(8.0),
+                                  child: const Padding(
+                                    padding: EdgeInsets.all(8.0),
                                     child: Text("Resolved"),
                                   ),
                                 ),

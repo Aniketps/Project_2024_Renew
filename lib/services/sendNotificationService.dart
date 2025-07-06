@@ -1,42 +1,58 @@
 import 'dart:convert';
-
-import 'getServerKey.dart';
+import 'package:flutter/services.dart' show rootBundle;
+import 'package:googleapis_auth/auth.dart';
+import 'package:googleapis_auth/auth_io.dart';
 import 'package:http/http.dart' as http;
 
-class sendNotificationService{
+class sendNotificationService {
   static Future<void> sendNotificationUsingApi({
     required String? token,
     required String? title,
     required String? body,
     required Map<String, String>? data,
-}) async{
-    String serverKey = await GetServerKey().getServerKeyToken();
-    String url = "https://fcm.googleapis.com/v1/projects/carehub-af7ec/messages:send";
-    var header = <String, String>{
-      "Content-type" : "application/json",
-      "Authorization" : "Bearer $serverKey",
-    };
-    Map<String, dynamic> message={
-      "message":{
-        "token":token,
-        "notification":{
-          "body":body,
-          "title":title
+  }) async {
+    // ✅ Load service account JSON from assets using rootBundle
+    final jsonString = await rootBundle.loadString('assets/service-account.json');
+    final serviceAccount = jsonDecode(jsonString);
+
+    final accountCredentials = ServiceAccountCredentials.fromJson(serviceAccount);
+
+    // ✅ Required scope for Firebase Cloud Messaging
+    const scopes = ['https://www.googleapis.com/auth/firebase.messaging'];
+
+    // ✅ Auth client using Google OAuth2
+    final authClient = await clientViaServiceAccount(accountCredentials, scopes);
+
+    const url = 'https://fcm.googleapis.com/v1/projects/carehub-af7ec/messages:send';
+
+    final message = {
+      "message": {
+        "token": token,
+        "notification": {
+          "title": title,
+          "body": body,
         },
-        "data" : data
+        "data": data,
       }
     };
-    final http.Response response = await http.post(
+
+    final response = await authClient.post(
       Uri.parse(url),
-      headers: header,
+      headers: {
+        'Content-Type': 'application/json',
+      },
       body: jsonEncode(message),
     );
 
-    if(response.statusCode==200){
+    if (response.statusCode == 200) {
+      print('✅ Notification sent:');
       print(response.body);
-      print("Notification send");
-    }else{
-      print("Notification not send");
+    } else {
+      print('❌ Notification not sent:');
+      print('Status: ${response.statusCode}');
+      print('Body: ${response.body}');
     }
+
+    authClient.close();
   }
 }

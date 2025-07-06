@@ -1,7 +1,5 @@
-import 'package:carehub/StaffProfilePage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
@@ -61,271 +59,269 @@ class _EContact extends State<EContact> {
             children: [
               Padding(
                 padding: const EdgeInsets.only(top: 150),
-                child: Container(
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.vertical,
-                    child: Column(
-                      children: [
-                        Center(
-                          child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Container(
-                              height: screenHeight * 0.9,
-                              width: screenWidth,
-                              decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(15),
-                                  boxShadow: const [
-                                    BoxShadow(
-                                        color: Colors.black26,
-                                        spreadRadius: 1,
-                                        blurRadius: 1)
-                                  ]),
-                              child: SingleChildScrollView(
-                                scrollDirection: Axis.vertical,
-                                child: Column(
-                                  children: [
-                                    const Padding(
-                                      padding: EdgeInsets.only(
-                                          left: 20, top: 10, bottom: 5),
-                                      child: Text(
-                                        "Make Changes",
-                                        style: TextStyle(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.bold),
-                                      ),
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.vertical,
+                  child: Column(
+                    children: [
+                      Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Container(
+                            height: screenHeight * 0.9,
+                            width: screenWidth,
+                            decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(15),
+                                boxShadow: const [
+                                  BoxShadow(
+                                      color: Colors.black26,
+                                      spreadRadius: 1,
+                                      blurRadius: 1)
+                                ]),
+                            child: SingleChildScrollView(
+                              scrollDirection: Axis.vertical,
+                              child: Column(
+                                children: [
+                                  const Padding(
+                                    padding: EdgeInsets.only(
+                                        left: 20, top: 10, bottom: 5),
+                                    child: Text(
+                                      "Make Changes",
+                                      style: TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold),
                                     ),
-                                    const Divider(),
-                                    Padding(
-                                      padding: const EdgeInsets.only(
-                                          right: 10, left: 10, top: 10),
-                                      child: Container(
-                                        decoration: BoxDecoration(
-                                            color: Colors.white,
-                                            borderRadius:
-                                                BorderRadius.circular(10),
-                                            boxShadow: const [
-                                              BoxShadow(
-                                                  color: Colors.black26,
-                                                  blurRadius: 1,
-                                                  spreadRadius: 1)
-                                            ]),
-                                        child: Row(
-                                          children: [
-                                            Padding(
-                                              padding: const EdgeInsets.only(
-                                                  left: 10),
-                                              child: SizedBox(
-                                                height: 50,
-                                                width: 60,
-                                                child: DropdownButton<String>(
-                                                  value: selectedPhoneCode01,
-                                                  items: PhoneCode.map(
-                                                      (String item) {
-                                                    return DropdownMenuItem<
-                                                        String>(
-                                                      value: item,
-                                                      child: Container(
-                                                        constraints:
-                                                            const BoxConstraints(
-                                                          maxWidth: 40,
-                                                        ),
-                                                        child: Text(
-                                                          item,
-                                                          overflow: TextOverflow
-                                                              .ellipsis,
-                                                          maxLines: 1,
-                                                        ),
-                                                      ),
-                                                    );
-                                                  }).toList(),
-                                                  onChanged: (newValue) {
-                                                    setState(() {
-                                                      selectedPhoneCode01 =
-                                                          newValue;
-                                                    });
-                                                  },
-                                                ),
-                                              ),
-                                            ),
-                                            SizedBox(
-                                              height: 50,
-                                              width: screenWidth * 0.6,
-                                              child: TextField(
-                                                controller: PrimeryNumber,
-                                                decoration:
-                                                    const InputDecoration(
-                                                        hintText:
-                                                            "Primary Phone Number", // Placeholder text
-                                                        border:
-                                                            InputBorder.none,
-                                                        contentPadding:
-                                                            EdgeInsets.fromLTRB(
-                                                                20,
-                                                                16,
-                                                                16,
-                                                                16) // Adds border around the text field
-                                                        ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.only(
-                                          right: 10, left: 10, top: 10),
-                                      child: Container(
-                                        decoration: BoxDecoration(
-                                            color: Colors.white,
-                                            borderRadius:
-                                                BorderRadius.circular(10),
-                                            boxShadow: const [
-                                              BoxShadow(
-                                                  color: Colors.black26,
-                                                  blurRadius: 1,
-                                                  spreadRadius: 1)
-                                            ]),
-                                        child: Row(
-                                          children: [
-                                            Padding(
-                                              padding: const EdgeInsets.only(
-                                                  left: 10),
-                                              child: SizedBox(
-                                                height: 50,
-                                                width: 60,
-                                                child: DropdownButton<String>(
-                                                  value: selectedPhoneCode02,
-                                                  items: PhoneCode.map(
-                                                      (String item) {
-                                                    return DropdownMenuItem<
-                                                        String>(
-                                                      value: item,
-                                                      child: Container(
-                                                        constraints:
-                                                            const BoxConstraints(
-                                                          maxWidth: 40,
-                                                        ),
-                                                        child: Text(
-                                                          item,
-                                                          overflow: TextOverflow
-                                                              .ellipsis,
-                                                          maxLines: 1,
-                                                        ),
-                                                      ),
-                                                    );
-                                                  }).toList(),
-                                                  onChanged: (newValue) {
-                                                    setState(() {
-                                                      selectedPhoneCode02 =
-                                                          newValue;
-                                                    });
-                                                  },
-                                                ),
-                                              ),
-                                            ),
-                                            SizedBox(
-                                              height: 50,
-                                              width: screenWidth * 0.6,
-                                              child: TextField(
-                                                controller: SeconderyNumber,
-                                                decoration:
-                                                    const InputDecoration(
-                                                        hintText:
-                                                            "Secondary Phone Number", // Placeholder text
-                                                        border:
-                                                            InputBorder.none,
-                                                        contentPadding:
-                                                            EdgeInsets.fromLTRB(
-                                                                20,
-                                                                16,
-                                                                16,
-                                                                16) // Adds border around the text field
-                                                        ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.only(
-                                          right: 10, top: 15),
+                                  ),
+                                  const Divider(),
+                                  Padding(
+                                    padding: const EdgeInsets.only(
+                                        right: 10, left: 10, top: 10),
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          borderRadius:
+                                              BorderRadius.circular(10),
+                                          boxShadow: const [
+                                            BoxShadow(
+                                                color: Colors.black26,
+                                                blurRadius: 1,
+                                                spreadRadius: 1)
+                                          ]),
                                       child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.end,
                                         children: [
-                                          ElevatedButton(
-                                              onPressed: () async {
-                                                setState((){
-                                                  loading = true;
-                                                });
-                                                String PrimeryNum =
-                                                    PrimeryNumber.text;
-                                                String SeconderyNum =
-                                                    SeconderyNumber.text;
-
-                                                  try {
-                                                    User? user = FirebaseAuth
-                                                        .instance.currentUser;
-                                                    late String currentUID =
-                                                        user?.uid ?? '';
-                                                    await FirebaseFirestore
-                                                        .instance
-                                                        .collection(Skill)
-                                                        .doc(currentUID)
-                                                        .update({
-                                                      "Phone_Number1":
-                                                          PrimeryNum,
-                                                      "Phone_Number2":
-                                                          SeconderyNum,
-                                                    });
-                                                    await FirebaseFirestore
-                                                        .instance
-                                                        .collection('user')
-                                                        .doc(currentUID)
-                                                        .update({
-                                                      "Phone_Number1":
-                                                          PrimeryNum,
-                                                      "Phone_Number2":
-                                                          SeconderyNum,
-                                                    });
-                                                    setState((){
-                                                      loading = false;
-                                                    });
-                                                    Navigator.pop(context);
-                                                  } catch (e) {
-                                                    setState((){
-                                                      loading = false;
-                                                    });
-                                                    Fluttertoast.showToast(
-                                                      msg: "$e",
-                                                      toastLength:
-                                                          Toast.LENGTH_SHORT,
-                                                      gravity:
-                                                          ToastGravity.BOTTOM,
-                                                    );
-                                                  }
-                                              },
-                                              style: ElevatedButton.styleFrom(
-                                                  backgroundColor:
-                                                      Colors.green),
-                                              child: const Text(
-                                                "Confirm",
-                                                style: TextStyle(
-                                                    color: Colors.white),
-                                              )),
+                                          Padding(
+                                            padding: const EdgeInsets.only(
+                                                left: 10),
+                                            child: SizedBox(
+                                              height: 50,
+                                              width: 60,
+                                              child: DropdownButton<String>(
+                                                value: selectedPhoneCode01,
+                                                items: PhoneCode.map(
+                                                    (String item) {
+                                                  return DropdownMenuItem<
+                                                      String>(
+                                                    value: item,
+                                                    child: Container(
+                                                      constraints:
+                                                          const BoxConstraints(
+                                                        maxWidth: 40,
+                                                      ),
+                                                      child: Text(
+                                                        item,
+                                                        overflow: TextOverflow
+                                                            .ellipsis,
+                                                        maxLines: 1,
+                                                      ),
+                                                    ),
+                                                  );
+                                                }).toList(),
+                                                onChanged: (newValue) {
+                                                  setState(() {
+                                                    selectedPhoneCode01 =
+                                                        newValue;
+                                                  });
+                                                },
+                                              ),
+                                            ),
+                                          ),
+                                          SizedBox(
+                                            height: 50,
+                                            width: screenWidth * 0.6,
+                                            child: TextField(
+                                              controller: PrimeryNumber,
+                                              decoration:
+                                                  const InputDecoration(
+                                                      hintText:
+                                                          "Primary Phone Number", // Placeholder text
+                                                      border:
+                                                          InputBorder.none,
+                                                      contentPadding:
+                                                          EdgeInsets.fromLTRB(
+                                                              20,
+                                                              16,
+                                                              16,
+                                                              16) // Adds border around the text field
+                                                      ),
+                                            ),
+                                          ),
                                         ],
                                       ),
                                     ),
-                                  ],
-                                ),
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.only(
+                                        right: 10, left: 10, top: 10),
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          borderRadius:
+                                              BorderRadius.circular(10),
+                                          boxShadow: const [
+                                            BoxShadow(
+                                                color: Colors.black26,
+                                                blurRadius: 1,
+                                                spreadRadius: 1)
+                                          ]),
+                                      child: Row(
+                                        children: [
+                                          Padding(
+                                            padding: const EdgeInsets.only(
+                                                left: 10),
+                                            child: SizedBox(
+                                              height: 50,
+                                              width: 60,
+                                              child: DropdownButton<String>(
+                                                value: selectedPhoneCode02,
+                                                items: PhoneCode.map(
+                                                    (String item) {
+                                                  return DropdownMenuItem<
+                                                      String>(
+                                                    value: item,
+                                                    child: Container(
+                                                      constraints:
+                                                          const BoxConstraints(
+                                                        maxWidth: 40,
+                                                      ),
+                                                      child: Text(
+                                                        item,
+                                                        overflow: TextOverflow
+                                                            .ellipsis,
+                                                        maxLines: 1,
+                                                      ),
+                                                    ),
+                                                  );
+                                                }).toList(),
+                                                onChanged: (newValue) {
+                                                  setState(() {
+                                                    selectedPhoneCode02 =
+                                                        newValue;
+                                                  });
+                                                },
+                                              ),
+                                            ),
+                                          ),
+                                          SizedBox(
+                                            height: 50,
+                                            width: screenWidth * 0.6,
+                                            child: TextField(
+                                              controller: SeconderyNumber,
+                                              decoration:
+                                                  const InputDecoration(
+                                                      hintText:
+                                                          "Secondary Phone Number", // Placeholder text
+                                                      border:
+                                                          InputBorder.none,
+                                                      contentPadding:
+                                                          EdgeInsets.fromLTRB(
+                                                              20,
+                                                              16,
+                                                              16,
+                                                              16) // Adds border around the text field
+                                                      ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.only(
+                                        right: 10, top: 15),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.end,
+                                      children: [
+                                        ElevatedButton(
+                                            onPressed: () async {
+                                              setState((){
+                                                loading = true;
+                                              });
+                                              String PrimeryNum =
+                                                  PrimeryNumber.text;
+                                              String SeconderyNum =
+                                                  SeconderyNumber.text;
+
+                                                try {
+                                                  User? user = FirebaseAuth
+                                                      .instance.currentUser;
+                                                  late String currentUID =
+                                                      user?.uid ?? '';
+                                                  await FirebaseFirestore
+                                                      .instance
+                                                      .collection(Skill)
+                                                      .doc(currentUID)
+                                                      .update({
+                                                    "Phone_Number1":
+                                                        PrimeryNum,
+                                                    "Phone_Number2":
+                                                        SeconderyNum,
+                                                  });
+                                                  await FirebaseFirestore
+                                                      .instance
+                                                      .collection('user')
+                                                      .doc(currentUID)
+                                                      .update({
+                                                    "Phone_Number1":
+                                                        PrimeryNum,
+                                                    "Phone_Number2":
+                                                        SeconderyNum,
+                                                  });
+                                                  setState((){
+                                                    loading = false;
+                                                  });
+                                                  Navigator.pop(context);
+                                                } catch (e) {
+                                                  setState((){
+                                                    loading = false;
+                                                  });
+                                                  Fluttertoast.showToast(
+                                                    msg: "$e",
+                                                    toastLength:
+                                                        Toast.LENGTH_SHORT,
+                                                    gravity:
+                                                        ToastGravity.BOTTOM,
+                                                  );
+                                                }
+                                            },
+                                            style: ElevatedButton.styleFrom(
+                                                backgroundColor:
+                                                    Colors.green),
+                                            child: const Text(
+                                              "Confirm",
+                                              style: TextStyle(
+                                                  color: Colors.white),
+                                            )),
+                                      ],
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           ),
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
               ),

@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'globle.dart';
@@ -77,7 +76,6 @@ class _RatingStateState extends State<RatingState> {
         loader = false;
       });
     } catch (e) {
-      print("Error fetching ratings: $e");
       setState(() {
         loader = false;
       });
@@ -92,13 +90,11 @@ class _RatingStateState extends State<RatingState> {
           await FirebaseFirestore.instance.collection("user").doc(UID).get();
 
       if (!userDoc.exists) {
-        print("User document not found");
         return;
       }
 
       var staffData = userDoc.data();
       if (staffData == null || !staffData.containsKey("professionOfStaff")) {
-        print("professionOfStaff field is missing");
         return;
       }
 
@@ -108,13 +104,11 @@ class _RatingStateState extends State<RatingState> {
           .get();
 
       if (!staffDoc.exists) {
-        print("Staff document not found");
         return;
       }
 
       var staffDetails = staffDoc.data();
       if (staffDetails == null || !staffDetails.containsKey("Rating")) {
-        print("Rating field is missing");
         return;
       }
 
@@ -122,7 +116,6 @@ class _RatingStateState extends State<RatingState> {
         StaffRating = staffDetails["Rating"].toString();
       });
     } catch (e) {
-      print("Error fetching staff rating: $e");
     }
   }
 
@@ -149,7 +142,7 @@ class _RatingStateState extends State<RatingState> {
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
                         AppBar(
-                          title: Center(
+                          title: const Center(
                             child: Text(
                               "Rating details",
                               style: TextStyle(
@@ -167,12 +160,12 @@ class _RatingStateState extends State<RatingState> {
                   Container(
                     height: 310,
                     width: 370,
-                    margin: EdgeInsets.all(9),
-                    padding: EdgeInsets.all(5),
+                    margin: const EdgeInsets.all(9),
+                    padding: const EdgeInsets.all(5),
                     decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(5),
-                        boxShadow: [
+                        boxShadow: const [
                           BoxShadow(
                             color: Colors.black26,
                             spreadRadius: 1,
@@ -183,8 +176,8 @@ class _RatingStateState extends State<RatingState> {
                       mainAxisAlignment: MainAxisAlignment.start,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Padding(
-                          padding: const EdgeInsets.only(left: 10.0),
+                        const Padding(
+                          padding: EdgeInsets.only(left: 10.0),
                           child: Text(
                             'Rating',
                             style: TextStyle(
@@ -194,11 +187,11 @@ class _RatingStateState extends State<RatingState> {
                             ),
                           ),
                         ),
-                        Padding(
-                          padding: const EdgeInsets.only(right: 10.0, left: 10),
+                        const Padding(
+                          padding: EdgeInsets.only(right: 10.0, left: 10),
                           child: Divider(color: Colors.lightBlueAccent),
                         ),
-                        Center(
+                        const Center(
                           child: Text(
                             'Average Rating',
                             style: TextStyle(
@@ -217,11 +210,11 @@ class _RatingStateState extends State<RatingState> {
                                 height: 15, // Set the desired height
                                 fit: BoxFit.cover,
                               ),
-                              SizedBox(
+                              const SizedBox(
                                   width: 8), // Space between image and text
                               Text(
-                                '${StaffRating}/5.0',
-                                style: TextStyle(
+                                '$StaffRating/5.0',
+                                style: const TextStyle(
                                   color: Colors.black,
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
@@ -230,7 +223,7 @@ class _RatingStateState extends State<RatingState> {
                             ],
                           ),
                         ),
-                        SizedBox(height: 10),
+                        const SizedBox(height: 10),
                         Center(
                           child: Row(
                             mainAxisAlignment:
@@ -243,8 +236,8 @@ class _RatingStateState extends State<RatingState> {
                                 height: 15, // Set the desired height
                                 fit: BoxFit.cover,
                               ),
-                              SizedBox(width: 5),
-                              Text(
+                              const SizedBox(width: 5),
+                              const Text(
                                 '5', // Replace with your rating value
                                 style: TextStyle(
                                   color: Colors.black,
@@ -252,7 +245,7 @@ class _RatingStateState extends State<RatingState> {
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
-                              SizedBox(width: 15),
+                              const SizedBox(width: 15),
                               Container(
                                 height: 5,
                                 width: MediaQuery.sizeOf(context).width * 0.6,
@@ -271,11 +264,11 @@ class _RatingStateState extends State<RatingState> {
                                   ],
                                 ),
                               ),
-                              SizedBox(width: 5),
+                              const SizedBox(width: 5),
                               Text(
                                 FifthStarCount
                                     .toString(), // Replace with your rating value
-                                style: TextStyle(
+                                style: const TextStyle(
                                   color: Colors.black,
                                   fontSize: 14,
                                   fontWeight: FontWeight.bold,
@@ -284,7 +277,7 @@ class _RatingStateState extends State<RatingState> {
                             ],
                           ),
                         ),
-                        SizedBox(height: 10),
+                        const SizedBox(height: 10),
                         Center(
                           child: Row(
                             mainAxisAlignment:
@@ -297,8 +290,8 @@ class _RatingStateState extends State<RatingState> {
                                 height: 15, // Set the desired height
                                 fit: BoxFit.cover,
                               ),
-                              SizedBox(width: 5),
-                              Text(
+                              const SizedBox(width: 5),
+                              const Text(
                                 '4', // Replace with your rating value
                                 style: TextStyle(
                                   color: Colors.black,
@@ -306,7 +299,7 @@ class _RatingStateState extends State<RatingState> {
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
-                              SizedBox(width: 15),
+                              const SizedBox(width: 15),
                               Container(
                                 height: 5,
                                 width: MediaQuery.sizeOf(context).width * 0.6,
@@ -325,11 +318,11 @@ class _RatingStateState extends State<RatingState> {
                                   ],
                                 ),
                               ),
-                              SizedBox(width: 5),
+                              const SizedBox(width: 5),
                               Text(
                                 FourthStarCount
                                     .toString(), // Replace with your rating value
-                                style: TextStyle(
+                                style: const TextStyle(
                                   color: Colors.black,
                                   fontSize: 14,
                                   fontWeight: FontWeight.bold,
@@ -338,7 +331,7 @@ class _RatingStateState extends State<RatingState> {
                             ],
                           ),
                         ),
-                        SizedBox(height: 10),
+                        const SizedBox(height: 10),
                         Center(
                           child: Row(
                             mainAxisAlignment:
@@ -351,8 +344,8 @@ class _RatingStateState extends State<RatingState> {
                                 height: 15, // Set the desired height
                                 fit: BoxFit.cover,
                               ),
-                              SizedBox(width: 5),
-                              Text(
+                              const SizedBox(width: 5),
+                              const Text(
                                 '3', // Replace with your rating value
                                 style: TextStyle(
                                   color: Colors.black,
@@ -360,7 +353,7 @@ class _RatingStateState extends State<RatingState> {
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
-                              SizedBox(width: 15),
+                              const SizedBox(width: 15),
                               Container(
                                 height: 5,
                                 width: MediaQuery.sizeOf(context).width * 0.6,
@@ -379,11 +372,11 @@ class _RatingStateState extends State<RatingState> {
                                   ],
                                 ),
                               ),
-                              SizedBox(width: 5),
+                              const SizedBox(width: 5),
                               Text(
                                 ThirdStarCount
                                     .toString(), // Replace with your rating value
-                                style: TextStyle(
+                                style: const TextStyle(
                                   color: Colors.black,
                                   fontSize: 14,
                                   fontWeight: FontWeight.bold,
@@ -392,7 +385,7 @@ class _RatingStateState extends State<RatingState> {
                             ],
                           ),
                         ),
-                        SizedBox(height: 10),
+                        const SizedBox(height: 10),
                         Center(
                           child: Row(
                             mainAxisAlignment:
@@ -405,8 +398,8 @@ class _RatingStateState extends State<RatingState> {
                                 height: 15, // Set the desired height
                                 fit: BoxFit.cover,
                               ),
-                              SizedBox(width: 5),
-                              Text(
+                              const SizedBox(width: 5),
+                              const Text(
                                 '2', // Replace with your rating value
                                 style: TextStyle(
                                   color: Colors.black,
@@ -414,7 +407,7 @@ class _RatingStateState extends State<RatingState> {
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
-                              SizedBox(width: 15),
+                              const SizedBox(width: 15),
                               Container(
                                 height: 5,
                                 width: MediaQuery.sizeOf(context).width * 0.6,
@@ -433,11 +426,11 @@ class _RatingStateState extends State<RatingState> {
                                   ],
                                 ),
                               ),
-                              SizedBox(width: 5),
+                              const SizedBox(width: 5),
                               Text(
                                 SecondStarCount
                                     .toString(), // Replace with your rating value
-                                style: TextStyle(
+                                style: const TextStyle(
                                   color: Colors.black,
                                   fontSize: 14,
                                   fontWeight: FontWeight.bold,
@@ -446,7 +439,7 @@ class _RatingStateState extends State<RatingState> {
                             ],
                           ),
                         ),
-                        SizedBox(height: 10),
+                        const SizedBox(height: 10),
                         Center(
                           child: Row(
                             mainAxisAlignment:
@@ -459,8 +452,8 @@ class _RatingStateState extends State<RatingState> {
                                 height: 15, // Set the desired height
                                 fit: BoxFit.cover,
                               ),
-                              SizedBox(width: 5),
-                              Text(
+                              const SizedBox(width: 5),
+                              const Text(
                                 '1', // Replace with your rating value
                                 style: TextStyle(
                                   color: Colors.black,
@@ -468,7 +461,7 @@ class _RatingStateState extends State<RatingState> {
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
-                              SizedBox(width: 15),
+                              const SizedBox(width: 15),
                               Container(
                                 height: 5,
                                 width: MediaQuery.sizeOf(context).width * 0.6,
@@ -487,11 +480,11 @@ class _RatingStateState extends State<RatingState> {
                                   ],
                                 ),
                               ),
-                              SizedBox(width: 5),
+                              const SizedBox(width: 5),
                               Text(
                                 FirstStarCount
                                     .toString(), // Replace with your rating value
-                                style: TextStyle(
+                                style: const TextStyle(
                                   color: Colors.black,
                                   fontSize: 14,
                                   fontWeight: FontWeight.bold,

@@ -2,7 +2,11 @@ import 'dart:io';
 
 import 'package:app_settings/app_settings.dart';
 import 'package:carehub/ClientNotificationPage.dart';
+import 'package:carehub/Deals.dart';
+import 'package:carehub/MainMap.dart';
+import 'package:carehub/StaffProfileHome.dart';
 import 'package:carehub/StaffProfilePage.dart';
+import 'package:carehub/TC.dart';
 import 'package:carehub/main.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -14,6 +18,7 @@ import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
+import '../Feedback.dart';
 import '../StaffNotificationPage.dart';
 
 class NotificationService {
@@ -34,7 +39,6 @@ class NotificationService {
       criticalAlert: true,
       provisional: true,
       sound: true,
-
     );
 
     if (setting.authorizationStatus == AuthorizationStatus.authorized) {
@@ -183,20 +187,8 @@ class NotificationService {
       channel.name.toString(),
       channelDescription: "Channel Description",
       importance: Importance.max,
-      priority: Priority.high,
-      largeIcon: const DrawableResourceAndroidBitmap('@mipmap/ic_launcher'),
-      sound:
-      RawResourceAndroidNotificationSound('sound.wav'.split('.').first),
+      priority: Priority.max,
       additionalFlags: Int32List.fromList([0, 500, 500, 500]),
-      actions: (message.notification!.title.toString() == "Availability Check")
-          ? [
-        const AndroidNotificationAction('Reject_Availability_Request', "I'm Not", showsUserInterface: true,),
-        const AndroidNotificationAction('Accept_Availability_Request', "Yes, I'm", showsUserInterface: true,),
-      ]
-          : [
-        AndroidNotificationAction('open_action', 'Open App'),
-        AndroidNotificationAction('dismiss_action', 'Dismiss', showsUserInterface: false),
-      ],
       styleInformation: BigTextStyleInformation(
         message.notification!.body ?? '', // Use body as the big text
         contentTitle: message.notification!.title, // Set title
@@ -222,18 +214,18 @@ class NotificationService {
   }
 
   Future<void> showNotification(RemoteMessage message) async {
-    if(message.notification!.title.toString() == "Hiring" || message.notification!.title.toString() == "Availability Check"){
+    if(message.notification!.title.toString() == "🛎️ New Job Opportunity" || message.notification!.title.toString() == "Availability Check"){
       showHireNotification(message);
     } else if(message.notification!.title.toString() == "Status"){
       showOnlineNotification(message);
     }
     else {
       AndroidNotificationChannel channel = AndroidNotificationChannel(
-          message.notification!.android!.channelId.toString(),
-          message.notification!.android!.channelId.toString(),
-          importance: Importance.max,
-          showBadge: true,
-          playSound: true);
+        message.notification!.android!.channelId.toString(),
+        message.notification!.android!.channelId.toString(),
+        importance: Importance.high,
+        playSound: true,
+      );
       AndroidNotificationDetails androidNotificationDetails =
       AndroidNotificationDetails(
         channel.id.toString(),
@@ -241,18 +233,11 @@ class NotificationService {
         channelDescription: "Channel Description",
         importance: Importance.high,
         priority: Priority.high,
-        largeIcon: const DrawableResourceAndroidBitmap('@mipmap/ic_launcher'),
-        sound: channel.sound,
         playSound: true,
-        actions: [
-          AndroidNotificationAction('accept_action', 'Open App', showsUserInterface: true,),
-          AndroidNotificationAction('dismiss_action', 'Dismiss', cancelNotification: true,),
-        ],
         styleInformation: BigTextStyleInformation(
-          message.notification!.body ?? '', // Use body as the big text
-          contentTitle: message.notification!.title, // Set title
+          message.notification!.body ?? '',
+          contentTitle: message.notification!.title,
         ),
-        // Add a custom icon
         icon: '@mipmap/ic_launcher',
       );
 
@@ -260,12 +245,8 @@ class NotificationService {
       NotificationDetails(android: androidNotificationDetails);
 
       Future.delayed(Duration.zero, () {
-        // Generate a unique notification ID based on the current timestamp in seconds
-        int uniqueId = DateTime
-            .now()
-            .millisecondsSinceEpoch ~/ 1000;
+        int uniqueId = DateTime.now().millisecondsSinceEpoch ~/ 1000;
 
-        // Show the notification with a unique ID
         _flutterLocalNotificationsPlugin.show(
             uniqueId, // Unique notification ID
             message.notification!.title.toString(), // Notification title
@@ -293,17 +274,33 @@ class NotificationService {
       // Retrieve the screen name from the notification data
       String screen = message.data['screen'];
 
-      // Navigate to the appropriate page based on the screen name
       if (screen == "StaffNotificationPage") {
         Navigator.push(context,
-            MaterialPageRoute(builder: (context) => StaffNotificationPage()));
+            MaterialPageRoute(builder: (context) => const StaffNotificationPage()));
       } else if (screen == "ClientNotificationPage") {
-        // If you have other pages, handle those cases as well
         Navigator.push(context,
-            MaterialPageRoute(builder: (context) => ClientNotificationPage()));
-      } else {
-        Navigator.push(
-            context, MaterialPageRoute(builder: (context) => MyHomePage()));
+            MaterialPageRoute(builder: (context) => const ClientNotificationPage()));
+      } else if (screen == "TermAndCondition") {
+        Navigator.push(context,
+            MaterialPageRoute(builder: (context) => const TC()));
+      } else if (screen == "StaffScreen") {
+        Navigator.push(context,
+            MaterialPageRoute(builder: (context) => const StaffProfileHome()));
+      } else if (screen == "UserScreen") {
+        Navigator.push(context,
+            MaterialPageRoute(builder: (context) => const MyHomePage()));
+      } else if (screen == "UserMap") {
+        Navigator.push(context,
+            MaterialPageRoute(builder: (context) => const MainMap(whichStaff: "all")));
+      } else if (screen == "Feedback") {
+        Navigator.push(context,
+            MaterialPageRoute(builder: (context) => const Feedbacks()));
+      } else if (screen == "StaffDeals") {
+        Navigator.push(context,
+            MaterialPageRoute(builder: (context) => const DealsForStaff()));
+      } else if (screen == "UserDeals") {
+        Navigator.push(context,
+            MaterialPageRoute(builder: (context) => const Deals()));
       }
     } else {
       // Default action if no data is available

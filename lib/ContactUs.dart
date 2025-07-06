@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
@@ -10,6 +9,8 @@ import 'LoaderSupport.dart';
 import 'globle.dart';
 
 class ContactUs extends StatefulWidget {
+  const ContactUs({super.key});
+
   @override
   State<StatefulWidget> createState() => _ContactUs();
 }
@@ -29,7 +30,7 @@ class _ContactUs extends State<ContactUs> {
   }
 
   void _liveLocation() {
-    LocationSettings locationSettings = LocationSettings(
+    LocationSettings locationSettings = const LocationSettings(
       accuracy: LocationAccuracy.high,
       distanceFilter: 100,
     );
@@ -98,7 +99,7 @@ class _ContactUs extends State<ContactUs> {
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 AppBar(
-                  title: Center(
+                  title: const Center(
                     child: Text(
                       "Help Center",
                       style:
@@ -120,8 +121,8 @@ class _ContactUs extends State<ContactUs> {
                     child: Column(
                       children: [
                         // Align "Contact Us" to the left
-                        Padding(
-                          padding: const EdgeInsets.only(left: 20.0, top: 20.0),
+                        const Padding(
+                          padding: EdgeInsets.only(left: 20.0, top: 20.0),
                           child: Align(
                             alignment: Alignment.centerLeft,
                             child: Text(
@@ -142,7 +143,7 @@ class _ContactUs extends State<ContactUs> {
                             decoration: BoxDecoration(
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(10),
-                              boxShadow: [
+                              boxShadow: const [
                                 BoxShadow(
                                   color: Colors.black26,
                                   offset: Offset(0, 2),
@@ -150,9 +151,9 @@ class _ContactUs extends State<ContactUs> {
                                 ),
                               ],
                             ),
-                            child: Center(
+                            child: const Center(
                               child: Padding(
-                                padding: const EdgeInsets.symmetric(
+                                padding: EdgeInsets.symmetric(
                                     horizontal: 10.0),
                                 child: Text(
                                   "Topic Or Question",
@@ -165,12 +166,12 @@ class _ContactUs extends State<ContactUs> {
                         ),
 
                         // Instruction text
-                        Padding(
-                          padding: const EdgeInsets.only(top: 20.0),
+                        const Padding(
+                          padding: EdgeInsets.only(top: 20.0),
                           child: Center(
                             child: Padding(
                               padding:
-                                  const EdgeInsets.symmetric(horizontal: 10.0),
+                                  EdgeInsets.symmetric(horizontal: 10.0),
                               child: Text(
                                 "Please summarize what you would like help with",
                                 style: TextStyle(
@@ -191,7 +192,7 @@ class _ContactUs extends State<ContactUs> {
                             decoration: BoxDecoration(
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(10),
-                              boxShadow: [
+                              boxShadow: const [
                                 BoxShadow(
                                   color: Colors.black26,
                                   offset: Offset(0, 2),
@@ -202,7 +203,7 @@ class _ContactUs extends State<ContactUs> {
                             child: TextField(
                               controller: _descriptionController,
                               maxLines: 4,
-                              decoration: InputDecoration(
+                              decoration: const InputDecoration(
                                 border: InputBorder.none,
                                 hintText: "Type your subjest here...",
                                 contentPadding: EdgeInsets.symmetric(
@@ -213,8 +214,8 @@ class _ContactUs extends State<ContactUs> {
                         ),
 
                         // Align "Any Other Details" to the left
-                        Padding(
-                          padding: const EdgeInsets.only(top: 20.0, left: 20.0),
+                        const Padding(
+                          padding: EdgeInsets.only(top: 20.0, left: 20.0),
                           child: Align(
                             alignment: Alignment.centerLeft,
                             child: Text(
@@ -236,7 +237,7 @@ class _ContactUs extends State<ContactUs> {
                             decoration: BoxDecoration(
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(10),
-                              boxShadow: [
+                              boxShadow: const [
                                 BoxShadow(
                                   color: Colors.black26,
                                   offset: Offset(0, 2),
@@ -247,7 +248,7 @@ class _ContactUs extends State<ContactUs> {
                             child: TextField(
                               controller: _detailsController,
                               maxLines: 4,
-                              decoration: InputDecoration(
+                              decoration: const InputDecoration(
                                 border: InputBorder.none,
                                 hintText: "Type any other details here...",
                                 contentPadding: EdgeInsets.symmetric(
@@ -266,7 +267,7 @@ class _ContactUs extends State<ContactUs> {
                             decoration: BoxDecoration(
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(10),
-                              boxShadow: [
+                              boxShadow: const [
                                 BoxShadow(
                                   color: Colors.black26,
                                   offset: Offset(0, 2),
@@ -276,7 +277,7 @@ class _ContactUs extends State<ContactUs> {
                             ),
                             child: TextField(
                               controller: _fullNameController,
-                              decoration: InputDecoration(
+                              decoration: const InputDecoration(
                                 border: InputBorder.none,
                                 hintText: "Full Name",
                                 contentPadding:
@@ -295,7 +296,7 @@ class _ContactUs extends State<ContactUs> {
                             decoration: BoxDecoration(
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(10),
-                              boxShadow: [
+                              boxShadow: const [
                                 BoxShadow(
                                   color: Colors.black26,
                                   offset: Offset(0, 2),
@@ -305,7 +306,7 @@ class _ContactUs extends State<ContactUs> {
                             ),
                             child: TextField(
                               controller: _emailController,
-                              decoration: InputDecoration(
+                              decoration: const InputDecoration(
                                 border: InputBorder.none,
                                 hintText: "Email",
                                 contentPadding:
@@ -327,17 +328,17 @@ class _ContactUs extends State<ContactUs> {
                                 Fluttertoast.showToast(msg: "Query Submited");
                               });
                             },
-                            child: Text(
-                              "Send Message",
-                              style: TextStyle(color: Colors.black),
-                            ),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.greenAccent,
-                              padding: EdgeInsets.symmetric(
+                              padding: const EdgeInsets.symmetric(
                                   horizontal: 50, vertical: 15),
-                              textStyle: TextStyle(
+                              textStyle: const TextStyle(
                                 fontSize: 15,
                               ),
+                            ),
+                            child: const Text(
+                              "Send Message",
+                              style: TextStyle(color: Colors.black),
                             ),
                           ),
                         ),

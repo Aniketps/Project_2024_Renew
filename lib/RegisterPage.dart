@@ -1,6 +1,6 @@
 import 'package:carehub/LoginPage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -28,8 +28,7 @@ class _RegisterPage extends State<RegisterPage> {
 
   @override
   Widget build(BuildContext context) {
-    final mediaquery = MediaQuery.of(context);
-    final screenWidth = mediaquery.size.width;
+    MediaQuery.of(context);
 
     return Scaffold(
         backgroundColor: Colors.white, body: AndroidView(isStaff: isStaff,));
@@ -87,7 +86,7 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
           Center(
             child: Container(
               width: screenWidth,
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 color: Colors.white,
                 boxShadow: [
                   BoxShadow(
@@ -99,7 +98,7 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                 ],),
               child: Column(
                 children: [
-                  SizedBox(height: 10,),
+                  const SizedBox(height: 10,),
                   Padding(
                     padding:
                     const EdgeInsets.only(right: 30, left: 30, top: 10),
@@ -108,15 +107,15 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                         Container(
                           height: 80,
                           width: 80,
-                          margin: EdgeInsets.only(bottom: 10, top: 20),
+                          margin: const EdgeInsets.only(bottom: 10, top: 20),
                           decoration: BoxDecoration(
                             color: Colors.black,
                             borderRadius: BorderRadius.circular(80),
-                            boxShadow: [
+                            boxShadow: const [
                               BoxShadow(
                                   color: Colors.black12, spreadRadius: 2, blurRadius: 1),
                             ],
-                            image: DecorationImage(
+                            image: const DecorationImage(
                               image: AssetImage("assets/images/logo.png"),
                               fit: BoxFit.none, // No scaling
                               alignment: Alignment.center,
@@ -124,9 +123,9 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                             ),
                           ),
                         ),
-                        SizedBox(width: 10,),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 16.0),
+                        const SizedBox(width: 10,),
+                        const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 16.0),
                           child: Text(
                             "CARENEST \nSTAFF SIGN UP",
                             textAlign: TextAlign.start,
@@ -173,7 +172,7 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                             idToken: googleAuth.idToken,
                           );
 
-                          String? fullName = googleUser?.displayName;
+                          String? fullName = googleUser.displayName;
                           String? firstName;
                           String? lastName;
 
@@ -208,7 +207,6 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                           }
                         } catch (e) {
                           Fluttertoast.showToast(msg: "Error during Google Sign-In");
-                          print("The error is : ${e}");
                         } finally {
                           setState(() {
                             isLoading = false;
@@ -225,7 +223,7 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                             boxShadow: [
                               BoxShadow(
                                 color: Colors.blue.withOpacity(0.3), // optional: softer look
-                                offset: Offset(2, 2), // X: right, Y: bottom
+                                offset: const Offset(2, 2), // X: right, Y: bottom
                                 blurRadius: 4,
                                 spreadRadius: 1,
                               ),
@@ -238,7 +236,7 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                               Container(
                                 height: 40,
                                 width: 40,
-                                decoration: BoxDecoration(
+                                decoration: const BoxDecoration(
                                   image: DecorationImage(
                                     image: AssetImage("assets/images/google.png"),
                                     fit: BoxFit.cover, // No scaling
@@ -247,9 +245,7 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                                   ),
                                 ),
                               ),
-                              Container(
-                                child: Text("Google", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 20),),
-                              )
+                              const Text("Google", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 20),)
                             ],
                           )
                       ),
@@ -260,10 +256,10 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                   isEmailSignIn
                       ? Column(
                     children: [
-                      SizedBox(height: 5,),
-                      Padding(
+                      const SizedBox(height: 5,),
+                      const Padding(
                         padding:
-                        const EdgeInsets.only(right: 30, left: 30, top: 10),
+                        EdgeInsets.only(right: 30, left: 30, top: 10),
                         child: Row(
                           children: [
                             Expanded(
@@ -278,12 +274,12 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                           ],
                         ),
                       ),
-                      SizedBox(height: 5,),
+                      const SizedBox(height: 5,),
 
                       // First name
                       Padding(
                         padding: const EdgeInsets.only(right: 30, left: 30, top: 10),
-                        child: Container(
+                        child: SizedBox(
                           height: 50,
                           child: TextField(
                             onChanged: (value) {
@@ -305,14 +301,14 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(10),
                               ),
-                              contentPadding: EdgeInsets.fromLTRB(20, 16, 16, 16),
+                              contentPadding: const EdgeInsets.fromLTRB(20, 16, 16, 16),
                             ),
                           ),
                         ),
                       ),
                       !isValidFirstName
-                          ? Padding(
-                        padding: const EdgeInsets.only(right: 30, left: 30, top: 5),
+                          ? const Padding(
+                        padding: EdgeInsets.only(right: 30, left: 30, top: 5),
                         child: Row(
                           children: [
                             Text(
@@ -327,7 +323,7 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                       // Last name
                       Padding(
                         padding: const EdgeInsets.only(right: 30, left: 30, top: 10),
-                        child: Container(
+                        child: SizedBox(
                           height: 50,
                           child: TextField(
                             onChanged: (value) {
@@ -349,14 +345,14 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(10),
                               ),
-                              contentPadding: EdgeInsets.fromLTRB(20, 16, 16, 16),
+                              contentPadding: const EdgeInsets.fromLTRB(20, 16, 16, 16),
                             ),
                           ),
                         ),
                       ),
                       !isValidLastName
-                          ? Padding(
-                        padding: const EdgeInsets.only(right: 30, left: 30, top: 5),
+                          ? const Padding(
+                        padding: EdgeInsets.only(right: 30, left: 30, top: 5),
                         child: Row(
                           children: [
                             Text(
@@ -371,7 +367,7 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                       // Email field
                       Padding(
                         padding: const EdgeInsets.only(right: 30, left: 30, top: 10),
-                        child: Container(
+                        child: SizedBox(
                           height: 50,
                           child: TextField(
                             controller: Email,
@@ -389,14 +385,14 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(10),
                               ),
-                              contentPadding: EdgeInsets.fromLTRB(20, 16, 16, 16),
+                              contentPadding: const EdgeInsets.fromLTRB(20, 16, 16, 16),
                             ),
                           ),
                         ),
                       ),
                       !isValidEmail
-                          ? Padding(
-                        padding: const EdgeInsets.only(right: 30, left: 30, top: 5),
+                          ? const Padding(
+                        padding: EdgeInsets.only(right: 30, left: 30, top: 5),
                         child: Row(
                           children: [
                             Text(
@@ -411,7 +407,7 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                       // Password
                       Padding(
                         padding: const EdgeInsets.only(right: 30, left: 30, top: 10),
-                        child: Container(
+                        child: SizedBox(
                           height: 50,
                           child: TextField(
                             controller: Password1,
@@ -426,9 +422,9 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                               hintText: "Enter your password",
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(10),
-                                borderSide: BorderSide(color: Colors.grey, width: 1),
+                                borderSide: const BorderSide(color: Colors.grey, width: 1),
                               ),
-                              contentPadding: EdgeInsets.fromLTRB(20, 16, 16, 16),
+                              contentPadding: const EdgeInsets.fromLTRB(20, 16, 16, 16),
                               suffixIcon: IconButton(
                                 icon: Icon(
                                   _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
@@ -445,8 +441,8 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                         ),
                       ),
                       !isValidPassword
-                          ? Padding(
-                        padding: const EdgeInsets.only(right: 30, left: 30, top: 10),
+                          ? const Padding(
+                        padding: EdgeInsets.only(right: 30, left: 30, top: 10),
                         child: Row(
                           children: [
                             Column(
@@ -468,7 +464,7 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                       Padding(
                         padding:
                         const EdgeInsets.only(right: 30, left: 30, top: 10),
-                        child: Container(
+                        child: SizedBox(
                           height: 50,
                           child: TextField(
                             controller: Password2,
@@ -486,15 +482,15 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                                 borderRadius:
                                 BorderRadius.circular(10), // Rounded border
                               ),
-                              contentPadding: EdgeInsets.fromLTRB(
+                              contentPadding: const EdgeInsets.fromLTRB(
                                   20, 16, 16, 16), // Padding inside the text field
                             ),
                           ),
                         ),
                       ),
                       !isPasswordMatch
-                          ? Padding(
-                        padding: const EdgeInsets.only(right: 30, left: 30, top: 5),
+                          ? const Padding(
+                        padding: EdgeInsets.only(right: 30, left: 30, top: 5),
                         child: Row(
                           children: [
                             Text(
@@ -526,7 +522,7 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                             boxShadow: [
                               BoxShadow(
                                 color: Colors.blue.withOpacity(0.3), // optional: softer look
-                                offset: Offset(2, 2), // X: right, Y: bottom
+                                offset: const Offset(2, 2), // X: right, Y: bottom
                                 blurRadius: 4,
                                 spreadRadius: 1,
                               ),
@@ -537,11 +533,11 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Padding(
-                                padding: EdgeInsets.only(right : 8.0),
+                                padding: const EdgeInsets.only(right : 8.0),
                                 child: Container(
                                   height: 28,
                                   width: 28,
-                                  decoration: BoxDecoration(
+                                  decoration: const BoxDecoration(
                                     image: DecorationImage(
                                       image: AssetImage("assets/images/email.png"),
                                       fit: BoxFit.cover, // No scaling
@@ -551,9 +547,7 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                                   ),
                                 ),
                               ),
-                              Container(
-                                child: Text("Email", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 19),),
-                              )
+                              const Text("Email", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 19),)
                             ],
                           )
                       ),
@@ -572,10 +566,10 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                               Navigator.pushReplacement(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => LoginPage(),
+                                    builder: (context) => const LoginPage(),
                                   ));
                             },
-                            child: Text(
+                            child: const Text(
                               "Already have an account?",
                               style: TextStyle(
                                   fontSize: 12,
@@ -591,7 +585,7 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                       ? Padding(
                     padding:
                     const EdgeInsets.only(right: 30, left: 30, top: 20),
-                    child: Container(
+                    child: SizedBox(
                       height: 45,
                       width: double.infinity, // Make the container full width
                       child: ElevatedButton(
@@ -639,7 +633,7 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                             Fluttertoast.showToast(msg: "Check all Boxes");
                           }
                         },
-                        child: Text("Next", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),),
+                        child: const Text("Next", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),),
                       ),
                     ),
                   )
@@ -668,9 +662,9 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                     ],
                   ),
 
-                  SizedBox(height: 20,),
+                  const SizedBox(height: 20,),
 
-                  Text(
+                  const Text(
                     "By Sign up your agree with our",
                     style: TextStyle(
                         fontSize: 12,
@@ -690,7 +684,7 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                                 throw 'Could not launch ${"https://carenest.ancientcoders.in/Privacy_Policy.html"}';
                               }
                             },
-                            child: Text(
+                            child: const Text(
                               "Privacy Policy, ",
                               style: TextStyle(
                                   fontSize: 12,
@@ -704,7 +698,7 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                                 throw 'Could not launch ${"https://carenest.ancientcoders.in/Terms_Conditions.html"}';
                               }
                             },
-                            child: Text(
+                            child: const Text(
                               "Terms & Conditions, ",
                               style: TextStyle(
                                   fontSize: 12,
@@ -718,7 +712,7 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                                 throw 'Could not launch ${"https://carenest.ancientcoders.in/Refund_Policy.html"}';
                               }
                             },
-                            child: Text(
+                            child: const Text(
                               "Refund Policy",
                               style: TextStyle(
                                   fontSize: 12,
@@ -801,7 +795,7 @@ class _AndroidUserPage extends State<AndroidUserPage> {
     // Wait and retry if location is still disabled
     if (!serviceEnabled) {
       // Retry after a short delay
-      await Future.delayed(Duration(seconds: 1));
+      await Future.delayed(const Duration(seconds: 1));
       serviceEnabled = await Geolocator.isLocationServiceEnabled();
     }
 
@@ -825,7 +819,7 @@ class _AndroidUserPage extends State<AndroidUserPage> {
           Center(
             child: Container(
               width: screenWidth,
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 color: Colors.white,
                 boxShadow: [
                   BoxShadow(
@@ -837,7 +831,7 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                 ],),
               child: Column(
                 children: [
-                  SizedBox(height: 10,),
+                  const SizedBox(height: 10,),
                   // logo title
                   Padding(
                     padding:
@@ -847,15 +841,15 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                         Container(
                           height: 80,
                           width: 80,
-                          margin: EdgeInsets.only(bottom: 10, top: 20),
+                          margin: const EdgeInsets.only(bottom: 10, top: 20),
                           decoration: BoxDecoration(
                             color: Colors.black,
                             borderRadius: BorderRadius.circular(80),
-                            boxShadow: [
+                            boxShadow: const [
                               BoxShadow(
                                   color: Colors.black12, spreadRadius: 2, blurRadius: 1),
                             ],
-                            image: DecorationImage(
+                            image: const DecorationImage(
                               image: AssetImage("assets/images/logo.png"),
                               fit: BoxFit.none, // No scaling
                               alignment: Alignment.center,
@@ -863,9 +857,9 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                             ),
                           ),
                         ),
-                        SizedBox(width: 10,),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 16.0),
+                        const SizedBox(width: 10,),
+                        const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 16.0),
                           child: Text(
                             "CARENEST \nCUSTOMER SIGN UP",
                             textAlign: TextAlign.start,
@@ -917,7 +911,7 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                           await FirebaseAuth.instance.signInWithCredential(credential);
 
                           final User? user = userCredential.user;
-                          String? fullName = googleUser?.displayName;
+                          String? fullName = googleUser.displayName;
 
                           String? firstName;
                           String? lastName;
@@ -935,6 +929,8 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                             final userDocRef = FirebaseFirestore.instance.collection("user").doc(user.uid);
                             final docSnapshot = await userDocRef.get();
 
+                            String? token = await FirebaseMessaging.instance.getToken();
+
                             if (!docSnapshot.exists) {
                               // New user → set full data
                               await userDocRef.set({
@@ -943,25 +939,26 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                                 'Last_name': lastName,
                                 'lat' : lat,
                                 'long' : long,
+                                'token' : token
                               });
                             } else {
                               // Existing user → update only what you want (NOT name)
                               await userDocRef.update({
                                 'lat' : lat,
                                 'long' : long,
+                                'token' : token
                               });
                             }
 
                             // Step 5: Navigate to home page
                             Navigator.pushReplacement(
                               context,
-                              MaterialPageRoute(builder: (context) => MyHomePage()),
+                              MaterialPageRoute(builder: (context) => const MyHomePage()),
                             );
                           }
 
                         } catch (e) {
                           Fluttertoast.showToast(msg: "Error during Google Sign-In");
-                          print("The error is : ${e}");
                         } finally {
                           setState(() {
                             isLoading = false;
@@ -978,7 +975,7 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                             boxShadow: [
                               BoxShadow(
                                 color: Colors.blue.withOpacity(0.3), // optional: softer look
-                                offset: Offset(2, 2), // X: right, Y: bottom
+                                offset: const Offset(2, 2), // X: right, Y: bottom
                                 blurRadius: 4,
                                 spreadRadius: 1,
                               ),
@@ -991,7 +988,7 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                               Container(
                                 height: 40,
                                 width: 40,
-                                decoration: BoxDecoration(
+                                decoration: const BoxDecoration(
                                   image: DecorationImage(
                                     image: AssetImage("assets/images/google.png"),
                                     fit: BoxFit.cover, // No scaling
@@ -1000,9 +997,7 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                                   ),
                                 ),
                               ),
-                              Container(
-                                child: Text("Google", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 20),),
-                              )
+                              const Text("Google", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 20),)
                             ],
                           )
                       ),
@@ -1013,10 +1008,10 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                   isEmailSignIn
                       ? Column(
                     children: [
-                      SizedBox(height: 5,),
-                      Padding(
+                      const SizedBox(height: 5,),
+                      const Padding(
                         padding:
-                        const EdgeInsets.only(right: 30, left: 30, top: 10),
+                        EdgeInsets.only(right: 30, left: 30, top: 10),
                         child: Row(
                           children: [
                             Expanded(
@@ -1031,13 +1026,13 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                           ],
                         ),
                       ),
-                      SizedBox(height: 5,),
+                      const SizedBox(height: 5,),
 
                       // First name
                       Padding(
                         padding:
                         const EdgeInsets.only(right: 30, left: 30, top: 10),
-                        child: Container(
+                        child: SizedBox(
                           height: 50,
                           child: TextField(
                             controller: FirstName,
@@ -1059,15 +1054,15 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(10),
                                 ),
-                                contentPadding: EdgeInsets.fromLTRB(20, 16, 16,
+                                contentPadding: const EdgeInsets.fromLTRB(20, 16, 16,
                                     16) // Adds border around the text field
                             ),
                           ),
                         ),
                       ),
                       !isValidFirstName
-                          ? Padding(
-                        padding: const EdgeInsets.only(right: 30, left: 30, top: 5),
+                          ? const Padding(
+                        padding: EdgeInsets.only(right: 30, left: 30, top: 5),
                         child: Row(
                           children: [
                             Text(
@@ -1083,7 +1078,7 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                       Padding(
                         padding:
                         const EdgeInsets.only(right: 30, left: 30, top: 10),
-                        child: Container(
+                        child: SizedBox(
                           height: 50,
                           child: TextField(
                             controller: LastName,
@@ -1105,15 +1100,15 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(10),
                                 ),
-                                contentPadding: EdgeInsets.fromLTRB(20, 16, 16,
+                                contentPadding: const EdgeInsets.fromLTRB(20, 16, 16,
                                     16) // Adds border around the text field
                             ),
                           ),
                         ),
                       ),
                       !isValidLastName
-                          ? Padding(
-                        padding: const EdgeInsets.only(right: 30, left: 30, top: 5),
+                          ? const Padding(
+                        padding: EdgeInsets.only(right: 30, left: 30, top: 5),
                         child: Row(
                           children: [
                             Text(
@@ -1129,7 +1124,7 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                       Padding(
                         padding:
                         const EdgeInsets.only(right: 30, left: 30, top: 10),
-                        child: Container(
+                        child: SizedBox(
                           height: 50,
                           child: TextField(
                             controller: Email, // Controller for the email input
@@ -1148,15 +1143,15 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                                 borderRadius:
                                 BorderRadius.circular(10), // Rounded border
                               ),
-                              contentPadding: EdgeInsets.fromLTRB(20, 16, 16,
+                              contentPadding: const EdgeInsets.fromLTRB(20, 16, 16,
                                   16), // Adds padding inside the TextField
                             ),
                           ),
                         ),
                       ),
                       !isValidEmail
-                          ? Padding(
-                        padding: const EdgeInsets.only(right: 30, left: 30, top: 5),
+                          ? const Padding(
+                        padding: EdgeInsets.only(right: 30, left: 30, top: 5),
                         child: Row(
                           children: [
                             Text(
@@ -1172,7 +1167,7 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                       Padding(
                         padding:
                         const EdgeInsets.only(right: 30, left: 30, top: 10),
-                        child: Container(
+                        child: SizedBox(
                           height: 50,
                           child: TextField(
                             controller: Password1,
@@ -1201,15 +1196,15 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                                 borderRadius:
                                 BorderRadius.circular(10), // Rounded border
                               ),
-                              contentPadding: EdgeInsets.fromLTRB(
+                              contentPadding: const EdgeInsets.fromLTRB(
                                   20, 16, 16, 16), // Padding inside the text field
                             ),
                           ),
                         ),
                       ),
                       !isValidPassword
-                          ? Padding(
-                        padding: const EdgeInsets.only(right: 30, left: 30, top: 10),
+                          ? const Padding(
+                        padding: EdgeInsets.only(right: 30, left: 30, top: 10),
                         child: Row(
                           children: [
                             Column(
@@ -1231,7 +1226,7 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                       Padding(
                         padding:
                         const EdgeInsets.only(right: 30, left: 30, top: 10),
-                        child: Container(
+                        child: SizedBox(
                           height: 50,
                           child: TextField(
                             controller: Password2,
@@ -1249,15 +1244,15 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                                 borderRadius:
                                 BorderRadius.circular(10), // Rounded border
                               ),
-                              contentPadding: EdgeInsets.fromLTRB(
+                              contentPadding: const EdgeInsets.fromLTRB(
                                   20, 16, 16, 16), // Padding inside the text field
                             ),
                           ),
                         ),
                       ),
                       !isPasswordMatch
-                          ? Padding(
-                        padding: const EdgeInsets.only(right: 30, left: 30, top: 5),
+                          ? const Padding(
+                        padding: EdgeInsets.only(right: 30, left: 30, top: 5),
                         child: Row(
                           children: [
                             Text(
@@ -1289,7 +1284,7 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                             boxShadow: [
                               BoxShadow(
                                 color: Colors.blue.withOpacity(0.3), // optional: softer look
-                                offset: Offset(2, 2), // X: right, Y: bottom
+                                offset: const Offset(2, 2), // X: right, Y: bottom
                                 blurRadius: 4,
                                 spreadRadius: 1,
                               ),
@@ -1300,11 +1295,11 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Padding(
-                                padding: EdgeInsets.only(right : 8.0),
+                                padding: const EdgeInsets.only(right : 8.0),
                                 child: Container(
                                   height: 28,
                                   width: 28,
-                                  decoration: BoxDecoration(
+                                  decoration: const BoxDecoration(
                                     image: DecorationImage(
                                       image: AssetImage("assets/images/email.png"),
                                       fit: BoxFit.cover, // No scaling
@@ -1314,9 +1309,7 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                                   ),
                                 ),
                               ),
-                              Container(
-                                child: Text("Email", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 19),),
-                              )
+                              const Text("Email", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 19),)
                             ],
                           )
                       ),
@@ -1334,10 +1327,10 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                               Navigator.pushReplacement(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => LoginPage(),
+                                    builder: (context) => const LoginPage(),
                                   ));
                             },
-                            child: Text(
+                            child: const Text(
                               "Already have an account?",
                               style: TextStyle(
                                   fontSize: 12,
@@ -1353,7 +1346,7 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                       ? Padding(
                     padding:
                     const EdgeInsets.only(right: 30, left: 30, top: 20),
-                    child: Container(
+                    child: SizedBox(
                       height: 45,
                       width: double.infinity, // Make the container full width
                       child: ElevatedButton(
@@ -1384,6 +1377,7 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                                     .createUserWithEmailAndPassword(
                                     email: email, password: password1);
                                 User? user = usercredential.user;
+                                String? token = await FirebaseMessaging.instance.getToken();
                                 await FirebaseFirestore.instance
                                     .collection("user")
                                     .doc(user?.uid)
@@ -1392,6 +1386,7 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                                   'Password': password1,
                                   'First_name': firstname,
                                   'Last_name': lastname,
+                                  'token' : token
                                 });
                                 user?.sendEmailVerification();
                                 Fluttertoast.showToast(
@@ -1402,7 +1397,7 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                                 Navigator.pushReplacement(
                                     context,
                                     MaterialPageRoute(
-                                      builder: (context) => LoginPage(),
+                                      builder: (context) => const LoginPage(),
                                     ));
                                 setState(() {
                                   isLoading = false;
@@ -1421,7 +1416,6 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                                     toastLength: Toast.LENGTH_LONG,
                                     msg: e.message ?? "An unknown error occurred",
                                   );
-                                  print(e);
                                 }
                               }
                             } else {
@@ -1441,7 +1435,7 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                                 msg: "Fill the blanks");
                           }
                         },
-                        child: Text("Submit", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),),
+                        child: const Text("Submit", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),),
                       ),
                     ),
                   )
@@ -1470,9 +1464,9 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                     ],
                   ),
 
-                  SizedBox(height: 20,),
+                  const SizedBox(height: 20,),
 
-                  Text(
+                  const Text(
                     "By Sign up your agree with our",
                     style: TextStyle(
                         fontSize: 12,
@@ -1492,7 +1486,7 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                                 throw 'Could not launch ${"https://carenest.ancientcoders.in/Privacy_Policy.html"}';
                               }
                             },
-                            child: Text(
+                            child: const Text(
                               "Privacy Policy, ",
                               style: TextStyle(
                                   fontSize: 12,
@@ -1506,7 +1500,7 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                                 throw 'Could not launch ${"https://carenest.ancientcoders.in/Terms_Conditions.html"}';
                               }
                             },
-                            child: Text(
+                            child: const Text(
                               "Terms & Conditions, ",
                               style: TextStyle(
                                   fontSize: 12,
@@ -1520,7 +1514,7 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                                 throw 'Could not launch ${"https://carenest.ancientcoders.in/Refund_Policy.html"}';
                               }
                             },
-                            child: Text(
+                            child: const Text(
                               "Refund Policy",
                               style: TextStyle(
                                   fontSize: 12,
@@ -1563,12 +1557,6 @@ class _AndroidView extends State<AndroidView> {
 
   @override
   Widget build(BuildContext context) {
-    Color StaffColorTrue = Color(0xFF4C9EEB);
-    Color StaffColorFalse = Color(0xFFB0BEC5);
-    Color StaffColor = isStaff? StaffColorTrue : StaffColorFalse;
-    Color UserColorTrue = Color(0xFF4C9EEB);
-    Color UserColorFalse = Color(0xFFB0BEC5);
-    Color UserColor = isStaff? UserColorFalse : UserColorTrue;
     return Stack(
       children: [
         Container(
@@ -1601,7 +1589,7 @@ class _AndroidView extends State<AndroidView> {
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(50),
-                        boxShadow: [
+                        boxShadow: const [
                           BoxShadow(
                             color: Colors.black12,
                             spreadRadius: 2,
@@ -1613,7 +1601,7 @@ class _AndroidView extends State<AndroidView> {
                         children: [
                           // Animated background
                           AnimatedAlign(
-                            duration: Duration(milliseconds: 300),
+                            duration: const Duration(milliseconds: 300),
                             alignment: isStaff ? Alignment.centerLeft : Alignment.centerRight,
                             curve: Curves.easeInOut,
                             child: Container(

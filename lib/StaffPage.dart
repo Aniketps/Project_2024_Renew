@@ -3,9 +3,7 @@ import 'package:carehub/StaffProfilePage.dart';
 import 'package:carehub/services/PaymentServices/PaymentRecordImpl.dart';
 import 'package:carehub/services/PaymentServices/PaymentRecordService.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -14,7 +12,6 @@ import 'ContactUs.dart';
 import 'Deals.dart';
 import 'Feedback.dart';
 import 'LoaderSupport.dart';
-import 'MainMap.dart';
 import 'Models/PaymentRecordModel.dart';
 import 'TC.dart';
 import 'client.dart';
@@ -23,7 +20,7 @@ import 'main.dart';
 
 class StaffPage extends StatefulWidget {
   String Skill;
-  StaffPage({required this.Skill});
+  StaffPage({super.key, required this.Skill});
   @override
   State<StatefulWidget> createState() => _StaffPage(Skill: Skill);
 }
@@ -36,7 +33,7 @@ class _StaffPage extends State<StaffPage> {
     SearchStaff();
   }
   void _liveLocation() {
-    LocationSettings locationSettings = LocationSettings(
+    LocationSettings locationSettings = const LocationSettings(
       accuracy: LocationAccuracy.high,
       distanceFilter: 100,
     );
@@ -69,13 +66,11 @@ class _StaffPage extends State<StaffPage> {
   String SearchGlobal = '';
 
   Future<void> SearchStaff() async {
-    User? user1 = await FirebaseAuth.instance.currentUser;
+    User? user1 = FirebaseAuth.instance.currentUser;
     currentUserID = user1?.uid ?? '';
     CollectionReference user = FirebaseFirestore.instance.collection('user');
     try {
       DocumentSnapshot documentSnapshot = await user.doc(currentUserID).get();
-      CollectionReference documentSnapshotDish =
-          await user.doc(currentUserID).collection("dishes");
 
       if (documentSnapshot.exists) {
         setState(() {
@@ -83,10 +78,8 @@ class _StaffPage extends State<StaffPage> {
           documentID = documentSnapshot.id;
         });
       } else {
-        print("No staff found with ID: $currentUserID");
       }
     } catch (e) {
-      print("Error fetching user by Staff ID: $e");
     }
   }
 
@@ -94,7 +87,7 @@ class _StaffPage extends State<StaffPage> {
   bool isAnyTime = false;
   bool isImmediately = false;
   PaymentRecordModel? paymentRecordModel;
-  PaymentRecordService paymentRecordService = new PaymentRecordImpl();
+  PaymentRecordService paymentRecordService = PaymentRecordImpl();
 
   @override
   Widget build(BuildContext context) {
@@ -128,7 +121,7 @@ class _StaffPage extends State<StaffPage> {
                             width: 80,
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(80),
-                              boxShadow: [
+                              boxShadow: const [
                                 BoxShadow(
                                   blurRadius: 1,
                                   spreadRadius: 1,
@@ -148,7 +141,7 @@ class _StaffPage extends State<StaffPage> {
                             Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => ActualUser(),
+                                  builder: (context) => const ActualUser(),
                                 ));
                           },
                           child: StaffData != null &&
@@ -158,7 +151,7 @@ class _StaffPage extends State<StaffPage> {
                                   width: 80,
                                   decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(80),
-                                    boxShadow: [
+                                    boxShadow: const [
                                       BoxShadow(
                                         blurRadius: 1,
                                         spreadRadius: 1,
@@ -178,7 +171,7 @@ class _StaffPage extends State<StaffPage> {
                                   width: 80,
                                   decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(80),
-                                    boxShadow: [
+                                    boxShadow: const [
                                       BoxShadow(
                                         blurRadius: 1,
                                         spreadRadius: 1,
@@ -189,54 +182,54 @@ class _StaffPage extends State<StaffPage> {
                                 ),
                         ),
                   (StaffData == null)
-                      ? Text(
+                      ? const Text(
                           "Empty",
                           style: TextStyle(
                               fontWeight: FontWeight.bold, fontSize: 18),
                         )
                       : Text(
                           "${StaffData['First_name']} ${StaffData['Last_name']}",
-                          style: TextStyle(
+                          style: const TextStyle(
                               fontWeight: FontWeight.bold, fontSize: 18, color: Colors.white),
                         ),
                 ])),
             ListTile(
-              leading: Icon(Icons.home),
-              title: Text('Home'),
+              leading: const Icon(Icons.home),
+              title: const Text('Home'),
               onTap: () {
                 Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => MyHomePage(),
+                      builder: (context) => const MyHomePage(),
                     ));
               },
             ),
             ListTile(
-              leading: Icon(Icons.history),
-              title: Text('Deals'),
+              leading: const Icon(Icons.history),
+              title: const Text('Deals'),
               onTap: () {
                 Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => Deals(),
+                      builder: (context) => const Deals(),
                     ));
               },
             ),
-            Divider(),
+            const Divider(),
             ListTile(
-              leading: Icon(Icons.headset_mic),
-              title: Text('Contact Us'),
+              leading: const Icon(Icons.headset_mic),
+              title: const Text('Contact Us'),
               onTap: () {
                 Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => ContactUs(),
+                      builder: (context) => const ContactUs(),
                     ));
               },
             ),
             ListTile(
-              leading: Icon(Icons.library_books),
-              title: Text('Terms and Conditions'),
+              leading: const Icon(Icons.library_books),
+              title: const Text('Terms and Conditions'),
               onTap: () {
                 Navigator.push(
                     context,
@@ -246,25 +239,25 @@ class _StaffPage extends State<StaffPage> {
               },
             ),
             ListTile(
-              leading: Icon(Icons.feedback),
-              title: Text('Feedback'),
+              leading: const Icon(Icons.feedback),
+              title: const Text('Feedback'),
               onTap: () {
                 Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => Feedbacks(),
+                      builder: (context) => const Feedbacks(),
                     ));
               },
             ),
-            Divider(),
+            const Divider(),
             ListTile(
-              leading: Icon(Icons.logout),
-              title: Text('Logout'),
+              leading: const Icon(Icons.logout),
+              title: const Text('Logout'),
               onTap: () async {
                 await GoogleSignIn().signOut();
                 await FirebaseAuth.instance.signOut();
                 Navigator.pushReplacement(context,
-                    MaterialPageRoute(builder: (context) => LoginPage()));
+                    MaterialPageRoute(builder: (context) => const LoginPage()));
               },
             ),
           ],
@@ -277,19 +270,19 @@ class _StaffPage extends State<StaffPage> {
             height: 150,
             color: Globle.theme,
             child: AppBar(
-              iconTheme: IconThemeData(
+              iconTheme: const IconThemeData(
                   color: Colors.white,
                   size: 35
               ),
               title: Padding(
                 padding: const EdgeInsets.only(top: 10.0),
-                child: Container(
+                child: SizedBox(
                   width: screenWidth * 0.6,
                   child: Text(
                       overflow: TextOverflow.ellipsis,
                       maxLines: 1,
-                      "${Skill[0].toUpperCase() + Skill.substring(1)}",
-                      style: TextStyle(
+                      Skill[0].toUpperCase() + Skill.substring(1),
+                      style: const TextStyle(
                           fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white)),
                 ),
               ),
@@ -324,7 +317,7 @@ class _StaffPage extends State<StaffPage> {
                               fit: BoxFit.cover, // Adjust the fit if necessary
                             ),
                             borderRadius: BorderRadius.circular(50),
-                            boxShadow: [
+                            boxShadow: const [
                               BoxShadow(
                                   color: Colors.black26,
                                   spreadRadius: 1,
@@ -338,7 +331,7 @@ class _StaffPage extends State<StaffPage> {
                           Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => ActualUser(),
+                                builder: (context) => const ActualUser(),
                               ));
                         },
                         child: StaffData != null &&
@@ -354,7 +347,7 @@ class _StaffPage extends State<StaffPage> {
                                         .cover, // Adjust the fit if necessary
                                   ),
                                   borderRadius: BorderRadius.circular(50),
-                                  boxShadow: [
+                                  boxShadow: const [
                                     BoxShadow(
                                         color: Colors.black26,
                                         spreadRadius: 1,
@@ -367,7 +360,7 @@ class _StaffPage extends State<StaffPage> {
                                 width: 50,
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(50),
-                                  boxShadow: [
+                                  boxShadow: const [
                                     BoxShadow(
                                         color: Colors.black26,
                                         spreadRadius: 1,
@@ -384,334 +377,326 @@ class _StaffPage extends State<StaffPage> {
             children: [
               Padding(
                 padding: const EdgeInsets.only(top: 125),
-                child: Container(
-                  child: Column(
-                    children: [
-                      // Search bar
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 5),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Container(
-                              margin: EdgeInsets.symmetric(
-                                  horizontal: screenWidth * 0.03),
-                              width: screenWidth * 0.73,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(5),
-                                color: Colors.white,
-                                boxShadow: [
-                                  BoxShadow(
-                                      spreadRadius: 1,
-                                      color: Colors.black26,
-                                      blurRadius: 1)
-                                ],
-                              ),
-                              child: Row(
-                                children: [
-                                  Padding(
-                                    padding: const EdgeInsets.only(left: 10),
-                                    child: Icon(Icons.search,
-                                        color: Colors.blue, size: 25),
-                                  ),
-                                  Expanded(
-                                    child: TextField(
-                                      onChanged: (value) {
-                                        setState(() {
-                                          SearchGlobal = value;
-                                        });
-                                      },
-                                      decoration: InputDecoration(
-                                        border: InputBorder.none,
-                                        hintText: 'Search...',
-                                        contentPadding:
-                                            const EdgeInsets.symmetric(
-                                                horizontal: 10),
-                                      ),
+                child: Column(
+                  children: [
+                    // Search bar
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 5),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Container(
+                            margin: EdgeInsets.symmetric(
+                                horizontal: screenWidth * 0.03),
+                            width: screenWidth * 0.73,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(5),
+                              color: Colors.white,
+                              boxShadow: const [
+                                BoxShadow(
+                                    spreadRadius: 1,
+                                    color: Colors.black26,
+                                    blurRadius: 1)
+                              ],
+                            ),
+                            child: Row(
+                              children: [
+                                const Padding(
+                                  padding: EdgeInsets.only(left: 10),
+                                  child: Icon(Icons.search,
+                                      color: Colors.blue, size: 25),
+                                ),
+                                Expanded(
+                                  child: TextField(
+                                    onChanged: (value) {
+                                      setState(() {
+                                        SearchGlobal = value;
+                                      });
+                                    },
+                                    decoration: const InputDecoration(
+                                      border: InputBorder.none,
+                                      hintText: 'Search...',
+                                      contentPadding:
+                                          EdgeInsets.symmetric(
+                                              horizontal: 10),
                                     ),
                                   ),
-                                ],
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.only(right: 8),
-                              child: InkWell(
-                                onTap: () {
-                                  setState(() {
-                                    isFilter = !isFilter;
-                                  });
-                                },
-                                child: Container(
-                                  height: 50,
-                                  width: screenWidth * 0.18,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(5),
-                                    color: Colors.white,
-                                    boxShadow: [
-                                      BoxShadow(
-                                          spreadRadius: 1,
-                                          color: Colors.black26,
-                                          blurRadius: 1),
-                                    ],
-                                  ),
-                                  child: Icon(Icons.filter_list_sharp,
-                                      size: 30, color: Colors.blue),
                                 ),
+                              ],
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(right: 8),
+                            child: InkWell(
+                              onTap: () {
+                                setState(() {
+                                  isFilter = !isFilter;
+                                });
+                              },
+                              child: Container(
+                                height: 50,
+                                width: screenWidth * 0.18,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(5),
+                                  color: Colors.white,
+                                  boxShadow: const [
+                                    BoxShadow(
+                                        spreadRadius: 1,
+                                        color: Colors.black26,
+                                        blurRadius: 1),
+                                  ],
+                                ),
+                                child: const Icon(Icons.filter_list_sharp,
+                                    size: 30, color: Colors.blue),
                               ),
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
+                    ),
 
-                      Expanded(
-                        child: StreamBuilder<QuerySnapshot>(
-                          stream: FirebaseFirestore.instance
-                              .collection(Skill)
-                              .snapshots(),
-                          builder: (context, snapshot) {
-                            List<Row> chefViews = [];
-                            if (snapshot.hasData) {
-                              final chefs =
-                                  snapshot.data?.docs.reversed.toList();
-                              for (var chef in chefs!) {
-                                PaymentRecordModel? paymentRecordModel;
+                    Expanded(
+                      child: StreamBuilder<QuerySnapshot>(
+                        stream: FirebaseFirestore.instance
+                            .collection(Skill)
+                            .snapshots(),
+                        builder: (context, snapshot) {
+                          List<Row> chefViews = [];
+                          if (snapshot.hasData) {
+                            final chefs =
+                                snapshot.data?.docs.reversed.toList();
+                            for (var chef in chefs!) {
 
-                                Row rowCopy = Row(
-                                  children: [
-                                    Padding(
-                                      padding: const EdgeInsets.all(8.0),
-                                      child: InkWell(
-                                        onTap: () {
+                              Row rowCopy = Row(
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: InkWell(
+                                      onTap: () {
 
-                                          Navigator.push(
-                                            context,
-                                            PageRouteBuilder(
-                                              transitionDuration: const Duration(milliseconds: 500),
-                                              pageBuilder: (context, animation, secondaryAnimation) => StaffProfilePage(
-                                                  StaffID: chef.id,
-                                                  Skill: Skill),
-                                              transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                                                const begin = Offset(1.0, 0.0); // From bottom
-                                                const end = Offset.zero;
-                                                const curve = Curves.easeOut;
+                                        Navigator.push(
+                                          context,
+                                          PageRouteBuilder(
+                                            transitionDuration: const Duration(milliseconds: 500),
+                                            pageBuilder: (context, animation, secondaryAnimation) => StaffProfilePage(
+                                                StaffID: chef.id,
+                                                Skill: Skill),
+                                            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                                              const begin = Offset(1.0, 0.0); // From bottom
+                                              const end = Offset.zero;
+                                              const curve = Curves.easeOut;
 
-                                                final tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-                                                final offsetAnimation = animation.drive(tween);
+                                              final tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+                                              final offsetAnimation = animation.drive(tween);
 
-                                                return SlideTransition(
-                                                  position: offsetAnimation,
-                                                  child: child,
-                                                );
-                                              },
-                                            ),
-                                          );
-                                        },
-                                        child: Container(
-                                          height: screenHeight * 0.15,
-                                          width: screenWidth * 0.95,
-                                          decoration: BoxDecoration(
-                                              color: Colors.white,
-                                              borderRadius:
-                                              BorderRadius.circular(5),
-                                              boxShadow: [
-                                                BoxShadow(
-                                                    color: Colors.black26,
-                                                    blurRadius: 1,
-                                                    spreadRadius: 1)
-                                              ]),
-                                          child: Padding(
-                                            padding: const EdgeInsets.only(
-                                                top: 10),
-                                            child: Container(
-                                              child: Row(
-                                                crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                                children: [
-                                                  Padding(
-                                                    padding:
-                                                    const EdgeInsets.all(
-                                                        10.0),
-                                                    child: Container(
-                                                      height: 75,
-                                                      width: 75,
-                                                      decoration:
-                                                      BoxDecoration(
-                                                        borderRadius:
-                                                        BorderRadius
-                                                            .circular(50),
-                                                        color: Colors.orange,
-                                                        image:
-                                                        DecorationImage(
-                                                          image: NetworkImage(
-                                                              chef[
-                                                              'Profile_Pic']),
-                                                          fit: BoxFit
-                                                              .cover, // Adjust the fit if necessary
-                                                        ),
-                                                      ),
+                                              return SlideTransition(
+                                                position: offsetAnimation,
+                                                child: child,
+                                              );
+                                            },
+                                          ),
+                                        );
+                                      },
+                                      child: Container(
+                                        height: screenHeight * 0.15,
+                                        width: screenWidth * 0.95,
+                                        decoration: BoxDecoration(
+                                            color: Colors.white,
+                                            borderRadius:
+                                            BorderRadius.circular(5),
+                                            boxShadow: const [
+                                              BoxShadow(
+                                                  color: Colors.black26,
+                                                  blurRadius: 1,
+                                                  spreadRadius: 1)
+                                            ]),
+                                        child: Padding(
+                                          padding: const EdgeInsets.only(
+                                              top: 10),
+                                          child: Row(
+                                            crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                            children: [
+                                              Padding(
+                                                padding:
+                                                const EdgeInsets.all(
+                                                    10.0),
+                                                child: Container(
+                                                  height: 75,
+                                                  width: 75,
+                                                  decoration:
+                                                  BoxDecoration(
+                                                    borderRadius:
+                                                    BorderRadius
+                                                        .circular(50),
+                                                    color: Colors.orange,
+                                                    image:
+                                                    DecorationImage(
+                                                      image: NetworkImage(
+                                                          chef[
+                                                          'Profile_Pic']),
+                                                      fit: BoxFit
+                                                          .cover, // Adjust the fit if necessary
                                                     ),
                                                   ),
-                                                  Padding(
-                                                    padding:
-                                                    const EdgeInsets.only(
-                                                        top: 10,
-                                                        right: 5,
-                                                        bottom: 40),
-                                                    child: Container(
-                                                      child: Column(
-                                                        crossAxisAlignment:
-                                                        CrossAxisAlignment
-                                                            .start,
-                                                        children: [
-                                                          Text(
-                                                            "${chef['First_name']} ${chef['Last_name']}",
-                                                            style: TextStyle(
-                                                                fontWeight:
-                                                                FontWeight
-                                                                    .bold,
-                                                                fontSize: 12),
-                                                          ),
-                                                          Row(
-                                                            mainAxisAlignment:
-                                                            MainAxisAlignment
-                                                                .start,
-                                                            children: [
-                                                              Text(
-                                                                  chef["Status"]
-                                                                      ? "Available"
-                                                                      : "Busy",
-                                                                  style: TextStyle(
-                                                                      color: Colors
-                                                                          .green)),
-                                                              Text(" | "),
-                                                              Text(
-                                                                  "${chef['Rating']}",
-                                                                  style: TextStyle(
-                                                                      color: Colors
-                                                                          .green))
-                                                            ],
-                                                          )
-                                                        ],
-                                                      ),
-                                                    ),
-                                                  ),
-                                                  Container(
-                                                    width: screenWidth * 0.3,
-                                                    height:
-                                                    screenHeight * 0.2,
-                                                    child: Column(
-                                                      crossAxisAlignment:
-                                                      CrossAxisAlignment
-                                                          .center,
-                                                      children: [
-                                                        Padding(
-                                                          padding:
-                                                          const EdgeInsets
-                                                              .only(
-                                                              bottom: 10),
-                                                          child: Text(
-                                                            chef['City'],
-                                                            style: TextStyle(
-                                                                fontSize: 14,
-                                                                fontWeight:
-                                                                FontWeight
-                                                                    .bold),
-                                                          ),
-                                                        ),
-                                                        Container(
-                                                          height: 40,
-                                                          width: 120,
-                                                          decoration: BoxDecoration(
-                                                              borderRadius:
-                                                              BorderRadius
-                                                                  .circular(
-                                                                  15),
-                                                              color: Colors.white,
-                                                              boxShadow: [
-                                                                BoxShadow(
-                                                                    color: Colors
-                                                                        .black26,
-                                                                    spreadRadius:
-                                                                    1,
-                                                                    blurRadius:
-                                                                    1)
-                                                              ]),
-                                                          child: Center(
-                                                              child: Padding(
-                                                                padding:
-                                                                const EdgeInsets
-                                                                    .all(3.0),
-                                                                child: Text(
-                                                                  "${Skill[0].toUpperCase() + Skill.substring(1)}",
-                                                                  overflow:
-                                                                  TextOverflow
-                                                                      .ellipsis,
-                                                                  maxLines: 1,
-                                                                  style: TextStyle(
-                                                                      fontWeight:
-                                                                      FontWeight
-                                                                          .bold,
-                                                                      color: Colors
-                                                                          .green,
-                                                                      fontSize:
-                                                                      15),
-                                                                ),
-                                                              )),
-                                                        )
-                                                      ],
-                                                    ),
-                                                  ),
-                                                ],
+                                                ),
                                               ),
-                                            ),
+                                              Padding(
+                                                padding:
+                                                const EdgeInsets.only(
+                                                    top: 10,
+                                                    right: 5,
+                                                    bottom: 40),
+                                                child: Column(
+                                                  crossAxisAlignment:
+                                                  CrossAxisAlignment
+                                                      .start,
+                                                  children: [
+                                                    Text(
+                                                      "${chef['First_name']} ${chef['Last_name']}",
+                                                      style: const TextStyle(
+                                                          fontWeight:
+                                                          FontWeight
+                                                              .bold,
+                                                          fontSize: 12),
+                                                    ),
+                                                    Row(
+                                                      mainAxisAlignment:
+                                                      MainAxisAlignment
+                                                          .start,
+                                                      children: [
+                                                        Text(
+                                                            chef["Status"]
+                                                                ? "Online"
+                                                                : "Offline",
+                                                            style: const TextStyle(
+                                                                color: Colors
+                                                                    .green)),
+                                                        const Text(" | "),
+                                                        Text(
+                                                            "${chef['Rating']}",
+                                                            style: const TextStyle(
+                                                                color: Colors
+                                                                    .green))
+                                                      ],
+                                                    )
+                                                  ],
+                                                ),
+                                              ),
+                                              SizedBox(
+                                                width: screenWidth * 0.3,
+                                                height:
+                                                screenHeight * 0.2,
+                                                child: Column(
+                                                  crossAxisAlignment:
+                                                  CrossAxisAlignment
+                                                      .center,
+                                                  children: [
+                                                    Padding(
+                                                      padding:
+                                                      const EdgeInsets
+                                                          .only(
+                                                          bottom: 10),
+                                                      child: Text(
+                                                        chef['City'],
+                                                        style: const TextStyle(
+                                                            fontSize: 14,
+                                                            fontWeight:
+                                                            FontWeight
+                                                                .bold),
+                                                      ),
+                                                    ),
+                                                    Container(
+                                                      height: 40,
+                                                      width: 120,
+                                                      decoration: BoxDecoration(
+                                                          borderRadius:
+                                                          BorderRadius
+                                                              .circular(
+                                                              15),
+                                                          color: Colors.white,
+                                                          boxShadow: const [
+                                                            BoxShadow(
+                                                                color: Colors
+                                                                    .black26,
+                                                                spreadRadius:
+                                                                1,
+                                                                blurRadius:
+                                                                1)
+                                                          ]),
+                                                      child: Center(
+                                                          child: Padding(
+                                                            padding:
+                                                            const EdgeInsets
+                                                                .all(3.0),
+                                                            child: Text(
+                                                              Skill[0].toUpperCase() + Skill.substring(1),
+                                                              overflow:
+                                                              TextOverflow
+                                                                  .ellipsis,
+                                                              maxLines: 1,
+                                                              style: const TextStyle(
+                                                                  fontWeight:
+                                                                  FontWeight
+                                                                      .bold,
+                                                                  color: Colors
+                                                                      .green,
+                                                                  fontSize:
+                                                                  15),
+                                                            ),
+                                                          )),
+                                                    )
+                                                  ],
+                                                ),
+                                              ),
+                                            ],
                                           ),
                                         ),
                                       ),
-                                    )
-                                  ],
-                                );
-                                DateTime now = DateTime.now();
-                                final data = chef.data() as Map<String, dynamic>;
-                                if(data.containsKey("expire") && data["expire"].toDate().isAfter(now))
-                                {
-                                  if (isAnyTime) {
-                                    if (chef["Verified"] == "verified" &&
-                                        !chef["Status"]) {
-                                      final chefView = rowCopy;
-                                      chefViews.add(chefView);
-                                    }
-                                  }
-                                  if (isImmediately) {
-                                    if (chef["Verified"] == "verified" &&
-                                        chef["Status"]) {
-                                      final chefView = rowCopy;
-                                      chefViews.add(chefView);
-                                    }
-                                  }
+                                    ),
+                                  )
+                                ],
+                              );
+                              DateTime now = DateTime.now();
+                              final data = chef.data() as Map<String, dynamic>;
+                              if(data.containsKey("expire") && data["expire"].toDate().isAfter(now))
+                              {
+                                if (isAnyTime) {
                                   if (chef["Verified"] == "verified" &&
-                                      !isImmediately &&
-                                      !isAnyTime) {
+                                      !chef["Status"]) {
                                     final chefView = rowCopy;
                                     chefViews.add(chefView);
                                   }
                                 }
-                                else{
-                                  print("All Expired");
+                                if (isImmediately) {
+                                  if (chef["Verified"] == "verified" &&
+                                      chef["Status"]) {
+                                    final chefView = rowCopy;
+                                    chefViews.add(chefView);
+                                  }
+                                }
+                                if (chef["Verified"] == "verified" &&
+                                    !isImmediately &&
+                                    !isAnyTime) {
+                                  final chefView = rowCopy;
+                                  chefViews.add(chefView);
                                 }
                               }
+                              else{
+                              }
                             }
-                            if(chefViews.isEmpty){
-                              return Center(child: Text("No Staff", style: TextStyle(fontSize: 24),));
-                            }
-                            return ListView(
-                              padding: EdgeInsets.zero,
-                              children: chefViews,
-                            );
-                          },
-                        ),
+                          }
+                          if(chefViews.isEmpty){
+                            return const Center(child: Text("No Staff", style: TextStyle(fontSize: 24),));
+                          }
+                          return ListView(
+                            padding: EdgeInsets.zero,
+                            children: chefViews,
+                          );
+                        },
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
 
@@ -719,12 +704,12 @@ class _StaffPage extends State<StaffPage> {
                   ? Positioned(
                       right: 0,
                       child: Container(
-                        margin: EdgeInsets.only(top: 180),
+                        margin: const EdgeInsets.only(top: 180),
                         height: 200,
                         width: 200,
                         decoration: BoxDecoration(
                             color: Colors.white,
-                            borderRadius: BorderRadius.only(
+                            borderRadius: const BorderRadius.only(
                                 bottomLeft: Radius.circular(15),
                                 topLeft: Radius.circular(15)),
                             border: Border.all(color: Colors.blue, width: 1)),
@@ -733,12 +718,12 @@ class _StaffPage extends State<StaffPage> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
+                              const Text(
                                 "Availability",
                                 style: TextStyle(
                                     fontSize: 18, fontWeight: FontWeight.bold),
                               ),
-                              SizedBox(
+                              const SizedBox(
                                 height: 5,
                               ),
                               Column(
@@ -756,21 +741,21 @@ class _StaffPage extends State<StaffPage> {
                                           color: isImmediately
                                               ? Colors.green
                                               : Colors.white,
-                                          borderRadius: BorderRadius.all(
+                                          borderRadius: const BorderRadius.all(
                                               Radius.circular(10)),
-                                          boxShadow: [
+                                          boxShadow: const [
                                             BoxShadow(
                                                 blurRadius: 1,
                                                 color: Colors.blue,
                                                 spreadRadius: 1)
                                           ]),
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(8.0),
+                                      child: const Padding(
+                                        padding: EdgeInsets.all(8.0),
                                         child: Text("Immediately"),
                                       ),
                                     ),
                                   ),
-                                  SizedBox(
+                                  const SizedBox(
                                     height: 5,
                                   ),
                                   InkWell(
@@ -785,16 +770,16 @@ class _StaffPage extends State<StaffPage> {
                                           color: isAnyTime
                                               ? Colors.green
                                               : Colors.white,
-                                          borderRadius: BorderRadius.all(
+                                          borderRadius: const BorderRadius.all(
                                               Radius.circular(10)),
-                                          boxShadow: [
+                                          boxShadow: const [
                                             BoxShadow(
                                                 blurRadius: 1,
                                                 color: Colors.blue,
                                                 spreadRadius: 1)
                                           ]),
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(8.0),
+                                      child: const Padding(
+                                        padding: EdgeInsets.all(8.0),
                                         child: Text("Any Time"),
                                       ),
                                     ),
@@ -824,7 +809,7 @@ class _StaffPage extends State<StaffPage> {
                               decoration: BoxDecoration(
                                   color: Colors.white,
                                   borderRadius: BorderRadius.circular(5),
-                                  boxShadow: [
+                                  boxShadow: const [
                                     BoxShadow(
                                         color: Colors.black26,
                                         spreadRadius: 1,
@@ -844,13 +829,13 @@ class _StaffPage extends State<StaffPage> {
 
                                   if (!snapshot.hasData ||
                                       snapshot.data!.docs.isEmpty) {
-                                    return Center(
+                                    return const Center(
                                       child: Text("No Users Found"),
                                     );
                                   }
 
                                   if (SearchGlobal.isEmpty) {
-                                    return Center(child: Text("Empty"));
+                                    return const Center(child: Text("Empty"));
                                   }
 
                                   return ListView.builder(
@@ -894,7 +879,7 @@ class _StaffPage extends State<StaffPage> {
                                                     color: Colors.white,
                                                     borderRadius:
                                                     BorderRadius.circular(5),
-                                                    boxShadow: [
+                                                    boxShadow: const [
                                                       BoxShadow(
                                                           color: Colors.black26,
                                                           spreadRadius: 1,
@@ -925,7 +910,7 @@ class _StaffPage extends State<StaffPage> {
                                                       padding:
                                                       const EdgeInsets.only(
                                                           left: 10),
-                                                      child: Container(
+                                                      child: SizedBox(
                                                           width: 150,
                                                           child: Text(
                                                             "${data['First_name']} ${data['Last_name']}",
@@ -943,7 +928,7 @@ class _StaffPage extends State<StaffPage> {
                                                             .toUpperCase() +
                                                             data['City']
                                                                 .substring(1),
-                                                        style: TextStyle(
+                                                        style: const TextStyle(
                                                             color: Colors.green,
                                                             fontWeight:
                                                             FontWeight.bold),
@@ -985,7 +970,7 @@ class _StaffPage extends State<StaffPage> {
                                                     color: Colors.white,
                                                     borderRadius:
                                                     BorderRadius.circular(15),
-                                                    boxShadow: [
+                                                    boxShadow: const [
                                                       BoxShadow(
                                                           color: Colors.black26,
                                                           spreadRadius: 1,
@@ -1016,7 +1001,7 @@ class _StaffPage extends State<StaffPage> {
                                                       padding:
                                                       const EdgeInsets.only(
                                                           left: 10),
-                                                      child: Container(
+                                                      child: SizedBox(
                                                           width: 150,
                                                           child: Text(
                                                             "${data['First_name']} ${data['Last_name']}",
@@ -1034,7 +1019,7 @@ class _StaffPage extends State<StaffPage> {
                                                             .toUpperCase() +
                                                             data['City']
                                                                 .substring(1),
-                                                        style: TextStyle(
+                                                        style: const TextStyle(
                                                             color: Colors.green,
                                                             fontWeight:
                                                             FontWeight.bold),

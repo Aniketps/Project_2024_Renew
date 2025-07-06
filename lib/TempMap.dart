@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -13,7 +12,7 @@ import 'globle.dart';
 class TempMap extends StatefulWidget {
   String lat;
   String long;
-  TempMap({required this.lat, required this.long});
+  TempMap({super.key, required this.lat, required this.long});
 
   @override
   State<TempMap> createState() => _TempMapState(lat: lat, long: long);
@@ -35,11 +34,10 @@ class _TempMapState extends State<TempMap> {
       List<Placemark> placemarks = await placemarkFromCoordinates(lat, long);
       if (placemarks.isNotEmpty) {
         setState(() {
-          localityName = "${placemarks.first.street},${placemarks.first.locality}" ?? "Unknown Location";
+          localityName = "${placemarks.first.street},${placemarks.first.locality}";
         });
       }
     } catch (e) {
-      print("Error fetching locality: $e");
     }
   }
 
@@ -47,7 +45,7 @@ class _TempMapState extends State<TempMap> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Destination"),
+        title: const Text("Destination"),
         backgroundColor: Globle.theme,
       ),
       body: Stack(
@@ -66,7 +64,7 @@ class _TempMapState extends State<TempMap> {
                 MarkerLayer(markers: [
                   Marker(
                     point: LatLng(double.parse(lat), double.parse(long)),
-                    child: Icon(
+                    child: const Icon(
                       Icons.location_pin,
                       color: Colors.red,
                       size: 50.0,
@@ -79,14 +77,14 @@ class _TempMapState extends State<TempMap> {
             left: 20,
             right: 20,
             child: Container(
-              padding: EdgeInsets.all(10),
+              padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
                 color: Colors.black54,
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Text(
                 localityName,
-                style: TextStyle(color: Colors.white, fontSize: 16),
+                style: const TextStyle(color: Colors.white, fontSize: 16),
                 textAlign: TextAlign.center,
               ),
             ),
@@ -99,6 +97,8 @@ class _TempMapState extends State<TempMap> {
 
 
 class SelectDestination extends StatefulWidget {
+  const SelectDestination({super.key});
+
   @override
   _SelectDestinationState createState() => _SelectDestinationState();
 }
@@ -106,7 +106,7 @@ class SelectDestination extends StatefulWidget {
 class _SelectDestinationState extends State<SelectDestination> {
   late double currentUserLat;
   late double currentUserLong;
-  LatLng selectedLocation = LatLng(0.0, 0.0);
+  LatLng selectedLocation = const LatLng(0.0, 0.0);
   String localityName = "Loading...";
   final MapController _mapController = MapController();
   bool isLoading = true;
@@ -135,14 +135,13 @@ class _SelectDestinationState extends State<SelectDestination> {
           });
 
           // ✅ Move map AFTER build to avoid errors
-          Future.delayed(Duration(milliseconds: 300), () {
+          Future.delayed(const Duration(milliseconds: 300), () {
             _mapController.move(selectedLocation, 16);
           });
 
           getLocalityName(currentUserLat, currentUserLong);
         } else {
           setState(() => isLoading = false);
-          print("User location document does not exist.");
         }
       }
     } catch (e) {
@@ -156,11 +155,10 @@ class _SelectDestinationState extends State<SelectDestination> {
       List<Placemark> placemarks = await placemarkFromCoordinates(lat, long);
       if (placemarks.isNotEmpty) {
         setState(() {
-          localityName = "${placemarks.first.street},${placemarks.first.locality}" ?? "Unknown Location";
+          localityName = "${placemarks.first.street},${placemarks.first.locality}";
         });
       }
     } catch (e) {
-      print("Error fetching locality: $e");
     }
   }
 
@@ -179,14 +177,14 @@ class _SelectDestinationState extends State<SelectDestination> {
   Widget build(BuildContext context) {
     if (isLoading) {
       return Scaffold(
-        appBar: AppBar(title: Text("Select Destination")),
-        body: Center(child: CircularProgressIndicator()),
+        appBar: AppBar(title: const Text("Select Destination")),
+        body: const Center(child: CircularProgressIndicator()),
       );
     }
 
     return Scaffold(
       appBar: AppBar(
-        title: Text("Select Destination", style: TextStyle(color : Colors.white),),
+        title: const Text("Select Destination", style: TextStyle(color : Colors.white),),
         backgroundColor: Globle.theme,
       ),
       body: Stack(
@@ -219,7 +217,7 @@ class _SelectDestinationState extends State<SelectDestination> {
           ),
 
           // Centered Marker
-          Center(
+          const Center(
             child: Icon(
               Icons.location_on,
               color: Colors.red,
@@ -233,14 +231,14 @@ class _SelectDestinationState extends State<SelectDestination> {
             left: 20,
             right: 20,
             child: Container(
-              padding: EdgeInsets.all(10),
+              padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
                 color: Colors.black54,
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Text(
                 localityName,
-                style: TextStyle(color: Colors.white, fontSize: 16),
+                style: const TextStyle(color: Colors.white, fontSize: 16),
                 textAlign: TextAlign.center,
               ),
             ),
@@ -258,12 +256,12 @@ class _SelectDestinationState extends State<SelectDestination> {
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.blue,
-                padding: EdgeInsets.symmetric(vertical: 15),
+                padding: const EdgeInsets.symmetric(vertical: 15),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
                 ),
               ),
-              child: Text("Confirm Location", style: TextStyle(fontSize: 18, color: Colors.white)),
+              child: const Text("Confirm Location", style: TextStyle(fontSize: 18, color: Colors.white)),
             ),
           ),
         ],

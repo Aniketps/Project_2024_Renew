@@ -1,9 +1,7 @@
 import 'dart:async';
-import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -11,8 +9,6 @@ import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:url_launcher/url_launcher.dart';
-import 'package:url_launcher/url_launcher_string.dart';
 
 import 'LoaderSupport.dart';
 import 'StaffProfilePage.dart';
@@ -124,7 +120,6 @@ class _MainMapState extends State<MainMap> {
         _mapController.move(LatLng(searchedlat, searchedlong), 14.0);
       }
     } catch (e) {
-      print("Error: $e");
     }
   }
 
@@ -151,7 +146,6 @@ class _MainMapState extends State<MainMap> {
           setState(() {
             isLoading = false;
           });
-          print("Document does not exist");
         }
       }
     } catch (e) {
@@ -188,7 +182,6 @@ class _MainMapState extends State<MainMap> {
               if(data.containsKey("expire") && (data["expire"] as Timestamp).toDate().isAfter(now)){
                 if (StatffsData?['Status'] == true) {
                   String StaffID = doc.id;
-                  print("The uid is : $StaffID");
                   String Skill = professionOfStaff;
 
                   setState(() {
@@ -288,7 +281,6 @@ class _MainMapState extends State<MainMap> {
               }
             }
           } catch (e) {
-            print('Error fetching document for ${doc.id}: $e');
           }
         }
         if (data['lat'] != null &&
@@ -362,12 +354,10 @@ class _MainMapState extends State<MainMap> {
                     ),
                   );
                 },
-                child: Container(
-                  child: CircleAvatar(
-                    radius: 15.0,
-                    backgroundImage: NetworkImage(staffLocation.Profile_Pic),
-                    backgroundColor: color,
-                  ),
+                child: CircleAvatar(
+                  radius: 15.0,
+                  backgroundImage: NetworkImage(staffLocation.Profile_Pic),
+                  backgroundColor: color,
                 ),
               ),
             ),
@@ -379,7 +369,6 @@ class _MainMapState extends State<MainMap> {
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
-    final screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
       body: Stack(
@@ -392,8 +381,8 @@ class _MainMapState extends State<MainMap> {
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 AppBar(
-                  title: Padding(
-                    padding: const EdgeInsets.only(bottom: 25),
+                  title: const Padding(
+                    padding: EdgeInsets.only(bottom: 25),
                     child: Center(
                       child: Text("Map",
                           style: TextStyle(
@@ -441,7 +430,7 @@ class _MainMapState extends State<MainMap> {
                                                     point: item.location,
                                                     width: 80,
                                                     height: 80,
-                                                    child: Icon(
+                                                    child: const Icon(
                                                       Icons.location_history,
                                                       size: 30,
                                                       color: Colors.red,
@@ -456,7 +445,7 @@ class _MainMapState extends State<MainMap> {
                                                     currentUserlong), // Corrected point format
                                                 width: 80.0,
                                                 height: 80.0,
-                                                child: Icon(
+                                                child: const Icon(
                                                   Icons.my_location,
                                                   color: Colors.green,
                                                   size: 30.0,
@@ -507,7 +496,7 @@ class _MainMapState extends State<MainMap> {
                                       decoration: BoxDecoration(
                                         borderRadius: BorderRadius.circular(5),
                                         color: Colors.white,
-                                        boxShadow: [
+                                        boxShadow: const [
                                           BoxShadow(
                                               spreadRadius: 1,
                                               color: Colors.black26,
@@ -516,9 +505,9 @@ class _MainMapState extends State<MainMap> {
                                       ),
                                       child: Row(
                                         children: [
-                                          Padding(
+                                          const Padding(
                                             padding:
-                                                const EdgeInsets.only(left: 10),
+                                                EdgeInsets.only(left: 10),
                                             child: Icon(Icons.search,
                                                 color: Colors.blue, size: 25),
                                           ),
@@ -528,12 +517,12 @@ class _MainMapState extends State<MainMap> {
                                                 if (_debounce?.isActive ??
                                                     false) _debounce!.cancel();
                                                 _debounce = Timer(
-                                                    Duration(milliseconds: 500),
+                                                    const Duration(milliseconds: 500),
                                                     () {
                                                   getCoordinatesFromName(value);
                                                 });
                                               },
-                                              decoration: InputDecoration(
+                                              decoration: const InputDecoration(
                                                 border: InputBorder.none,
                                                 hintText: 'Search...',
                                                 contentPadding:
@@ -571,7 +560,7 @@ class _MainMapState extends State<MainMap> {
                                       return DropdownMenuItem<String>(
                                         value: item,
                                         child: Container(
-                                          constraints: BoxConstraints(
+                                          constraints: const BoxConstraints(
                                             maxWidth: 150,
                                           ),
                                           child: Text(
@@ -583,8 +572,7 @@ class _MainMapState extends State<MainMap> {
                                       );
                                     }).toList(),
                                     onChanged: (newValue) {
-                                      String profession = newValue!;
-                                      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => MainMap(whichStaff: newValue.toLowerCase()),));
+                                      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => MainMap(whichStaff: newValue!.toLowerCase()),));
                                     },
                                   ),
                                 ),

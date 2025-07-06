@@ -1,13 +1,11 @@
 import 'dart:io';
 
 import 'package:carehub/LoginPage.dart';
-import 'package:carehub/StaffPage.dart';
 import 'package:carehub/StaffProfileHome.dart';
-import 'package:carehub/main.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geocoding/geocoding.dart';
@@ -26,8 +24,8 @@ class StaffDetailInputPage extends StatefulWidget {
   final String Email;
   final String Password;
 
-  StaffDetailInputPage(
-      {required this.FirstName,
+  const StaffDetailInputPage(
+      {super.key, required this.FirstName,
       required this.LastName,
       required this.Email,
       required this.Password});
@@ -43,8 +41,8 @@ class _StaffDetailInputPage extends State<StaffDetailInputPage> {
   @override
   void initState() {
     super.initState();
-    void _liveLocation() {
-      LocationSettings locationSettings = LocationSettings(
+    void liveLocation() {
+      LocationSettings locationSettings = const LocationSettings(
         accuracy: LocationAccuracy.high,
         distanceFilter: 100,
       );
@@ -66,8 +64,8 @@ class _StaffDetailInputPage extends State<StaffDetailInputPage> {
           });
         },
       );
-    };
-    _liveLocation();
+    }
+    liveLocation();
   }
 
   final String FirstName;
@@ -83,10 +81,8 @@ class _StaffDetailInputPage extends State<StaffDetailInputPage> {
 
   @override
   Widget build(BuildContext context) {
-    final mediaquery = MediaQuery.of(context);
-    final screenWidth = mediaquery.size.width;
+    MediaQuery.of(context);
 
-    final isWeb = screenWidth > 700;
 
     return Scaffold(
         backgroundColor: Colors.white,
@@ -104,8 +100,8 @@ class AndroidStaffPage extends StatefulWidget {
   final String Email;
   final String Password;
 
-  AndroidStaffPage(
-      {required this.FirstName,
+  const AndroidStaffPage(
+      {super.key, required this.FirstName,
       required this.LastName,
       required this.Email,
       required this.Password});
@@ -190,7 +186,7 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
     // Wait and retry if location is still disabled
     if (!serviceEnabled) {
       // Retry after a short delay
-      await Future.delayed(Duration(seconds: 1));
+      await Future.delayed(const Duration(seconds: 1));
       serviceEnabled = await Geolocator.isLocationServiceEnabled();
     }
 
@@ -215,8 +211,7 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
   Future<void> getCurrentLocationName(double lat, double long) async {
     List<Placemark> placemarks = await placemarkFromCoordinates(lat, long);
     if (placemarks.isNotEmpty) {
-      String place = "${placemarks.first.locality}" ?? "Location...";
-      print("Got Location $place");
+      String place = "${placemarks.first.locality}";
       CurrentLocation = place;
       City.text = place;
     }
@@ -231,11 +226,11 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
     return Stack(children: [
       Column(
         children: [
-          SizedBox(height: 100,),
+          const SizedBox(height: 100,),
           Center(
             child: Container(
               width: screenWidth,
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 color: Colors.white,
                 boxShadow: [
                   BoxShadow(
@@ -247,7 +242,7 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                 ],),
               child: Column(
                 children: [
-                  SizedBox(height: 10,),
+                  const SizedBox(height: 10,),
                   // logo title
                   Padding(
                     padding:
@@ -257,15 +252,15 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                         Container(
                           height: 80,
                           width: 80,
-                          margin: EdgeInsets.only(bottom: 10, top: 20),
+                          margin: const EdgeInsets.only(bottom: 10, top: 20),
                           decoration: BoxDecoration(
                             color: Colors.black,
                             borderRadius: BorderRadius.circular(80),
-                            boxShadow: [
+                            boxShadow: const [
                               BoxShadow(
                                   color: Colors.black12, spreadRadius: 2, blurRadius: 1),
                             ],
-                            image: DecorationImage(
+                            image: const DecorationImage(
                               image: AssetImage("assets/images/logo.png"),
                               fit: BoxFit.none, // No scaling
                               alignment: Alignment.center,
@@ -273,9 +268,9 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                             ),
                           ),
                         ),
-                        SizedBox(width: 10,),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 16.0),
+                        const SizedBox(width: 10,),
+                        const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 16.0),
                           child: Text(
                             "CARENEST \nEXTRA INFORMATION",
                             textAlign: TextAlign.start,
@@ -300,23 +295,23 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                     child: Row(
                       children: [
                         Container(
-                          padding: EdgeInsets.symmetric(horizontal: 20),
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
                           width: screenWidth - 60,
                           decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(10),
-                            boxShadow: [
+                            boxShadow: const [
                               BoxShadow(color: Colors.black26, blurRadius: 6)
                             ],
                           ),
                           child: DropdownButton<String>(
                             value: selectedValue,
-                            hint: Text("Select Job"),
+                            hint: const Text("Select Job"),
                             items: items.map((String item) {
                               return DropdownMenuItem<String>(
                                 value: item,
                                 child: Container(
-                                  constraints: BoxConstraints(
+                                  constraints: const BoxConstraints(
                                     maxWidth: 200,
                                   ),
                                   child: Text(
@@ -344,11 +339,11 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                     const EdgeInsets.only(right: 30, left: 30, top: 10),
                     child: Row(
                       children: [
-                        Container(
+                        SizedBox(
                           height: 50,
                           width: screenWidth - 60,
                           child: TextField(
-                            keyboardType: TextInputType.numberWithOptions(),
+                            keyboardType: const TextInputType.numberWithOptions(),
                             controller: PhoneNo,
                             onChanged: (value) {
                               setState(() {
@@ -362,7 +357,7 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(10),
                                 ),
-                                contentPadding: EdgeInsets.fromLTRB(
+                                contentPadding: const EdgeInsets.fromLTRB(
                                     20,
                                     16,
                                     16,
@@ -374,8 +369,8 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                     ),
                   ),
                   !isValidPhone
-                      ? Padding(
-                    padding: const EdgeInsets.only(right: 30, left: 30, top: 5),
+                      ? const Padding(
+                    padding: EdgeInsets.only(right: 30, left: 30, top: 5),
                     child: Row(
                       children: [
                         Text(
@@ -391,7 +386,7 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                   Padding(
                     padding:
                     const EdgeInsets.only(right: 30, left: 30, top: 10),
-                    child: Container(
+                    child: SizedBox(
                       height: 50,
                       child: TextField(
                         controller: City,
@@ -407,15 +402,15 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(10),
                             ),
-                            contentPadding: EdgeInsets.fromLTRB(20, 16, 16,
+                            contentPadding: const EdgeInsets.fromLTRB(20, 16, 16,
                                 16) // Adds border around the text field
                             ),
                       ),
                     ),
                   ),
                   !isValidCity
-                      ? Padding(
-                    padding: const EdgeInsets.only(right: 30, left: 30, top: 5),
+                      ? const Padding(
+                    padding: EdgeInsets.only(right: 30, left: 30, top: 5),
                     child: Row(
                       children: [
                         Text(
@@ -428,7 +423,7 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                       : Container(),
 
                   // Image and submit
-                  Container(
+                  SizedBox(
                     width: 265,
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -445,7 +440,7 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                                 });
                               }
                             },
-                            child: Text("Select Image"),
+                            child: const Text("Select Image"),
                           )
                               : ClipOval(
                             child: Image.file(
@@ -465,7 +460,6 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                                 });
 
                                 String phone = PhoneNo.text;
-                                String otp = OTP.text;
                                 String city = City.text;
                                 String skill = selectedValue.toString().toLowerCase();
                                 if (phone.isNotEmpty &&
@@ -482,11 +476,12 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                                         imagePath?.path.split('/').last;
                                     UploadTask uploadTask = FirebaseStorage.instance
                                         .ref()
-                                        .child("${user?.uid}/${fileName}")
+                                        .child("${user?.uid}/$fileName")
                                         .putFile(imagePath!);
                                     TaskSnapshot snapshot = await uploadTask;
                                     Reference ref = snapshot.ref;
                                     String profileURL = await ref.getDownloadURL();
+                                    String? token = await FirebaseMessaging.instance.getToken();
 
                                     await FirebaseFirestore.instance
                                         .collection(skill.toLowerCase())
@@ -501,13 +496,14 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                                       'Phone_Number1': phone,
                                       'Profile_Pic': profileURL,
                                       'Last_name': LastName,
-                                      "expire" : DateTime.now().add(Duration(days: 37)),
+                                      "expire" : DateTime.now().add(const Duration(days: 37)),
                                       'Rating': 0,
                                       'Status': false,
                                       'Verified': 'unverified',
                                       'Date_of_registered': DateFormat("dd/MM/yyyy")
                                           .format(DateTime.now()),
                                       'Verified_status': false,
+                                      'token' : token
                                     });
                                     await FirebaseFirestore.instance
                                         .collection('user')
@@ -520,11 +516,12 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                                       "Last_name": LastName,
                                       'Rating': 0,
                                       "Password": Password,
-                                      "expire" : DateTime.now().add(Duration(days: 37)),
+                                      "expire" : DateTime.now().add(const Duration(days: 37)),
                                       'Verified': 'unverified',
                                       "Phone_Number1": phone,
                                       "City": city,
                                       "Profile_Pic": profileURL,
+                                      'token' : token
                                     });
 
                                     await FirebaseFirestore.instance
@@ -540,7 +537,7 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
 
                                     FirebaseFirestore.instance.collection("Payment Records").add({
                                       "duration" : "1 Month",
-                                      "expire" : DateTime.now().add(Duration(days: 37)),
+                                      "expire" : DateTime.now().add(const Duration(days: 37)),
                                       "plan" : "Free Trial",
                                       "staffUID" : user?.uid,
                                       "start" : DateTime.now(),
@@ -556,7 +553,7 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                                     Navigator.pushReplacement(
                                         context,
                                         MaterialPageRoute(
-                                          builder: (context) => LoginPage(),
+                                          builder: (context) => const LoginPage(),
                                         ));
                                     setState(() {
                                       isLoading = false;
@@ -588,11 +585,11 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                                   });
                                 }
                               },
-                              style: ButtonStyle(
+                              style: const ButtonStyle(
                                 backgroundColor: WidgetStatePropertyAll(Color(
                                     0xff0009a2))
                               ),
-                              child: Text("Submit", style: TextStyle(color: Colors.white),)),
+                              child: const Text("Submit", style: TextStyle(color: Colors.white),)),
                         ),
                       ],
                     ),
@@ -601,7 +598,7 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                   Padding(
                     padding:
                     const EdgeInsets.only(right: 30, left: 30, top: 10),
-                    child: Text(ErrorData, textAlign: TextAlign.justify, style: TextStyle(color: Colors.red),),
+                    child: Text(ErrorData, textAlign: TextAlign.justify, style: const TextStyle(color: Colors.red),),
                   ),
 
                   // Speed image
@@ -640,7 +637,7 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                                 throw 'Could not launch ${"https://carenest.ancientcoders.in/Privacy_Policy.html"}';
                               }
                             },
-                            child: Text(
+                            child: const Text(
                               "Privacy Policy, ",
                               style: TextStyle(
                                   fontSize: 12,
@@ -654,7 +651,7 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                                 throw 'Could not launch ${"https://carenest.ancientcoders.in/Terms_Conditions.html"}';
                               }
                             },
-                            child: Text(
+                            child: const Text(
                               "Terms & Conditions, ",
                               style: TextStyle(
                                   fontSize: 12,
@@ -668,7 +665,7 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                                 throw 'Could not launch ${"https://carenest.ancientcoders.in/Refund_Policy.html"}';
                               }
                             },
-                            child: Text(
+                            child: const Text(
                               "Refund Policy",
                               style: TextStyle(
                                   fontSize: 12,
@@ -701,8 +698,8 @@ class AndroidStaffPageGoogle extends StatefulWidget {
   final String LastName;
   final AuthCredential credential;
 
-  AndroidStaffPageGoogle(
-      {required this.FirstName,
+  const AndroidStaffPageGoogle(
+      {super.key, required this.FirstName,
         required this.LastName,
         required this.credential});
 
@@ -778,7 +775,7 @@ class _AndroidStaffPageGoogle extends State<AndroidStaffPageGoogle> {
     // Wait and retry if location is still disabled
     if (!serviceEnabled) {
       // Retry after a short delay
-      await Future.delayed(Duration(seconds: 1));
+      await Future.delayed(const Duration(seconds: 1));
       serviceEnabled = await Geolocator.isLocationServiceEnabled();
     }
 
@@ -803,8 +800,7 @@ class _AndroidStaffPageGoogle extends State<AndroidStaffPageGoogle> {
   Future<void> getCurrentLocationName(double lat, double long) async {
     List<Placemark> placemarks = await placemarkFromCoordinates(lat, long);
     if (placemarks.isNotEmpty) {
-      String place = "${placemarks.first.locality}" ?? "Location...";
-      print("Got Location $place");
+      String place = "${placemarks.first.locality}";
       CurrentLocation = place;
       City.text = place;
     }
@@ -822,11 +818,11 @@ class _AndroidStaffPageGoogle extends State<AndroidStaffPageGoogle> {
           scrollDirection: Axis.vertical,
           child: Column(
             children: [
-              SizedBox(height: 100,),
+              const SizedBox(height: 100,),
               Center(
                 child: Container(
                   width: screenWidth,
-                  decoration: BoxDecoration(
+                  decoration: const BoxDecoration(
                     color: Colors.white,
                     boxShadow: [
                       BoxShadow(
@@ -838,7 +834,7 @@ class _AndroidStaffPageGoogle extends State<AndroidStaffPageGoogle> {
                     ],),
                   child: Column(
                     children: [
-                      SizedBox(height: 10,),
+                      const SizedBox(height: 10,),
                       // logo title
                       Padding(
                         padding:
@@ -848,15 +844,15 @@ class _AndroidStaffPageGoogle extends State<AndroidStaffPageGoogle> {
                             Container(
                               height: 80,
                               width: 80,
-                              margin: EdgeInsets.only(bottom: 10, top: 20),
+                              margin: const EdgeInsets.only(bottom: 10, top: 20),
                               decoration: BoxDecoration(
                                 color: Colors.black,
                                 borderRadius: BorderRadius.circular(80),
-                                boxShadow: [
+                                boxShadow: const [
                                   BoxShadow(
                                       color: Colors.black12, spreadRadius: 2, blurRadius: 1),
                                 ],
-                                image: DecorationImage(
+                                image: const DecorationImage(
                                   image: AssetImage("assets/images/logo.png"),
                                   fit: BoxFit.none, // No scaling
                                   alignment: Alignment.center,
@@ -864,9 +860,9 @@ class _AndroidStaffPageGoogle extends State<AndroidStaffPageGoogle> {
                                 ),
                               ),
                             ),
-                            SizedBox(width: 10,),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 16.0),
+                            const SizedBox(width: 10,),
+                            const Padding(
+                              padding: EdgeInsets.symmetric(vertical: 16.0),
                               child: Text(
                                 "CARENEST \nEXTRA INFORMATION",
                                 textAlign: TextAlign.start,
@@ -891,23 +887,23 @@ class _AndroidStaffPageGoogle extends State<AndroidStaffPageGoogle> {
                         child: Row(
                           children: [
                             Container(
-                              padding: EdgeInsets.symmetric(horizontal: 20),
+                              padding: const EdgeInsets.symmetric(horizontal: 20),
                               width: screenWidth - 60,
                               decoration: BoxDecoration(
                                 color: Colors.white,
                                 borderRadius: BorderRadius.circular(10),
-                                boxShadow: [
+                                boxShadow: const [
                                   BoxShadow(color: Colors.black26, blurRadius: 6)
                                 ],
                               ),
                               child: DropdownButton<String>(
                                 value: selectedValue,
-                                hint: Text("Select Job"),
+                                hint: const Text("Select Job"),
                                 items: items.map((String item) {
                                   return DropdownMenuItem<String>(
                                     value: item,
                                     child: Container(
-                                      constraints: BoxConstraints(
+                                      constraints: const BoxConstraints(
                                         maxWidth: 200,
                                       ),
                                       child: Text(
@@ -935,11 +931,11 @@ class _AndroidStaffPageGoogle extends State<AndroidStaffPageGoogle> {
                         const EdgeInsets.only(right: 30, left: 30, top: 10),
                         child: Row(
                           children: [
-                            Container(
+                            SizedBox(
                               height: 50,
                               width: screenWidth - 60,
                               child: TextField(
-                                keyboardType: TextInputType.numberWithOptions(),
+                                keyboardType: const TextInputType.numberWithOptions(),
                                 controller: PhoneNo,
                                 onChanged: (value) {
                                   setState(() {
@@ -953,7 +949,7 @@ class _AndroidStaffPageGoogle extends State<AndroidStaffPageGoogle> {
                                     border: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(10),
                                     ),
-                                    contentPadding: EdgeInsets.fromLTRB(
+                                    contentPadding: const EdgeInsets.fromLTRB(
                                         20,
                                         16,
                                         16,
@@ -965,8 +961,8 @@ class _AndroidStaffPageGoogle extends State<AndroidStaffPageGoogle> {
                         ),
                       ),
                       !isValidPhone
-                          ? Padding(
-                        padding: const EdgeInsets.only(right: 30, left: 30, top: 5),
+                          ? const Padding(
+                        padding: EdgeInsets.only(right: 30, left: 30, top: 5),
                         child: Row(
                           children: [
                             Text(
@@ -982,7 +978,7 @@ class _AndroidStaffPageGoogle extends State<AndroidStaffPageGoogle> {
                       Padding(
                         padding:
                         const EdgeInsets.only(right: 30, left: 30, top: 10),
-                        child: Container(
+                        child: SizedBox(
                           height: 50,
                           child: TextField(
                             controller: City,
@@ -998,15 +994,15 @@ class _AndroidStaffPageGoogle extends State<AndroidStaffPageGoogle> {
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(10),
                                 ),
-                                contentPadding: EdgeInsets.fromLTRB(20, 16, 16,
+                                contentPadding: const EdgeInsets.fromLTRB(20, 16, 16,
                                     16) // Adds border around the text field
                             ),
                           ),
                         ),
                       ),
                       !isValidCity
-                          ? Padding(
-                        padding: const EdgeInsets.only(right: 30, left: 30, top: 5),
+                          ? const Padding(
+                        padding: EdgeInsets.only(right: 30, left: 30, top: 5),
                         child: Row(
                           children: [
                             Text(
@@ -1019,7 +1015,7 @@ class _AndroidStaffPageGoogle extends State<AndroidStaffPageGoogle> {
                           : Container(),
 
                       // Image and submit
-                      Container(
+                      SizedBox(
                         width: 265,
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -1036,7 +1032,7 @@ class _AndroidStaffPageGoogle extends State<AndroidStaffPageGoogle> {
                                     });
                                   }
                                 },
-                                child: Text("Select Image"),
+                                child: const Text("Select Image"),
                               )
                                   : ClipOval(
                                 child: Image.file(
@@ -1056,7 +1052,6 @@ class _AndroidStaffPageGoogle extends State<AndroidStaffPageGoogle> {
                                     });
 
                                     String phone = PhoneNo.text;
-                                    String otp = OTP.text;
                                     String city = City.text;
                                     String skill = selectedValue.toString().toLowerCase();
                                     if (phone.isNotEmpty &&
@@ -1070,7 +1065,7 @@ class _AndroidStaffPageGoogle extends State<AndroidStaffPageGoogle> {
                                             imagePath?.path.split('/').last;
                                         UploadTask uploadTask = FirebaseStorage.instance
                                             .ref()
-                                            .child("${user?.uid}/${fileName}")
+                                            .child("${user?.uid}/$fileName")
                                             .putFile(imagePath!);
                                         TaskSnapshot snapshot = await uploadTask;
                                         Reference ref = snapshot.ref;
@@ -1089,7 +1084,7 @@ class _AndroidStaffPageGoogle extends State<AndroidStaffPageGoogle> {
                                           'Phone_Number1': phone,
                                           'Profile_Pic': profileURL,
                                           'Last_name': LastName,
-                                          "expire" : DateTime.now().add(Duration(days: 37)),
+                                          "expire" : DateTime.now().add(const Duration(days: 37)),
                                           'Rating': 0,
                                           'Status': false,
                                           'Verified': 'unverified',
@@ -1108,7 +1103,7 @@ class _AndroidStaffPageGoogle extends State<AndroidStaffPageGoogle> {
                                           "Last_name": LastName,
                                           'Rating': 0,
                                           "Password": '',
-                                          "expire" : DateTime.now().add(Duration(days: 37)),
+                                          "expire" : DateTime.now().add(const Duration(days: 37)),
                                           'Verified': 'unverified',
                                           "Phone_Number1": phone,
                                           "City": city,
@@ -1128,7 +1123,7 @@ class _AndroidStaffPageGoogle extends State<AndroidStaffPageGoogle> {
 
                                         FirebaseFirestore.instance.collection("Payment Records").add({
                                           "duration" : "1 Month",
-                                          "expire" : DateTime.now().add(Duration(days: 37)),
+                                          "expire" : DateTime.now().add(const Duration(days: 37)),
                                           "plan" : "Free Trial",
                                           "staffUID" : user?.uid,
                                           "start" : DateTime.now(),
@@ -1171,11 +1166,11 @@ class _AndroidStaffPageGoogle extends State<AndroidStaffPageGoogle> {
                                       });
                                     }
                                   },
-                                  style: ButtonStyle(
+                                  style: const ButtonStyle(
                                       backgroundColor: WidgetStatePropertyAll(Color(
                                           0xff0009a2))
                                   ),
-                                  child: Text("Submit", style: TextStyle(color: Colors.white),)),
+                                  child: const Text("Submit", style: TextStyle(color: Colors.white),)),
                             ),
                           ],
                         ),
@@ -1184,7 +1179,7 @@ class _AndroidStaffPageGoogle extends State<AndroidStaffPageGoogle> {
                       Padding(
                         padding:
                         const EdgeInsets.only(right: 30, left: 30, top: 10),
-                        child: Text(ErrorData, textAlign: TextAlign.justify, style: TextStyle(color: Colors.red),),
+                        child: Text(ErrorData, textAlign: TextAlign.justify, style: const TextStyle(color: Colors.red),),
                       ),
 
                       // Speed image
@@ -1223,7 +1218,7 @@ class _AndroidStaffPageGoogle extends State<AndroidStaffPageGoogle> {
                                     throw 'Could not launch ${"https://carenest.ancientcoders.in/Privacy_Policy.html"}';
                                   }
                                 },
-                                child: Text(
+                                child: const Text(
                                   "Privacy Policy, ",
                                   style: TextStyle(
                                       fontSize: 12,
@@ -1237,7 +1232,7 @@ class _AndroidStaffPageGoogle extends State<AndroidStaffPageGoogle> {
                                     throw 'Could not launch ${"https://carenest.ancientcoders.in/Terms_Conditions.html"}';
                                   }
                                 },
-                                child: Text(
+                                child: const Text(
                                   "Terms & Conditions, ",
                                   style: TextStyle(
                                       fontSize: 12,
@@ -1251,7 +1246,7 @@ class _AndroidStaffPageGoogle extends State<AndroidStaffPageGoogle> {
                                     throw 'Could not launch ${"https://carenest.ancientcoders.in/Refund_Policy.html"}';
                                   }
                                 },
-                                child: Text(
+                                child: const Text(
                                   "Refund Policy",
                                   style: TextStyle(
                                       fontSize: 12,
@@ -1287,8 +1282,8 @@ class AndroidView extends StatefulWidget {
   final String Email;
   final String Password;
 
-  AndroidView(
-      {required this.FirstName,
+  const AndroidView(
+      {super.key, required this.FirstName,
       required this.LastName,
       required this.Email,
       required this.Password});

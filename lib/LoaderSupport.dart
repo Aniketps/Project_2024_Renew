@@ -5,7 +5,7 @@ import 'package:loading_animation_widget/loading_animation_widget.dart';
 class LoaderSupport extends AppBody{
   static AppBody loadingAnimation = AppBody(
     LoadingAnimationWidget.dotsTriangle(
-      color: Color(0xFF00FFFF),
+      color: const Color(0xFF00FFFF),
       size: 80,
     ),
   );

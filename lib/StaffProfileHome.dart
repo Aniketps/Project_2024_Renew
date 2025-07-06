@@ -10,14 +10,15 @@ import 'package:carehub/KYC.dart';
 import 'package:carehub/LoaderSupport.dart';
 import 'package:carehub/Models/PaymentRecordModel.dart';
 import 'package:carehub/Rating.dart';
+import 'package:carehub/services/NotificationService.dart';
 import 'package:carehub/services/PaymentServices/PaymentRecordImpl.dart';
 import 'package:carehub/services/PaymentServices/PaymentRecordService.dart';
+import 'package:carehub/services/fcm_service.dart';
 import 'package:carehub/services/sendNotificationService.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -27,6 +28,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:in_app_update/in_app_update.dart';
 import 'package:intl/intl.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -73,17 +75,68 @@ void showLocationDialog(BuildContext context, {required bool permissionDeniedFor
 }
 
 class StaffProfileHome extends StatefulWidget {
+  const StaffProfileHome({super.key});
+
   @override
   State<StatefulWidget> createState() => _StaffProfileHome();
 }
 
 class _StaffProfileHome extends State<StaffProfileHome> {
+  NotificationService notificationService = NotificationService();
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey();
   @override
   void initState() {
     super.initState();
     SearchStaff();
-
+    notificationService.requestNotificationPermission();
+    notificationService.getDeviceToken();
+    notificationService.firebaseInit(context);
+    notificationService.setupInteractMessage(context);
+    _checkAndUpdate();
+    FcmService.FirebaseInit();
     _liveLocation();
+    updateToken();
+  }
+  void updateToken() {
+    final user = FirebaseAuth.instance.currentUser;
+
+    if (user == null) return; // Always check for null
+
+    FirebaseMessaging.instance.onTokenRefresh.listen((newToken) {
+      FirebaseFirestore.instance
+          .collection("user")
+          .doc(user.uid)
+          .update({
+        'token': newToken,
+      })
+          .then((_) => print("✅ Token updated successfully"))
+          .catchError((e) => print("❌ Failed to update token: $e"));
+    });
+  }
+  Future<void> _checkAndUpdate() async {
+    try {
+      final updateInfo = await InAppUpdate.checkForUpdate();
+
+      if (updateInfo.updateAvailability == UpdateAvailability.updateAvailable &&
+          updateInfo.flexibleUpdateAllowed) {
+        await InAppUpdate.startFlexibleUpdate();
+        await InAppUpdate.completeFlexibleUpdate(); // completes silently
+      }
+    } catch (e) {
+      if (e.toString() ==
+          'PlatformException(TASK_FAILURE, -10: Install Error(-10): The app is not owned by any user on this device. An app is "owned" if it has been acquired from Play. (https://developer.android.com/reference/com/google/android/play/core/install/model/InstallErrorCode#ERROR_APP_NOT_OWNED), null, null)'){
+        _showSnack('Update failed: Testing Version');
+      }
+      else {
+        _showSnack('Update failed : Unknown Error');
+      }
+    }
+  }
+  void _showSnack(String text) {
+    if (_scaffoldKey.currentContext != null) {
+      ScaffoldMessenger.of(_scaffoldKey.currentContext!)
+          .showSnackBar(SnackBar(content: Text(text)));
+    }
   }
 
   String CurrentLocation = "Loading...";
@@ -91,10 +144,9 @@ class _StaffProfileHome extends State<StaffProfileHome> {
   Future<void> getCurrentLocationName(double lat, double long) async {
     List<Placemark> placemarks = await placemarkFromCoordinates(lat, long);
     if (placemarks.isNotEmpty) {
-      String place = "${placemarks.first.locality}" ?? "Location...";
-      print("Got Location $place");
+      String place = "${placemarks.first.locality}";
       setState(() {
-        CurrentLocation = "CareNest in ${place}";
+        CurrentLocation = "CareNest in $place";
       });
     }
   }
@@ -156,7 +208,6 @@ class _StaffProfileHome extends State<StaffProfileHome> {
         });
       }
     } catch (e) {
-      print("Live location error: $e");
     }
   }
 
@@ -165,7 +216,7 @@ class _StaffProfileHome extends State<StaffProfileHome> {
   late String currentUserID;
 
   Future<void> SearchStaff() async {
-    User? user1 = await FirebaseAuth.instance.currentUser;
+    User? user1 = FirebaseAuth.instance.currentUser;
     currentUserID = user1?.uid ?? '';
     DocumentSnapshot documentSnapshot1 = await FirebaseFirestore.instance
         .collection("user")
@@ -181,7 +232,6 @@ class _StaffProfileHome extends State<StaffProfileHome> {
       setState(() {
         StaffData = documentSnapshot.data() as Map<String, dynamic>?;
         if (StaffData['professionOfStaff'] == null) {
-          print(StaffData);
         }
       });
     }
@@ -191,7 +241,6 @@ class _StaffProfileHome extends State<StaffProfileHome> {
   Widget build(BuildContext context) {
     final mediaquery = MediaQuery.of(context);
     final screenWidth = mediaquery.size.width;
-    final screenHeight = mediaquery.size.height;
 
     if (StaffData == null) {
       return Scaffold(
@@ -210,7 +259,7 @@ class _StaffProfileHome extends State<StaffProfileHome> {
                             width: 80,
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(80),
-                              boxShadow: [
+                              boxShadow: const [
                                 BoxShadow(
                                   blurRadius: 1,
                                   spreadRadius: 1,
@@ -229,7 +278,7 @@ class _StaffProfileHome extends State<StaffProfileHome> {
                               Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => ActualUser(),
+                                    builder: (context) => const ActualUser(),
                                   ));
                             },
                             child: StaffData != null &&
@@ -239,7 +288,7 @@ class _StaffProfileHome extends State<StaffProfileHome> {
                                     width: 80,
                                     decoration: BoxDecoration(
                                       borderRadius: BorderRadius.circular(80),
-                                      boxShadow: [
+                                      boxShadow: const [
                                         BoxShadow(
                                           blurRadius: 1,
                                           spreadRadius: 1,
@@ -259,7 +308,7 @@ class _StaffProfileHome extends State<StaffProfileHome> {
                                     width: 80,
                                     decoration: BoxDecoration(
                                       borderRadius: BorderRadius.circular(80),
-                                      boxShadow: [
+                                      boxShadow: const [
                                         BoxShadow(
                                           blurRadius: 1,
                                           spreadRadius: 1,
@@ -270,57 +319,57 @@ class _StaffProfileHome extends State<StaffProfileHome> {
                                   ),
                           ),
                     (StaffData == null)
-                        ? Text(
+                        ? const Text(
                             "Empty",
                             style: TextStyle(
                                 fontWeight: FontWeight.bold, fontSize: 18),
                           )
                         : Text(
                             "${StaffData['First_name']} ${StaffData['Last_name']}",
-                            style: TextStyle(
+                            style: const TextStyle(
                                 fontWeight: FontWeight.bold, fontSize: 18),
                           ),
                   ])),
               ListTile(
-                leading: Icon(Icons.home),
-                title: Text('Home'),
+                leading: const Icon(Icons.home),
+                title: const Text('Home'),
                 onLongPress: (){
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => AdminLogin(),));
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => const AdminLogin(),));
                 },
                 onTap: () {
                   Navigator.pushReplacement(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => StaffProfileHome(),
+                        builder: (context) => const StaffProfileHome(),
                       ));
                 },
               ),
               ListTile(
-                leading: Icon(Icons.history),
-                title: Text('Deals'),
+                leading: const Icon(Icons.history),
+                title: const Text('Deals'),
                 onTap: () {
                   Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => DealsForStaff(),
+                        builder: (context) => const DealsForStaff(),
                       ));
                 },
               ),
-              Divider(),
+              const Divider(),
               ListTile(
-                leading: Icon(Icons.headset_mic),
-                title: Text('Contact Us'),
+                leading: const Icon(Icons.headset_mic),
+                title: const Text('Contact Us'),
                 onTap: () {
                   Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => ContactUs(),
+                        builder: (context) => const ContactUs(),
                       ));
                 },
               ),
               ListTile(
-                leading: Icon(Icons.library_books),
-                title: Text('Terms and Conditions'),
+                leading: const Icon(Icons.library_books),
+                title: const Text('Terms and Conditions'),
                 onTap: () {
                   Navigator.push(
                       context,
@@ -330,25 +379,25 @@ class _StaffProfileHome extends State<StaffProfileHome> {
                 },
               ),
               ListTile(
-                leading: Icon(Icons.feedback),
-                title: Text('Feedback'),
+                leading: const Icon(Icons.feedback),
+                title: const Text('Feedback'),
                 onTap: () {
                   Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => Feedbacks(),
+                        builder: (context) => const Feedbacks(),
                       ));
                 },
               ),
-              Divider(),
+              const Divider(),
               ListTile(
-                leading: Icon(Icons.logout),
-                title: Text('Logout'),
+                leading: const Icon(Icons.logout),
+                title: const Text('Logout'),
                 onTap: () async {
                   await GoogleSignIn().signOut();
                   await FirebaseAuth.instance.signOut();
                   Navigator.pushReplacement(context,
-                      MaterialPageRoute(builder: (context) => LoginPage()));
+                      MaterialPageRoute(builder: (context) => const LoginPage()));
                 },
               ),
             ],
@@ -361,9 +410,9 @@ class _StaffProfileHome extends State<StaffProfileHome> {
               height: 150,
               color: Globle.theme,
               child: AppBar(
-                title: Container(
+                title: SizedBox(
                   width: screenWidth * 0.6,
-                  child: Text(
+                  child: const Text(
                       overflow: TextOverflow.ellipsis,
                       maxLines: 1,
                       "City",
@@ -379,19 +428,17 @@ class _StaffProfileHome extends State<StaffProfileHome> {
               children: [
                 Padding(
                   padding: const EdgeInsets.only(top: 125),
-                  child: Container(
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.vertical,
-                      child: Column(
-                        children: [
-                          Padding(
-                              padding: const EdgeInsets.only(top : 250.0),
-                              child: Center(
-                                child: LoaderSupport.loadingAnimation.widget,
-                              )
-                          ), // Loading indicator
-                        ],
-                      ),
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.vertical,
+                    child: Column(
+                      children: [
+                        Padding(
+                            padding: const EdgeInsets.only(top : 250.0),
+                            child: Center(
+                              child: LoaderSupport.loadingAnimation.widget,
+                            )
+                        ), // Loading indicator
+                      ],
                     ),
                   ),
                 ),
@@ -428,7 +475,7 @@ class _StaffProfileHome extends State<StaffProfileHome> {
                             width: 80,
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(80),
-                              boxShadow: [
+                              boxShadow: const [
                                 BoxShadow(
                                   blurRadius: 1,
                                   spreadRadius: 1,
@@ -448,7 +495,7 @@ class _StaffProfileHome extends State<StaffProfileHome> {
                             Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => ActualUser(),
+                                  builder: (context) => const ActualUser(),
                                 ));
                           },
                           child: StaffData['Profile_Pic'] == null
@@ -457,7 +504,7 @@ class _StaffProfileHome extends State<StaffProfileHome> {
                                   width: 80,
                                   decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(80),
-                                    boxShadow: [
+                                    boxShadow: const [
                                       BoxShadow(
                                         blurRadius: 1,
                                         spreadRadius: 1,
@@ -471,7 +518,7 @@ class _StaffProfileHome extends State<StaffProfileHome> {
                                   width: 80,
                                   decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(80),
-                                    boxShadow: [
+                                    boxShadow: const [
                                       BoxShadow(
                                         blurRadius: 1,
                                         spreadRadius: 1,
@@ -488,57 +535,57 @@ class _StaffProfileHome extends State<StaffProfileHome> {
                                 ),
                         ),
                   (StaffData == null)
-                      ? Text(
+                      ? const Text(
                           "Empty",
                           style: TextStyle(
                               fontWeight: FontWeight.bold, fontSize: 18),
                         )
                       : Text(
                           "${StaffData['First_name']} ${StaffData['Last_name']}",
-                          style: TextStyle(
+                          style: const TextStyle(
                               fontWeight: FontWeight.bold, fontSize: 18),
                         ),
                 ])),
             ListTile(
-              leading: Icon(Icons.home),
-              title: Text('Home'),
+              leading: const Icon(Icons.home),
+              title: const Text('Home'),
               onLongPress: (){
-                Navigator.push(context, MaterialPageRoute(builder:(context) => AdminLogin(),));
+                Navigator.push(context, MaterialPageRoute(builder:(context) => const AdminLogin(),));
               },
               onTap: () {
                 Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => StaffProfileHome(),
+                      builder: (context) => const StaffProfileHome(),
                     ));
               },
             ),
             ListTile(
-              leading: Icon(Icons.history),
-              title: Text('Deals'),
+              leading: const Icon(Icons.history),
+              title: const Text('Deals'),
               onTap: () {
                 Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => DealsForStaff(),
+                      builder: (context) => const DealsForStaff(),
                     ));
               },
             ),
-            Divider(),
+            const Divider(),
             ListTile(
-              leading: Icon(Icons.headset_mic),
-              title: Text('Contact Us'),
+              leading: const Icon(Icons.headset_mic),
+              title: const Text('Contact Us'),
               onTap: () {
                 Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => ContactUs(),
+                      builder: (context) => const ContactUs(),
                     ));
               },
             ),
             ListTile(
-              leading: Icon(Icons.library_books),
-              title: Text('Terms and Conditions'),
+              leading: const Icon(Icons.library_books),
+              title: const Text('Terms and Conditions'),
               onTap: () {
                 Navigator.push(
                     context,
@@ -548,25 +595,25 @@ class _StaffProfileHome extends State<StaffProfileHome> {
               },
             ),
             ListTile(
-              leading: Icon(Icons.feedback),
-              title: Text('Feedback'),
+              leading: const Icon(Icons.feedback),
+              title: const Text('Feedback'),
               onTap: () {
                 Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => Feedbacks(),
+                      builder: (context) => const Feedbacks(),
                     ));
               },
             ),
-            Divider(),
+            const Divider(),
             ListTile(
-              leading: Icon(Icons.logout),
-              title: Text('Logout'),
+              leading: const Icon(Icons.logout),
+              title: const Text('Logout'),
               onTap: () async {
                 await GoogleSignIn().signOut();
                 await FirebaseAuth.instance.signOut();
                 Navigator.pushReplacement(context,
-                    MaterialPageRoute(builder: (context) => LoginPage()));
+                    MaterialPageRoute(builder: (context) => const LoginPage()));
               },
             ),
           ],
@@ -576,18 +623,18 @@ class _StaffProfileHome extends State<StaffProfileHome> {
         children: [
           // App bar section
           AppBar(
-            iconTheme: IconThemeData(
+            iconTheme: const IconThemeData(
               color: Colors.white,
               size: 30
             ),
-            title: Container(
+            title: SizedBox(
               width: double.infinity,
               child: Text(
                   overflow: TextOverflow.ellipsis,
                   maxLines: 1,
-                  "${CurrentLocation}",
+                  CurrentLocation,
                   style:
-                      TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)),
+                      const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)),
             ),
             backgroundColor: Globle.theme,
             automaticallyImplyLeading: true,
@@ -597,17 +644,15 @@ class _StaffProfileHome extends State<StaffProfileHome> {
             children: [
               Padding(
                 padding: const EdgeInsets.only(top: 100),
-                child: Container(
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.vertical,
-                    child: Column(
-                      children: [
-                        StaffView(
-                          StaffData: StaffData,
-                          UID: currentUserID,
-                        )
-                      ],
-                    ),
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.vertical,
+                  child: Column(
+                    children: [
+                      StaffView(
+                        StaffData: StaffData,
+                        UID: currentUserID,
+                      )
+                    ],
                   ),
                 ),
               ),
@@ -617,7 +662,7 @@ class _StaffProfileHome extends State<StaffProfileHome> {
       ),
       bottomNavigationBar: Container(
         height: 70,
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.only(
             topLeft: Radius.circular(16),
@@ -641,7 +686,7 @@ class _StaffProfileHome extends State<StaffProfileHome> {
                   context,
                   MaterialPageRoute(
                     builder: (context) =>
-                        StaffProfileHome(),
+                        const StaffProfileHome(),
                   ),
                 );
               },
@@ -652,7 +697,7 @@ class _StaffProfileHome extends State<StaffProfileHome> {
                   color: Colors.blue.shade50,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(Icons.home, color: Colors.blueAccent, size: 28),
+                child: const Icon(Icons.home, color: Colors.blueAccent, size: 28),
               ),
             ),
             InkWell(
@@ -662,7 +707,7 @@ class _StaffProfileHome extends State<StaffProfileHome> {
                   context,
                   MaterialPageRoute(
                     builder: (context) =>
-                        DealsForStaff(),
+                        const DealsForStaff(),
                   ),
                 );
               },
@@ -673,7 +718,7 @@ class _StaffProfileHome extends State<StaffProfileHome> {
                   color: Colors.green.shade50,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(Icons.work_history_rounded, color: Colors.green, size: 28),
+                child: const Icon(Icons.work_history_rounded, color: Colors.green, size: 28),
               ),
             ),
             InkWell(
@@ -683,7 +728,7 @@ class _StaffProfileHome extends State<StaffProfileHome> {
                   context,
                   MaterialPageRoute(
                     builder: (context) =>
-                        StaffNotificationPage(),
+                        const StaffNotificationPage(),
                   ),
                 );
               },
@@ -694,7 +739,7 @@ class _StaffProfileHome extends State<StaffProfileHome> {
                   color: Colors.purple.shade50,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(Icons.notifications, color: Colors.purple, size: 28),
+                child: const Icon(Icons.notifications, color: Colors.purple, size: 28),
               ),
             ),
           ],
@@ -707,7 +752,7 @@ class _StaffProfileHome extends State<StaffProfileHome> {
 class StaffView extends StatefulWidget {
   final StaffData;
   final UID;
-  StaffView({required this.StaffData, required this.UID});
+  const StaffView({super.key, required this.StaffData, required this.UID});
   @override
   State<StatefulWidget> createState() =>
       _StaffView(StaffData: StaffData, UID: UID);
@@ -717,8 +762,7 @@ class _StaffView extends State<StaffView> {
   late Razorpay _razorpay;
   String? _razorpayKey;
   String? _razorpayKeySecret;
-  bool _loading = true;
-  PaymentRecordService paymentRecordService = new PaymentRecordImpl();
+  PaymentRecordService paymentRecordService = PaymentRecordImpl();
   @override
   void initState() {
     super.initState();
@@ -739,19 +783,14 @@ class _StaffView extends State<StaffView> {
       setState(() {
         _razorpayKey = data['key_id'];
         _razorpayKeySecret = data["key_secret"];
-        _loading = false;
       });
     } catch (e) {
       debugPrint('Failed to fetch key: $e');
-      setState(() => _loading = false);
     }
   }
 
   late String _planTitle;
-  late String _plan;
   late int _amountInPaise;
-  late String _userEmail;
-  late String _userContact;
 
   void _startPayment({required int amountInPaise, required String plan, required String planTitle, required String userEmail, required String userContact}) {
     if (_razorpayKey == null) {
@@ -760,10 +799,7 @@ class _StaffView extends State<StaffView> {
     }
     // Store data in state
     _planTitle = planTitle;
-    _plan = plan;
     _amountInPaise = amountInPaise;
-    _userEmail = userEmail;
-    _userContact = userContact;
 
     var options = {
       'key': _razorpayKey,
@@ -788,7 +824,7 @@ class _StaffView extends State<StaffView> {
 
     FirebaseFirestore.instance.collection("Payment Records").add({
       "duration" : _planTitle == "COMBO"? "2 Months" : "1 Month",
-      "expire" : _planTitle == "COMBO" ? DateTime.now().add(Duration(days: 60)) : DateTime.now().add(Duration(days: 30)),
+      "expire" : _planTitle == "COMBO" ? DateTime.now().add(const Duration(days: 60)) : DateTime.now().add(const Duration(days: 30)),
       "plan" : "₹${_amountInPaise/100}",
       "staffUID" : UID,
       "start" : DateTime.now(),
@@ -796,14 +832,14 @@ class _StaffView extends State<StaffView> {
     });
 
     FirebaseFirestore.instance.collection(StaffData['professionOfStaff'].toString().toLowerCase()).doc(UID).update({
-      "expire" : _planTitle == "COMBO" ? DateTime.now().add(Duration(days: 60)) : DateTime.now().add(Duration(days: 30)),
+      "expire" : _planTitle == "COMBO" ? DateTime.now().add(const Duration(days: 60)) : DateTime.now().add(const Duration(days: 30)),
     });
 
     FirebaseFirestore.instance.collection("user").doc(UID).update({
-      "expire" : _planTitle == "COMBO" ? DateTime.now().add(Duration(days: 60)) : DateTime.now().add(Duration(days: 30)),
+      "expire" : _planTitle == "COMBO" ? DateTime.now().add(const Duration(days: 60)) : DateTime.now().add(const Duration(days: 30)),
     });
     capturePayment(_amountInPaise, response.paymentId.toString());
-    Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => StaffProfileHome(),));
+    Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const StaffProfileHome(),));
   }
 
   Future<void> capturePayment(int amount, String id) async {
@@ -831,7 +867,6 @@ class _StaffView extends State<StaffView> {
         final Map<String, dynamic> errorJson = json.decode(response.body);
         final errorMessage = errorJson['error']['description'];
         throw errorMessage ?? 'Failed to Capture Payment';
-        capturePayment(amount, id);
       }
     }catch(e){
       rethrow;
@@ -840,7 +875,6 @@ class _StaffView extends State<StaffView> {
 
   void _handlePaymentError(PaymentFailureResponse response) {
     setState(() {
-      _loading = false;
     });
     _showAlert("Payment Failed", "Code: ${response.code}\nMessage: ${response.message}");
   }
@@ -856,7 +890,7 @@ class _StaffView extends State<StaffView> {
         title: Text(title),
         content: Text(message),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: Text("OK")),
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text("OK")),
         ],
       ),
     );
@@ -909,7 +943,7 @@ class _StaffView extends State<StaffView> {
         });
 
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Profile picture updated successfully!")),
+          const SnackBar(content: Text("Profile picture updated successfully!")),
         );
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -935,7 +969,6 @@ class _StaffView extends State<StaffView> {
             .getDownloadURL();
       }
     } catch (e) {
-      print("Error fetching verification documents: $e");
     } finally {
       // Update the state to reflect loading completion
       setState(() {
@@ -964,9 +997,9 @@ class _StaffView extends State<StaffView> {
         width: screenWidth * 0.8,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
-          color: Color(0xfc001238),
-          border: Border.all(color: Color(0xffefbf04), width: 2),
-          boxShadow: [
+          color: const Color(0xfc001238),
+          border: Border.all(color: const Color(0xffefbf04), width: 2),
+          boxShadow: const [
             BoxShadow(
                 color: Color(0xFFEFBF04),
                 spreadRadius: 0,
@@ -987,7 +1020,7 @@ class _StaffView extends State<StaffView> {
                           isShowPlans = false;
                         });
                       },
-                      child: Icon(Icons.close, color: Colors.white, size: 18,)),
+                      child: const Icon(Icons.close, color: Colors.white, size: 18,)),
                 ],
               ),
             ),
@@ -996,67 +1029,66 @@ class _StaffView extends State<StaffView> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Text(title, style: GoogleFonts.roboto(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20),),
-                SizedBox(height: 10,),
-                Text("₹${price}/mo", style: GoogleFonts.roboto(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20),),
-                SizedBox(height: 10,),
+                const SizedBox(height: 10,),
+                Text("₹$price/mo", style: GoogleFonts.roboto(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20),),
+                const SizedBox(height: 10,),
                 Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: Row(
                     children: [
-                      Expanded(child: Divider(thickness: 1, color: Colors.grey)),
+                      const Expanded(child: Divider(thickness: 1, color: Colors.grey)),
                       Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 8.0),
+                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
                         child: Text("BENEFITS", style: GoogleFonts.roboto(fontWeight: FontWeight.bold, color: Colors.white)),
                       ),
-                      Expanded(child: Divider(thickness: 1, color: Colors.grey)),
+                      const Expanded(child: Divider(thickness: 1, color: Colors.grey)),
                     ],
                   ),
                 ),
-                SizedBox(height: 10,),
+                const SizedBox(height: 10,),
                 Text("Your profile will be presented on our platform, along with real-time visibility on the map for convenience.", style: GoogleFonts.roboto(color: Colors.white), textAlign: TextAlign.center,),
-                SizedBox(height: 10),
-                Container(
+                const SizedBox(height: 10),
+                SizedBox(
                   width: screenWidth * 0.6,
                   child: Column(
                     children: [
                       Row(
                         children: [
-                          Icon(Icons.check_circle, color: Colors.green, size: 18,),
-                          SizedBox(width: 8),
+                          const Icon(Icons.check_circle, color: Colors.green, size: 18,),
+                          const SizedBox(width: 8),
                           Text("Profile visibility on platform", style: GoogleFonts.roboto(color: Colors.white)),
                         ],
                       ),
                       Row(
                         children: [
-                          Icon(Icons.check_circle, color: Colors.green, size: 18),
-                          SizedBox(width: 8),
+                          const Icon(Icons.check_circle, color: Colors.green, size: 18),
+                          const SizedBox(width: 8),
                           Text("Live map visibility", style: GoogleFonts.roboto(color: Colors.white)),
                         ],
                       ),
                       Row(
                         children: [
                           Icon(icon3, color: color1, size: 18),
-                          SizedBox(width: 8),
+                          const SizedBox(width: 8),
                           Text("Profile in recommendations", style: GoogleFonts.roboto(color: Colors.white)),
                         ],
                       ),
                       Row(
                         children: [
                           Icon(icon4, color: color2, size: 18),
-                          SizedBox(width: 8),
+                          const SizedBox(width: 8),
                           Text("Extra 1 month", style: GoogleFonts.roboto(color: Colors.white)),
                         ],
                       ),
                     ],
                   ),
                 ),
-                SizedBox(height: 15,),
+                const SizedBox(height: 15,),
                 SizedBox(
                   width: 200, // Adjust width as needed
                   child: ElevatedButton(
                     onPressed: () async {
                       if(title == "BASIC"){
-                        String? CurrentUID = FirebaseAuth.instance.currentUser?.uid;
                         int amount = int.parse(price.toString());
                         String plan = "$price₹ ${title == "COMBO"? "2 Months" : "1 Month"}";
 
@@ -1069,7 +1101,6 @@ class _StaffView extends State<StaffView> {
                             userContact: StaffData["Phone_Number1"],
                           );
                         } catch (e) {
-                          print(e);
                           Fluttertoast.showToast(msg: "Payment failed to initialize");
                         }
                       }else{
@@ -1077,9 +1108,9 @@ class _StaffView extends State<StaffView> {
                       }
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Color(0xFFFFD700),
+                      backgroundColor: const Color(0xFFFFD700),
                       foregroundColor: Colors.black,
-                      shadowColor: Color(0xFFFFD700),
+                      shadowColor: const Color(0xFFFFD700),
                       elevation: 10,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(20),
@@ -1110,7 +1141,7 @@ class _StaffView extends State<StaffView> {
             children: [
               Container(
                 width: screenWidth,
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                     color: Colors.white,
                     boxShadow: [
                       BoxShadow(
@@ -1121,7 +1152,7 @@ class _StaffView extends State<StaffView> {
                     // Profile Actual details
                     Padding(
                       padding: const EdgeInsets.all(6.0),
-                      child: Container(
+                      child: SizedBox(
                         width: screenWidth * 0.95,
                         child: Column(
                           children: [
@@ -1140,7 +1171,7 @@ class _StaffView extends State<StaffView> {
                                           color: Colors.green,
                                           image: DecorationImage(
                                             image: profilePicUrl.isEmpty
-                                                ? NetworkImage(
+                                                ? const NetworkImage(
                                                 "https://media.istockphoto.com/id/1300845620/vector/user-icon-flat-isolated-on-white-background-user-symbol-vector-illustration.jpg?s=612x612&w=0&k=20&c=yBeyba0hUkh14_jgv1OKqIH0CCSWU_4ckRkAoy2p73o=")
                                                 : NetworkImage(profilePicUrl),
                                             fit: BoxFit.cover,
@@ -1148,17 +1179,17 @@ class _StaffView extends State<StaffView> {
                                         ),
                                       ),
                                     ),
-                                    SizedBox(
+                                    const SizedBox(
                                         height:
                                         5), // Space between image and text
-                                    Text(
+                                    const Text(
                                       "Tap to change",
                                       style: TextStyle(
                                           fontSize: 12, color: Colors.grey),
                                     ),
                                   ],
                                 ),
-                                SizedBox(width: 8,),
+                                const SizedBox(width: 8,),
                                 Padding(
                                   padding: const EdgeInsets.all(8.0),
                                   child: Column(
@@ -1167,8 +1198,8 @@ class _StaffView extends State<StaffView> {
                                       Row(
                                         children: [
                                           Text(
-                                            "${("${StaffData['First_name']} ${StaffData['Last_name']}").length > 16 ? "${StaffData['First_name']} ${StaffData['Last_name']}".substring(0, 13) + "..." : "${StaffData['First_name']} ${StaffData['Last_name']}"}",
-                                            style: TextStyle(
+                                            ("${StaffData['First_name']} ${StaffData['Last_name']}").length > 16 ? "${StaffData['First_name']} ${StaffData['Last_name']}".substring(0, 13) + "..." : "${StaffData['First_name']} ${StaffData['Last_name']}",
+                                            style: const TextStyle(
                                               fontWeight: FontWeight.bold,
                                               fontSize: 16,
                                             ),
@@ -1181,7 +1212,7 @@ class _StaffView extends State<StaffView> {
                                               width: 80,
                                               decoration: BoxDecoration(
                                                 color: Colors.green,
-                                                boxShadow: [BoxShadow(
+                                                boxShadow: const [BoxShadow(
                                                   color: Colors.black,
                                                   blurRadius: 2,
                                                   offset: Offset(1.5, 1.5)
@@ -1200,7 +1231,7 @@ class _StaffView extends State<StaffView> {
                                                                     'professionOfStaff']),
                                                           ));
                                                     },
-                                                    child: Text(
+                                                    child: const Text(
                                                       "Change",
                                                       style: TextStyle(
                                                           fontSize: 16,
@@ -1218,15 +1249,15 @@ class _StaffView extends State<StaffView> {
                                               StaffData["Status"]
                                                   ? "Online"
                                                   : "Offline",
-                                              style: TextStyle(
+                                              style: const TextStyle(
                                                   color: Colors.blue,
                                                   fontSize: 12)),
-                                          Text(
+                                          const Text(
                                             " | ",
                                             style: TextStyle(fontSize: 16),
                                           ),
                                           Text(StaffData["City"],
-                                              style: TextStyle(
+                                              style: const TextStyle(
                                                   color: Colors.green,
                                                   fontSize: 12)),
                                         ],
@@ -1242,10 +1273,10 @@ class _StaffView extends State<StaffView> {
                                         },
                                         child: Container(
                                           height: 45,
-                                          margin: EdgeInsets.only(top: 10),
+                                          margin: const EdgeInsets.only(top: 10),
                                           width: screenHeight * 0.3,
                                           decoration: BoxDecoration(
-                                            color: Color(0xff00008B),
+                                            color: const Color(0xff00008B),
                                             borderRadius:
                                             BorderRadius.circular(10),
                                           ),
@@ -1255,7 +1286,7 @@ class _StaffView extends State<StaffView> {
                                             mainAxisAlignment:
                                             MainAxisAlignment.center,
                                             children: [
-                                              Icon(
+                                              const Icon(
                                                 Icons.star,
                                                 color: Color(0xffFFD700),
                                               ),
@@ -1264,19 +1295,19 @@ class _StaffView extends State<StaffView> {
                                                     right: 10, left: 5),
                                                 child: Text(
                                                   "${StaffData["Rating"]}/5.0",
-                                                  style: TextStyle(
+                                                  style: const TextStyle(
                                                       color: Colors.white,
                                                       fontWeight:
                                                       FontWeight.bold),
                                                 ),
                                               ),
-                                              Text(
+                                              const Text(
                                                 "Check",
                                                 style: TextStyle(
                                                     fontSize: 12,
                                                     color: Colors.white),
                                               ),
-                                              Icon(
+                                              const Icon(
                                                 Icons.play_arrow,
                                                 color: Colors.white,
                                               )
@@ -1297,7 +1328,7 @@ class _StaffView extends State<StaffView> {
                                   width: 110,
                                   decoration: BoxDecoration(
                                       color: Colors.white,
-                                      boxShadow: [
+                                      boxShadow: const [
                                         BoxShadow(
                                             color: Colors.black26,
                                             spreadRadius: 1,
@@ -1315,7 +1346,7 @@ class _StaffView extends State<StaffView> {
                                                   .substring(1),
                                           overflow: TextOverflow.ellipsis,
                                           maxLines: 1,
-                                          style: TextStyle(
+                                          style: const TextStyle(
                                             color: Color(0xff089000),
                                             fontWeight: FontWeight.bold,
                                             fontSize: 18,
@@ -1350,7 +1381,7 @@ class _StaffView extends State<StaffView> {
                                             // Show Snackbar message
                                             ScaffoldMessenger.of(context)
                                                 .showSnackBar(
-                                              SnackBar(
+                                              const SnackBar(
                                                   content:
                                                   Text("You are now live")),
                                             );
@@ -1376,12 +1407,10 @@ class _StaffView extends State<StaffView> {
                                               context,
                                               MaterialPageRoute(
                                                   builder: (context) =>
-                                                      StaffProfileHome()),
+                                                      const StaffProfileHome()),
                                             );
                                           }
                                         } catch (e) {
-                                          print(
-                                              "Error updating status to Available: $e");
                                         }
                                       },
                                       child: Container(
@@ -1391,7 +1420,7 @@ class _StaffView extends State<StaffView> {
                                           borderRadius: BorderRadius.circular(10),
                                           color: Colors.black,
                                         ),
-                                        child: Center(
+                                        child: const Center(
                                           child: Text(
                                             "Tap To Go Online",
                                             style: TextStyle(
@@ -1427,7 +1456,7 @@ class _StaffView extends State<StaffView> {
                                             // Show Snackbar message
                                             ScaffoldMessenger.of(context)
                                                 .showSnackBar(
-                                              SnackBar(
+                                              const SnackBar(
                                                   content: Text(
                                                       "You are now offline")),
                                             );
@@ -1438,12 +1467,10 @@ class _StaffView extends State<StaffView> {
                                               context,
                                               MaterialPageRoute(
                                                   builder: (context) =>
-                                                      StaffProfileHome()),
+                                                      const StaffProfileHome()),
                                             );
                                           }
                                         } catch (e) {
-                                          print(
-                                              "Error updating status to Busy: $e");
                                         }
                                       },
                                       child: Container(
@@ -1453,8 +1480,8 @@ class _StaffView extends State<StaffView> {
                                           borderRadius: BorderRadius.circular(10),
                                           color: Colors.black,
                                         ),
-                                        child: Padding(
-                                          padding: const EdgeInsets.only(
+                                        child: const Padding(
+                                          padding: EdgeInsets.only(
                                               right: 15, left: 5),
                                           child: Center(
                                             child: Text(
@@ -1508,7 +1535,7 @@ class _StaffView extends State<StaffView> {
                         decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(5),
-                            boxShadow: [
+                            boxShadow: const [
                               BoxShadow(
                                   color: Colors.black26,
                                   spreadRadius: 1,
@@ -1536,7 +1563,7 @@ class _StaffView extends State<StaffView> {
                                             ),
                                           );
                                         },
-                                        child: Text(
+                                        child: const Text(
                                           "Verify your profile before free trial ends... click...",
                                           style: TextStyle(fontSize: 20),
                                         ),
@@ -1544,7 +1571,7 @@ class _StaffView extends State<StaffView> {
                                     )
                                   ] else if (StaffData["Verified"] ==
                                       "pending") ...[
-                                    Text(
+                                    const Text(
                                       "Under Verification Process",
                                       style: TextStyle(fontSize: 20),
                                     )
@@ -1563,11 +1590,11 @@ class _StaffView extends State<StaffView> {
                                       },
                                       child: Text(
                                         "Rejected, Click to apply again... ${StaffData["Feedback"]?? ""}",
-                                        style: TextStyle(fontSize: 20),
+                                        style: const TextStyle(fontSize: 20),
                                       ),
                                     )
                                   ] else ...[
-                                    Text(
+                                    const Text(
                                       "Unknown State",
                                       style: TextStyle(fontSize: 20),
                                     )
@@ -1588,7 +1615,7 @@ class _StaffView extends State<StaffView> {
                         width: screenWidth * 0.95,
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(5),
-                          gradient: LinearGradient(
+                          gradient: const LinearGradient(
                             begin: Alignment.topRight,
                             end: Alignment.bottomLeft,
                             colors: [
@@ -1597,8 +1624,8 @@ class _StaffView extends State<StaffView> {
                             ],
                             stops: [0, 100],
                           ),
-                          border: Border.all(color: Color(0xffefbf04), width: 2),
-                          boxShadow: [
+                          border: Border.all(color: const Color(0xffefbf04), width: 2),
+                          boxShadow: const [
                             BoxShadow(
                                 color: Color(0xFFEFBF04),
                                 spreadRadius: 0,
@@ -1616,7 +1643,7 @@ class _StaffView extends State<StaffView> {
                                 mainAxisAlignment: MainAxisAlignment.start,
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text("You’ar not active with \nany subscription plan.", style: GoogleFonts.aclonica(fontSize: 16,color: Color(0xFFFFFFff), shadows: [BoxShadow(color: Color(0x000000ff))]),),
+                                  Text("You’ar not active with \nany subscription plan.", style: GoogleFonts.aclonica(fontSize: 16,color: const Color(0xFFFFFFff), shadows: [const BoxShadow(color: Color(0x000000ff))]),),
                                   Text("Your profile won't appear until \nyou subscribe to a plan.", style: GoogleFonts.alkalami(fontSize: 12, color: Colors.white),),
                                   InkWell(
                                       onTap: (){
@@ -1637,7 +1664,7 @@ class _StaffView extends State<StaffView> {
                                 mainAxisAlignment: MainAxisAlignment.start,
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text("Congratulations, Your\nActive on ${paymentRecordModel?.plan} \n${paymentRecordModel?.duration} plan.", style: GoogleFonts.aclonica(fontSize: 16,color: Color(0xFFFFFFff), shadows: [BoxShadow(color: Color(0x000000ff))]),),
+                                  Text("Congratulations, Your\nActive on ${paymentRecordModel?.plan} \n${paymentRecordModel?.duration} plan.", style: GoogleFonts.aclonica(fontSize: 16,color: const Color(0xFFFFFFff), shadows: [const BoxShadow(color: Color(0x000000ff))]),),
                                   Text("Valid till ${DateFormat("d MMM y").format(paymentRecordModel!.expire)}", style: GoogleFonts.alkatra(),)
                                 ],
                               ),
@@ -1656,7 +1683,7 @@ class _StaffView extends State<StaffView> {
                         decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(5),
-                            boxShadow: [
+                            boxShadow: const [
                               BoxShadow(
                                   color: Colors.black26,
                                   spreadRadius: 1,
@@ -1671,7 +1698,7 @@ class _StaffView extends State<StaffView> {
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Text(
+                                  const Text(
                                     "Contact Information",
                                     style: TextStyle(
                                         fontSize: 18,
@@ -1684,7 +1711,7 @@ class _StaffView extends State<StaffView> {
                                       width: 80,
                                       decoration: BoxDecoration(
                                           color: Colors.green,
-                                          boxShadow: [BoxShadow(
+                                          boxShadow: const [BoxShadow(
                                               color: Colors.black,
                                               blurRadius: 2,
                                               offset: Offset(1.5, 1.5)
@@ -1702,7 +1729,7 @@ class _StaffView extends State<StaffView> {
                                                         'professionOfStaff']),
                                                   ));
                                             },
-                                            child: Text(
+                                            child: const Text(
                                               "Change",
                                               style: TextStyle(
                                                   fontSize: 16,
@@ -1714,7 +1741,7 @@ class _StaffView extends State<StaffView> {
                                 ],
                               ),
                             ),
-                            Divider(),
+                            const Divider(),
                             Padding(
                               padding: const EdgeInsets.all(8.0),
                               child: Column(
@@ -1745,21 +1772,21 @@ class _StaffView extends State<StaffView> {
                                             decoration: BoxDecoration(
                                                 borderRadius: BorderRadius.circular(60),
                                                 color: Colors.white,
-                                                boxShadow: [
+                                                boxShadow: const [
                                                   BoxShadow(
                                                       color: Colors.blueAccent,
                                                       blurRadius: 1,
                                                       spreadRadius: 1)
                                                 ]),
-                                            child: Icon(
+                                            child: const Icon(
                                               Icons.call,
                                               color: Colors.blue,
                                             ),
                                           ),
                                         ),
                                       ),
-                                      SizedBox(width: 5,),
-                                      Text("${StaffData['Phone_Number1']?? "No Number"}", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),),
+                                      const SizedBox(width: 5,),
+                                      Text("${StaffData['Phone_Number1']?? "No Number"}", style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),),
                                     ],
                                   ),
                                   Row(
@@ -1798,21 +1825,21 @@ class _StaffView extends State<StaffView> {
                                             decoration: BoxDecoration(
                                                 borderRadius: BorderRadius.circular(60),
                                                 color: Colors.white,
-                                                boxShadow: [
+                                                boxShadow: const [
                                                   BoxShadow(
                                                       color: Colors.greenAccent,
                                                       blurRadius: 1,
                                                       spreadRadius: 1)
                                                 ]),
-                                            child: Icon(
+                                            child: const Icon(
                                               Icons.call,
                                               color: Colors.green,
                                             ),
                                           ),
                                         ),
                                       ),
-                                      SizedBox(width: 5,),
-                                      Text("${StaffData['Phone_Number2']?? "No Number"}", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),),
+                                      const SizedBox(width: 5,),
+                                      Text("${StaffData['Phone_Number2']?? "No Number"}", style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),),
                                     ],
                                   )
                                 ],
@@ -1832,7 +1859,7 @@ class _StaffView extends State<StaffView> {
                         decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(5),
-                            boxShadow: [
+                            boxShadow: const [
                               BoxShadow(
                                   color: Colors.black26,
                                   spreadRadius: 1,
@@ -1847,7 +1874,7 @@ class _StaffView extends State<StaffView> {
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Text(
+                                  const Text(
                                     "Service Rate",
                                     style: TextStyle(
                                         fontSize: 18,
@@ -1860,7 +1887,7 @@ class _StaffView extends State<StaffView> {
                                       width: 80,
                                       decoration: BoxDecoration(
                                           color: Colors.green,
-                                          boxShadow: [BoxShadow(
+                                          boxShadow: const [BoxShadow(
                                               color: Colors.black,
                                               blurRadius: 2,
                                               offset: Offset(1.5, 1.5)
@@ -1879,7 +1906,7 @@ class _StaffView extends State<StaffView> {
                                                             'professionOfStaff']),
                                                   ));
                                             },
-                                            child: Text(
+                                            child: const Text(
                                               "Change",
                                               style: TextStyle(
                                                   fontSize: 16,
@@ -1891,14 +1918,14 @@ class _StaffView extends State<StaffView> {
                                 ],
                               ),
                             ),
-                            Divider(),
+                            const Divider(),
                             Padding(
                               padding: const EdgeInsets.only(right: 40, left: 40),
                               child: Row(
                                 children: [
-                                  Container(
+                                  SizedBox(
                                       width: screenWidth * 0.5,
-                                      child: Text("Hour based")),
+                                      child: const Text("Hour based")),
                                   Text("${StaffData['Hour_Rate'] ?? '--'} ${StaffData['Currency'] ?? '-'}"),
                                 ],
                               ),
@@ -1907,9 +1934,9 @@ class _StaffView extends State<StaffView> {
                               padding: const EdgeInsets.only(right: 40, left: 40),
                               child: Row(
                                 children: [
-                                  Container(
+                                  SizedBox(
                                       width: screenWidth * 0.5,
-                                      child: Text("Day based")),
+                                      child: const Text("Day based")),
                                   Text("${StaffData['Day_Rate'] ?? '--'} ${StaffData['Currency'] ?? '-'}"),
                                 ],
                               ),
@@ -1918,11 +1945,11 @@ class _StaffView extends State<StaffView> {
                               padding: const EdgeInsets.only(right: 40, left: 40),
                               child: Row(
                                 children: [
-                                  Container(
+                                  SizedBox(
                                       width: screenWidth * 0.5,
                                       child: Text(
                                         "Day service shift ${StaffData['Day_Shift'] ?? '--'} hours",
-                                        style: TextStyle(
+                                        style: const TextStyle(
                                             fontSize: 12, color: Colors.blue),
                                       )),
                                 ],
@@ -1943,7 +1970,7 @@ class _StaffView extends State<StaffView> {
                         decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(5),
-                            boxShadow: [
+                            boxShadow: const [
                               BoxShadow(
                                   color: Colors.black26,
                                   spreadRadius: 1,
@@ -1971,7 +1998,7 @@ class _StaffView extends State<StaffView> {
                                             ),
                                           );
                                         },
-                                        child: Text(
+                                        child: const Text(
                                           "Verify your profile before free trial ends... click...",
                                           style: TextStyle(fontSize: 20),
                                         ),
@@ -1979,7 +2006,7 @@ class _StaffView extends State<StaffView> {
                                     )
                                   ] else if (StaffData["Verified"] ==
                                       "pending") ...[
-                                    Text(
+                                    const Text(
                                       "Under Verification Process",
                                       style: TextStyle(fontSize: 20),
                                     )
@@ -1998,18 +2025,18 @@ class _StaffView extends State<StaffView> {
                                       },
                                       child: Text(
                                         "Rejected, Click to apply again... ${StaffData["Feedback"]?? ""}",
-                                        style: TextStyle(fontSize: 20),
+                                        style: const TextStyle(fontSize: 20),
                                       ),
                                     )
                                   ] else if (StaffData["Verified"] ==
                                       "verified") ...[
                                     Column(
                                       children: [
-                                        Text(
+                                        const Text(
                                           "Verified Documents",
                                           style: TextStyle(fontSize: 20),
                                         ),
-                                        SizedBox(height: 10),
+                                        const SizedBox(height: 10),
                                         Container(
                                           height: 200,
                                           width:
@@ -2018,12 +2045,12 @@ class _StaffView extends State<StaffView> {
                                           decoration: BoxDecoration(
                                             image: DecorationImage(
                                               image: NetworkImage(
-                                                  "${_aadharUrl.toString()}"),
+                                                  _aadharUrl.toString()),
                                               fit: BoxFit.cover,
                                             ),
                                           ),
                                         ),
-                                        SizedBox(height: 10),
+                                        const SizedBox(height: 10),
                                         Container(
                                           height: 200,
                                           width:
@@ -2032,7 +2059,7 @@ class _StaffView extends State<StaffView> {
                                           decoration: BoxDecoration(
                                             image: DecorationImage(
                                               image: NetworkImage(
-                                                  "${_professionVerDocUrl.toString()}"),
+                                                  _professionVerDocUrl.toString()),
                                               fit: BoxFit.cover,
                                             ),
                                           ),
@@ -2040,7 +2067,7 @@ class _StaffView extends State<StaffView> {
                                       ],
                                     )
                                   ] else ...[
-                                    Text(
+                                    const Text(
                                       "Unknown State",
                                       style: TextStyle(fontSize: 20),
                                     )
@@ -2061,24 +2088,24 @@ class _StaffView extends State<StaffView> {
         ),
         isShowPlans
             ? Center(
-              child: Container(
+              child: SizedBox(
                 width: screenWidth * 0.9,
                 height: screenHeight,
                 child: SingleChildScrollView(
-                  physics: NeverScrollableScrollPhysics(),
+                  physics: const NeverScrollableScrollPhysics(),
                   child: Column(
                     children: [
-                      Container(
+                      SizedBox(
                         height: screenHeight * 0.8,
                         child: SingleChildScrollView(
-                          physics: BouncingScrollPhysics(),
+                          physics: const BouncingScrollPhysics(),
                           scrollDirection: Axis.vertical,
                           child: Column(
                             children: [
                               plans("BASIC", "29", Icons.cancel, Icons.cancel, Colors.red, Colors.red),
-                              SizedBox(height: 15),
+                              const SizedBox(height: 15),
                               plans("ADVANCE", "49", Icons.check_circle, Icons.cancel, Colors.green, Colors.red),
-                              SizedBox(height: 15),
+                              const SizedBox(height: 15),
                               plans("COMBO", "99", Icons.check_circle, Icons.check_circle, Colors.green, Colors.green),
                             ],
                           ),
