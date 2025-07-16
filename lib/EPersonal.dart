@@ -1,3 +1,4 @@
+import 'package:carehub/services/convertToTranslate.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -39,8 +40,8 @@ class _EPersonal extends State<EPersonal> {
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 AppBar(
-                  title: const Center(
-                    child: Text("Personal Information",
+                  title: Center(
+                    child: Text("Personal Information".trKey,
                         style: TextStyle(
                             fontSize: 20, fontWeight: FontWeight.bold, color : Colors.white)),
                   ),
@@ -77,11 +78,11 @@ class _EPersonal extends State<EPersonal> {
                               scrollDirection: Axis.vertical,
                               child: Column(
                                 children: [
-                                  const Padding(
+                                  Padding(
                                     padding: EdgeInsets.only(
                                         left: 20, top: 10, bottom: 5),
                                     child: Text(
-                                      "Make Changes",
+                                      "Make Changes".trKey,
                                       style: TextStyle(
                                           fontSize: 18,
                                           fontWeight: FontWeight.bold),
@@ -97,7 +98,7 @@ class _EPersonal extends State<EPersonal> {
                                         controller: FirstName,
                                         decoration: InputDecoration(
                                             labelText:
-                                                "First Name", // Placeholder text
+                                                "First Name".trKey, // Placeholder text
                                             border: OutlineInputBorder(
                                               borderRadius:
                                                   BorderRadius.circular(10),
@@ -119,7 +120,7 @@ class _EPersonal extends State<EPersonal> {
                                       child: TextField(
                                         controller: LastName,
                                         decoration: InputDecoration(
-                                            labelText: "Last Name",
+                                            labelText: "Last Name".trKey,
                                             border: OutlineInputBorder(
                                               borderRadius:
                                                   BorderRadius.circular(10),
@@ -161,7 +162,7 @@ class _EPersonal extends State<EPersonal> {
                                             child: Row(
                                               children: [
                                                 Text((pickedDate == null)
-                                                    ? "Select Date of Birth"
+                                                    ? "Select Date of Birth".trKey
                                                     : "Selected ${pickedDate?.day}/${pickedDate?.month}/${pickedDate?.year}"),
                                               ],
                                             ),
@@ -186,7 +187,7 @@ class _EPersonal extends State<EPersonal> {
                                             const EdgeInsets.only(left: 10),
                                         child: DropdownButton<String>(
                                           value: selectedGender,
-                                          hint: const Text("Select an Gender"),
+                                          hint: Text("Select an Gender".trKey),
                                           items: Gender.map((String item) {
                                             return DropdownMenuItem<String>(
                                               value: item,
@@ -195,7 +196,7 @@ class _EPersonal extends State<EPersonal> {
                                                   maxWidth: screenWidth * 0.9,
                                                 ),
                                                 child: Text(
-                                                  item,
+                                                  item.trKey,
                                                   overflow:
                                                       TextOverflow.ellipsis,
                                                   maxLines: 1,
@@ -220,7 +221,7 @@ class _EPersonal extends State<EPersonal> {
                                       child: TextField(
                                         controller: City,
                                         decoration: InputDecoration(
-                                            labelText: "City",
+                                            labelText: "City".trKey,
                                             border: OutlineInputBorder(
                                               borderRadius:
                                                   BorderRadius.circular(10),
@@ -298,8 +299,8 @@ class _EPersonal extends State<EPersonal> {
                                             style: ElevatedButton.styleFrom(
                                                 backgroundColor:
                                                     Colors.green),
-                                            child: const Text(
-                                              "Confirm",
+                                            child: Text(
+                                              "Confirm".trKey,
                                               style: TextStyle(
                                                   color: Colors.white),
                                             )),

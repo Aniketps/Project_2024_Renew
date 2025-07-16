@@ -1,6 +1,8 @@
 import 'dart:math';
 
+import 'package:carehub/services/convertToTranslate.dart';
 import 'package:carehub/services/sendNotificationService.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -87,8 +89,8 @@ class _StaffNotificationPage extends State<StaffNotificationPage> {
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 AppBar(
-                  title: const Center(
-                    child: Text("Notifications",
+                  title: Center(
+                    child: Text("Notifications".trKey,
                         style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
@@ -112,18 +114,29 @@ class _StaffNotificationPage extends State<StaffNotificationPage> {
                         .snapshots(),
                     builder: (context, snapshot) {
                       if (!snapshot.hasData) {
-                        return Center(
-                            child: LoaderSupport.loadingAnimation.widget);
+                        return Padding(
+                          padding: const EdgeInsets.only(top: 200.0),
+                          child: Center(
+                              child: LoaderSupport.loadingAnimation.widget),
+                        );
                       }
+
                       var users = snapshot.data?.docs.reversed.toList() ?? [];
                       List<Widget> userViews = [];
                       DateTime now = DateTime.now();
                       DateFormat dateFormat = DateFormat("d/M/yyyy");
-                      DateFormat timeFormat = DateFormat("h:mm a");
+                      DateFormat timeFormat = DateFormat("h:mm a", "en_US");
 
                       for (var user in users) {
-                        String scheduledDateEnd = user["ScheduledDateEnd"];
-                        String scheduledTimeEnd = user["ScheduledTimeEnd"];
+                        print(user["status"]);
+                        String scheduledDateEnd =
+                            user["status"] == "Received a Request"
+                                ? user["ScheduledDate"]
+                                : user["ScheduledDateEnd"];
+                        String scheduledTimeEnd =
+                            user["status"] == "Received a Request"
+                                ? user["ScheduledTime"]
+                                : user["ScheduledTimeEnd"];
                         DateTime endDate = dateFormat.parse(scheduledDateEnd);
                         DateTime endTime = timeFormat.parse(scheduledTimeEnd);
                         DateTime combinedEndDateTime = DateTime(
@@ -146,8 +159,7 @@ class _StaffNotificationPage extends State<StaffNotificationPage> {
                               builder: (context,
                                   AsyncSnapshot<List<dynamic>> snapshot) {
                                 if (!snapshot.hasData) {
-                                  return LoaderSupport
-                                      .loadingAnimation.widget;
+                                  return LoaderSupport.loadingAnimation.widget;
                                 }
 
                                 var currentUserData = snapshot.data?[0];
@@ -176,14 +188,14 @@ class _StaffNotificationPage extends State<StaffNotificationPage> {
                                             ),
                                             child: Column(
                                               children: [
-                                                const Padding(
-                                                  padding:
-                                                      EdgeInsets.only(
-                                                          left: 10, top: 10),
+                                                Padding(
+                                                  padding: EdgeInsets.only(
+                                                      left: 10, top: 10,
+                                                      right: 10),
                                                   child: Row(
                                                     children: [
                                                       Text(
-                                                        "Request From",
+                                                        "Request From".trKey,
                                                         style: TextStyle(
                                                             fontSize: 20,
                                                             fontWeight:
@@ -207,8 +219,7 @@ class _StaffNotificationPage extends State<StaffNotificationPage> {
                                                           color: Colors.white,
                                                           borderRadius:
                                                               BorderRadius
-                                                                  .circular(
-                                                                      70),
+                                                                  .circular(70),
                                                           boxShadow: const [
                                                             BoxShadow(
                                                               color: Colors
@@ -235,8 +246,9 @@ class _StaffNotificationPage extends State<StaffNotificationPage> {
                                                                   color: Colors
                                                                       .white,
                                                                   borderRadius:
-                                                                      BorderRadius.circular(
-                                                                          70),
+                                                                      BorderRadius
+                                                                          .circular(
+                                                                              70),
                                                                   boxShadow: const [
                                                                     BoxShadow(
                                                                       color: Colors
@@ -257,14 +269,16 @@ class _StaffNotificationPage extends State<StaffNotificationPage> {
                                                                   ),
                                                                 ),
                                                               )
-                                                            : const Icon(CupertinoIcons
-                                                                .profile_circled),
+                                                            : const Icon(
+                                                                CupertinoIcons
+                                                                    .profile_circled),
                                                       ),
                                                       Padding(
                                                         padding:
                                                             const EdgeInsets
                                                                 .only(
-                                                                left: 10),
+                                                                left: 10,
+                                                                right: 10),
                                                         child: Column(
                                                           crossAxisAlignment:
                                                               CrossAxisAlignment
@@ -280,14 +294,14 @@ class _StaffNotificationPage extends State<StaffNotificationPage> {
                                                                   fontWeight:
                                                                       FontWeight
                                                                           .bold,
-                                                                  fontSize:
-                                                                      16),
+                                                                  fontSize: 16),
                                                             ),
                                                             Text(
                                                                 "${user['timeofdeal']}",
-                                                                style: const TextStyle(
-                                                                    fontSize:
-                                                                        12)),
+                                                                style:
+                                                                    const TextStyle(
+                                                                        fontSize:
+                                                                            12)),
                                                           ],
                                                         ),
                                                       ),
@@ -300,7 +314,7 @@ class _StaffNotificationPage extends State<StaffNotificationPage> {
                                                               MainAxisAlignment
                                                                   .center,
                                                           children: [
-                                                            const Text("Need",
+                                                            Text("Need".trKey,
                                                                 style: TextStyle(
                                                                     fontWeight:
                                                                         FontWeight
@@ -309,7 +323,8 @@ class _StaffNotificationPage extends State<StaffNotificationPage> {
                                                                         12)),
                                                             const Divider(),
                                                             Text(
-                                                              "${user['professionOfStaff'].toString().substring(0, 1).toUpperCase()}${user['professionOfStaff'].toString().substring(1)}",
+                                                              "${user['professionOfStaff'].toString().substring(0, 1).toUpperCase()}${user['professionOfStaff'].toString().substring(1)}"
+                                                                  .trKey,
                                                               overflow:
                                                                   TextOverflow
                                                                       .ellipsis,
@@ -318,8 +333,7 @@ class _StaffNotificationPage extends State<StaffNotificationPage> {
                                                                   fontWeight:
                                                                       FontWeight
                                                                           .bold,
-                                                                  fontSize:
-                                                                      18,
+                                                                  fontSize: 18,
                                                                   color: Colors
                                                                       .red),
                                                             ),
@@ -333,18 +347,17 @@ class _StaffNotificationPage extends State<StaffNotificationPage> {
                                                   children: [
                                                     Padding(
                                                       padding:
-                                                          const EdgeInsets
-                                                              .only(
+                                                          const EdgeInsets.only(
                                                               left: 10,
                                                               top: 5,
-                                                              bottom: 5),
+                                                              bottom: 5,
+                                                              right: 10),
                                                       child: Container(
                                                         height: 30,
-                                                        width: screenWidth *
-                                                            0.25,
+                                                        width:
+                                                            screenWidth * 0.35,
                                                         decoration: BoxDecoration(
-                                                            color:
-                                                                Colors.white,
+                                                            color: Colors.white,
                                                             borderRadius:
                                                                 BorderRadius
                                                                     .circular(
@@ -353,14 +366,14 @@ class _StaffNotificationPage extends State<StaffNotificationPage> {
                                                               BoxShadow(
                                                                   color: Colors
                                                                       .black26,
-                                                                  blurRadius:
-                                                                      1,
+                                                                  blurRadius: 1,
                                                                   spreadRadius:
                                                                       1)
                                                             ]),
                                                         child: Center(
                                                             child: Text(
-                                                          "${user['ServiceBase']} base",
+                                                          "${user['ServiceBase']} based"
+                                                              .trKey,
                                                           style: const TextStyle(
                                                               fontWeight:
                                                                   FontWeight
@@ -384,13 +397,14 @@ class _StaffNotificationPage extends State<StaffNotificationPage> {
                                                           padding:
                                                               const EdgeInsets
                                                                   .only(
-                                                                  left: 10),
+                                                                  left: 10,
+                                                                  right: 10),
                                                           child: Row(
                                                             children: [
                                                               Expanded(
                                                                   child: Text(
-                                                                      user[
-                                                                          'ServiceBase'])),
+                                                                      "${user['ServiceBase']}"
+                                                                          .trKey)),
                                                               Text(
                                                                   "${user['hours']}"),
                                                             ],
@@ -401,31 +415,37 @@ class _StaffNotificationPage extends State<StaffNotificationPage> {
                                                           padding:
                                                               const EdgeInsets
                                                                   .only(
-                                                                  left: 10),
+                                                                  left: 10,
+                                                                  right: 10),
                                                           child: Row(
                                                             children: [
-                                                              const Text("Total",
+                                                              Text(
+                                                                  "Total".trKey,
                                                                   style: TextStyle(
                                                                       fontWeight:
-                                                                          FontWeight.bold)),
-                                                              const Padding(
-                                                                padding:
-                                                                    EdgeInsets
-                                                                        .only(
+                                                                          FontWeight
+                                                                              .bold)),
+                                                              Padding(
+                                                                padding: EdgeInsets
+                                                                    .only(
                                                                         left:
+                                                                            10,
+                                                                        right:
                                                                             10),
                                                                 child: Text(
-                                                                    "Know more",
+                                                                    "Know more"
+                                                                        .trKey,
                                                                     style: TextStyle(
-                                                                        color:
-                                                                            Colors.green)),
+                                                                        color: Colors
+                                                                            .green)),
                                                               ),
                                                               const Spacer(),
                                                               Text(
                                                                   "${user['totalcost'].toString()} ${currentStaffData['Currency'] ?? '-'}",
                                                                   style: const TextStyle(
                                                                       fontWeight:
-                                                                          FontWeight.bold)),
+                                                                          FontWeight
+                                                                              .bold)),
                                                             ],
                                                           ),
                                                         ),
@@ -434,18 +454,16 @@ class _StaffNotificationPage extends State<StaffNotificationPage> {
                                                     ),
                                                   ),
                                                 ),
-                                                const Padding(
-                                                  padding:
-                                                      EdgeInsets.only(
-                                                          left: 10),
+                                                Padding(
+                                                  padding: EdgeInsets.only(
+                                                      left: 10, right: 10),
                                                   child: Row(
                                                     children: [
                                                       Text(
-                                                        "Schedule",
+                                                        "Schedule".trKey,
                                                         style: TextStyle(
                                                             fontWeight:
-                                                                FontWeight
-                                                                    .bold,
+                                                                FontWeight.bold,
                                                             fontSize: 18),
                                                       ),
                                                     ],
@@ -469,12 +487,11 @@ class _StaffNotificationPage extends State<StaffNotificationPage> {
                                                         style: const TextStyle(
                                                             fontSize: 12),
                                                       ),
-                                                      const Text(
-                                                        "Due To",
+                                                      Text(
+                                                        "Due To".trKey,
                                                         style: TextStyle(
                                                             fontWeight:
-                                                                FontWeight
-                                                                    .bold,
+                                                                FontWeight.bold,
                                                             fontSize: 13),
                                                       ),
                                                       Text(
@@ -485,109 +502,112 @@ class _StaffNotificationPage extends State<StaffNotificationPage> {
                                                     ],
                                                   ),
                                                 ),
-                                                (user['status'] ==
-                                                    "Rejected")
-                                                    ? Container()
-                                                    : const Padding(
-                                                  padding:
-                                                      EdgeInsets.only(
-                                                          left: 10),
-                                                  child: Row(
-                                                    children: [
-                                                      Text(
-                                                        "Location",
-                                                        style: TextStyle(
-                                                            fontWeight:
-                                                                FontWeight
-                                                                    .bold,
-                                                            fontSize: 18),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                                (user['status'] ==
-                                                    "Rejected")
+                                                (user['status'] == "Rejected")
                                                     ? Container()
                                                     : Padding(
-                                                  padding:
-                                                      const EdgeInsets.only(
-                                                          left: 10),
-                                                  child: Row(
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment
-                                                              .start,
-                                                      children: [
-                                                        SizedBox(
-                                                          width: screenWidth *
-                                                              0.8,
-                                                          child: Text(
-                                                            "${user['Scheduled_Sub_Address']}, ${user['Scheduled_Address']}, ${user['Scheduled_City']}",
-                                                            style: const TextStyle(
-                                                                fontSize: 12),
-                                                          ),
+                                                        padding:
+                                                            EdgeInsets.only(
+                                                                left: 10,
+                                                                right: 10),
+                                                        child: Row(
+                                                          children: [
+                                                            Text(
+                                                              "Location".trKey,
+                                                              style: TextStyle(
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .bold,
+                                                                  fontSize: 18),
+                                                            ),
+                                                          ],
                                                         ),
-                                                      ]),
-                                                ),
+                                                      ),
+                                                (user['status'] == "Rejected")
+                                                    ? Container()
+                                                    : Padding(
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .only(
+                                                                left: 10,
+                                                                right: 10),
+                                                        child: Row(
+                                                            mainAxisAlignment:
+                                                                MainAxisAlignment
+                                                                    .start,
+                                                            children: [
+                                                              SizedBox(
+                                                                width:
+                                                                    screenWidth *
+                                                                        0.8,
+                                                                child: Text(
+                                                                  "${user['Scheduled_Sub_Address']}, ${user['Scheduled_Address']}, ${user['Scheduled_City']}",
+                                                                  style: const TextStyle(
+                                                                      fontSize:
+                                                                          12),
+                                                                ),
+                                                              ),
+                                                            ]),
+                                                      ),
                                                 const SizedBox(
                                                   height: 10,
                                                 ),
-                                                (user['status'] ==
-                                                    "Rejected")
+                                                (user['status'] == "Rejected")
                                                     ? Container()
                                                     : Padding(
-                                                  padding:
-                                                      const EdgeInsets.only(
-                                                          left: 10.0,
-                                                          right: 10.0),
-                                                  child: InkWell(
-                                                    onTap: () {
-                                                      Navigator.push(
-                                                          context,
-                                                          MaterialPageRoute(
-                                                            builder:
-                                                                (context) =>
-                                                                    TempMap(
-                                                              lat: user[
-                                                                  'Client_Coordinates_lat'],
-                                                              long: user[
-                                                                  'Client_Coordinates_long'],
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .only(
+                                                                left: 10.0,
+                                                                right: 10.0),
+                                                        child: InkWell(
+                                                          onTap: () {
+                                                            Navigator.push(
+                                                                context,
+                                                                MaterialPageRoute(
+                                                                  builder:
+                                                                      (context) =>
+                                                                          TempMap(
+                                                                    lat: user[
+                                                                        'Client_Coordinates_lat'],
+                                                                    long: user[
+                                                                        'Client_Coordinates_long'],
+                                                                  ),
+                                                                ));
+                                                          },
+                                                          child: Container(
+                                                            height: 45,
+                                                            decoration:
+                                                                BoxDecoration(
+                                                                    color: const Color(
+                                                                        0xff2874f0),
+                                                                    boxShadow: const [
+                                                                      BoxShadow(
+                                                                        color: Colors
+                                                                            .black26,
+                                                                        spreadRadius:
+                                                                            1,
+                                                                        blurRadius:
+                                                                            1,
+                                                                      )
+                                                                    ],
+                                                                    borderRadius:
+                                                                        BorderRadius.circular(
+                                                                            5)),
+                                                            child: Center(
+                                                              child: Text(
+                                                                "Show Direction"
+                                                                    .trKey,
+                                                                style: TextStyle(
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .bold,
+                                                                    color: Colors
+                                                                        .white),
+                                                              ),
                                                             ),
-                                                          ));
-                                                    },
-                                                    child: Container(
-                                                      height: 45,
-                                                      decoration:
-                                                          BoxDecoration(
-                                                              color: const Color(
-                                                                  0xff2874f0),
-                                                              boxShadow: const [
-                                                                BoxShadow(
-                                                                  color: Colors
-                                                                      .black26,
-                                                                  spreadRadius:
-                                                                      1,
-                                                                  blurRadius:
-                                                                      1,
-                                                                )
-                                                              ],
-                                                              borderRadius:
-                                                                  BorderRadius
-                                                                      .circular(
-                                                                          5)),
-                                                      child: const Center(
-                                                        child: Text(
-                                                          "Show Direction",
-                                                          style: TextStyle(
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold,
-                                                              color: Colors
-                                                                  .white),
+                                                          ),
                                                         ),
                                                       ),
-                                                    ),
-                                                  ),
-                                                ),
                                                 (user['status'] ==
                                                             "Rejected") ||
                                                         (user['status'] ==
@@ -609,14 +629,13 @@ class _StaffNotificationPage extends State<StaffNotificationPage> {
                                                                   .center,
                                                           children: [
                                                             InkWell(
-                                                              onTap:
-                                                                  () async {
+                                                              onTap: () async {
                                                                 await FirebaseFirestore
                                                                     .instance
                                                                     .collection(
                                                                         "NotificationForStaff")
-                                                                    .doc(user
-                                                                        .id)
+                                                                    .doc(
+                                                                        user.id)
                                                                     .update({
                                                                   'status':
                                                                       "Rejected",
@@ -647,47 +666,51 @@ class _StaffNotificationPage extends State<StaffNotificationPage> {
                                                                 int notificationId2 =
                                                                     notificationId1 +
                                                                         1;
-                                                                sendNotificationService.sendNotificationUsingApi(
-                                                                    body: "🙁 ${currentStaffData?['First_name']} ${currentStaffData?['Last_name']} wasn’t available to take your job. 🤝 Feel free to try another staff member."
-                                                                    ,data: {
-                                                                          "screen": "ClientNotificationPage",
-                                                                          "notificationId": notificationId2.toString(), // Include notification ID in the data if needed
+                                                                sendNotificationService
+                                                                    .sendNotificationUsingApi(
+                                                                        body:
+                                                                            "🙁 ${currentStaffData?['First_name']} ${currentStaffData?['Last_name']} wasn’t available to take your job. 🤝 Feel free to try another staff member.",
+                                                                        data: {
+                                                                          "screen":
+                                                                              "ClientNotificationPage",
+                                                                          "notificationId":
+                                                                              notificationId2.toString(), // Include notification ID in the data if needed
                                                                         },
-                                                                        title: "Request Status",
-                                                                        token: usertoken);
+                                                                        title:
+                                                                            "Request Status",
+                                                                        token:
+                                                                            usertoken);
                                                               },
-                                                              child: const SizedBox(
-                                                                  width: 150,
-                                                                  child: GlowingBorderContainerPhone(
+                                                              child: Expanded(
+                                                                  child:
+                                                                      GlowingBorderContainerPhone(
                                                                     color1: Colors
                                                                         .white,
                                                                     color: Colors
                                                                         .black,
-                                                                    Text:
-                                                                        "Reject",
+                                                                    Text: "Reject"
+                                                                        .trKey,
                                                                   )),
                                                             ),
                                                             InkWell(
-                                                              onTap:
-                                                                  () async {
-                                                                Random
-                                                                    random =
+                                                              onTap: () async {
+                                                                Random random =
                                                                     Random();
-                                                                int genOPT = 1000 + random.nextInt(9000);
+                                                                int genOPT = 1000 +
+                                                                    random.nextInt(
+                                                                        9000);
 
                                                                 await FirebaseFirestore
                                                                     .instance
                                                                     .collection(
                                                                         "NotificationForStaff")
-                                                                    .doc(user
-                                                                        .id)
+                                                                    .doc(
+                                                                        user.id)
                                                                     .update({
                                                                   'status':
                                                                       "Accepted",
-                                                                  'OTP':
-                                                                      genOPT,
-                                                                  'Rating':
-                                                                      "0",
+                                                                  'OTP': genOPT,
+                                                                  'Rating': "0",
                                                                 });
                                                                 await FirebaseFirestore
                                                                     .instance
@@ -698,10 +721,8 @@ class _StaffNotificationPage extends State<StaffNotificationPage> {
                                                                     .update({
                                                                   'status':
                                                                       "Accepted",
-                                                                  'OTP':
-                                                                      genOPT,
-                                                                  "Rating":
-                                                                      "0",
+                                                                  'OTP': genOPT,
+                                                                  "Rating": "0",
                                                                 });
 
                                                                 var userDoc = await FirebaseFirestore
@@ -722,7 +743,8 @@ class _StaffNotificationPage extends State<StaffNotificationPage> {
                                                                         1;
                                                                 sendNotificationService
                                                                     .sendNotificationUsingApi(
-                                                                    body: "🟢 Your request has been accepted by ${currentStaffData?['First_name']} ${currentStaffData?['Last_name']}. They'll arrive as scheduled. 😊",
+                                                                        body:
+                                                                            "🟢 Your request has been accepted by ${currentStaffData?['First_name']} ${currentStaffData?['Last_name']}. They'll arrive as scheduled. 😊",
                                                                         data: {
                                                                           "screen":
                                                                               "ClientNotificationPage",
@@ -734,204 +756,252 @@ class _StaffNotificationPage extends State<StaffNotificationPage> {
                                                                         token:
                                                                             usertoken);
                                                               },
-                                                              child: const SizedBox(
+                                                              child: SizedBox(
                                                                   width: 150,
-                                                                  child: GlowingBorderContainerPhone(
+                                                                  child:
+                                                                      GlowingBorderContainerPhone(
                                                                     color1: Colors
                                                                         .white,
                                                                     color: Colors
                                                                         .black,
-                                                                    Text:
-                                                                        "Accept",
+                                                                    Text: "Accept"
+                                                                        .trKey,
                                                                   )),
                                                             ),
                                                           ],
                                                         ),
                                                       ),
                                                 (user['status'] ==
-                                                    "Received a Request") ||
-                                                    (user['status'] ==
-                                                        "Accepted")
+                                                            "Received a Request") ||
+                                                        (user['status'] ==
+                                                            "Accepted")
                                                     ? Padding(
-                                                  padding:
-                                                  const EdgeInsets
-                                                      .only(
-                                                      left: 10.0,
-                                                      right: 10,
-                                                      top: 10),
-                                                  child: Row(
-                                                    mainAxisAlignment:
-                                                    MainAxisAlignment
-                                                        .spaceBetween,
-                                                    crossAxisAlignment:
-                                                    CrossAxisAlignment
-                                                        .center,
-                                                    children: [
-                                                      InkWell(
-                                                        onTap:
-                                                            () async {
-                                                              var phoneNumber = user["clientContact"].toString();
-                                                              final Uri phoneUri = Uri(
-                                                                    scheme: 'tel',
-                                                                    path: phoneNumber
-                                                                        .toString(),
-                                                                  );
-                                                              if (await canLaunchUrl(phoneUri)) {
-                                                                await launchUrl(phoneUri);
-                                                              } else {
-                                                                Fluttertoast.showToast(
-                                                                    msg: "System Problem, Use Staff No. $phoneNumber");
-                                                              }
-                                                        },
-                                                        child: Container(
-                                                            width: screenWidth - 48,
-                                                            height: 50,
-                                                            decoration: BoxDecoration(
-                                                              color: Colors.black,
-                                                              borderRadius:
-                                                              BorderRadius.circular(
-                                                                  5),
-                                                              boxShadow: const [
-                                                                BoxShadow(
-                                                                  color: Colors.black26,
-                                                                  spreadRadius: 1,
-                                                                  blurRadius: 1,
-                                                                )
-                                                              ],
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .only(
+                                                                left: 10.0,
+                                                                right: 10,
+                                                                top: 10),
+                                                        child: Row(
+                                                          mainAxisAlignment:
+                                                              MainAxisAlignment
+                                                                  .spaceBetween,
+                                                          crossAxisAlignment:
+                                                              CrossAxisAlignment
+                                                                  .center,
+                                                          children: [
+                                                            InkWell(
+                                                              onTap: () async {
+                                                                var phoneNumber =
+                                                                    user["clientContact"]
+                                                                        .toString();
+                                                                final Uri
+                                                                    phoneUri =
+                                                                    Uri(
+                                                                  scheme: 'tel',
+                                                                  path: phoneNumber
+                                                                      .toString(),
+                                                                );
+                                                                if (await canLaunchUrl(
+                                                                    phoneUri)) {
+                                                                  await launchUrl(
+                                                                      phoneUri);
+                                                                } else {
+                                                                  Fluttertoast
+                                                                      .showToast(
+                                                                          msg:
+                                                                              "System Problem, Use Staff No. $phoneNumber");
+                                                                }
+                                                              },
+                                                              child: Container(
+                                                                  width:
+                                                                      screenWidth -
+                                                                          48,
+                                                                  height: 50,
+                                                                  decoration:
+                                                                      BoxDecoration(
+                                                                    color: Colors
+                                                                        .black,
+                                                                    borderRadius:
+                                                                        BorderRadius
+                                                                            .circular(5),
+                                                                    boxShadow: const [
+                                                                      BoxShadow(
+                                                                        color: Colors
+                                                                            .black26,
+                                                                        spreadRadius:
+                                                                            1,
+                                                                        blurRadius:
+                                                                            1,
+                                                                      )
+                                                                    ],
+                                                                  ),
+                                                                  child: Center(
+                                                                    child: Text(
+                                                                        "Call For More Information"
+                                                                            .trKey,
+                                                                        textAlign : TextAlign.center,
+                                                                        style: TextStyle(
+                                                                            fontWeight:
+                                                                                FontWeight.bold,
+                                                                            color: Colors.white)),
+                                                                  )),
                                                             ),
-                                                            child: const Center(
-                                                              child: Text("Call For More Information", style : TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
-                                                            )),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                )
+                                                          ],
+                                                        ),
+                                                      )
                                                     : Container(),
                                                 (user['status'] == "Accepted")
                                                     ? Padding(
-                                                      padding: const EdgeInsets.only(right : 14.0, left : 12.0, top: 10),
-                                                      child: Column(
-                                                        mainAxisAlignment: MainAxisAlignment.center,
-                                                        crossAxisAlignment: CrossAxisAlignment.center,
-                                                        children: [
-                                                          const Padding(
-                                                            padding: EdgeInsets.all(5.0),
-                                                            child: Text("Please take One Time Password (OTP) from Client when you reach the destination for the staff verification.", textAlign: TextAlign.justify,),
-                                                          ),
-                                                          Container(
-                                                            height: 50,
-                                                            width: screenWidth,
-                                                            decoration: BoxDecoration(
-                                                                color: Colors.white,
-                                                                borderRadius: BorderRadius.circular(5),
-                                                                boxShadow: const [BoxShadow(
-                                                                    color: Colors.black26,
-                                                                    blurRadius: 1,
-                                                                    spreadRadius: 1
-                                                                )]
-                                                            ),
-                                                            child: TextField(
-                                                              onChanged:
-                                                                  (value) async {
-                                                                setState(() {
-                                                                  OTP =
-                                                                      value; // Store the entered OTP in the state
-                                                                });
-
-                                                                // Automatically check OTP when it's fully entered (assuming OTP is 4 digits)
-                                                                if (OTP?.length ==
-                                                                    4) {
-                                                                  if (OTP ==
-                                                                      user['OTP']
-                                                                          .toString()) {
-                                                                    // OTP is correct, update the status to 'Completed'
-                                                                    await FirebaseFirestore
-                                                                        .instance
-                                                                        .collection(
-                                                                        "NotificationForStaff")
-                                                                        .doc(user
-                                                                        .id)
-                                                                        .update({
-                                                                      "status":
-                                                                      'Completed',
-                                                                    });
-                                                                    await FirebaseFirestore
-                                                                        .instance
-                                                                        .collection(
-                                                                        "NotificationForUser")
-                                                                        .doc(user[
-                                                                    'DocUID'])
-                                                                        .update({
-                                                                      "status":
-                                                                      'Completed',
-                                                                    });
-                                                                    var userDoc = await FirebaseFirestore
-                                                                        .instance
-                                                                        .collection(
-                                                                        "user")
-                                                                        .doc(user[
-                                                                    'userUID'])
-                                                                        .get();
-                                                                    var usertoken =
-                                                                    userDoc.data()?[
-                                                                    'token'];
-                                                                    int notificationId1 =
-                                                                        DateTime.now()
-                                                                            .millisecondsSinceEpoch; // Unique ID based on timestamp
-                                                                    int notificationId2 =
-                                                                        notificationId1 +
-                                                                            1;
-                                                                    sendNotificationService.sendNotificationUsingApi(
-                                                                        body: "✅ Your job with ${currentStaffData?['First_name']} ${currentStaffData?['Last_name']} has officially started. Thank you for choosing CareNest!💙",
-                                                                        data: {
-                                                                          "screen":
-                                                                          "ClientNotificationPage",
-                                                                          "notificationId":
-                                                                          notificationId2.toString(), // Include notification ID in the data if needed
-                                                                        },
-                                                                        title: "Staff Status",
-                                                                        token: usertoken);
-                                                                    ScaffoldMessenger.of(
-                                                                        context)
-                                                                        .showSnackBar(
-                                                                      const SnackBar(
-                                                                          content:
-                                                                          Text("OTP Verified!")),
-                                                                    );
-                                                                  } else {
-                                                                    // OTP is incorrect, show error message
-                                                                    ScaffoldMessenger.of(
-                                                                        context)
-                                                                        .showSnackBar(
-                                                                      const SnackBar(
-                                                                          content:
-                                                                          Text("Invalid OTP!")),
-                                                                    );
-                                                                  }
-                                                                }
-                                                              },
-                                                              decoration:
-                                                              InputDecoration(
-                                                                  hintText:
-                                                                  "OTP", // Placeholder text
-                                                                  border:
-                                                                  OutlineInputBorder(
-                                                                    borderRadius:
-                                                                    BorderRadius.circular(5),
-                                                                  ),
-                                                                  contentPadding: const EdgeInsets.fromLTRB(
-                                                                      20,
-                                                                      16,
-                                                                      16,
-                                                                      16) // Adds border around the text field
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .only(
+                                                                right: 14.0,
+                                                                left: 12.0,
+                                                                top: 10),
+                                                        child: Column(
+                                                          mainAxisAlignment:
+                                                              MainAxisAlignment
+                                                                  .center,
+                                                          crossAxisAlignment:
+                                                              CrossAxisAlignment
+                                                                  .center,
+                                                          children: [
+                                                            Padding(
+                                                              padding:
+                                                                  EdgeInsets
+                                                                      .all(5.0),
+                                                              child: Text(
+                                                                "Please take One Time Password (OTP) from Client when you reach the destination for the staff verification."
+                                                                    .trKey,
+                                                                textAlign:
+                                                                    TextAlign
+                                                                        .justify,
                                                               ),
                                                             ),
-                                                          ),
-                                                        ],
-                                                      )
-                                                    )
+                                                            Container(
+                                                              height: 50,
+                                                              width:
+                                                                  screenWidth,
+                                                              decoration: BoxDecoration(
+                                                                  color: Colors
+                                                                      .white,
+                                                                  borderRadius:
+                                                                      BorderRadius
+                                                                          .circular(5),
+                                                                  boxShadow: const [
+                                                                    BoxShadow(
+                                                                        color: Colors
+                                                                            .black26,
+                                                                        blurRadius:
+                                                                            1,
+                                                                        spreadRadius:
+                                                                            1)
+                                                                  ]),
+                                                              child: TextField(
+                                                                onChanged:
+                                                                    (value) async {
+                                                                  setState(() {
+                                                                    OTP =
+                                                                        value; // Store the entered OTP in the state
+                                                                  });
+
+                                                                  // Automatically check OTP when it's fully entered (assuming OTP is 4 digits)
+                                                                  if (OTP?.length ==
+                                                                      4) {
+                                                                    if (OTP ==
+                                                                        user['OTP']
+                                                                            .toString()) {
+                                                                      // OTP is correct, update the status to 'Completed'
+                                                                      await FirebaseFirestore
+                                                                          .instance
+                                                                          .collection(
+                                                                              "NotificationForStaff")
+                                                                          .doc(user
+                                                                              .id)
+                                                                          .update({
+                                                                        "status":
+                                                                            'Completed',
+                                                                      });
+                                                                      await FirebaseFirestore
+                                                                          .instance
+                                                                          .collection(
+                                                                              "NotificationForUser")
+                                                                          .doc(user[
+                                                                              'DocUID'])
+                                                                          .update({
+                                                                        "status":
+                                                                            'Completed',
+                                                                      });
+                                                                      var userDoc = await FirebaseFirestore
+                                                                          .instance
+                                                                          .collection(
+                                                                              "user")
+                                                                          .doc(user[
+                                                                              'userUID'])
+                                                                          .get();
+                                                                      var usertoken =
+                                                                          userDoc
+                                                                              .data()?['token'];
+                                                                      int notificationId1 =
+                                                                          DateTime.now()
+                                                                              .millisecondsSinceEpoch; // Unique ID based on timestamp
+                                                                      int notificationId2 =
+                                                                          notificationId1 +
+                                                                              1;
+                                                                      sendNotificationService.sendNotificationUsingApi(
+                                                                          body: "✅ Your job with ${currentStaffData?['First_name']} ${currentStaffData?['Last_name']} has officially started. Thank you for choosing CareNest!💙",
+                                                                          data: {
+                                                                            "screen":
+                                                                                "ClientNotificationPage",
+                                                                            "notificationId":
+                                                                                notificationId2.toString(), // Include notification ID in the data if needed
+                                                                          },
+                                                                          title: "Staff Status",
+                                                                          token: usertoken);
+                                                                      ScaffoldMessenger.of(
+                                                                              context)
+                                                                          .showSnackBar(
+                                                                        SnackBar(
+                                                                            content:
+                                                                                Text("OTP Verified!".trKey)),
+                                                                      );
+                                                                    } else {
+                                                                      // OTP is incorrect, show error message
+                                                                      ScaffoldMessenger.of(
+                                                                              context)
+                                                                          .showSnackBar(
+                                                                        SnackBar(
+                                                                            content:
+                                                                                Text("Invalid OTP!".trKey)),
+                                                                      );
+                                                                    }
+                                                                  }
+                                                                },
+                                                                decoration:
+                                                                    InputDecoration(
+                                                                        hintText: "OTP"
+                                                                            .trKey, // Placeholder text
+                                                                        border:
+                                                                            OutlineInputBorder(
+                                                                          borderRadius:
+                                                                              BorderRadius.circular(5),
+                                                                        ),
+                                                                        contentPadding: const EdgeInsets
+                                                                            .fromLTRB(
+                                                                            20,
+                                                                            16,
+                                                                            16,
+                                                                            16) // Adds border around the text field
+                                                                        ),
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ))
                                                     : Container(),
-                                                const SizedBox(height: 10,)
+                                                const SizedBox(
+                                                  height: 10,
+                                                )
                                               ],
                                             ),
                                           ),
@@ -944,6 +1014,16 @@ class _StaffNotificationPage extends State<StaffNotificationPage> {
                             ),
                           );
                         }
+                      }
+                      if (userViews.isEmpty) {
+                        return Padding(
+                          padding: const EdgeInsets.only(top: 200.0),
+                          child: Center(
+                              child: Text(
+                            "There are no any notifications".trKey,
+                            style: TextStyle(fontSize: 16),
+                          )),
+                        );
                       }
                       return Column(children: userViews);
                     },
@@ -1019,47 +1099,64 @@ class _GlowingBorderContainerStatePhone
           AnimatedBuilder(
             animation: _controller,
             builder: (_, __) {
-              return Container(
-                width: double.infinity,
-                height: 50,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(5),
-                  color: Colors.transparent,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 4,
-                      spreadRadius: 2,
+              return IntrinsicWidth(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(
+                    minWidth: 150,
+                    maxWidth: 250,
+                    minHeight: 50,
+                    maxHeight: 300
+                  ),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(5),
+                      color: Colors.transparent,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 4,
+                          spreadRadius: 2,
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-                child: CustomPaint(
-                  painter: _BorderGlowPainter(rotatingGradient),
+                    child: CustomPaint(
+                      painter: _BorderGlowPainter(rotatingGradient),
+                    ),
+                  ),
                 ),
               );
             },
           ),
 
           // Inner white container with text
-          Container(
-            height: 44,
-            margin: const EdgeInsets.symmetric(horizontal: 4),
-            decoration: BoxDecoration(
-              color: widget.color1,
-              borderRadius: BorderRadius.circular(5),
-            ),
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  widget.Text,
-                  style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: widget.color),
+          IntrinsicWidth(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(
+                  minWidth: 150,
+                  maxWidth: 250,
+                  minHeight: 44,
+                  maxHeight: 300
+              ),
+              child: Container(
+                margin: const EdgeInsets.symmetric(horizontal: 4),
+                decoration: BoxDecoration(
+                  color: widget.color1,
+                  borderRadius: BorderRadius.circular(5),
                 ),
-              ],
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      widget.Text,
+                      style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: widget.color),
+                    ),
+                  ],
+                ),
+              ),
             ),
           ),
         ],

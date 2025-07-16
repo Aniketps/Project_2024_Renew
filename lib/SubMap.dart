@@ -50,13 +50,13 @@ class _SubMapState extends State<SubMap> {
       ),
       body: FlutterMap(
         options: MapOptions(
-          center: const LatLng(18.55, 73.98), // Initial center location
-          zoom: 13.0, // Initial zoom level
-          minZoom: 3, // Minimum zoom level
-          maxZoom: 30, // Maximum zoom level
+          initialCenter: const LatLng(18.55, 73.98),
+          initialZoom: 13.0,
+          minZoom: 3,
+          maxZoom: 30,
           onTap: (tapPosition, point) {
             setState(() {
-              tappedPoints.add(point); // Add tapped point to the list
+              tappedPoints.add(point);
               debugPrint(point.toString());
             });
           },

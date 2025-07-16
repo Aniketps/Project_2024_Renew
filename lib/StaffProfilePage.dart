@@ -8,6 +8,7 @@ import 'package:carehub/EPersonal.dart';
 import 'package:carehub/EServiceRate.dart';
 import 'package:carehub/LoaderSupport.dart';
 import 'package:carehub/Rating.dart';
+import 'package:carehub/services/convertToTranslate.dart';
 import 'package:carehub/services/sendNotificationService.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -105,8 +106,8 @@ class _StaffProfilePage extends State<StaffProfilePage> {
               height: 150,
               color: Globle.theme,
               child: AppBar(
-                title: const Center(
-                  child: Text("Profile",
+                title: Center(
+                  child: Text("Profile".trKey,
                       style:
                           TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
                 ),
@@ -147,8 +148,8 @@ class _StaffProfilePage extends State<StaffProfilePage> {
             height: 150,
             color: Globle.theme,
             child: AppBar(
-              title: const Center(
-                child: Text("Profile",
+              title: Center(
+                child: Text("Profile".trKey,
                     style:
                         TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
               ),
@@ -281,7 +282,7 @@ class _UserView extends State<UserView> {
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
-            "Enter the unique code for the work.\nUse the same code if sending to multiple staff.",
+            "Enter the unique code for the work.\nUse the same code if sending to multiple staff.".trKey,
             style: GoogleFonts.poppins(
               fontSize: 14,
               fontWeight: FontWeight.w500,
@@ -298,7 +299,7 @@ class _UserView extends State<UserView> {
                   keyboardType: TextInputType.number,
                   style: GoogleFonts.poppins(fontSize: 16),
                   decoration: InputDecoration(
-                    hintText: "Enter Code...",
+                    hintText: "Enter Code...".trKey,
                     hintStyle: const TextStyle(color: Colors.black54),
                     filled: true,
                     fillColor: Colors.blue[50],
@@ -532,8 +533,8 @@ class _UserView extends State<UserView> {
                                                 children: [
                                                   Text(
                                                       StaffData["Status"]
-                                                          ? "Online"
-                                                          : "Offline",
+                                                          ? "Online".trKey
+                                                          : "Offline".trKey,
                                                       style: const TextStyle(
                                                           color: Colors.blue,
                                                           fontSize: 12)),
@@ -599,8 +600,8 @@ class _UserView extends State<UserView> {
                                                                       .bold),
                                                         ),
                                                       ),
-                                                      const Text(
-                                                        "Check",
+                                                      Text(
+                                                        "Check".trKey,
                                                         style: TextStyle(
                                                             fontSize: 12,
                                                             color:
@@ -641,8 +642,8 @@ class _UserView extends State<UserView> {
                                                 left: 10, right: 10),
                                             child: Center(
                                                 child: Text(
-                                              Skill[0].toUpperCase() +
-                                                  Skill.substring(1),
+                                              (Skill[0].toUpperCase() +
+                                                  Skill.substring(1)).trKey,
                                               overflow: TextOverflow.ellipsis,
                                               maxLines: 1,
                                               style: const TextStyle(
@@ -687,9 +688,9 @@ class _UserView extends State<UserView> {
                                                borderRadius: BorderRadius.circular(10),
                                                color: Colors.black,
                                              ),
-                                             child: const Center(
+                                             child: Center(
                                                child: Text(
-                                                 "Select",
+                                                 "Select".trKey,
                                                  style: TextStyle(
                                                      fontSize: 16,
                                                      fontWeight:
@@ -721,11 +722,11 @@ class _UserView extends State<UserView> {
                                     child: Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
-                                        const Padding(
+                                        Padding(
                                           padding: EdgeInsets.only(
                                               left: 20, top: 10, bottom: 5),
                                           child: Text(
-                                            "Contact Information",
+                                            "Contact Information".trKey,
                                             style: TextStyle(
                                                 fontSize: 18,
                                                 fontWeight: FontWeight.bold),
@@ -781,7 +782,7 @@ class _UserView extends State<UserView> {
                                                       ),
                                                     ),
                                                     const SizedBox(width: 5,),
-                                                    Text("${StaffData['Phone_Number1']?? "No Number"}", style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),),
+                                                    Text("${StaffData['Phone_Number1'] == "" ? "No Number" : StaffData['Phone_Number1']}", style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),),
                                                   ],
                                               ),
                                               Row(
@@ -802,7 +803,7 @@ class _UserView extends State<UserView> {
                                                               launchUrl(phoneUri01);
                                                             } else {
                                                               Fluttertoast.showToast(
-                                                                msg: "Empty",
+                                                                msg: "Empty".trKey,
                                                                 toastLength:
                                                                 Toast.LENGTH_SHORT,
                                                                 gravity:
@@ -811,7 +812,7 @@ class _UserView extends State<UserView> {
                                                             }
                                                           } else {
                                                             Fluttertoast.showToast(
-                                                              msg: "Empty",
+                                                              msg: "Empty".trKey,
                                                               toastLength:
                                                               Toast.LENGTH_SHORT,
                                                               gravity: ToastGravity.BOTTOM,
@@ -840,7 +841,7 @@ class _UserView extends State<UserView> {
                                                       ),
                                                     ),
                                                     const SizedBox(width: 5,),
-                                                    Text("${StaffData['Phone_Number2']?? "No Number"}", style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),),
+                                                    Text("${StaffData['Phone_Number2'] == ""? "No Number".trKey : StaffData['Phone_Number2']}", style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),),
                                                   ],
                                               ),
                                             ],
@@ -855,7 +856,6 @@ class _UserView extends State<UserView> {
                             Padding(
                               padding: const EdgeInsets.all(6.0),
                               child: Container(
-                                height: screenHeight * 0.18,
                                 width: screenWidth * 0.95,
                                 decoration: BoxDecoration(
                                     color: Colors.white,
@@ -869,11 +869,11 @@ class _UserView extends State<UserView> {
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    const Padding(
+                                    Padding(
                                       padding: EdgeInsets.only(
                                           left: 20, top: 10, bottom: 5),
                                       child: Text(
-                                        "Service Rate",
+                                        "Service Rate".trKey,
                                         style: TextStyle(
                                             fontSize: 18,
                                             fontWeight: FontWeight.bold),
@@ -887,7 +887,7 @@ class _UserView extends State<UserView> {
                                         children: [
                                           SizedBox(
                                               width: screenWidth * 0.5,
-                                              child: const Text("Hour based")),
+                                              child: Text("Hour based".trKey)),
                                           Text((StaffData['Hour_Rate']
                                                       .toString() +
                                                   " ${StaffData['Currency'] ?? '-'}")),
@@ -901,7 +901,7 @@ class _UserView extends State<UserView> {
                                         children: [
                                           SizedBox(
                                               width: screenWidth * 0.5,
-                                              child: const Text("Day based")),
+                                              child: Text("Day based".trKey)),
                                           Text((StaffData['Day_Rate']
                                                       .toString() +
                                                   " ${StaffData['Currency'] ?? '-'}")),
@@ -916,7 +916,7 @@ class _UserView extends State<UserView> {
                                           SizedBox(
                                               width: screenWidth * 0.5,
                                               child: Text(
-                                                "Day service shift ${StaffData['Day_Shift'] ?? '--'} hours",
+                                                "${"Day service shift".trKey} ${StaffData['Day_Shift'] ?? '--'} ${"hours".trKey}",
                                                 style: const TextStyle(
                                                     fontSize: 12,
                                                     color: Colors.blue),
@@ -967,29 +967,29 @@ class _UserView extends State<UserView> {
                                                   ),
                                                 );
                                               },
-                                              child: const Text(
-                                                "Not Verified Staff, Click...",
+                                              child: Text(
+                                                "Not Verified Staff".trKey,
                                                 style: TextStyle(fontSize: 20),
                                               ),
                                             )
                                           ] else if (StaffData["Verified"] ==
                                               "pending") ...[
-                                            const Text(
-                                              "Under Verification Process",
+                                                Text(
+                                              "Under Verification Process".trKey,
                                               style: TextStyle(fontSize: 20),
                                             )
                                           ] else if (StaffData["Verified"] ==
                                               "rejected") ...[
-                                            const Text(
-                                              "Rejected",
+                                            Text(
+                                              "Rejected".trKey,
                                               style: TextStyle(fontSize: 20),
                                             )
                                           ] else if (StaffData["Verified"] ==
                                               "verified") ...[
                                             Column(
                                               children: [
-                                                const Text(
-                                                  "Verified Documents",
+                                                Text(
+                                                  "Verified Documents".trKey,
                                                   style:
                                                   TextStyle(fontSize: 20),
                                                 ),
@@ -1026,8 +1026,8 @@ class _UserView extends State<UserView> {
                                               ],
                                             )
                                           ] else ...[
-                                            const Text(
-                                              "Unknown State",
+                                            Text(
+                                              "Unknown State".trKey,
                                               style: TextStyle(fontSize: 20),
                                             )
                                           ]

@@ -140,7 +140,6 @@ class NotificationService {
         chronometerCountDown: true,
         showWhen: true,
         fullScreenIntent: true,
-        silent: true,
 
         ongoing: true,
         usesChronometer: true,

@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:app_settings/app_settings.dart';
-import 'package:carehub/Admin.dart';
 import 'package:carehub/EContact.dart';
 import 'package:carehub/EPersonal.dart';
 import 'package:carehub/EServiceRate.dart';
@@ -13,9 +12,11 @@ import 'package:carehub/Rating.dart';
 import 'package:carehub/services/NotificationService.dart';
 import 'package:carehub/services/PaymentServices/PaymentRecordImpl.dart';
 import 'package:carehub/services/PaymentServices/PaymentRecordService.dart';
+import 'package:carehub/services/convertToTranslate.dart';
 import 'package:carehub/services/fcm_service.dart';
 import 'package:carehub/services/sendNotificationService.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -125,10 +126,10 @@ class _StaffProfileHome extends State<StaffProfileHome> {
     } catch (e) {
       if (e.toString() ==
           'PlatformException(TASK_FAILURE, -10: Install Error(-10): The app is not owned by any user on this device. An app is "owned" if it has been acquired from Play. (https://developer.android.com/reference/com/google/android/play/core/install/model/InstallErrorCode#ERROR_APP_NOT_OWNED), null, null)'){
-        _showSnack('Update failed: Testing Version');
+        _showSnack('Update failed: Testing Version'.trKey);
       }
       else {
-        _showSnack('Update failed : Unknown Error');
+        _showSnack('Update failed : Unknown Error'.trKey);
       }
     }
   }
@@ -139,7 +140,7 @@ class _StaffProfileHome extends State<StaffProfileHome> {
     }
   }
 
-  String CurrentLocation = "Loading...";
+  String CurrentLocation = "Loading...".trKey;
 
   Future<void> getCurrentLocationName(double lat, double long) async {
     List<Placemark> placemarks = await placemarkFromCoordinates(lat, long);
@@ -180,7 +181,9 @@ class _StaffProfileHome extends State<StaffProfileHome> {
 
       // Fetch position quickly
       Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.lowest,
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.lowest,
+        ),
       );
 
       final user = FirebaseAuth.instance.currentUser;
@@ -218,23 +221,35 @@ class _StaffProfileHome extends State<StaffProfileHome> {
   Future<void> SearchStaff() async {
     User? user1 = FirebaseAuth.instance.currentUser;
     currentUserID = user1?.uid ?? '';
+
+    // Get current user's main document
     DocumentSnapshot documentSnapshot1 = await FirebaseFirestore.instance
         .collection("user")
         .doc(currentUserID)
         .get();
     StaffData1 = documentSnapshot1.data() as Map<String, dynamic>?;
 
+    if (StaffData1 == null || StaffData1["professionOfStaff"] == null) {
+      print("professionOfStaff is missing in user profile.");
+      return;
+    }
+
+    // Now get staff document from that profession's collection
     DocumentSnapshot documentSnapshot = await FirebaseFirestore.instance
         .collection("${StaffData1["professionOfStaff"]}")
         .doc(currentUserID)
         .get();
-    if (documentSnapshot.exists) {
-      setState(() {
-        StaffData = documentSnapshot.data() as Map<String, dynamic>?;
-        if (StaffData['professionOfStaff'] == null) {
-        }
-      });
+
+    if (!documentSnapshot.exists) {
+      print("Staff document does not exist.");
+      return;
     }
+
+    if (!mounted) return;
+
+    setState(() {
+      StaffData = documentSnapshot.data() as Map<String, dynamic>?;
+    });
   }
 
   @override
@@ -319,8 +334,8 @@ class _StaffProfileHome extends State<StaffProfileHome> {
                                   ),
                           ),
                     (StaffData == null)
-                        ? const Text(
-                            "Empty",
+                        ? Text(
+                            "Empty".trKey,
                             style: TextStyle(
                                 fontWeight: FontWeight.bold, fontSize: 18),
                           )
@@ -332,10 +347,7 @@ class _StaffProfileHome extends State<StaffProfileHome> {
                   ])),
               ListTile(
                 leading: const Icon(Icons.home),
-                title: const Text('Home'),
-                onLongPress: (){
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => const AdminLogin(),));
-                },
+                title: Text('Home'.trKey),
                 onTap: () {
                   Navigator.pushReplacement(
                       context,
@@ -346,7 +358,7 @@ class _StaffProfileHome extends State<StaffProfileHome> {
               ),
               ListTile(
                 leading: const Icon(Icons.history),
-                title: const Text('Deals'),
+                title: Text('Deals'.trKey),
                 onTap: () {
                   Navigator.push(
                       context,
@@ -358,7 +370,7 @@ class _StaffProfileHome extends State<StaffProfileHome> {
               const Divider(),
               ListTile(
                 leading: const Icon(Icons.headset_mic),
-                title: const Text('Contact Us'),
+                title: Text('Contact Us'.trKey),
                 onTap: () {
                   Navigator.push(
                       context,
@@ -369,7 +381,7 @@ class _StaffProfileHome extends State<StaffProfileHome> {
               ),
               ListTile(
                 leading: const Icon(Icons.library_books),
-                title: const Text('Terms and Conditions'),
+                title: Text('Terms and Conditions'.trKey),
                 onTap: () {
                   Navigator.push(
                       context,
@@ -380,7 +392,7 @@ class _StaffProfileHome extends State<StaffProfileHome> {
               ),
               ListTile(
                 leading: const Icon(Icons.feedback),
-                title: const Text('Feedback'),
+                title: Text('Feedback'.trKey),
                 onTap: () {
                   Navigator.push(
                       context,
@@ -392,7 +404,7 @@ class _StaffProfileHome extends State<StaffProfileHome> {
               const Divider(),
               ListTile(
                 leading: const Icon(Icons.logout),
-                title: const Text('Logout'),
+                title: Text('Logout'.trKey),
                 onTap: () async {
                   await GoogleSignIn().signOut();
                   await FirebaseAuth.instance.signOut();
@@ -412,10 +424,10 @@ class _StaffProfileHome extends State<StaffProfileHome> {
               child: AppBar(
                 title: SizedBox(
                   width: screenWidth * 0.6,
-                  child: const Text(
+                  child: Text(
                       overflow: TextOverflow.ellipsis,
                       maxLines: 1,
-                      "City",
+                      "City".trKey,
                       style:
                           TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                 ),
@@ -535,8 +547,8 @@ class _StaffProfileHome extends State<StaffProfileHome> {
                                 ),
                         ),
                   (StaffData == null)
-                      ? const Text(
-                          "Empty",
+                      ? Text(
+                          "Empty".trKey,
                           style: TextStyle(
                               fontWeight: FontWeight.bold, fontSize: 18),
                         )
@@ -548,10 +560,7 @@ class _StaffProfileHome extends State<StaffProfileHome> {
                 ])),
             ListTile(
               leading: const Icon(Icons.home),
-              title: const Text('Home'),
-              onLongPress: (){
-                Navigator.push(context, MaterialPageRoute(builder:(context) => const AdminLogin(),));
-              },
+              title: Text('Home'.trKey),
               onTap: () {
                 Navigator.pushReplacement(
                     context,
@@ -562,7 +571,7 @@ class _StaffProfileHome extends State<StaffProfileHome> {
             ),
             ListTile(
               leading: const Icon(Icons.history),
-              title: const Text('Deals'),
+              title: Text('Deals'.trKey),
               onTap: () {
                 Navigator.push(
                     context,
@@ -574,7 +583,7 @@ class _StaffProfileHome extends State<StaffProfileHome> {
             const Divider(),
             ListTile(
               leading: const Icon(Icons.headset_mic),
-              title: const Text('Contact Us'),
+              title: Text('Contact Us'.trKey),
               onTap: () {
                 Navigator.push(
                     context,
@@ -585,7 +594,7 @@ class _StaffProfileHome extends State<StaffProfileHome> {
             ),
             ListTile(
               leading: const Icon(Icons.library_books),
-              title: const Text('Terms and Conditions'),
+              title: Text('Terms and Conditions'.trKey),
               onTap: () {
                 Navigator.push(
                     context,
@@ -596,7 +605,7 @@ class _StaffProfileHome extends State<StaffProfileHome> {
             ),
             ListTile(
               leading: const Icon(Icons.feedback),
-              title: const Text('Feedback'),
+              title: Text('Feedback'.trKey),
               onTap: () {
                 Navigator.push(
                     context,
@@ -608,7 +617,7 @@ class _StaffProfileHome extends State<StaffProfileHome> {
             const Divider(),
             ListTile(
               leading: const Icon(Icons.logout),
-              title: const Text('Logout'),
+              title: Text('Logout'.trKey),
               onTap: () async {
                 await GoogleSignIn().signOut();
                 await FirebaseAuth.instance.signOut();
@@ -616,6 +625,115 @@ class _StaffProfileHome extends State<StaffProfileHome> {
                     MaterialPageRoute(builder: (context) => const LoginPage()));
               },
             ),
+
+            Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: DropdownButtonFormField<Locale>(
+                dropdownColor: Colors.blue,
+                value: context.locale,
+                style: const TextStyle(color: Colors.black),
+                icon: const Icon(Icons.language, color: Colors.black),
+                items: const [
+                  DropdownMenuItem(
+                    value: Locale('en'),
+                    child: Text('English'),
+                  ),
+                  DropdownMenuItem(
+                    value: Locale('hi'),
+                    child: Text('हिंदी'),
+                  ),
+                  DropdownMenuItem(
+                    value: Locale('mr'),
+                    child: Text('मराठी'),
+                  ),
+                  DropdownMenuItem(
+                    value: Locale('fr'),
+                    child: Text('Français'),
+                  ),
+                  DropdownMenuItem(
+                    value: Locale('ru'),
+                    child: Text('Русский'),
+                  ),
+                  DropdownMenuItem(
+                    value: Locale('bn'),
+                    child: Text('বাংলা'),
+                  ),
+                  DropdownMenuItem(
+                    value: Locale('pt'),
+                    child: Text('Português'),
+                  ),
+                  DropdownMenuItem(
+                    value: Locale('es'),
+                    child: Text('Español'),
+                  ),
+                  DropdownMenuItem(
+                    value: Locale('ur'),
+                    child: Text('اردو'),
+                  ),
+                  DropdownMenuItem(
+                    value: Locale('ja'),
+                    child: Text('日本語'),
+                  ),
+                  DropdownMenuItem(
+                    value: Locale('te'),
+                    child: Text('తెలుగు'),
+                  ),
+                  DropdownMenuItem(
+                    value: Locale('ar'),
+                    child: Text('العربية'),
+                  ),
+                  DropdownMenuItem(
+                    value: Locale('de'),
+                    child: Text('Deutsch'),
+                  ),
+                  DropdownMenuItem(
+                    value: Locale('vi'),
+                    child: Text('Tiếng Việt'),
+                  ),
+                  DropdownMenuItem(
+                    value: Locale('id'),
+                    child: Text('Bahasa Indonesia'),
+                  ),
+                  DropdownMenuItem(
+                    value: Locale('zh'),
+                    child: Text('中文'),
+                  ),
+                  DropdownMenuItem(
+                    value: Locale('ta'),
+                    child: Text('தமிழ்'),
+                  ),
+                  DropdownMenuItem(
+                    value: Locale('tr'),
+                    child: Text('Türkçe'),
+                  ),
+                  DropdownMenuItem(
+                    value: Locale('ko'),
+                    child: Text('한국어'),
+                  ),
+                  DropdownMenuItem(
+                    value: Locale('it'),
+                    child: Text('Italiano'),
+                  ),
+                  DropdownMenuItem(
+                    value: Locale('ml'),
+                    child: Text('മലയാളം'),
+                  ),
+                  DropdownMenuItem(
+                    value: Locale('th'),
+                    child: Text('ไทย'),
+                  ),
+                  DropdownMenuItem(
+                    value: Locale('pl'),
+                    child: Text('Polski'),
+                  ),
+                ],
+                onChanged: (Locale? locale) {
+                  if (locale != null) {
+                    context.setLocale(locale);
+                  }
+                },
+              ),
+            )
           ],
         ),
       ),
@@ -660,89 +778,91 @@ class _StaffProfileHome extends State<StaffProfileHome> {
           )
         ],
       ),
-      bottomNavigationBar: Container(
-        height: 70,
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(16),
-            topRight: Radius.circular(16),
+      bottomNavigationBar: SafeArea(
+        child: Container(
+          height: 70,
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(16),
+              topRight: Radius.circular(16),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black12,
+                blurRadius: 10,
+                offset: Offset(0, -2),
+              ),
+            ],
           ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black12,
-              blurRadius: 10,
-              offset: Offset(0, -2),
-            ),
-          ],
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            InkWell(
-              borderRadius: BorderRadius.circular(12),
-              onTap: () {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) =>
-                        const StaffProfileHome(),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              InkWell(
+                borderRadius: BorderRadius.circular(12),
+                onTap: () {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          const StaffProfileHome(),
+                    ),
+                  );
+                },
+                child: Container(
+                  height: 50,
+                  width: 50,
+                  decoration: BoxDecoration(
+                    color: Colors.blue.shade50,
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                );
-              },
-              child: Container(
-                height: 50,
-                width: 50,
-                decoration: BoxDecoration(
-                  color: Colors.blue.shade50,
-                  borderRadius: BorderRadius.circular(12),
+                  child: const Icon(Icons.home, color: Colors.blueAccent, size: 28),
                 ),
-                child: const Icon(Icons.home, color: Colors.blueAccent, size: 28),
               ),
-            ),
-            InkWell(
-              borderRadius: BorderRadius.circular(12),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) =>
-                        const DealsForStaff(),
+              InkWell(
+                borderRadius: BorderRadius.circular(12),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          const DealsForStaff(),
+                    ),
+                  );
+                },
+                child: Container(
+                  height: 50,
+                  width: 50,
+                  decoration: BoxDecoration(
+                    color: Colors.green.shade50,
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                );
-              },
-              child: Container(
-                height: 50,
-                width: 50,
-                decoration: BoxDecoration(
-                  color: Colors.green.shade50,
-                  borderRadius: BorderRadius.circular(12),
+                  child: const Icon(Icons.work_history_rounded, color: Colors.green, size: 28),
                 ),
-                child: const Icon(Icons.work_history_rounded, color: Colors.green, size: 28),
               ),
-            ),
-            InkWell(
-              borderRadius: BorderRadius.circular(12),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) =>
-                        const StaffNotificationPage(),
+              InkWell(
+                borderRadius: BorderRadius.circular(12),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          const StaffNotificationPage(),
+                    ),
+                  );
+                },
+                child: Container(
+                  height: 50,
+                  width: 50,
+                  decoration: BoxDecoration(
+                    color: Colors.purple.shade50,
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                );
-              },
-              child: Container(
-                height: 50,
-                width: 50,
-                decoration: BoxDecoration(
-                  color: Colors.purple.shade50,
-                  borderRadius: BorderRadius.circular(12),
+                  child: const Icon(Icons.notifications, color: Colors.purple, size: 28),
                 ),
-                child: const Icon(Icons.notifications, color: Colors.purple, size: 28),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -876,11 +996,23 @@ class _StaffView extends State<StaffView> {
   void _handlePaymentError(PaymentFailureResponse response) {
     setState(() {
     });
-    _showAlert("Payment Failed", "Code: ${response.code}\nMessage: ${response.message}");
+    _showAlert("Payment Failed".trKey, "Code: ${response.code}\nMessage: ${response.message}");
+  }
+
+  String wrapText(String text, int maxCharsPerLine) {
+    if (text.length <= maxCharsPerLine) return text;
+
+    final buffer = StringBuffer();
+    for (int i = 0; i < text.length; i += maxCharsPerLine) {
+      buffer.writeln(
+          text.substring(i, (i + maxCharsPerLine).clamp(0, text.length))
+      );
+    }
+    return buffer.toString();
   }
 
   void _handleExternalWallet(ExternalWalletResponse response) {
-    _showAlert("Wallet Selected", "Wallet: ${response.walletName}");
+    _showAlert("Wallet Selected".trKey, "Wallet: ${response.walletName}");
   }
 
   void _showAlert(String title, String message) {
@@ -899,10 +1031,13 @@ class _StaffView extends State<StaffView> {
   PaymentRecordModel? paymentRecordModel;
 
   Future<void> paymentRecordModels() async {
-    setState(() async {
-      paymentRecordModel = await paymentRecordService.getPaymentRecordByUID(UID);
+    var result = await paymentRecordService.getPaymentRecordByUID(UID);
+    if (!mounted) return; // optional safety
+    setState(() {
+      paymentRecordModel = result;
     });
   }
+
 
   final StaffData;
   final UID;
@@ -943,7 +1078,7 @@ class _StaffView extends State<StaffView> {
         });
 
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Profile picture updated successfully!")),
+          SnackBar(content: Text("Profile picture updated successfully!".trKey)),
         );
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -1028,7 +1163,7 @@ class _StaffView extends State<StaffView> {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Text(title, style: GoogleFonts.roboto(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20),),
+                Text(title.trKey, style: GoogleFonts.roboto(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20),),
                 const SizedBox(height: 10,),
                 Text("₹$price/mo", style: GoogleFonts.roboto(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20),),
                 const SizedBox(height: 10,),
@@ -1039,14 +1174,14 @@ class _StaffView extends State<StaffView> {
                       const Expanded(child: Divider(thickness: 1, color: Colors.grey)),
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                        child: Text("BENEFITS", style: GoogleFonts.roboto(fontWeight: FontWeight.bold, color: Colors.white)),
+                        child: Text("BENEFITS".trKey, style: GoogleFonts.roboto(fontWeight: FontWeight.bold, color: Colors.white)),
                       ),
                       const Expanded(child: Divider(thickness: 1, color: Colors.grey)),
                     ],
                   ),
                 ),
                 const SizedBox(height: 10,),
-                Text("Your profile will be presented on our platform, along with real-time visibility on the map for convenience.", style: GoogleFonts.roboto(color: Colors.white), textAlign: TextAlign.center,),
+                Text("Your profile will be presented on our platform, along with real-time visibility on the map for convenience.".trKey, style: GoogleFonts.roboto(color: Colors.white), textAlign: TextAlign.center,),
                 const SizedBox(height: 10),
                 SizedBox(
                   width: screenWidth * 0.6,
@@ -1056,28 +1191,28 @@ class _StaffView extends State<StaffView> {
                         children: [
                           const Icon(Icons.check_circle, color: Colors.green, size: 18,),
                           const SizedBox(width: 8),
-                          Text("Profile visibility on platform", style: GoogleFonts.roboto(color: Colors.white)),
+                          Text("Profile visibility on platform".trKey, style: GoogleFonts.roboto(color: Colors.white)),
                         ],
                       ),
                       Row(
                         children: [
                           const Icon(Icons.check_circle, color: Colors.green, size: 18),
                           const SizedBox(width: 8),
-                          Text("Live map visibility", style: GoogleFonts.roboto(color: Colors.white)),
+                          Text("Live map visibility".trKey, style: GoogleFonts.roboto(color: Colors.white)),
                         ],
                       ),
                       Row(
                         children: [
                           Icon(icon3, color: color1, size: 18),
                           const SizedBox(width: 8),
-                          Text("Profile in recommendations", style: GoogleFonts.roboto(color: Colors.white)),
+                          Text("Profile in recommendations".trKey, style: GoogleFonts.roboto(color: Colors.white)),
                         ],
                       ),
                       Row(
                         children: [
                           Icon(icon4, color: color2, size: 18),
                           const SizedBox(width: 8),
-                          Text("Extra 1 month", style: GoogleFonts.roboto(color: Colors.white)),
+                          Text("Extra 1 month".trKey, style: GoogleFonts.roboto(color: Colors.white)),
                         ],
                       ),
                     ],
@@ -1101,10 +1236,10 @@ class _StaffView extends State<StaffView> {
                             userContact: StaffData["Phone_Number1"],
                           );
                         } catch (e) {
-                          Fluttertoast.showToast(msg: "Payment failed to initialize");
+                          Fluttertoast.showToast(msg: "Payment failed to initialize".trKey);
                         }
                       }else{
-                        Fluttertoast.showToast(msg: "Not available yet");
+                        Fluttertoast.showToast(msg: "Not available yet".trKey);
                       }
                     },
                     style: ElevatedButton.styleFrom(
@@ -1117,7 +1252,7 @@ class _StaffView extends State<StaffView> {
                       ),
                     ),
                     child: Text(
-                      "Select",
+                      "Select".trKey,
                       style: GoogleFonts.roboto(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
@@ -1153,7 +1288,6 @@ class _StaffView extends State<StaffView> {
                     Padding(
                       padding: const EdgeInsets.all(6.0),
                       child: SizedBox(
-                        width: screenWidth * 0.95,
                         child: Column(
                           children: [
                             Row(
@@ -1182,11 +1316,10 @@ class _StaffView extends State<StaffView> {
                                     const SizedBox(
                                         height:
                                         5), // Space between image and text
-                                    const Text(
-                                      "Tap to change",
-                                      style: TextStyle(
-                                          fontSize: 12, color: Colors.grey),
-                                    ),
+                                    Container(
+                                      width : 80,
+                                        child: Text("Tap to change".trKey, textAlign: TextAlign.center, style: TextStyle(fontSize: 12, color: Colors.grey),),
+                                    )
                                   ],
                                 ),
                                 const SizedBox(width: 8,),
@@ -1196,9 +1329,10 @@ class _StaffView extends State<StaffView> {
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
                                       Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                         children: [
                                           Text(
-                                            ("${StaffData['First_name']} ${StaffData['Last_name']}").length > 16 ? "${StaffData['First_name']} ${StaffData['Last_name']}".substring(0, 13) + "..." : "${StaffData['First_name']} ${StaffData['Last_name']}",
+                                            ("${StaffData['First_name']} ${StaffData['Last_name']}").length > 14 ? "${StaffData['First_name']} ${StaffData['Last_name']}".substring(0, 13) + "..." : "${StaffData['First_name']} ${StaffData['Last_name']}",
                                             style: const TextStyle(
                                               fontWeight: FontWeight.bold,
                                               fontSize: 16,
@@ -1231,8 +1365,8 @@ class _StaffView extends State<StaffView> {
                                                                     'professionOfStaff']),
                                                           ));
                                                     },
-                                                    child: const Text(
-                                                      "Change",
+                                                    child: Text(
+                                                      "Change".trKey,
                                                       style: TextStyle(
                                                           fontSize: 16,
                                                           fontWeight:
@@ -1247,8 +1381,8 @@ class _StaffView extends State<StaffView> {
                                         children: [
                                           Text(
                                               StaffData["Status"]
-                                                  ? "Online"
-                                                  : "Offline",
+                                                  ? "Online".trKey
+                                                  : "Offline".trKey,
                                               style: const TextStyle(
                                                   color: Colors.blue,
                                                   fontSize: 12)),
@@ -1274,7 +1408,7 @@ class _StaffView extends State<StaffView> {
                                         child: Container(
                                           height: 45,
                                           margin: const EdgeInsets.only(top: 10),
-                                          width: screenHeight * 0.3,
+                                          width: screenHeight * 0.28,
                                           decoration: BoxDecoration(
                                             color: const Color(0xff00008B),
                                             borderRadius:
@@ -1301,8 +1435,8 @@ class _StaffView extends State<StaffView> {
                                                       FontWeight.bold),
                                                 ),
                                               ),
-                                              const Text(
-                                                "Check",
+                                              Text(
+                                                "Check".trKey,
                                                 style: TextStyle(
                                                     fontSize: 12,
                                                     color: Colors.white),
@@ -1340,10 +1474,12 @@ class _StaffView extends State<StaffView> {
                                         left: 10, right: 10),
                                     child: Center(
                                         child: Text(
-                                          StaffData['professionOfStaff'][0]
-                                              .toUpperCase() +
-                                              StaffData['professionOfStaff']
-                                                  .substring(1),
+                                          "${
+                                        StaffData['professionOfStaff'][0]
+                                                .toUpperCase() +
+                                            StaffData['professionOfStaff']
+                                                .substring(1)
+                                      }".trKey,
                                           overflow: TextOverflow.ellipsis,
                                           maxLines: 1,
                                           style: const TextStyle(
@@ -1381,9 +1517,9 @@ class _StaffView extends State<StaffView> {
                                             // Show Snackbar message
                                             ScaffoldMessenger.of(context)
                                                 .showSnackBar(
-                                              const SnackBar(
+                                              SnackBar(
                                                   content:
-                                                  Text("You are now live")),
+                                                  Text("You are now live".trKey)),
                                             );
                                             // Notification to staff that he/she is online
                                             String? currentToken = await FirebaseMessaging.instance.getToken();
@@ -1420,9 +1556,10 @@ class _StaffView extends State<StaffView> {
                                           borderRadius: BorderRadius.circular(10),
                                           color: Colors.black,
                                         ),
-                                        child: const Center(
+                                        child: Center(
                                           child: Text(
-                                            "Tap To Go Online",
+                                            "Tap To Go Online".trKey,
+                                            textAlign: TextAlign.center,
                                             style: TextStyle(
                                               fontSize: 16,
                                               color: Colors.white,
@@ -1456,9 +1593,9 @@ class _StaffView extends State<StaffView> {
                                             // Show Snackbar message
                                             ScaffoldMessenger.of(context)
                                                 .showSnackBar(
-                                              const SnackBar(
+                                              SnackBar(
                                                   content: Text(
-                                                      "You are now offline")),
+                                                      "You are now offline".trKey)),
                                             );
                                             await FlutterLocalNotificationsPlugin().cancel(2);
 
@@ -1480,12 +1617,13 @@ class _StaffView extends State<StaffView> {
                                           borderRadius: BorderRadius.circular(10),
                                           color: Colors.black,
                                         ),
-                                        child: const Padding(
+                                        child: Padding(
                                           padding: EdgeInsets.only(
                                               right: 15, left: 5),
                                           child: Center(
                                             child: Text(
-                                              "Tap To Go Offline",
+                                              "Tap To Go Offline".trKey,
+                                              textAlign: TextAlign.center,
                                               style: TextStyle(
                                                 fontSize: 16,
                                                 color: Colors.white,
@@ -1563,16 +1701,16 @@ class _StaffView extends State<StaffView> {
                                             ),
                                           );
                                         },
-                                        child: const Text(
-                                          "Verify your profile before free trial ends... click...",
+                                        child: Text(
+                                          "Verify your profile before free trial ends... click...".trKey,
                                           style: TextStyle(fontSize: 20),
                                         ),
                                       ),
                                     )
                                   ] else if (StaffData["Verified"] ==
                                       "pending") ...[
-                                    const Text(
-                                      "Under Verification Process",
+                                    Text(
+                                      "Under Verification Process".trKey,
                                       style: TextStyle(fontSize: 20),
                                     )
                                   ] else if (StaffData["Verified"] ==
@@ -1589,13 +1727,13 @@ class _StaffView extends State<StaffView> {
                                         );
                                       },
                                       child: Text(
-                                        "Rejected, Click to apply again... ${StaffData["Feedback"]?? ""}",
+                                        "${"Rejected, Click to apply again...".trKey}${StaffData["Feedback"]?? ""}",
                                         style: const TextStyle(fontSize: 20),
                                       ),
                                     )
                                   ] else ...[
-                                    const Text(
-                                      "Unknown State",
+                                    Text(
+                                      "Unknown State".trKey,
                                       style: TextStyle(fontSize: 20),
                                     )
                                   ]
@@ -1611,7 +1749,6 @@ class _StaffView extends State<StaffView> {
                     Padding(
                       padding: const EdgeInsets.all(6.0),
                       child: Container(
-                        height: 130,
                         width: screenWidth * 0.95,
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(5),
@@ -1643,18 +1780,24 @@ class _StaffView extends State<StaffView> {
                                 mainAxisAlignment: MainAxisAlignment.start,
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text("You’ar not active with \nany subscription plan.", style: GoogleFonts.aclonica(fontSize: 16,color: const Color(0xFFFFFFff), shadows: [const BoxShadow(color: Color(0x000000ff))]),),
-                                  Text("Your profile won't appear until \nyou subscribe to a plan.", style: GoogleFonts.alkalami(fontSize: 12, color: Colors.white),),
+                                  Container(
+                                      width: 200,
+                                      child: Text("You’ar not active with \nany subscription plan.".trKey, style: GoogleFonts.aclonica(fontSize: 16,color: const Color(0xFFFFFFff), shadows: [const BoxShadow(color: Color(0x000000ff))]),)),
+                                  Container(
+                                      width: 200,
+                                      child: Text("Your profile won't appear until \nyou subscribe to a plan.".trKey, style: GoogleFonts.alkalami(fontSize: 12, color: Colors.white),)),
                                   InkWell(
                                       onTap: (){
                                         setState(() {
                                           isShowPlans = !isShowPlans;
                                         });
                                       },
-                                      child: Text("Check Plans", style: GoogleFonts.alkatra(),)),
+                                      child: Text("Check Plans".trKey, style: GoogleFonts.alkatra(),)),
                                 ],
                               ),
-                              const Image(image: AssetImage("assets/icons/expired.png",), width: 90, height: 90,),
+                              Container(
+                                  width: 100,
+                                  child: const Image(image: AssetImage("assets/icons/expired.png",), width: 90, height: 90,)),
                             ],
                           )
                               : Row(
@@ -1664,11 +1807,17 @@ class _StaffView extends State<StaffView> {
                                 mainAxisAlignment: MainAxisAlignment.start,
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text("Congratulations, Your\nActive on ${paymentRecordModel?.plan} \n${paymentRecordModel?.duration} plan.", style: GoogleFonts.aclonica(fontSize: 16,color: const Color(0xFFFFFFff), shadows: [const BoxShadow(color: Color(0x000000ff))]),),
-                                  Text("Valid till ${DateFormat("d MMM y").format(paymentRecordModel!.expire)}", style: GoogleFonts.alkatra(),)
+                                  Container(
+                                      width: 200,
+                                      child: Text("${"Congratulations, Your\nActive on".trKey}\n${"${paymentRecordModel?.plan}".trKey} \n${"${paymentRecordModel?.duration}".trKey} ${"plan".trKey}", style: GoogleFonts.aclonica(fontSize: 16,color: const Color(0xFFFFFFff), shadows: [const BoxShadow(color: Color(0x000000ff))]),)),
+                                  Container(
+                                      width : 200,
+                                      child: Text("Valid till".trKey+" ${DateFormat("d MMM y").format(paymentRecordModel!.expire)}", style: GoogleFonts.alkatra(),))
                                 ],
                               ),
-                              const Image(image: AssetImage("assets/icons/congrats.png"))
+                              Container(
+                                  height: 100,
+                                  child: const Image(image: AssetImage("assets/icons/congrats.png")))
                             ],
                           ),
                         ),
@@ -1698,11 +1847,14 @@ class _StaffView extends State<StaffView> {
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
-                                  const Text(
-                                    "Contact Information",
-                                    style: TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold),
+                                  Container(
+                              width: 200,
+                                    child: Text(
+                                      "Contact Information".trKey,
+                                      style: TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold),
+                                    ),
                                   ),
                                   Padding(
                                     padding: const EdgeInsets.only(left: 20),
@@ -1729,8 +1881,8 @@ class _StaffView extends State<StaffView> {
                                                         'professionOfStaff']),
                                                   ));
                                             },
-                                            child: const Text(
-                                              "Change",
+                                            child: Text(
+                                              "Change".trKey,
                                               style: TextStyle(
                                                   fontSize: 16,
                                                   fontWeight: FontWeight.bold, color: Colors.white),
@@ -1763,7 +1915,7 @@ class _StaffView extends State<StaffView> {
                                             if (await canLaunchUrl(phoneUri)) {
                                               await launchUrl(phoneUri);
                                             } else {
-                                              throw "Could not lounch phone dialer";
+                                              throw "Could not lounch phone dialer".trKey;
                                             }
                                           },
                                           child: Container(
@@ -1786,7 +1938,7 @@ class _StaffView extends State<StaffView> {
                                         ),
                                       ),
                                       const SizedBox(width: 5,),
-                                      Text("${StaffData['Phone_Number1']?? "No Number"}", style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),),
+                                      Text("${StaffData['Phone_Number1']?? "No Number".trKey}", style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),),
                                     ],
                                   ),
                                   Row(
@@ -1806,14 +1958,14 @@ class _StaffView extends State<StaffView> {
                                                 launchUrl(phoneUri01);
                                               } else {
                                                 Fluttertoast.showToast(
-                                                  msg: "Empty",
+                                                  msg: "Empty".trKey,
                                                   toastLength: Toast.LENGTH_SHORT,
                                                   gravity: ToastGravity.BOTTOM,
                                                 );
                                               }
                                             } else {
                                               Fluttertoast.showToast(
-                                                msg: "Empty",
+                                                msg: "Empty".trKey,
                                                 toastLength: Toast.LENGTH_SHORT,
                                                 gravity: ToastGravity.BOTTOM,
                                               );
@@ -1839,7 +1991,7 @@ class _StaffView extends State<StaffView> {
                                         ),
                                       ),
                                       const SizedBox(width: 5,),
-                                      Text("${StaffData['Phone_Number2']?? "No Number"}", style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),),
+                                      Text(StaffData['Phone_Number2'] == ""? "No Number".trKey : "${StaffData['Phone_Number2']}", style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),),
                                     ],
                                   )
                                 ],
@@ -1854,7 +2006,6 @@ class _StaffView extends State<StaffView> {
                     Padding(
                       padding: const EdgeInsets.all(6.0),
                       child: Container(
-                        height: screenHeight * 0.18,
                         width: screenWidth * 0.95,
                         decoration: BoxDecoration(
                             color: Colors.white,
@@ -1874,11 +2025,14 @@ class _StaffView extends State<StaffView> {
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
-                                  const Text(
-                                    "Service Rate",
-                                    style: TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold),
+                                  Container(
+                                    width: 200,
+                                    child: Text(
+                                      "Service Rate".trKey,
+                                      style: TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold),
+                                    ),
                                   ),
                                   Padding(
                                     padding: const EdgeInsets.only(left: 20),
@@ -1906,8 +2060,8 @@ class _StaffView extends State<StaffView> {
                                                             'professionOfStaff']),
                                                   ));
                                             },
-                                            child: const Text(
-                                              "Change",
+                                            child: Text(
+                                              "Change".trKey,
                                               style: TextStyle(
                                                   fontSize: 16,
                                                   fontWeight: FontWeight.bold, color: Colors.white),
@@ -1925,7 +2079,7 @@ class _StaffView extends State<StaffView> {
                                 children: [
                                   SizedBox(
                                       width: screenWidth * 0.5,
-                                      child: const Text("Hour based")),
+                                      child: Text("Hour based".trKey)),
                                   Text("${StaffData['Hour_Rate'] ?? '--'} ${StaffData['Currency'] ?? '-'}"),
                                 ],
                               ),
@@ -1936,7 +2090,7 @@ class _StaffView extends State<StaffView> {
                                 children: [
                                   SizedBox(
                                       width: screenWidth * 0.5,
-                                      child: const Text("Day based")),
+                                      child: Text("Day based".trKey)),
                                   Text("${StaffData['Day_Rate'] ?? '--'} ${StaffData['Currency'] ?? '-'}"),
                                 ],
                               ),
@@ -1948,7 +2102,7 @@ class _StaffView extends State<StaffView> {
                                   SizedBox(
                                       width: screenWidth * 0.5,
                                       child: Text(
-                                        "Day service shift ${StaffData['Day_Shift'] ?? '--'} hours",
+                                        "Day service shift".trKey+" ${StaffData['Day_Shift'] ?? '--'}"+("hours".trKey),
                                         style: const TextStyle(
                                             fontSize: 12, color: Colors.blue),
                                       )),
@@ -1998,16 +2152,16 @@ class _StaffView extends State<StaffView> {
                                             ),
                                           );
                                         },
-                                        child: const Text(
-                                          "Verify your profile before free trial ends... click...",
+                                        child: Text(
+                                          "Verify your profile before free trial ends... click...".trKey,
                                           style: TextStyle(fontSize: 20),
                                         ),
                                       ),
                                     )
                                   ] else if (StaffData["Verified"] ==
                                       "pending") ...[
-                                    const Text(
-                                      "Under Verification Process",
+                                    Text(
+                                      "Under Verification Process".trKey,
                                       style: TextStyle(fontSize: 20),
                                     )
                                   ] else if (StaffData["Verified"] ==
@@ -2024,7 +2178,7 @@ class _StaffView extends State<StaffView> {
                                         );
                                       },
                                       child: Text(
-                                        "Rejected, Click to apply again... ${StaffData["Feedback"]?? ""}",
+                                        "Rejected, Click to apply again...".trKey+" ${StaffData["Feedback"]?? ""}",
                                         style: const TextStyle(fontSize: 20),
                                       ),
                                     )
@@ -2032,8 +2186,8 @@ class _StaffView extends State<StaffView> {
                                       "verified") ...[
                                     Column(
                                       children: [
-                                        const Text(
-                                          "Verified Documents",
+                                        Text(
+                                          "Verified Documents".trKey,
                                           style: TextStyle(fontSize: 20),
                                         ),
                                         const SizedBox(height: 10),
@@ -2067,8 +2221,8 @@ class _StaffView extends State<StaffView> {
                                       ],
                                     )
                                   ] else ...[
-                                    const Text(
-                                      "Unknown State",
+                                    Text(
+                                      "Unknown State".trKey,
                                       style: TextStyle(fontSize: 20),
                                     )
                                   ]

@@ -1,3 +1,4 @@
+import 'package:carehub/services/convertToTranslate.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -70,8 +71,8 @@ class _Feedbacks extends State<Feedbacks> {
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 AppBar(
-                  title: const Center(
-                    child: Text("Feedbacks",
+                  title: Center(
+                    child: Text("Feedbacks".trKey,
                         style: TextStyle(
                             fontSize: 20, fontWeight: FontWeight.bold)),
                   ),
@@ -107,13 +108,13 @@ class _Feedbacks extends State<Feedbacks> {
                                   ]),
                               child: Column(
                                 children: [
-                                  const Padding(
+                                  Padding(
                                     padding: EdgeInsets.only(
-                                        left: 15, top: 5),
+                                        left: 15, top: 5, right : 15),
                                     child: Row(
                                       children: [
                                         Text(
-                                          'Recent Feedbacks',
+                                          'Recent Feedbacks'.trKey,
                                           style: TextStyle(
                                             color: Colors.black,
                                             fontWeight: FontWeight.bold,
@@ -136,7 +137,7 @@ class _Feedbacks extends State<Feedbacks> {
                                       builder: (context, snapshot) {
                                         // Error check
                                         if (snapshot.hasError) {
-                                          return const Text("Something went wrong");
+                                          return Text("Something went wrong".trKey);
                                         }
 
                                         // Loading state
@@ -150,8 +151,8 @@ class _Feedbacks extends State<Feedbacks> {
                                         // No data available
                                         if (!snapshot.hasData ||
                                             snapshot.data!.docs.isEmpty) {
-                                          return const Text(
-                                              "No feedbacks available.");
+                                          return Text(
+                                              "No feedbacks available.".trKey);
                                         }
 
                                         var feedbacks = snapshot.data!.docs;
@@ -279,8 +280,8 @@ class _Feedbacks extends State<Feedbacks> {
                                           }).toList(); // Explicitly convert to List<Widget>
 
                                           if (count == 0) {
-                                            return const Text(
-                                                "No feedback for this user.");
+                                            return Text(
+                                                "No feedback for this user.".trKey);
                                           }
 
                                           return ListView(
@@ -311,8 +312,8 @@ class _Feedbacks extends State<Feedbacks> {
                                 borderRadius: BorderRadius.circular(5),
                               ),
                             ),
-                            child: const Text(
-                              "New",
+                            child: Text(
+                              "New".trKey,
                               style: TextStyle(
                                   color: Colors.white, fontSize: 20),
                             ),
@@ -460,8 +461,8 @@ class _BlankPageState extends State<BlankPage> {
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
           AppBar(
-            title: const Center(
-              child: Text("New Feedback",
+            title: Center(
+              child: Text("New Feedback".trKey,
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color : Colors.white)),
             ),
             backgroundColor: Globle.theme,
@@ -505,7 +506,7 @@ class _BlankPageState extends State<BlankPage> {
     return TextField(
       controller: _titleController, // Attach controller
       decoration: InputDecoration(
-        hintText: "Title",
+        hintText: "Title".trKey,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
         ),
@@ -534,8 +535,8 @@ class _BlankPageState extends State<BlankPage> {
         controller: _descriptionController, // Attach controller
         maxLines: null, // Allows for multi-line input
         expands: true,
-        decoration: const InputDecoration(
-          hintText: "Enter your feedback here...",
+        decoration: InputDecoration(
+          hintText: "Enter your feedback here...".trKey,
           border: InputBorder.none,
         ),
       ),
@@ -563,8 +564,8 @@ class _BlankPageState extends State<BlankPage> {
           color: Colors.redAccent,
           borderRadius: BorderRadius.circular(5),
         ),
-        child: const Text(
-          "Clear All",
+        child: Text(
+          "Clear All".trKey,
           style: TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.bold,
@@ -593,10 +594,10 @@ class _BlankPageState extends State<BlankPage> {
             "Subject": title,
             "UserUID": userUID,
           });
-          Fluttertoast.showToast(msg: "Feedback Submited");
+          Fluttertoast.showToast(msg: "Feedback Submited".trKey);
           Navigator.pop(context);
         } else {
-          Fluttertoast.showToast(msg: "Please fill the details");
+          Fluttertoast.showToast(msg: "Please fill the details".trKey);
         }
       },
       style: ElevatedButton.styleFrom(
@@ -606,8 +607,8 @@ class _BlankPageState extends State<BlankPage> {
           borderRadius: BorderRadius.circular(5),
         ),
       ),
-      child: const Text(
-        "Post",
+      child: Text(
+        "Post".trKey,
         style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
       ),
     );

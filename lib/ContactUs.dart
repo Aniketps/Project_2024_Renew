@@ -1,4 +1,6 @@
+import 'package:carehub/services/convertToTranslate.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -82,7 +84,7 @@ class _ContactUs extends State<ContactUs> {
       _descriptionController.clear();
       _detailsController.clear();
     } else {
-      Fluttertoast.showToast(msg: "Please fill details");
+      Fluttertoast.showToast(msg: "Please fill details".trKey);
     }
   }
 
@@ -99,9 +101,9 @@ class _ContactUs extends State<ContactUs> {
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 AppBar(
-                  title: const Center(
+                  title: Center(
                     child: Text(
-                      "Help Center",
+                      "Help Center".trKey,
                       style:
                           TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color : Colors.white),
                     ),
@@ -121,12 +123,12 @@ class _ContactUs extends State<ContactUs> {
                     child: Column(
                       children: [
                         // Align "Contact Us" to the left
-                        const Padding(
+                        Padding(
                           padding: EdgeInsets.only(left: 20.0, top: 20.0),
                           child: Align(
                             alignment: Alignment.centerLeft,
                             child: Text(
-                              "Contact Us",
+                              "Contact Us".trKey,
                               style: TextStyle(
                                   fontSize: 22,
                                   fontWeight: FontWeight.bold,
@@ -151,12 +153,12 @@ class _ContactUs extends State<ContactUs> {
                                 ),
                               ],
                             ),
-                            child: const Center(
+                            child: Center(
                               child: Padding(
                                 padding: EdgeInsets.symmetric(
                                     horizontal: 10.0),
                                 child: Text(
-                                  "Topic Or Question",
+                                  "Topic Or Question".trKey,
                                   style: TextStyle(
                                       color: Colors.black, fontSize: 18),
                                 ),
@@ -166,14 +168,14 @@ class _ContactUs extends State<ContactUs> {
                         ),
 
                         // Instruction text
-                        const Padding(
+                        Padding(
                           padding: EdgeInsets.only(top: 20.0),
                           child: Center(
                             child: Padding(
                               padding:
                                   EdgeInsets.symmetric(horizontal: 10.0),
                               child: Text(
-                                "Please summarize what you would like help with",
+                                "Please summarize what you would like help with".trKey,
                                 style: TextStyle(
                                     color: Colors.black,
                                     fontSize: 18,
@@ -203,9 +205,9 @@ class _ContactUs extends State<ContactUs> {
                             child: TextField(
                               controller: _descriptionController,
                               maxLines: 4,
-                              decoration: const InputDecoration(
+                              decoration: InputDecoration(
                                 border: InputBorder.none,
-                                hintText: "Type your subjest here...",
+                                hintText: "Type your subject here...".trKey,
                                 contentPadding: EdgeInsets.symmetric(
                                     horizontal: 10.0, vertical: 10.0),
                               ),
@@ -214,12 +216,12 @@ class _ContactUs extends State<ContactUs> {
                         ),
 
                         // Align "Any Other Details" to the left
-                        const Padding(
+                        Padding(
                           padding: EdgeInsets.only(top: 20.0, left: 20.0),
                           child: Align(
                             alignment: Alignment.centerLeft,
                             child: Text(
-                              "Any Other Details",
+                              "Any Other Details".trKey,
                               style: TextStyle(
                                   color: Colors.black,
                                   fontSize: 22,
@@ -248,9 +250,9 @@ class _ContactUs extends State<ContactUs> {
                             child: TextField(
                               controller: _detailsController,
                               maxLines: 4,
-                              decoration: const InputDecoration(
+                              decoration: InputDecoration(
                                 border: InputBorder.none,
-                                hintText: "Type any other details here...",
+                                hintText: "Type any other details here...".trKey,
                                 contentPadding: EdgeInsets.symmetric(
                                     horizontal: 10.0, vertical: 10.0),
                               ),
@@ -277,9 +279,9 @@ class _ContactUs extends State<ContactUs> {
                             ),
                             child: TextField(
                               controller: _fullNameController,
-                              decoration: const InputDecoration(
+                              decoration: InputDecoration(
                                 border: InputBorder.none,
-                                hintText: "Full Name",
+                                hintText: "Full Name".trKey,
                                 contentPadding:
                                     EdgeInsets.symmetric(horizontal: 10.0),
                               ),
@@ -306,9 +308,9 @@ class _ContactUs extends State<ContactUs> {
                             ),
                             child: TextField(
                               controller: _emailController,
-                              decoration: const InputDecoration(
+                              decoration: InputDecoration(
                                 border: InputBorder.none,
-                                hintText: "Email",
+                                hintText: "Email".trKey,
                                 contentPadding:
                                     EdgeInsets.symmetric(horizontal: 10.0),
                               ),
@@ -325,7 +327,7 @@ class _ContactUs extends State<ContactUs> {
                                 isLoading = true;
                                 _sendMessage();
                                 isLoading = false;
-                                Fluttertoast.showToast(msg: "Query Submited");
+                                Fluttertoast.showToast(msg: "Query Submited".trKey);
                               });
                             },
                             style: ElevatedButton.styleFrom(
@@ -336,8 +338,8 @@ class _ContactUs extends State<ContactUs> {
                                 fontSize: 15,
                               ),
                             ),
-                            child: const Text(
-                              "Send Message",
+                            child: Text(
+                              "Send Message".trKey,
                               style: TextStyle(color: Colors.black),
                             ),
                           ),

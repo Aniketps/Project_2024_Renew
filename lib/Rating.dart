@@ -1,3 +1,4 @@
+import 'package:carehub/services/convertToTranslate.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
@@ -142,9 +143,9 @@ class _RatingStateState extends State<RatingState> {
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
                         AppBar(
-                          title: const Center(
+                          title: Center(
                             child: Text(
-                              "Rating details",
+                              "Rating details".trKey,
                               style: TextStyle(
                                   fontSize: 22,
                                   fontWeight: FontWeight.bold,
@@ -176,10 +177,10 @@ class _RatingStateState extends State<RatingState> {
                       mainAxisAlignment: MainAxisAlignment.start,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Padding(
+                        Padding(
                           padding: EdgeInsets.only(left: 10.0),
                           child: Text(
-                            'Rating',
+                            'Rating'.trKey,
                             style: TextStyle(
                               color: Colors.black,
                               fontSize: 22,
@@ -191,9 +192,9 @@ class _RatingStateState extends State<RatingState> {
                           padding: EdgeInsets.only(right: 10.0, left: 10),
                           child: Divider(color: Colors.lightBlueAccent),
                         ),
-                        const Center(
+                        Center(
                           child: Text(
-                            'Average Rating',
+                            'Average Rating'.trKey,
                             style: TextStyle(
                               color: Colors.black,
                               fontSize: 18,

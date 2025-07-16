@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:carehub/LoginPage.dart';
 import 'package:carehub/StaffProfileHome.dart';
+import 'package:carehub/services/convertToTranslate.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -203,7 +204,10 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
     }
 
     Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high);
+      locationSettings: const LocationSettings(
+        accuracy: LocationAccuracy.lowest,
+      ),
+    );
 
     if (!mounted) return;
     await getCurrentLocationName(position.latitude, position.longitude);
@@ -269,12 +273,12 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                           ),
                         ),
                         const SizedBox(width: 10,),
-                        const Padding(
-                          padding: EdgeInsets.symmetric(vertical: 16.0),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 16.0),
                           child: Text(
-                            "CARENEST \nEXTRA INFORMATION",
+                            "CARENEST \n"+("EXTRA INFORMATION".trKey),
                             textAlign: TextAlign.start,
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,      // Semi-bold for professionalism
                               color: Colors.black87,             // Dark color for readability
@@ -306,7 +310,7 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                           ),
                           child: DropdownButton<String>(
                             value: selectedValue,
-                            hint: const Text("Select Job"),
+                            hint: Text("Select Job".trKey),
                             items: items.map((String item) {
                               return DropdownMenuItem<String>(
                                 value: item,
@@ -315,7 +319,7 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                                     maxWidth: 200,
                                   ),
                                   child: Text(
-                                    item,
+                                    item.trKey,
                                     overflow: TextOverflow.ellipsis,
                                     maxLines: 1, // Limit to 1 line
                                   ),
@@ -353,7 +357,7 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                               });
                             },
                             decoration: InputDecoration(
-                                labelText: "Phone no.", // Placeholder text
+                                labelText: "Phone no.".trKey, // Placeholder text
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(10),
                                 ),
@@ -369,13 +373,13 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                     ),
                   ),
                   !isValidPhone
-                      ? const Padding(
-                    padding: EdgeInsets.only(right: 30, left: 30, top: 5),
+                      ? Padding(
+                    padding: const EdgeInsets.only(right: 30, left: 30, top: 5),
                     child: Row(
                       children: [
                         Text(
-                          "Invalid Phone Number",
-                          style: TextStyle(color: Colors.red),
+                          "Invalid Phone Number".trKey,
+                          style: const TextStyle(color: Colors.red),
                         ),
                       ],
                     ),
@@ -398,7 +402,7 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                           });
                         },
                         decoration: InputDecoration(
-                            labelText: "City",
+                            labelText: "City".trKey,
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(10),
                             ),
@@ -409,13 +413,13 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                     ),
                   ),
                   !isValidCity
-                      ? const Padding(
-                    padding: EdgeInsets.only(right: 30, left: 30, top: 5),
+                      ? Padding(
+                    padding: const EdgeInsets.only(right: 30, left: 30, top: 5),
                     child: Row(
                       children: [
                         Text(
-                          "Invalid City",
-                          style: TextStyle(color: Colors.red),
+                          "Invalid City".trKey,
+                          style: const TextStyle(color: Colors.red),
                         ),
                       ],
                     ),
@@ -440,7 +444,7 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                                 });
                               }
                             },
-                            child: const Text("Select Image"),
+                            child: Text("Select Image".trKey),
                           )
                               : ClipOval(
                             child: Image.file(
@@ -548,7 +552,7 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                                     await FirebaseAuth.instance.signOut();
                                     Fluttertoast.showToast(
                                         msg:
-                                        "Link send, A link has been send to your email",
+                                        "Link send, A link has been send to your email".trKey,
                                         toastLength: Toast.LENGTH_LONG);
                                     Navigator.pushReplacement(
                                         context,
@@ -579,9 +583,9 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                                   setState(() {
                                     isLoading = false;
                                   });
-                                  Fluttertoast.showToast(msg: "Fill all the blanks");
+                                  Fluttertoast.showToast(msg: "Fill all the blanks".trKey);
                                   setState(() {
-                                    ErrorData = "Fill all the blanks";
+                                    ErrorData = "Fill all the blanks".trKey;
                                   });
                                 }
                               },
@@ -589,7 +593,7 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                                 backgroundColor: WidgetStatePropertyAll(Color(
                                     0xff0009a2))
                               ),
-                              child: const Text("Submit", style: TextStyle(color: Colors.white),)),
+                              child: Text("Submit".trKey, style: const TextStyle(color: Colors.white),)),
                         ),
                       ],
                     ),
@@ -637,9 +641,9 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                                 throw 'Could not launch ${"https://carenest.ancientcoders.in/Privacy_Policy.html"}';
                               }
                             },
-                            child: const Text(
-                              "Privacy Policy, ",
-                              style: TextStyle(
+                            child: Text(
+                              "Privacy Policy,".trKey,
+                              style: const TextStyle(
                                   fontSize: 12,
                                   color: Colors.blue,
                                   fontWeight: FontWeight.bold),
@@ -651,9 +655,9 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                                 throw 'Could not launch ${"https://carenest.ancientcoders.in/Terms_Conditions.html"}';
                               }
                             },
-                            child: const Text(
-                              "Terms & Conditions, ",
-                              style: TextStyle(
+                            child: Text(
+                              "Terms & Conditions,".trKey,
+                              style: const TextStyle(
                                   fontSize: 12,
                                   color: Colors.blue,
                                   fontWeight: FontWeight.bold),
@@ -665,9 +669,9 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                                 throw 'Could not launch ${"https://carenest.ancientcoders.in/Refund_Policy.html"}';
                               }
                             },
-                            child: const Text(
-                              "Refund Policy",
-                              style: TextStyle(
+                            child: Text(
+                              "Refund Policy".trKey,
+                              style: const TextStyle(
                                   fontSize: 12,
                                   color: Colors.blue,
                                   fontWeight: FontWeight.bold),
@@ -792,7 +796,10 @@ class _AndroidStaffPageGoogle extends State<AndroidStaffPageGoogle> {
     }
 
     Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high);
+      locationSettings: const LocationSettings(
+        accuracy: LocationAccuracy.lowest,
+      ),
+    );
 
     if (!mounted) return;
     await getCurrentLocationName(position.latitude, position.longitude);
@@ -836,48 +843,46 @@ class _AndroidStaffPageGoogle extends State<AndroidStaffPageGoogle> {
                     children: [
                       const SizedBox(height: 10,),
                       // logo title
-                      Padding(
-                        padding:
-                        const EdgeInsets.only(right: 30, left: 30, top: 10),
-                        child: Row(
-                          children: [
-                            Container(
-                              height: 80,
-                              width: 80,
-                              margin: const EdgeInsets.only(bottom: 10, top: 20),
-                              decoration: BoxDecoration(
-                                color: Colors.black,
-                                borderRadius: BorderRadius.circular(80),
-                                boxShadow: const [
-                                  BoxShadow(
-                                      color: Colors.black12, spreadRadius: 2, blurRadius: 1),
-                                ],
-                                image: const DecorationImage(
-                                  image: AssetImage("assets/images/logo.png"),
-                                  fit: BoxFit.none, // No scaling
-                                  alignment: Alignment.center,
-                                  scale: 2, // Zoom in (smaller = more zoom)
-                                ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Container(
+                            height: 80,
+                            width: 80,
+                            margin: const EdgeInsets.only(bottom: 10, top: 20),
+                            decoration: BoxDecoration(
+                              color: Colors.black,
+                              borderRadius: BorderRadius.circular(80),
+                              boxShadow: const [
+                                BoxShadow(
+                                    color: Colors.black12, spreadRadius: 2, blurRadius: 1),
+                              ],
+                              image: const DecorationImage(
+                                image: AssetImage("assets/images/logo.png"),
+                                fit: BoxFit.none, // No scaling
+                                alignment: Alignment.center,
+                                scale: 2, // Zoom in (smaller = more zoom)
                               ),
                             ),
-                            const SizedBox(width: 10,),
-                            const Padding(
-                              padding: EdgeInsets.symmetric(vertical: 16.0),
-                              child: Text(
-                                "CARENEST \nEXTRA INFORMATION",
-                                textAlign: TextAlign.start,
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,      // Semi-bold for professionalism
-                                  color: Colors.black87,             // Dark color for readability
-                                  fontFamily: 'Roboto',              // Use a clean, modern font (make sure it's added in your project)
-                                  letterSpacing: 0.5,
-                                  // Slight subtle letter spacing
-                                ),
+                          ),
+                          const SizedBox(width: 10,),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 16.0),
+                            child: Text(
+                              "CARENEST \n"+("EXTRA INFORMATION".trKey),
+                              textAlign: TextAlign.start,
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,      // Semi-bold for professionalism
+                                color: Colors.black87,             // Dark color for readability
+                                fontFamily: 'Roboto',              // Use a clean, modern font (make sure it's added in your project)
+                                letterSpacing: 0.5,
+                                // Slight subtle letter spacing
                               ),
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
 
                       // Profession
@@ -898,7 +903,7 @@ class _AndroidStaffPageGoogle extends State<AndroidStaffPageGoogle> {
                               ),
                               child: DropdownButton<String>(
                                 value: selectedValue,
-                                hint: const Text("Select Job"),
+                                hint: Text("Select Job".trKey),
                                 items: items.map((String item) {
                                   return DropdownMenuItem<String>(
                                     value: item,
@@ -907,7 +912,7 @@ class _AndroidStaffPageGoogle extends State<AndroidStaffPageGoogle> {
                                         maxWidth: 200,
                                       ),
                                       child: Text(
-                                        item,
+                                        item.trKey,
                                         overflow: TextOverflow.ellipsis,
                                         maxLines: 1, // Limit to 1 line
                                       ),
@@ -945,7 +950,7 @@ class _AndroidStaffPageGoogle extends State<AndroidStaffPageGoogle> {
                                   });
                                 },
                                 decoration: InputDecoration(
-                                    labelText: "Phone no.", // Placeholder text
+                                    labelText: "Phone no.".trKey, // Placeholder text
                                     border: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(10),
                                     ),
@@ -961,13 +966,13 @@ class _AndroidStaffPageGoogle extends State<AndroidStaffPageGoogle> {
                         ),
                       ),
                       !isValidPhone
-                          ? const Padding(
-                        padding: EdgeInsets.only(right: 30, left: 30, top: 5),
+                          ? Padding(
+                        padding: const EdgeInsets.only(right: 30, left: 30, top: 5),
                         child: Row(
                           children: [
                             Text(
-                              "Invalid Phone Number",
-                              style: TextStyle(color: Colors.red),
+                              "Invalid Phone Number".trKey,
+                              style: const TextStyle(color: Colors.red),
                             ),
                           ],
                         ),
@@ -990,7 +995,7 @@ class _AndroidStaffPageGoogle extends State<AndroidStaffPageGoogle> {
                               });
                             },
                             decoration: InputDecoration(
-                                labelText: "City",
+                                labelText: "City".trKey,
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(10),
                                 ),
@@ -1001,13 +1006,13 @@ class _AndroidStaffPageGoogle extends State<AndroidStaffPageGoogle> {
                         ),
                       ),
                       !isValidCity
-                          ? const Padding(
-                        padding: EdgeInsets.only(right: 30, left: 30, top: 5),
+                          ? Padding(
+                        padding: const EdgeInsets.only(right: 30, left: 30, top: 5),
                         child: Row(
                           children: [
                             Text(
-                              "Invalid City",
-                              style: TextStyle(color: Colors.red),
+                              "Invalid City".trKey,
+                              style: const TextStyle(color: Colors.red),
                             ),
                           ],
                         ),
@@ -1032,7 +1037,7 @@ class _AndroidStaffPageGoogle extends State<AndroidStaffPageGoogle> {
                                     });
                                   }
                                 },
-                                child: const Text("Select Image"),
+                                child: Text("Select Image".trKey),
                               )
                                   : ClipOval(
                                 child: Image.file(
@@ -1160,9 +1165,9 @@ class _AndroidStaffPageGoogle extends State<AndroidStaffPageGoogle> {
                                       setState(() {
                                         isLoading = false;
                                       });
-                                      Fluttertoast.showToast(msg: "Fill all the blanks");
+                                      Fluttertoast.showToast(msg: "Fill all the blanks".trKey);
                                       setState(() {
-                                        ErrorData = "Fill all the blanks";
+                                        ErrorData = "Fill all the blanks".trKey;
                                       });
                                     }
                                   },
@@ -1170,7 +1175,7 @@ class _AndroidStaffPageGoogle extends State<AndroidStaffPageGoogle> {
                                       backgroundColor: WidgetStatePropertyAll(Color(
                                           0xff0009a2))
                                   ),
-                                  child: const Text("Submit", style: TextStyle(color: Colors.white),)),
+                                  child: Text("Submit".trKey, style: const TextStyle(color: Colors.white),)),
                             ),
                           ],
                         ),
@@ -1218,9 +1223,9 @@ class _AndroidStaffPageGoogle extends State<AndroidStaffPageGoogle> {
                                     throw 'Could not launch ${"https://carenest.ancientcoders.in/Privacy_Policy.html"}';
                                   }
                                 },
-                                child: const Text(
-                                  "Privacy Policy, ",
-                                  style: TextStyle(
+                                child: Text(
+                                  "Privacy Policy,".trKey,
+                                  style: const TextStyle(
                                       fontSize: 12,
                                       color: Colors.blue,
                                       fontWeight: FontWeight.bold),
@@ -1232,29 +1237,31 @@ class _AndroidStaffPageGoogle extends State<AndroidStaffPageGoogle> {
                                     throw 'Could not launch ${"https://carenest.ancientcoders.in/Terms_Conditions.html"}';
                                   }
                                 },
-                                child: const Text(
-                                  "Terms & Conditions, ",
-                                  style: TextStyle(
-                                      fontSize: 12,
-                                      color: Colors.blue,
-                                      fontWeight: FontWeight.bold),
-                                )),
-                            InkWell(
-                                onTap: () async {
-                                  final Uri uri = Uri.parse("https://carenest.ancientcoders.in/Refund_Policy.html");
-                                  if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
-                                    throw 'Could not launch ${"https://carenest.ancientcoders.in/Refund_Policy.html"}';
-                                  }
-                                },
-                                child: const Text(
-                                  "Refund Policy",
-                                  style: TextStyle(
+                                child: Text(
+                                  "Terms & Conditions,".trKey,
+                                  style: const TextStyle(
                                       fontSize: 12,
                                       color: Colors.blue,
                                       fontWeight: FontWeight.bold),
                                 )),
                           ],
                         ),
+                      ),
+                      Center(
+                        child: InkWell(
+                            onTap: () async {
+                              final Uri uri = Uri.parse("https://carenest.ancientcoders.in/Refund_Policy.html");
+                              if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+                                throw 'Could not launch ${"https://carenest.ancientcoders.in/Refund_Policy.html"}';
+                              }
+                            },
+                            child: Text(
+                              "Refund Policy".trKey,
+                              style: const TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.blue,
+                                  fontWeight: FontWeight.bold),
+                            )),
                       ),
                     ],
                   ),

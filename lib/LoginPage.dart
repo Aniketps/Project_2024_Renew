@@ -4,7 +4,9 @@ import 'package:carehub/LoaderSupport.dart';
 import 'package:carehub/RegisterPage.dart';
 import 'package:carehub/StaffProfileHome.dart';
 import 'package:carehub/main.dart';
+import 'package:carehub/services/convertToTranslate.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
@@ -97,7 +99,10 @@ class _LoginPage extends State<LoginPage> {
     }
 
     Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high);
+      locationSettings: const LocationSettings(
+        accuracy: LocationAccuracy.lowest,
+      ),
+    );
 
     if (!mounted) return;
     setState(() {
@@ -170,7 +175,7 @@ class _LoginPage extends State<LoginPage> {
       });
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (_) => StaffProfileHome()),
+        MaterialPageRoute(builder: (_) => const StaffProfileHome()),
       );
     } else {
       setState(() {
@@ -192,8 +197,8 @@ class _LoginPage extends State<LoginPage> {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text("Location Disabled"),
-        content: const Text("Please turn on your location services."),
+        title: Text("Location Disabled".trKey),
+        content: Text("Please turn on your location services.".trKey),
         actions: [
           TextButton(
             onPressed: () async {
@@ -206,7 +211,7 @@ class _LoginPage extends State<LoginPage> {
               // Call location check after dialog is dismissed and system updates
               await _getCurrentLocation();
             },
-            child: const Text("Try Again"),
+            child: Text("Try Again".trKey),
           ),
         ],
       ),
@@ -223,85 +228,10 @@ class _LoginPage extends State<LoginPage> {
   Widget build(BuildContext context) {
     return Scaffold(
         backgroundColor: Colors.white,
-        body: isLoading
-            ? const Loader()
-            : AndroidView(
+        body: AndroidView(
                     lat: lat,
                     long: long,
                   ));
-  }
-}
-
-class Loader extends StatefulWidget {
-  const Loader({super.key});
-
-  @override
-  State<StatefulWidget> createState() => _Loader();
-}
-
-class _Loader extends State<Loader> with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _animation;
-
-  @override
-  void initState() {
-    super.initState();
-
-    _controller = AnimationController(
-      duration: const Duration(milliseconds: 1000),
-      vsync: this,
-    );
-
-    _animation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: Curves.linearToEaseOut,
-      ),
-    );
-
-    _controller.forward();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-
-    return Scaffold(
-      backgroundColor: const Color(0xFF0D1B2A),
-      body: Center(
-        child: Container(
-          width: screenWidth * 0.8,
-          height: 25,
-          decoration: BoxDecoration(
-            color: Colors.black,
-            borderRadius: BorderRadius.circular(6),
-          ),
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              return AnimatedBuilder(
-                animation: _animation,
-                builder: (context, child) {
-                  return Container(
-                    width: constraints.maxWidth * _animation.value,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(6),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.white.withOpacity(0.4),
-                          blurRadius: 8,
-                          spreadRadius: 1,
-                        ),
-                      ],
-                    ),
-                  );
-                },
-              );
-            },
-          ),
-        ),
-      ),
-    );
   }
 }
 
@@ -351,11 +281,12 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                   ),
                 ],),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   const SizedBox(height: 10,),
                   Padding(
                     padding:
-                    const EdgeInsets.only(right: 30, left: 30, top: 10),
+                    const EdgeInsets.only(right: 10, left: 10, top: 10),
                     child: Row(
                       children: [
                         Container(
@@ -377,19 +308,18 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                             ),
                           ),
                         ),
-                        const SizedBox(width: 10,),
-                        const Padding(
-                          padding: EdgeInsets.symmetric(vertical: 16.0),
+                        SizedBox(width: 10,),
+                        Container(
+                          width: 200,
                           child: Text(
-                            "CARENEST \nSTAFF SIGN IN",
+                            "CARENEST\n${"STAFF SIGN IN".trKey}",
                             textAlign: TextAlign.start,
                             style: TextStyle(
                               fontSize: 20,
-                              fontWeight: FontWeight.bold,      // Semi-bold for professionalism
-                              color: Colors.black87,             // Dark color for readability
-                              fontFamily: 'Roboto',              // Use a clean, modern font (make sure it's added in your project)
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black87,
+                              fontFamily: 'Roboto',
                               letterSpacing: 0.5,
-                              // Slight subtle letter spacing
                             ),
                           ),
                         ),
@@ -474,7 +404,7 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => StaffProfileHome(),
+                                  builder: (context) => const StaffProfileHome(),
                                 ),
                               );
                             } else {
@@ -506,7 +436,7 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                           }
 
                         } catch (e) {
-                          Fluttertoast.showToast(msg: "Error during Google Sign-In");
+                          Fluttertoast.showToast(msg: "Error during Google Sign-In".trKey);
                         } finally {
                           setState(() {
                             isLoading = false;
@@ -557,18 +487,18 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                       ? Column(
                     children: [
                       const SizedBox(height: 5,),
-                      const Padding(
+                      Padding(
                         padding:
-                        EdgeInsets.only(right: 30, left: 30, top: 10),
+                        const EdgeInsets.only(right: 30, left: 30, top: 10),
                         child: Row(
                           children: [
-                            Expanded(
+                            const Expanded(
                               child: Divider(thickness: 1, color: Colors.black),
                             ),
-                            SizedBox(width: 8),
-                            Text("OR", style: TextStyle(fontWeight: FontWeight.bold),),
-                            SizedBox(width: 8),
-                            Expanded(
+                            const SizedBox(width: 8),
+                            Text("OR".trKey, style: const TextStyle(fontWeight: FontWeight.bold),),
+                            const SizedBox(width: 8),
+                            const Expanded(
                               child: Divider(thickness: 1, color: Colors.black,),
                             ),
                           ],
@@ -595,7 +525,7 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                             keyboardType: TextInputType
                                 .emailAddress, // Optimizes keyboard for email input
                             decoration: InputDecoration(
-                              labelText: "Email", // Label for the TextField
+                              labelText: "Email".trKey, // Label for the TextField
                               border: OutlineInputBorder(
                                 borderRadius:
                                 BorderRadius.circular(10), // Rounded border
@@ -607,12 +537,12 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                         ),
                       ),
                       !isValidEmail
-                          ? const Padding(
+                          ? Padding(
                         padding: EdgeInsets.only(right: 30, left: 30, top: 5),
                         child: Row(
                           children: [
                             Text(
-                              "Invalid Email",
+                              "Invalid Email".trKey,
                               style: TextStyle(color: Colors.red),
                             ),
                           ],
@@ -631,7 +561,7 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                             Password, // Controller for the password input
                             obscureText: true, // Hides the input text
                             decoration: InputDecoration(
-                              labelText: "Password", // Label for the TextField
+                              labelText: "Password".trKey, // Label for the TextField
                               border: OutlineInputBorder(
                                 borderRadius:
                                 BorderRadius.circular(10), // Rounded border
@@ -645,7 +575,7 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
 
                       // Forgot password link
                       Padding(
-                        padding: const EdgeInsets.only(top: 5, bottom: 5, left: 30),
+                        padding: const EdgeInsets.only(top: 5, bottom: 5, left: 30, right: 30),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.start,
                           children: [
@@ -657,14 +587,14 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                                         .sendPasswordResetEmail(email: email);
                                     Fluttertoast.showToast(
                                         msg:
-                                        "Reset link is send to your email address");
+                                        "Reset link is send to your email address".trKey);
                                   } else {
                                     Fluttertoast.showToast(
-                                        msg: "Please Enter email address");
+                                        msg: "Please Enter email address".trKey);
                                   }
                                 },
-                                child: const Text(
-                                  "Forgot password?",
+                                child: Text(
+                                  "Forgot password?".trKey,
                                   style: TextStyle(
                                       fontSize: 12,
                                       color: Colors.blue,
@@ -719,7 +649,7 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                                             context,
                                             MaterialPageRoute(
                                               builder: (context) =>
-                                                  StaffProfileHome(),
+                                                  const StaffProfileHome(),
                                             ));
                                         setState(() {
                                           isLoading = false;
@@ -728,7 +658,7 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                                         Fluttertoast.showToast(
                                           toastLength: Toast.LENGTH_SHORT,
                                           msg:
-                                          "Please check your mailbox to verify email",
+                                          "Please check your mailbox to verify email".trKey,
                                         );
                                         await FirebaseAuth.instance.signOut();
                                         setState(() {
@@ -740,7 +670,7 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                                         isLoading = false;
                                       });
                                       Fluttertoast.showToast(
-                                        msg: "Use staff account information",
+                                        msg: "Use staff account information".trKey,
                                         toastLength: Toast.LENGTH_SHORT,
                                         gravity: ToastGravity.BOTTOM,
                                       );
@@ -751,7 +681,7 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                                     isLoading = false;
                                   });
                                   Fluttertoast.showToast(
-                                    msg: "Invalid Data",
+                                    msg: "Invalid Data".trKey,
                                     toastLength: Toast.LENGTH_SHORT,
                                     gravity: ToastGravity.BOTTOM,
                                   );
@@ -761,13 +691,13 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                                   isLoading = false;
                                 });
                                 Fluttertoast.showToast(
-                                  msg: "Fill in the blanks",
+                                  msg: "Fill in the blanks".trKey,
                                   toastLength: Toast.LENGTH_SHORT,
                                   gravity: ToastGravity.BOTTOM,
                                 );
                               }
                             },
-                            child: const Text("Submit", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),),
+                            child: Text("Submit".trKey, style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),),
                           ),
                         ),
                       ),
@@ -802,22 +732,7 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                             crossAxisAlignment: CrossAxisAlignment.center,
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Padding(
-                                padding: const EdgeInsets.only(right : 8.0),
-                                child: Container(
-                                  height: 28,
-                                  width: 28,
-                                  decoration: const BoxDecoration(
-                                    image: DecorationImage(
-                                      image: AssetImage("assets/images/email.png"),
-                                      fit: BoxFit.cover, // No scaling
-                                      alignment: Alignment.center,
-                                      scale: 2, // Zoom in (smaller = more zoom)
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              const Text("Email", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 19),)
+                              Text("Manually Enter".trKey, style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 19),)
                             ],
                           )
                       ),
@@ -826,7 +741,7 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
 
                   // Create account link
                   Padding(
-                    padding: const EdgeInsets.only(top: 5, bottom: 5, left: 30),
+                    padding: const EdgeInsets.only(top: 5, bottom: 5, left: 30, right : 30),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
@@ -838,8 +753,8 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                                     builder: (context) => RegisterPage(isStaff: isStaff,),
                                   ));
                             },
-                            child: const Text(
-                              "Don't have an account?",
+                            child: Text(
+                              "Don't have an account?".trKey,
                               style: TextStyle(
                                   fontSize: 12,
                                   color: Colors.blue,
@@ -872,12 +787,15 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                     ],
                   ),
 
-                  const Text(
-                    "By Sign in your agree with our",
-                    style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.green,
-                        fontWeight: FontWeight.bold),
+                  Center(
+                    child: Text(
+                      "By Sign in your agree with our".trKey,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.green,
+                          fontWeight: FontWeight.bold),
+                    ),
                   ),
                   // Polacy link
                   Padding(
@@ -892,8 +810,8 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                                 throw 'Could not launch ${"https://carenest.ancientcoders.in/Privacy_Policy.html"}';
                               }
                             },
-                            child: const Text(
-                              "Privacy Policy, ",
+                            child: Text(
+                              "Privacy Policy,".trKey,
                               style: TextStyle(
                                   fontSize: 12,
                                   color: Colors.blue,
@@ -906,22 +824,8 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                                 throw 'Could not launch ${"https://carenest.ancientcoders.in/Terms_Conditions.html"}';
                               }
                             },
-                            child: const Text(
-                              "Terms & Conditions, ",
-                              style: TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.blue,
-                                  fontWeight: FontWeight.bold),
-                            )),
-                        InkWell(
-                            onTap: () async {
-                              final Uri uri = Uri.parse("https://carenest.ancientcoders.in/Refund_Policy.html");
-                              if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
-                                throw 'Could not launch ${"https://carenest.ancientcoders.in/Refund_Policy.html"}';
-                              }
-                            },
-                            child: const Text(
-                              "Refund Policy",
+                            child: Text(
+                              "Terms & Conditions,".trKey,
                               style: TextStyle(
                                   fontSize: 12,
                                   color: Colors.blue,
@@ -929,6 +833,22 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                             )),
                       ],
                     ),
+                  ),
+                  Center(
+                    child: InkWell(
+                        onTap: () async {
+                          final Uri uri = Uri.parse("https://carenest.ancientcoders.in/Refund_Policy.html");
+                          if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+                            throw 'Could not launch ${"https://carenest.ancientcoders.in/Refund_Policy.html"}';
+                          }
+                        },
+                        child: Text(
+                          "Refund Policy".trKey,
+                          style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.blue,
+                              fontWeight: FontWeight.bold),
+                        )),
                   ),
                 ],
               ),
@@ -995,6 +915,7 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                   ),
                 ],),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   const SizedBox(height: 10,),
                   Padding(
@@ -1022,18 +943,21 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                           ),
                         ),
                         const SizedBox(width: 10,),
-                        const Padding(
-                          padding: EdgeInsets.symmetric(vertical: 16.0),
-                          child: Text(
-                            "CARENEST \nCUSTOMER SIGN IN",
-                            textAlign: TextAlign.start,
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,      // Semi-bold for professionalism
-                              color: Colors.black87,             // Dark color for readability
-                              fontFamily: 'Roboto',              // Use a clean, modern font (make sure it's added in your project)
-                              letterSpacing: 0.5,
-                              // Slight subtle letter spacing
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 16.0),
+                          child: Container(
+                            width: 200,
+                            child: Text(
+                              "CARENEST \n${"CUSTOMER SIGN IN".trKey}",
+                              textAlign: TextAlign.start,
+                              style: const TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,      // Semi-bold for professionalism
+                                color: Colors.black87,             // Dark color for readability
+                                fontFamily: 'Roboto',              // Use a clean, modern font (make sure it's added in your project)
+                                letterSpacing: 0.5,
+                                // Slight subtle letter spacing
+                              ),
                             ),
                           ),
                         ),
@@ -1122,7 +1046,7 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                           }
 
                         } catch (e) {
-                          Fluttertoast.showToast(msg: "Error during Google Sign-In");
+                          Fluttertoast.showToast(msg: "Error during Google Sign-In".trKey);
                         } finally {
                           setState(() {
                             isLoading = false;
@@ -1173,18 +1097,18 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                       ? Column(
                     children: [
                       const SizedBox(height: 5,),
-                      const Padding(
+                      Padding(
                         padding:
-                        EdgeInsets.only(right: 30, left: 30, top: 10),
+                        const EdgeInsets.only(right: 30, left: 30, top: 10),
                         child: Row(
                           children: [
-                            Expanded(
+                            const Expanded(
                               child: Divider(thickness: 1, color: Colors.black),
                             ),
-                            SizedBox(width: 8),
-                            Text("OR", style: TextStyle(fontWeight: FontWeight.bold),),
-                            SizedBox(width: 8),
-                            Expanded(
+                            const SizedBox(width: 8),
+                            Text("OR".trKey, style: const TextStyle(fontWeight: FontWeight.bold),),
+                            const SizedBox(width: 8),
+                            const Expanded(
                               child: Divider(thickness: 1, color: Colors.black,),
                             ),
                           ],
@@ -1211,7 +1135,7 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                             keyboardType: TextInputType
                                 .emailAddress, // Optimizes keyboard for email input
                             decoration: InputDecoration(
-                              labelText: "Email", // Label for the TextField
+                              labelText: "Email".trKey, // Label for the TextField
                               border: OutlineInputBorder(
                                 borderRadius:
                                 BorderRadius.circular(10), // Rounded border
@@ -1244,13 +1168,13 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                         ),
                       ),
                       !isValidEmail
-                          ? const Padding(
-                        padding: EdgeInsets.only(right: 30, left: 30, top: 5),
+                          ? Padding(
+                        padding: const EdgeInsets.only(right: 30, left: 30, top: 5),
                         child: Row(
                           children: [
                             Text(
-                              "Invalid Email",
-                              style: TextStyle(color: Colors.red),
+                              "Invalid Email".trKey,
+                              style: const TextStyle(color: Colors.red),
                             ),
                           ],
                         ),
@@ -1267,7 +1191,7 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                             controller: Password,
                             obscureText: true, // Hides the password input
                             decoration: InputDecoration(
-                              labelText: "Password", // Label for the TextField
+                              labelText: "Password".trKey, // Label for the TextField
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(10),
                               ),
@@ -1297,7 +1221,7 @@ class _AndroidUserPage extends State<AndroidUserPage> {
 
                       // Forgot password buttom/link
                       Padding(
-                        padding: const EdgeInsets.only(top: 5, bottom: 5, left: 30),
+                        padding: const EdgeInsets.only(top: 5, bottom: 5, left: 30, right : 30),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.start,
                           children: [
@@ -1309,15 +1233,15 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                                         .sendPasswordResetEmail(email: email);
                                     Fluttertoast.showToast(
                                         msg:
-                                        "Reset link is send to your email address");
+                                        "Reset link is send to your email address".trKey);
                                   } else {
                                     Fluttertoast.showToast(
-                                        msg: "Please Enter email address");
+                                        msg: "Please Enter email address".trKey);
                                   }
                                 },
-                                child: const Text(
-                                  "Forgot password?",
-                                  style: TextStyle(
+                                child: Text(
+                                  "Forgot password?".trKey,
+                                  style: const TextStyle(
                                       fontSize: 12,
                                       color: Colors.blue,
                                       fontWeight: FontWeight.bold),
@@ -1373,7 +1297,7 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                                     await FirebaseAuth.instance.signOut();
                                     Fluttertoast.showToast(
                                       toastLength: Toast.LENGTH_LONG,
-                                      msg: "Please Check your mailbox to verify email",
+                                      msg: "Please Check your mailbox to verify email".trKey,
                                     );
                                   }
                                 } on FirebaseAuthException catch (e) {
@@ -1388,7 +1312,7 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                                       isEmailcurrect = false;
                                       isPasswordcurrect = false;
                                     });
-                                    Fluttertoast.showToast(msg: "Invalid Email or Password");
+                                    Fluttertoast.showToast(msg: "Invalid Email or Password".trKey);
                                   } else if ('${e.message}' == EmailIsWrong) {
                                     setState(() {
                                       isLoading = false;
@@ -1397,22 +1321,22 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                                       isEmailcurrect = false;
                                       isPasswordcurrect = true;
                                     });
-                                    Fluttertoast.showToast(msg: "Invalid Email");
+                                    Fluttertoast.showToast(msg: "Invalid Email".trKey);
                                   }
                                 } catch (e) {
                                   setState(() {
                                     isLoading = false;
                                   });
-                                  Fluttertoast.showToast(msg: "Invalid data");
+                                  Fluttertoast.showToast(msg: "Invalid data".trKey);
                                 }
                               } else {
                                 setState(() {
                                   isLoading = false;
                                 });
-                                Fluttertoast.showToast(msg: "Invalid data");
+                                Fluttertoast.showToast(msg: "Invalid data".trKey);
                               }
                             },
-                            child: const Text("Submit", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),),
+                            child: Text("Submit".trKey, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),),
                           ),
                         ),
                       ),
@@ -1447,22 +1371,7 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                             crossAxisAlignment: CrossAxisAlignment.center,
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Padding(
-                                padding: const EdgeInsets.only(right : 8.0),
-                                child: Container(
-                                  height: 28,
-                                  width: 28,
-                                  decoration: const BoxDecoration(
-                                    image: DecorationImage(
-                                      image: AssetImage("assets/images/email.png"),
-                                      fit: BoxFit.cover, // No scaling
-                                      alignment: Alignment.center,
-                                      scale: 2, // Zoom in (smaller = more zoom)
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              const Text("Email", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 19),)
+                              Text("Manually Enter".trKey, style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 19),)
                             ],
                           )
                       ),
@@ -1471,7 +1380,7 @@ class _AndroidUserPage extends State<AndroidUserPage> {
 
                   // Create account link
                   Padding(
-                    padding: const EdgeInsets.only(top: 5, bottom: 5, left: 30),
+                    padding: const EdgeInsets.only(top: 5, bottom: 5, left: 30, right : 30),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
@@ -1483,9 +1392,9 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                                     builder: (context) => RegisterPage(isStaff: isStaff,),
                                   ));
                             },
-                            child: const Text(
-                              "Don't have an account?",
-                              style: TextStyle(
+                            child: Text(
+                              "Don't have an account?".trKey,
+                              style: const TextStyle(
                                   fontSize: 12,
                                   color: Colors.blue,
                                   fontWeight: FontWeight.bold),
@@ -1517,12 +1426,15 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                     ],
                   ),
 
-                  const Text(
-                    "By Sign in your agree with our",
-                    style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.green,
-                        fontWeight: FontWeight.bold),
+                  Center(
+                    child: Text(
+                      "By Sign in your agree with our".trKey,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.green,
+                          fontWeight: FontWeight.bold),
+                    ),
                   ),
                   // Polacy link
                   Padding(
@@ -1537,8 +1449,8 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                                 throw 'Could not launch ${"https://carenest.ancientcoders.in/Privacy_Policy.html"}';
                               }
                             },
-                            child: const Text(
-                              "Privacy Policy, ",
+                            child: Text(
+                              "Privacy Policy,".trKey,
                               style: TextStyle(
                                   fontSize: 12,
                                   color: Colors.blue,
@@ -1551,22 +1463,8 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                                 throw 'Could not launch ${"https://carenest.ancientcoders.in/Terms_Conditions.html"}';
                               }
                             },
-                            child: const Text(
-                              "Terms & Conditions, ",
-                              style: TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.blue,
-                                  fontWeight: FontWeight.bold),
-                            )),
-                        InkWell(
-                            onTap: () async {
-                              final Uri uri = Uri.parse("https://carenest.ancientcoders.in/Refund_Policy.html");
-                              if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
-                                throw 'Could not launch ${"https://carenest.ancientcoders.in/Refund_Policy.html"}';
-                              }
-                            },
-                            child: const Text(
-                              "Refund Policy",
+                            child: Text(
+                              "Terms & Conditions,".trKey,
                               style: TextStyle(
                                   fontSize: 12,
                                   color: Colors.blue,
@@ -1574,6 +1472,22 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                             )),
                       ],
                     ),
+                  ),
+                  Center(
+                    child: InkWell(
+                        onTap: () async {
+                          final Uri uri = Uri.parse("https://carenest.ancientcoders.in/Refund_Policy.html");
+                          if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+                            throw 'Could not launch ${"https://carenest.ancientcoders.in/Refund_Policy.html"}';
+                          }
+                        },
+                        child: Text(
+                          "Refund Policy".trKey,
+                          style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.blue,
+                              fontWeight: FontWeight.bold),
+                        )),
                   ),
                 ],
               ),
@@ -1617,6 +1531,7 @@ class _AndroidView extends State<AndroidView> {
   _AndroidView({required this.lat, required this.long});
 
   bool sawAd = false;
+  bool _loading = true;
 
   int imageCount = 1;
 
@@ -1629,963 +1544,1132 @@ class _AndroidView extends State<AndroidView> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
       sawAd = prefs.getBool("isIntroRead") ?? false;
+      _loading = false;
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    double screenWidth = MediaQuery.sizeOf(context).width;
-    double screenHeight = MediaQuery.sizeOf(context).height;
+    double screenWidth = MediaQuery
+        .sizeOf(context)
+        .width;
+    double screenHeight = MediaQuery
+        .sizeOf(context)
+        .height;
 
+    if (_loading) {
+      return const SizedBox.shrink(); // Prevents early flicker
+    }
 
-    return sawAd? Stack(
-      children: [
-        Container(
-          color: Globle.theme,
-          height: 320,
-          width: double.maxFinite,
-        ),
-        SingleChildScrollView(
-          scrollDirection: Axis.vertical,
-          child: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(top: 50, bottom: 20),
-                child: Center(
-                  child: GestureDetector(
-                    onHorizontalDragEnd: (details) {
-                      setState(() {
-                        if (details.primaryVelocity != null && details.primaryVelocity! < 0) {
-                          // Swiped left
-                          isStaff = true;  // Swipe left → Staff (left side)
-                        } else if (details.primaryVelocity != null && details.primaryVelocity! > 0) {
-                          // Swiped right
-                          isStaff = false; // Swipe right → User (right side)
-                        }
-                      });
-                    },
-                    child: Container(
-                      width: MediaQuery.of(context).size.width * 0.8,
-                      height: 50,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(50),
-                        boxShadow: const [
-                          BoxShadow(
-                            color: Colors.black12,
-                            spreadRadius: 2,
-                            blurRadius: 1,
-                          )
-                        ],
-                      ),
-                      child: Stack(
-                        children: [
-                          // Animated background
-                          AnimatedAlign(
-                            duration: const Duration(milliseconds: 300),
-                            alignment: isStaff ? Alignment.centerLeft : Alignment.centerRight,
-                            curve: Curves.easeInOut,
-                            child: Container(
-                              width: (MediaQuery.of(context).size.width * 0.8) / 2,
-                              height: 50,
-                              decoration: BoxDecoration(
-                                color: Colors.blueAccent,
-                                borderRadius: BorderRadius.circular(50),
-                              ),
-                            ),
-                          ),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: GestureDetector(
-                                  onTap: () {
-                                    setState(() {
-                                      isStaff = true;
-                                    });
-                                  },
-                                  child: Container(
-                                    alignment: Alignment.center,
-                                    height: 50,
-                                    child: Text(
-                                      "Staff",
-                                      style: TextStyle(
-                                        color: isStaff ? Colors.white : Colors.black,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              Expanded(
-                                child: GestureDetector(
-                                  onTap: () {
-                                    setState(() {
-                                      isStaff = false;
-                                    });
-                                  },
-                                  child: Container(
-                                    alignment: Alignment.center,
-                                    height: 40,
-                                    child: Text(
-                                      "User",
-                                      style: TextStyle(
-                                        color: !isStaff ? Colors.white : Colors.black,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              isStaff
-                  ? AndroidStaffPage(
-                      lat: lat,
-                      long: long,
-                isStaff: isStaff,
-                    )
-                  : AndroidUserPage(
-                      lat: lat,
-                      long: long,
-                isStaff: isStaff,
-                    )
-            ],
-          ),
-        )
-      ],
-    ):
-    Container(
-      height: screenHeight,
-      width: screenWidth,
-      decoration: const BoxDecoration(
-          color: Colors.white
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          imageCount == 1
-            ?
-        Container(
-        height: screenHeight * 0.8,
-        width: screenWidth * 0.9,
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
+    return Visibility(
+      visible: sawAd,
+      replacement: Container(
+        height: screenHeight,
+        width: screenWidth,
+        decoration: const BoxDecoration(
+            color: Colors.white
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            const Text(
-              "Welcome to CareNest",
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 26,
-                color: Colors.black87,
+            imageCount == 1
+                ?
+            Container(
+              width: screenWidth * 0.9,
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
               ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 20),
-            Image.asset(
-              "assets/images/logo2.png",
-              height: 180,
-              width: 180,
-            ),
-            const SizedBox(height: 20),
-            Text(
-              "Smart Hiring for Daily Needs",
-              style: TextStyle(
-                fontWeight: FontWeight.w600,
-                fontSize: 18,
-                color: Colors.blueGrey[700],
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 12),
-            Text(
-              "CareNest connects you with trusted, verified staff for short-term jobs like nursing, driving, cooking, and more.",
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey[800],
-                height: 1.5,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 20),
-            Row(
-              mainAxisAlignment: imageCount == 1? MainAxisAlignment.end : MainAxisAlignment.spaceBetween,
-              children: [
-                ElevatedButton(
-                  onPressed: () {
-                    setState(() {
-                      imageCount++;
-                    });
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Text(
+                    "Welcome to CareNest".trKey,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 26,
+                      color: Colors.black87,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 20),
+                  Image.asset(
+                    "assets/images/logo2.png",
+                    height: 180,
+                    width: 180,
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    "Smart Hiring for Daily Needs".trKey,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 18,
+                      color: Colors.blueGrey[700],
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  SizedBox(height: 12),
+                  Text(
+                    "CareNest connects you with trusted, verified staff for short-term jobs like nursing, driving, cooking, and more.".trKey,
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey[800],
+                      height: 1.5,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  SizedBox(height: 12,),
+                  Padding(
+                    padding: const EdgeInsets.only(left : 20.0, right : 20, top: 10),
+                    child: Align(
+                        alignment: Alignment.topLeft,
+                        child: Text("Please Choose Language")),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(20.0),
+                    child: DropdownButtonFormField<Locale>(
+                      dropdownColor: Colors.blue,
+                      value: context.locale,
+                      style: const TextStyle(color: Colors.black),
+                      icon: const Icon(Icons.language, color: Colors.black),
+                      items: const [
+                        DropdownMenuItem(
+                          value: Locale('en'),
+                          child: Text('English'),
+                        ),
+                        DropdownMenuItem(
+                          value: Locale('hi'),
+                          child: Text('हिंदी'),
+                        ),
+                        DropdownMenuItem(
+                          value: Locale('mr'),
+                          child: Text('मराठी'),
+                        ),
+                        DropdownMenuItem(
+                          value: Locale('fr'),
+                          child: Text('Français'),
+                        ),
+                        DropdownMenuItem(
+                          value: Locale('ru'),
+                          child: Text('Русский'),
+                        ),
+                        DropdownMenuItem(
+                          value: Locale('bn'),
+                          child: Text('বাংলা'),
+                        ),
+                        DropdownMenuItem(
+                          value: Locale('pt'),
+                          child: Text('Português'),
+                        ),
+                        DropdownMenuItem(
+                          value: Locale('es'),
+                          child: Text('Español'),
+                        ),
+                        DropdownMenuItem(
+                          value: Locale('ur'),
+                          child: Text('اردو'),
+                        ),
+                        DropdownMenuItem(
+                          value: Locale('ja'),
+                          child: Text('日本語'),
+                        ),
+                        DropdownMenuItem(
+                          value: Locale('te'),
+                          child: Text('తెలుగు'),
+                        ),
+                        DropdownMenuItem(
+                          value: Locale('ar'),
+                          child: Text('العربية'),
+                        ),
+                        DropdownMenuItem(
+                          value: Locale('de'),
+                          child: Text('Deutsch'),
+                        ),
+                        DropdownMenuItem(
+                          value: Locale('vi'),
+                          child: Text('Tiếng Việt'),
+                        ),
+                        DropdownMenuItem(
+                          value: Locale('id'),
+                          child: Text('Bahasa Indonesia'),
+                        ),
+                        DropdownMenuItem(
+                          value: Locale('zh'),
+                          child: Text('中文'),
+                        ),
+                        DropdownMenuItem(
+                          value: Locale('ta'),
+                          child: Text('தமிழ்'),
+                        ),
+                        DropdownMenuItem(
+                          value: Locale('tr'),
+                          child: Text('Türkçe'),
+                        ),
+                        DropdownMenuItem(
+                          value: Locale('ko'),
+                          child: Text('한국어'),
+                        ),
+                        DropdownMenuItem(
+                          value: Locale('it'),
+                          child: Text('Italiano'),
+                        ),
+                        DropdownMenuItem(
+                          value: Locale('ml'),
+                          child: Text('മലയാളം'),
+                        ),
+                        DropdownMenuItem(
+                          value: Locale('th'),
+                          child: Text('ไทย'),
+                        ),
+                        DropdownMenuItem(
+                          value: Locale('pl'),
+                          child: Text('Polski'),
+                        ),
+                      ],
+                      onChanged: (Locale? locale) {
+                        if (locale != null) {
+                          context.setLocale(locale);
+                        }
+                      },
                     ),
                   ),
-                  child: const Padding(
-                    padding: EdgeInsets.all(8.0),
-                    child: Text("Next", style: TextStyle(color: Colors.black),),
-                  ),
-                ),
-              ],
+                  const SizedBox(height: 20),
+                  Row(
+                    mainAxisAlignment: imageCount == 1
+                        ? MainAxisAlignment.end
+                        : MainAxisAlignment.spaceBetween,
+                    children: [
+                      ElevatedButton(
+                        onPressed: () {
+                          setState(() {
+                            imageCount++;
+                          });
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Text("Next".trKey, style: const TextStyle(
+                              color: Colors.black),),
+                        ),
+                      ),
+                    ],
+                  )
+                ],
+              ),
             )
+                : imageCount == 2
+                ? Container(
+              width: screenWidth * 0.9,
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                   Text(
+                    "Live Staff Around You".trKey,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 26,
+                      color: Colors.black87,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 20),
+                  Image.asset(
+                    "assets/images/liveLocation.jpg",
+                    height: 250,
+                    width: 250,
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    "Find Help Nearby in Real-Time".trKey,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 18,
+                      color: Colors.blueGrey[700],
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    "Instantly view available staff near you on the map—filtered by profession and rating.".trKey,
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey[800],
+                      height: 1.5,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 20),
+                  Row(
+                    mainAxisAlignment: imageCount == 1
+                        ? MainAxisAlignment.end
+                        : MainAxisAlignment.spaceBetween,
+                    children: [
+                      imageCount == 1 ?
+                      Container()
+                          : ElevatedButton(
+                        onPressed: () {
+                          setState(() {
+                            setState(() {
+                              imageCount--;
+                            });
+                          });
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child:  Text("Prev".trKey, style: TextStyle(
+                            color: Colors.black),),
+                      ),
+                      ElevatedButton(
+                        onPressed: () {
+                          setState(() {
+                            imageCount++;
+                          });
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child:  Padding(
+                          padding: EdgeInsets.all(8.0),
+                          child: Text("Next".trKey,
+                            style: TextStyle(color: Colors.black),),
+                        ),
+                      ),
+                    ],
+                  )
+                ],
+              ),
+            )
+                : imageCount == 3
+                ? Container(
+              width: screenWidth * 0.9,
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                   Text(
+                    "Quick Hiring Process".trKey,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 26,
+                      color: Colors.black87,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 20),
+                  Image.asset(
+                    "assets/images/hire.jpg",
+                    height: 250,
+                    width: 250,
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    "Easy Booking, Your Way".trKey,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 18,
+                      color: Colors.blueGrey[700],
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    "Choose who you need, when, and for how long. Fill a short form and get connected fast.".trKey,
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey[800],
+                      height: 1.5,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 20),
+                  Row(
+                    mainAxisAlignment: imageCount == 1
+                        ? MainAxisAlignment.end
+                        : MainAxisAlignment.spaceBetween,
+                    children: [
+                      imageCount == 1 ?
+                      Container()
+                          : ElevatedButton(
+                        onPressed: () {
+                          setState(() {
+                            setState(() {
+                              imageCount--;
+                            });
+                          });
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child:  Padding(
+                          padding: EdgeInsets.all(8.0),
+                          child: Text(
+                            "Prev".trKey, style: TextStyle(color: Colors.black),),
+                        ),
+                      ),
+                      ElevatedButton(
+                        onPressed: () {
+                          setState(() {
+                            imageCount++;
+                          });
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child:  Padding(
+                          padding: EdgeInsets.all(8.0),
+                          child: Text(
+                            "Next".trKey, style: TextStyle(color: Colors.black),),
+                        ),
+                      ),
+                    ],
+                  )
+                ],
+              ),
+            )
+                : imageCount == 4
+                ? Container(
+              width: screenWidth * 0.9,
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                   Text(
+                    "Verified & Trusted Professionals".trKey,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 26,
+                      color: Colors.black87,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 20),
+                  Image.asset(
+                    "assets/images/kyc.jpg",
+                    height: 250,
+                    width: 250,
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    "Only KYC-Verified Staff".trKey,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 18,
+                      color: Colors.blueGrey[700],
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    "Every staff member completes a strict KYC process for safety and trust.".trKey,
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey[800],
+                      height: 1.5,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 20),
+                  Row(
+                    mainAxisAlignment: imageCount == 1
+                        ? MainAxisAlignment.end
+                        : MainAxisAlignment.spaceBetween,
+                    children: [
+                      imageCount == 1 ?
+                      Container()
+                          : ElevatedButton(
+                        onPressed: () {
+                          setState(() {
+                            setState(() {
+                              imageCount--;
+                            });
+                          });
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: Padding(
+                          padding: EdgeInsets.all(8.0),
+                          child: Text(
+                            "Prev".trKey, style: TextStyle(color: Colors.black),),
+                        ),
+                      ),
+                      ElevatedButton(
+                        onPressed: () {
+                          setState(() {
+                            imageCount++;
+                          });
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child:  Padding(
+                          padding: EdgeInsets.all(8.0),
+                          child: Text(
+                            "Next".trKey, style: TextStyle(color: Colors.black),),
+                        ),
+                      ),
+                    ],
+                  )
+                ],
+              ),
+            )
+                : imageCount == 5
+                ? Container(
+              width: screenWidth * 0.9,
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                   Text(
+                    "For Staff: Get Started with KYC".trKey,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 26,
+                      color: Colors.black87,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 20),
+                  Image.asset(
+                    "assets/images/staffVerification.jpg",
+                    height: 250,
+                    width: 250,
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    "Join as Staff – It's Simple!".trKey,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 18,
+                      color: Colors.blueGrey[700],
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    "Register your profession, complete your KYC, and get listed on the platform.".trKey,
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey[800],
+                      height: 1.5,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 20),
+                  Row(
+                    mainAxisAlignment: imageCount == 1
+                        ? MainAxisAlignment.end
+                        : MainAxisAlignment.spaceBetween,
+                    children: [
+                      imageCount == 1 ?
+                      Container()
+                          : ElevatedButton(
+                        onPressed: () {
+                          setState(() {
+                            setState(() {
+                              imageCount--;
+                            });
+                          });
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child:  Padding(
+                          padding: EdgeInsets.all(8.0),
+                          child: Text(
+                            "Prev".trKey, style: TextStyle(color: Colors.black),),
+                        ),
+                      ),
+                      ElevatedButton(
+                        onPressed: () {
+                          setState(() {
+                            imageCount++;
+                          });
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child:  Padding(
+                          padding: EdgeInsets.all(8.0),
+                          child: Text(
+                            "Next".trKey, style: TextStyle(color: Colors.black),),
+                        ),
+                      ),
+                    ],
+                  )
+                ],
+              ),
+            )
+                : imageCount == 6
+                ? Container(
+              width: screenWidth * 0.9,
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                   Text(
+                    "Go Online When You're Free".trKey,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 26,
+                      color: Colors.black87,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 20),
+                  Image.asset(
+                    "assets/images/onoff.png",
+                    height: 250,
+                    width: 250,
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    "Flexible Working, Your Control".trKey,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 18,
+                      color: Colors.blueGrey[700],
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    "You control your availability—go online when you're ready to work, offline when you're not.".trKey,
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey[800],
+                      height: 1.5,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 20),
+                  Row(
+                    mainAxisAlignment: imageCount == 1
+                        ? MainAxisAlignment.end
+                        : MainAxisAlignment.spaceBetween,
+                    children: [
+                      imageCount == 1 ?
+                      Container()
+                          : ElevatedButton(
+                        onPressed: () {
+                          setState(() {
+                            setState(() {
+                              imageCount--;
+                            });
+                          });
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child:  Padding(
+                          padding: EdgeInsets.all(8.0),
+                          child: Text(
+                            "Prev".trKey, style: TextStyle(color: Colors.black),),
+                        ),
+                      ),
+                      imageCount == 7
+                          ? ElevatedButton(
+                        onPressed: () {
+                          setState(() {
+
+                          });
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blueAccent,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child:  Padding(
+                          padding: EdgeInsets.all(8.0),
+                          child: Text(
+                            "Finish".trKey, style: TextStyle(color: Colors.white),),
+                        ),
+                      )
+                          : ElevatedButton(
+                        onPressed: () {
+                          setState(() {
+                            imageCount++;
+                          });
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child:  Padding(
+                          padding: EdgeInsets.all(8.0),
+                          child: Text(
+                            "Next".trKey, style: TextStyle(color: Colors.black),),
+                        ),
+                      ),
+                    ],
+                  )
+                ],
+              ),
+            )
+                : imageCount == 7
+                ? Container(
+              width: screenWidth * 0.9,
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                   Text(
+                    "Get Job Requests in Real Time".trKey,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 26,
+                      color: Colors.black87,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 20),
+                  Image.asset(
+                    "assets/images/notification.jpg",
+                    height: 250,
+                    width: 250,
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    "Earn Instantly, Get Hired Fast".trKey,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 18,
+                      color: Colors.blueGrey[700],
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    "Get notified when users need your service. Accept jobs, start earning.".trKey,
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey[800],
+                      height: 1.5,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 20),
+                  Row(
+                    mainAxisAlignment: imageCount == 1
+                        ? MainAxisAlignment.end
+                        : MainAxisAlignment.spaceBetween,
+                    children: [
+                      imageCount == 1 ?
+                      Container()
+                          : ElevatedButton(
+                        onPressed: () {
+                          setState(() {
+                            setState(() {
+                              imageCount--;
+                            });
+                          });
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child:  Padding(
+                          padding: EdgeInsets.all(8.0),
+                          child: Text(
+                            "Prev".trKey, style: TextStyle(color: Colors.black),),
+                        ),
+                      ),
+                      ElevatedButton(
+                        onPressed: () {
+                          setState(() {
+                            imageCount++;
+                          });
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child:  Padding(
+                          padding: EdgeInsets.all(8.0),
+                          child: Text(
+                            "Next".trKey, style: TextStyle(color: Colors.black),),
+                        ),
+                      ),
+                    ],
+                  )
+                ],
+              ),
+            )
+                : Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                   Text(
+                    "Please tell us who you are".trKey,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 26,
+                      color: Colors.black87,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 20),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.search, color: Colors.blueGrey[700]),
+                      const SizedBox(width: 8),
+                      Container(
+                        width: 250,
+                        child: Text(
+                          "Looking to hire someone?".trKey,
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 16,
+                            color: Colors.blueGrey[700],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.work_outline, color: Colors.blueGrey[700]),
+                      const SizedBox(width: 8),
+                      Text(
+                        "Need a part-time job?".trKey,
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 16,
+                          color: Colors.blueGrey[700],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    "Tap the button that matches you best".trKey,
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey[800],
+                      height: 1.5,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 24),
+                  Wrap(
+                    spacing: 8.0, // gap between items horizontally
+                    runSpacing: 4.0,
+                    alignment: WrapAlignment.center,
+                    children: [
+                      ElevatedButton.icon(
+                        onPressed: () {
+                          setState(() {
+                            sawAd = true;
+                            isStaff = true;
+                            setIntroRead(true);
+                          });
+                        },
+                        icon: const Icon(Icons.work, color: Colors.white),
+                        label:  Text(
+                          "I want to work".trKey,
+                          style: TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.green.shade600,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 20, vertical: 12),
+                          elevation: 2,
+                          foregroundColor: Colors.white,
+                        ),
+                      ),
+                      ElevatedButton.icon(
+                        onPressed: () {
+                          setState(() {
+                            sawAd = true;
+                            isStaff = false;
+                            setIntroRead(true);
+                          });
+                        },
+                        icon: const Icon(
+                            Icons.person_search, color: Colors.white),
+                        label:  Text(
+                          "I need help".trKey,
+                          style: TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue.shade600,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 20, vertical: 12),
+                          elevation: 2,
+                          foregroundColor: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  Row(
+                    mainAxisAlignment: imageCount == 1
+                        ? MainAxisAlignment.end
+                        : MainAxisAlignment.spaceBetween,
+                    children: [
+                      imageCount == 1
+                          ? Container()
+                          : ElevatedButton.icon(
+                        onPressed: () {
+                          setState(() {
+                            imageCount--;
+                          });
+                        },
+                        icon: const Icon(
+                            Icons.arrow_back, color: Colors.black87),
+                        label:  Text(
+                          "Back".trKey,
+                          style: TextStyle(
+                            color: Colors.black87,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.grey.shade100,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 20, vertical: 12),
+                          elevation: 0,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
           ],
         ),
-      )
-        : imageCount == 2
-              ? Container(
-            height: screenHeight * 0.8,
-            width: screenWidth * 0.9,
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                const Text(
-                  "Live Staff Around You",
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 26,
-                    color: Colors.black87,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 20),
-                Image.asset(
-                  "assets/images/liveLocation.jpg",
-                  height: 250,
-                  width: 250,
-                ),
-                const SizedBox(height: 20),
-                Text(
-                  "Find Help Nearby in Real-Time",
-                  style: TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 18,
-                    color: Colors.blueGrey[700],
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  "Instantly view available staff near you on the map—filtered by profession and rating.",
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey[800],
-                    height: 1.5,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 20),
-                Row(
-                  mainAxisAlignment: imageCount == 1? MainAxisAlignment.end : MainAxisAlignment.spaceBetween,
-                  children: [
-                    imageCount == 1?
-                    Container()
-                        : ElevatedButton(
-                      onPressed: () {
-                        setState(() {
-                          setState(() {
-                            imageCount--;
-                          });
-                        });
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: const Text("Prev", style: TextStyle(color: Colors.black),),
-                    ),
-                    ElevatedButton(
-                      onPressed: () {
-                        setState(() {
-                          imageCount++;
-                        });
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: const Padding(
-                        padding: EdgeInsets.all(8.0),
-                        child: Text("Next", style: TextStyle(color: Colors.black),),
-                      ),
-                    ),
-                  ],
-                )
-              ],
-            ),
-          )
-              : imageCount == 3
-                ? Container(
-            height: screenHeight * 0.8,
-            width: screenWidth * 0.9,
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
-
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                const Text(
-                  "Quick Hiring Process",
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 26,
-                    color: Colors.black87,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 20),
-                Image.asset(
-                  "assets/images/hire.jpg",
-                  height: 250,
-                  width: 250,
-                ),
-                const SizedBox(height: 20),
-                Text(
-                  "Easy Booking, Your Way",
-                  style: TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 18,
-                    color: Colors.blueGrey[700],
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  "Choose who you need, when, and for how long. Fill a short form and get connected fast.",
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey[800],
-                    height: 1.5,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 20),
-                Row(
-                  mainAxisAlignment: imageCount == 1? MainAxisAlignment.end : MainAxisAlignment.spaceBetween,
-                  children: [
-                    imageCount == 1?
-                    Container()
-                        : ElevatedButton(
-                      onPressed: () {
-                        setState(() {
-                          setState(() {
-                            imageCount--;
-                          });
-                        });
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: const Padding(
-                        padding: EdgeInsets.all(8.0),
-                        child: Text("Prev", style: TextStyle(color: Colors.black),),
-                      ),
-                    ),
-                    ElevatedButton(
-                      onPressed: () {
-                        setState(() {
-                          imageCount++;
-                        });
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: const Padding(
-                        padding: EdgeInsets.all(8.0),
-                        child: Text("Next", style: TextStyle(color: Colors.black),),
-                      ),
-                    ),
-                  ],
-                )
-              ],
-            ),
-          )
-              : imageCount == 4
-                  ? Container(
-            height: screenHeight * 0.8,
-            width: screenWidth * 0.9,
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
-
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                const Text(
-                  "Verified & Trusted Professionals",
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 26,
-                    color: Colors.black87,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 20),
-                Image.asset(
-                  "assets/images/kyc.jpg",
-                  height: 250,
-                  width: 250,
-                ),
-                const SizedBox(height: 20),
-                Text(
-                  "Only KYC-Verified Staff",
-                  style: TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 18,
-                    color: Colors.blueGrey[700],
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  "Every staff member completes a strict KYC process for safety and trust.",
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey[800],
-                    height: 1.5,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 20),
-                Row(
-                  mainAxisAlignment: imageCount == 1? MainAxisAlignment.end : MainAxisAlignment.spaceBetween,
-                  children: [
-                    imageCount == 1?
-                    Container()
-                        : ElevatedButton(
-                      onPressed: () {
-                        setState(() {
-                          setState(() {
-                            imageCount--;
-                          });
-                        });
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: const Padding(
-                        padding: EdgeInsets.all(8.0),
-                        child: Text("Prev", style: TextStyle(color: Colors.black),),
-                      ),
-                    ),
-                    ElevatedButton(
-                      onPressed: () {
-                        setState(() {
-                          imageCount++;
-                        });
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: const Padding(
-                        padding: EdgeInsets.all(8.0),
-                        child: Text("Next", style: TextStyle(color: Colors.black),),
-                      ),
-                    ),
-                  ],
-                )
-              ],
-            ),
-          )
-              : imageCount == 5
-                    ? Container(
-            height: screenHeight * 0.8,
-            width: screenWidth * 0.9,
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
-
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                const Text(
-                  "For Staff: Get Started with KYC",
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 26,
-                    color: Colors.black87,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 20),
-                Image.asset(
-                  "assets/images/staffVerification.jpg",
-                  height: 250,
-                  width: 250,
-                ),
-                const SizedBox(height: 20),
-                Text(
-                  "Join as Staff – It's Simple!",
-                  style: TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 18,
-                    color: Colors.blueGrey[700],
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  "Register your profession, complete your KYC, and get listed on the platform.",
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey[800],
-                    height: 1.5,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 20),
-                Row(
-                  mainAxisAlignment: imageCount == 1? MainAxisAlignment.end : MainAxisAlignment.spaceBetween,
-                  children: [
-                    imageCount == 1?
-                    Container()
-                        : ElevatedButton(
-                      onPressed: () {
-                        setState(() {
-                          setState(() {
-                            imageCount--;
-                          });
-                        });
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: const Padding(
-                        padding: EdgeInsets.all(8.0),
-                        child: Text("Prev", style: TextStyle(color: Colors.black),),
-                      ),
-                    ),
-                    ElevatedButton(
-                      onPressed: () {
-                        setState(() {
-                          imageCount++;
-                        });
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: const Padding(
-                        padding: EdgeInsets.all(8.0),
-                        child: Text("Next", style: TextStyle(color: Colors.black),),
-                      ),
-                    ),
-                  ],
-                )
-              ],
-            ),
-          )
-              : imageCount == 6
-                      ? Container(
-            height: screenHeight * 0.8,
-            width: screenWidth * 0.9,
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
-
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                const Text(
-                  "Go Online When You're Free",
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 26,
-                    color: Colors.black87,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 20),
-                Image.asset(
-                  "assets/images/onoff.png",
-                  height: 250,
-                  width: 250,
-                ),
-                const SizedBox(height: 20),
-                Text(
-                  "Flexible Working, Your Control",
-                  style: TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 18,
-                    color: Colors.blueGrey[700],
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  "You control your availability—go online when you're ready to work, offline when you're not.",
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey[800],
-                    height: 1.5,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 20),
-                Row(
-                  mainAxisAlignment: imageCount == 1? MainAxisAlignment.end : MainAxisAlignment.spaceBetween,
-                  children: [
-                    imageCount == 1?
-                    Container()
-                        : ElevatedButton(
-                      onPressed: () {
-                        setState(() {
-                          setState(() {
-                            imageCount--;
-                          });
-                        });
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: const Padding(
-                        padding: EdgeInsets.all(8.0),
-                        child: Text("Prev", style: TextStyle(color: Colors.black),),
-                      ),
-                    ),
-                    imageCount == 7
-                        ? ElevatedButton(
-                      onPressed: () {
-                        setState(() {
-
-                        });
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blueAccent,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: const Padding(
-                        padding: EdgeInsets.all(8.0),
-                        child: Text("Finish", style: TextStyle(color: Colors.white),),
-                      ),
-                    )
-                        : ElevatedButton(
-                      onPressed: () {
-                        setState(() {
-                          imageCount++;
-                        });
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: const Padding(
-                        padding: EdgeInsets.all(8.0),
-                        child: Text("Next", style: TextStyle(color: Colors.black),),
-                      ),
-                    ),
-                  ],
-                )
-              ],
-            ),
-          )
-              : imageCount == 7
-                  ? Container(
-            height: screenHeight * 0.8,
-            width: screenWidth * 0.9,
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
-
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                const Text(
-                  "Get Job Requests in Real Time",
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 26,
-                    color: Colors.black87,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 20),
-                Image.asset(
-                  "assets/images/notification.jpg",
-                  height: 250,
-                  width: 250,
-                ),
-                const SizedBox(height: 20),
-                Text(
-                  "Earn Instantly, Get Hired Fast",
-                  style: TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 18,
-                    color: Colors.blueGrey[700],
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  "Get notified when users need your service. Accept jobs, start earning.",
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey[800],
-                    height: 1.5,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 20),
-                Row(
-                  mainAxisAlignment: imageCount == 1? MainAxisAlignment.end : MainAxisAlignment.spaceBetween,
-                  children: [
-                    imageCount == 1?
-                    Container()
-                        : ElevatedButton(
-                      onPressed: () {
-                        setState(() {
-                          setState(() {
-                            imageCount--;
-                          });
-                        });
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: const Padding(
-                        padding: EdgeInsets.all(8.0),
-                        child: Text("Prev", style: TextStyle(color: Colors.black),),
-                      ),
-                    ),
-                    ElevatedButton(
-                      onPressed: () {
-                        setState(() {
-                          imageCount++;
-                        });
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: const Padding(
-                        padding: EdgeInsets.all(8.0),
-                        child: Text("Next", style: TextStyle(color: Colors.black),),
-                      ),
-                    ),
-                  ],
-                )
-              ],
-            ),
-          )
-                  : Container(
-            height: screenHeight * 0.8,
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
-
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                const Text(
-                  "Please tell us who you are",
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 26,
-                    color: Colors.black87,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 20),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.search, color: Colors.blueGrey[700]),
-                    const SizedBox(width: 8),
-                    Text(
-                      "Looking to hire someone?",
-                      style: TextStyle(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 16,
-                        color: Colors.blueGrey[700],
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.work_outline, color: Colors.blueGrey[700]),
-                    const SizedBox(width: 8),
-                    Text(
-                      "Need a part-time job?",
-                      style: TextStyle(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 16,
-                        color: Colors.blueGrey[700],
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  "Tap the button that matches you best",
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey[800],
-                    height: 1.5,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 24),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    ElevatedButton.icon(
-                      onPressed: () {
-                        setState(() {
-                          sawAd = true;
-                          isStaff = true;
-                          setIntroRead(true);
-                        });
-                      },
-                      icon: const Icon(Icons.work, color: Colors.white),
-                      label: const Text(
-                        "I want to work",
-                        style: TextStyle(fontWeight: FontWeight.w600),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green.shade600,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                        elevation: 2,
-                        foregroundColor: Colors.white,
-                      ),
-                    ),
-                    ElevatedButton.icon(
-                      onPressed: () {
-                        setState(() {
-                          sawAd = true;
-                          isStaff = false;
-                          setIntroRead(true);
-                        });
-                      },
-                      icon: const Icon(Icons.person_search, color: Colors.white),
-                      label: const Text(
-                        "I need help",
-                        style: TextStyle(fontWeight: FontWeight.w600),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue.shade600,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                        elevation: 2,
-                        foregroundColor: Colors.white,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 20),
-                Row(
-                  mainAxisAlignment: imageCount == 1
-                      ? MainAxisAlignment.end
-                      : MainAxisAlignment.spaceBetween,
-                  children: [
-                    imageCount == 1
-                        ? Container()
-                        : ElevatedButton.icon(
-                      onPressed: () {
-                        setState(() {
-                          imageCount--;
-                        });
-                      },
-                      icon: const Icon(Icons.arrow_back, color: Colors.black87),
-                      label: const Text(
-                        "Back",
-                        style: TextStyle(
-                          color: Colors.black87,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.grey.shade100,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                        elevation: 0,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
+      ),
+      child: Stack(
+        children: [
+          Container(
+            color: Globle.theme,
+            height: 320,
+            width: double.maxFinite,
           ),
+          SingleChildScrollView(
+            scrollDirection: Axis.vertical,
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(top: 50, bottom: 20),
+                  child: Center(
+                    child: GestureDetector(
+                      onHorizontalDragEnd: (details) {
+                        setState(() {
+                          if (details.primaryVelocity != null &&
+                              details.primaryVelocity! < 0) {
+                            // Swiped left
+                            isStaff = true; // Swipe left → Staff (left side)
+                          } else if (details.primaryVelocity != null &&
+                              details.primaryVelocity! > 0) {
+                            // Swiped right
+                            isStaff = false; // Swipe right → User (right side)
+                          }
+                        });
+                      },
+                      child: Container(
+                        width: MediaQuery
+                            .of(context)
+                            .size
+                            .width * 0.8,
+                        height: 50,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(50),
+                          boxShadow: const [
+                            BoxShadow(
+                              color: Colors.black12,
+                              spreadRadius: 2,
+                              blurRadius: 1,
+                            )
+                          ],
+                        ),
+                        child: Stack(
+                          children: [
+                            // Animated background
+                            AnimatedAlign(
+                              duration: const Duration(milliseconds: 300),
+                              alignment: isStaff
+                                  ? Alignment.centerLeft
+                                  : Alignment.centerRight,
+                              curve: Curves.easeInOut,
+                              child: Container(
+                                width: (MediaQuery
+                                    .of(context)
+                                    .size
+                                    .width * 0.8) / 2,
+                                height: 50,
+                                decoration: BoxDecoration(
+                                  color: Colors.blueAccent,
+                                  borderRadius: BorderRadius.circular(50),
+                                ),
+                              ),
+                            ),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      setState(() {
+                                        isStaff = true;
+                                      });
+                                    },
+                                    child: Container(
+                                      alignment: Alignment.center,
+                                      height: 50,
+                                      child: Text(
+                                        "Staff".trKey,
+                                        style: TextStyle(
+                                          color: isStaff ? Colors.black : Colors
+                                              .black,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                Expanded(
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      setState(() {
+                                        isStaff = false;
+                                      });
+                                    },
+                                    child: Container(
+                                      alignment: Alignment.center,
+                                      height: 40,
+                                      child: Text(
+                                        "User".trKey,
+                                        style: TextStyle(
+                                          color: !isStaff
+                                              ? Colors.black
+                                              : Colors.black,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                isStaff
+                    ? AndroidStaffPage(
+                  lat: lat,
+                  long: long,
+                  isStaff: isStaff,
+                )
+                    : AndroidUserPage(
+                  lat: lat,
+                  long: long,
+                  isStaff: isStaff,
+                )
+              ],
+            ),
+          )
         ],
       ),
     );

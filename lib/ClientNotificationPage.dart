@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:carehub/TempMap.dart';
+import 'package:carehub/services/convertToTranslate.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -21,35 +22,48 @@ class ClientNotificationPage extends StatefulWidget {
 
 class _ClientNotificationPageState extends State<ClientNotificationPage> {
   @override
+  @override
   void initState() {
     super.initState();
-    void liveLocation() {
-      LocationSettings locationSettings = const LocationSettings(
-        accuracy: LocationAccuracy.high,
-        distanceFilter: 100,
-      );
-
-      Geolocator.getPositionStream(locationSettings: locationSettings).listen(
-        (Position position) {
-          setState(() async {
-            String lat = position.latitude.toString();
-            String long = position.longitude.toString();
-            User? user = FirebaseAuth.instance.currentUser;
-
-            await FirebaseFirestore.instance
-                .collection('user')
-                .doc(user?.uid)
-                .update({
-              'lat': lat,
-              'long': long,
-            });
-          });
-        },
-      );
-    }
-
-    liveLocation();
+    _startLiveLocation();
   }
+
+  void _startLiveLocation() {
+    final locationSettings = const LocationSettings(
+      accuracy: LocationAccuracy.high,
+      distanceFilter: 100,
+    );
+
+    Geolocator.getPositionStream(locationSettings: locationSettings).listen(
+          (Position position) async {
+        final String lat = position.latitude.toString();
+        final String long = position.longitude.toString();
+        final User? user = FirebaseAuth.instance.currentUser;
+
+        if (user != null) {
+          await FirebaseFirestore.instance
+              .collection('user')
+              .doc(user.uid)
+              .update({
+            'lat': lat,
+            'long': long,
+          });
+        }
+
+        // Optional: update local state for UI
+        setState(() {
+          // Update variables to show on screen if needed
+          _lastKnownLat = lat;
+          _lastKnownLong = long;
+        });
+      },
+    );
+  }
+
+// Define these variables in your state if you want to display them
+  String? _lastKnownLat;
+  String? _lastKnownLong;
+
 
   User? currentUser = FirebaseAuth.instance.currentUser;
   String? uid = FirebaseAuth.instance.currentUser?.uid;
@@ -72,642 +86,655 @@ class _ClientNotificationPageState extends State<ClientNotificationPage> {
     final screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
-      body: Stack(
-        children: [
-          // App bar section
-          Container(
-            height: 150,
-            color: Globle.theme,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                AppBar(
-                  title: const Center(
-                    child: Text("Notifications",
-                        style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white)),
+      body: SafeArea(
+        child: Stack(
+          children: [
+            // App bar section
+            Container(
+              height: 150,
+              color: Globle.theme,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  AppBar(
+                    title: Center(
+                      child: Text("Notifications".trKey,
+                          style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white)),
+                    ),
+                    backgroundColor: Globle.theme,
+                    automaticallyImplyLeading: false,
                   ),
-                  backgroundColor: Globle.theme,
-                  automaticallyImplyLeading: false,
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-          Stack(
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(top: 150),
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.vertical,
-                  child: Column(
-                    children: [
-                      SingleChildScrollView(
-                        scrollDirection: Axis.vertical,
-                        child: StreamBuilder<QuerySnapshot>(
-                          stream: FirebaseFirestore.instance
-                              .collection("NotificationForUser")
-                              .snapshots(),
-                          builder: (context, snapshot) {
-                            if (!snapshot.hasData) {
-                              return Center(
-                                  child:
-                                      LoaderSupport.loadingAnimation.widget);
-                            }
-                            var users =
-                                snapshot.data?.docs.reversed.toList() ?? [];
-                            List<Widget> userViews = [];
-                            DateTime now = DateTime.now();
-                            DateFormat dateFormat = DateFormat("d/M/yyyy");
-                            DateFormat timeFormat = DateFormat("h:mm a");
+            Stack(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(top: 150),
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.vertical,
+                    child: Column(
+                      children: [
+                        SingleChildScrollView(
+                          scrollDirection: Axis.vertical,
+                          child: StreamBuilder<QuerySnapshot>(
+                            stream: FirebaseFirestore.instance
+                                .collection("NotificationForUser")
+                                .snapshots(),
+                            builder: (context, snapshot) {
 
-                            for (var user in users) {
-                              String scheduledDateEnd =
-                                  user["ScheduledDateEnd"];
-                              String scheduledTimeEnd =
-                                  user["ScheduledTimeEnd"];
-                              DateTime endDate =
-                                  dateFormat.parse(scheduledDateEnd);
-                              DateTime endTime =
-                                  timeFormat.parse(scheduledTimeEnd);
-                              DateTime combinedEndDateTime = DateTime(
-                                endDate.year,
-                                endDate.month,
-                                endDate.day,
-                                endTime.hour,
-                                endTime.minute,
-                              );
+                              if (snapshot.connectionState == ConnectionState.waiting) {
+                                return Padding(
+                                  padding: const EdgeInsets.only(top : 200.0),
+                                  child: Center(child: LoaderSupport.loadingAnimation.widget),
+                                );
+                              }
+                              else if (snapshot.hasError) {
+                                return Padding(
+                                  padding: const EdgeInsets.only(top: 200.0),
+                                  child: Center(
+                                      child: Text(
+                                        "Failed to get Notifications, Please try again".trKey,
+                                        style: TextStyle(fontSize: 16),
+                                      )),
+                                );
+                              }else {
+                                var users = snapshot.data?.docs.reversed.toList() ?? [];
+                                List<Widget> userViews = [];
+                                DateTime now = DateTime.now();
+                                DateFormat dateFormat = DateFormat("d/M/yyyy");
+                                DateFormat timeFormat = DateFormat("h:mm a", "en_US");
 
-                              if (user["userUID"] == uid &&
-                                  user['status'] != "Completed" &&
-                                  !combinedEndDateTime.isBefore(now)) {
-                                userViews.add(
-                                  FutureBuilder(
-                                    future: Future.wait([
-                                      getUserData(user['userUID']),
-                                      getStaffData(user['professionOfStaff'],
-                                          user['staffUID']),
-                                    ]),
-                                    builder: (context,
-                                        AsyncSnapshot<List<dynamic>>
+                                for (var user in users) {
+                                  String scheduledDateEnd = user["status"] == "Request sent"? user["ScheduledDate"] : user["ScheduledDateEnd"];
+                                  String scheduledTimeEnd = user["status"] == "Request sent"? user["ScheduledTime"] : user["ScheduledTimeEnd"];
+                                  DateTime endDate = dateFormat.parse(scheduledDateEnd);
+                                  DateTime endTime = timeFormat.parse(scheduledTimeEnd);
+
+                                  DateTime combinedEndDateTime = DateTime(
+                                    endDate.year,
+                                    endDate.month,
+                                    endDate.day,
+                                    endTime.hour,
+                                    endTime.minute,
+                                  );
+
+                                  if (user["userUID"] == uid &&
+                                      user['status'] != "Completed" &&
+                                      !combinedEndDateTime.isBefore(now)) {
+                                    userViews.add(
+                                      FutureBuilder(
+                                        future: Future.wait([
+                                          getUserData(user['userUID']),
+                                          getStaffData(user['professionOfStaff'],
+                                              user['staffUID']),
+                                        ]),
+                                        builder: (context,
+                                            AsyncSnapshot<List<dynamic>>
                                             snapshot) {
-                                      if (!snapshot.hasData) {
-                                        return LoaderSupport
-                                            .loadingAnimation.widget;
-                                      }
+                                          if (!snapshot.hasData) {
+                                            return LoaderSupport
+                                                .loadingAnimation.widget;
+                                          }
 
-                                      var currentStaffData =
+                                          var currentStaffData =
                                           snapshot.data?[1];
 
-                                      return Row(
-                                        mainAxisAlignment:
+                                          return Row(
+                                            mainAxisAlignment:
                                             MainAxisAlignment.center,
-                                        children: [
-                                          Column(
                                             children: [
-                                              Padding(
-                                                padding: const EdgeInsets.all(
-                                                    10.0),
-                                                child: Container(
-                                                  width: screenWidth - 22,
-                                                  decoration: BoxDecoration(
-                                                    color: Colors.white,
-                                                    borderRadius:
+                                              Column(
+                                                children: [
+                                                  Padding(
+                                                    padding: const EdgeInsets.all(
+                                                        10.0),
+                                                    child: Container(
+                                                      width: screenWidth - 22,
+                                                      decoration: BoxDecoration(
+                                                        color: Colors.white,
+                                                        borderRadius:
                                                         BorderRadius.circular(
                                                             5),
-                                                    boxShadow: const [
-                                                      BoxShadow(
-                                                        color: Colors.black26,
-                                                        spreadRadius: 1,
-                                                        blurRadius: 1,
-                                                      )
-                                                    ],
-                                                  ),
-                                                  child: Column(
-                                                    children: [
-                                                      const Padding(
-                                                        padding:
-                                                            EdgeInsets.only(
-                                                                left: 10,
-                                                                top: 10),
-                                                        child: Row(
-                                                          children: [
-                                                            Text(
-                                                              "Request To",
-                                                              style: TextStyle(
-                                                                  fontSize:
-                                                                      20,
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .bold),
-                                                            ),
-                                                          ],
-                                                        ),
+                                                        boxShadow: const [
+                                                          BoxShadow(
+                                                            color: Colors.black26,
+                                                            spreadRadius: 1,
+                                                            blurRadius: 1,
+                                                          )
+                                                        ],
                                                       ),
-                                                      const Divider(),
-                                                      SizedBox(
-                                                        height: screenHeight *
-                                                            0.1,
-                                                        width: screenWidth *
-                                                            0.85,
-                                                        child: Row(
-                                                          children: [
-                                                            Container(
-                                                              height: 70,
-                                                              width: 70,
-                                                              decoration:
-                                                                  BoxDecoration(
-                                                                color: Colors
-                                                                    .white,
-                                                                borderRadius:
-                                                                    BorderRadius
-                                                                        .circular(
-                                                                            70),
-                                                                boxShadow: const [
-                                                                  BoxShadow(
-                                                                    color: Colors
-                                                                        .black26,
-                                                                    blurRadius:
-                                                                        1,
-                                                                    spreadRadius:
-                                                                        1,
-                                                                  )
-                                                                ],
-                                                                image:
-                                                                    DecorationImage(
-                                                                  image: NetworkImage(
-                                                                      currentStaffData[
-                                                                          'Profile_Pic']),
-                                                                  fit: BoxFit
-                                                                      .cover, // Adjust the fit if necessary
-                                                                ),
-                                                              ),
-                                                            ),
-                                                            Padding(
-                                                              padding:
-                                                                  const EdgeInsets
-                                                                      .only(
-                                                                      left:
-                                                                          10),
-                                                              child: Column(
-                                                                crossAxisAlignment:
-                                                                    CrossAxisAlignment
-                                                                        .start,
-                                                                children: [
-                                                                  Text(
-                                                                    "${currentStaffData?['First_name']} ${currentStaffData?['Last_name']}",
-                                                                    overflow:
-                                                                        TextOverflow
-                                                                            .ellipsis,
-                                                                    maxLines:
-                                                                        1,
-                                                                    style: const TextStyle(
-                                                                        fontWeight: FontWeight
-                                                                            .bold,
-                                                                        fontSize:
-                                                                            16),
-                                                                  ),
-                                                                  Text(
-                                                                      "${user['timeofdeal']}",
-                                                                      style: const TextStyle(
-                                                                          fontSize:
-                                                                              12)),
-                                                                ],
-                                                              ),
-                                                            ),
-                                                            Expanded(
-                                                              child: Column(
-                                                                crossAxisAlignment:
-                                                                    CrossAxisAlignment
-                                                                        .center,
-                                                                mainAxisAlignment:
-                                                                    MainAxisAlignment
-                                                                        .center,
-                                                                children: [
-                                                                  const Text(
-                                                                      "For",
-                                                                      style: TextStyle(
-                                                                          fontWeight:
-                                                                              FontWeight.bold,
-                                                                          fontSize: 12)),
-                                                                  const Divider(),
-                                                                  Text(
-                                                                    "${user['professionOfStaff'].toString().substring(0, 1).toUpperCase()}${user['professionOfStaff'].toString().substring(1)}",
-                                                                    overflow:
-                                                                        TextOverflow
-                                                                            .ellipsis,
-                                                                    maxLines:
-                                                                        1,
-                                                                    style: const TextStyle(
-                                                                        fontWeight: FontWeight
-                                                                            .bold,
-                                                                        fontSize:
-                                                                            18,
-                                                                        color:
-                                                                            Colors.red),
-                                                                  ),
-                                                                ],
-                                                              ),
-                                                            ),
-                                                          ],
-                                                        ),
-                                                      ),
-                                                      Row(
+                                                      child: Column(
                                                         children: [
                                                           Padding(
                                                             padding:
+                                                            EdgeInsets.only(
+                                                                left: 10,
+                                                                top: 10, right : 10),
+                                                            child: Row(
+                                                              children: [
+                                                                Text(
+                                                                  "Request To".trKey,
+                                                                  style: TextStyle(
+                                                                      fontSize:
+                                                                      20,
+                                                                      fontWeight:
+                                                                      FontWeight
+                                                                          .bold),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                          ),
+                                                          const Divider(),
+                                                          SizedBox(
+                                                            height: screenHeight *
+                                                                0.1,
+                                                            width: screenWidth *
+                                                                0.85,
+                                                            child: Row(
+                                                              children: [
+                                                                Container(
+                                                                  height: 70,
+                                                                  width: 70,
+                                                                  decoration:
+                                                                  BoxDecoration(
+                                                                    color: Colors
+                                                                        .white,
+                                                                    borderRadius:
+                                                                    BorderRadius
+                                                                        .circular(
+                                                                        70),
+                                                                    boxShadow: const [
+                                                                      BoxShadow(
+                                                                        color: Colors
+                                                                            .black26,
+                                                                        blurRadius:
+                                                                        1,
+                                                                        spreadRadius:
+                                                                        1,
+                                                                      )
+                                                                    ],
+                                                                    image:
+                                                                    DecorationImage(
+                                                                      image: NetworkImage(
+                                                                          currentStaffData[
+                                                                          'Profile_Pic']),
+                                                                      fit: BoxFit
+                                                                          .cover, // Adjust the fit if necessary
+                                                                    ),
+                                                                  ),
+                                                                ),
+                                                                Padding(
+                                                                  padding:
+                                                                  const EdgeInsets
+                                                                      .only(
+                                                                      left:
+                                                                      10, right : 10),
+                                                                  child: Column(
+                                                                    crossAxisAlignment:
+                                                                    CrossAxisAlignment
+                                                                        .start,
+                                                                    children: [
+                                                                      Text(
+                                                                        "${currentStaffData?['First_name']} ${currentStaffData?['Last_name']}",
+                                                                        overflow:
+                                                                        TextOverflow
+                                                                            .ellipsis,
+                                                                        maxLines:
+                                                                        1,
+                                                                        style: const TextStyle(
+                                                                            fontWeight: FontWeight
+                                                                                .bold,
+                                                                            fontSize:
+                                                                            16),
+                                                                      ),
+                                                                      Text(
+                                                                          "${user['timeofdeal']}",
+                                                                          style: const TextStyle(
+                                                                              fontSize:
+                                                                              12)),
+                                                                    ],
+                                                                  ),
+                                                                ),
+                                                                Expanded(
+                                                                  child: Column(
+                                                                    crossAxisAlignment:
+                                                                    CrossAxisAlignment
+                                                                        .center,
+                                                                    mainAxisAlignment:
+                                                                    MainAxisAlignment
+                                                                        .center,
+                                                                    children: [
+                                                                      Text(
+                                                                          "For".trKey,
+                                                                          style: TextStyle(
+                                                                              fontWeight:
+                                                                              FontWeight.bold,
+                                                                              fontSize: 12)),
+                                                                      const Divider(),
+                                                                      Text(
+                                                                        "${user['professionOfStaff'].toString().substring(0, 1).toUpperCase()}${user['professionOfStaff'].toString().substring(1)}".trKey,
+                                                                        overflow:
+                                                                        TextOverflow
+                                                                            .ellipsis,
+                                                                        maxLines:
+                                                                        1,
+                                                                        style: const TextStyle(
+                                                                            fontWeight: FontWeight
+                                                                                .bold,
+                                                                            fontSize:
+                                                                            18,
+                                                                            color:
+                                                                            Colors.red),
+                                                                      ),
+                                                                    ],
+                                                                  ),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                          ),
+                                                          Row(
+                                                            children: [
+                                                              Padding(
+                                                                padding:
                                                                 const EdgeInsets
                                                                     .only(
                                                                     left: 10,
                                                                     top: 5,
                                                                     bottom:
-                                                                        5),
-                                                            child: Container(
-                                                              height: 30,
-                                                              width:
+                                                                    5, right : 10),
+                                                                child: Container(
+                                                                  height: 30,
+                                                                  width:
                                                                   screenWidth *
-                                                                      0.25,
-                                                              decoration: BoxDecoration(
-                                                                  color: Colors
-                                                                      .white,
-                                                                  borderRadius: BorderRadius.circular(5),
-                                                                  boxShadow: const [
-                                                                    BoxShadow(
-                                                                        color: Colors
-                                                                            .black26,
-                                                                        blurRadius:
+                                                                      0.35,
+                                                                  decoration: BoxDecoration(
+                                                                      color: Colors
+                                                                          .white,
+                                                                      borderRadius: BorderRadius.circular(5),
+                                                                      boxShadow: const [
+                                                                        BoxShadow(
+                                                                            color: Colors
+                                                                                .black26,
+                                                                            blurRadius:
                                                                             1,
-                                                                        spreadRadius:
+                                                                            spreadRadius:
                                                                             1)
-                                                                  ]),
-                                                              child: Center(
-                                                                  child: Text(
-                                                                user[
-                                                                    'ServiceBase'],
-                                                                style: const TextStyle(
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .bold),
-                                                              )),
+                                                                      ]),
+                                                                  child: Center(
+                                                                      child: Text(
+                                                                        "${user['ServiceBase']}".trKey,
+                                                                        style: const TextStyle(
+                                                                            fontWeight:
+                                                                            FontWeight
+                                                                                .bold),
+                                                                      )),
+                                                                ),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                          SizedBox(
+                                                            height: 80,
+                                                            width:
+                                                            screenWidth - 50,
+                                                            child: Column(
+                                                              children: [
+                                                                Padding(
+                                                                  padding:
+                                                                  const EdgeInsets
+                                                                      .only(
+                                                                      left:
+                                                                      10, right : 10),
+                                                                  child: Row(
+                                                                    children: [
+                                                                      Expanded(
+                                                                          child: Text(
+                                                                              "${user['ServiceBase']}".trKey)),
+                                                                      Text(
+                                                                          "${user['hours']}"),
+                                                                    ],
+                                                                  ),
+                                                                ),
+                                                                const Divider(),
+                                                                Padding(
+                                                                  padding:
+                                                                  const EdgeInsets
+                                                                      .only(
+                                                                      left:
+                                                                      10, right : 10),
+                                                                  child: Row(
+                                                                    children: [
+                                                                      Text(
+                                                                          "Total".trKey,
+                                                                          style: TextStyle(
+                                                                              fontWeight:
+                                                                              FontWeight.bold)),
+                                                                      Padding(
+                                                                        padding: EdgeInsets.only(
+                                                                            left:
+                                                                            10, right : 10),
+                                                                        child: Text(
+                                                                            "Know more".trKey,
+                                                                            style:
+                                                                            TextStyle(color: Colors.green)),
+                                                                      ),
+                                                                      const Spacer(),
+                                                                      Text(
+                                                                          "${user['totalcost'].toString()} ${currentStaffData['Currency'] ?? '-'}",
+                                                                          style: const TextStyle(
+                                                                              fontWeight:
+                                                                              FontWeight.bold)),
+                                                                    ],
+                                                                  ),
+                                                                ),
+                                                                const Divider(),
+                                                              ],
                                                             ),
                                                           ),
-                                                        ],
-                                                      ),
-                                                      SizedBox(
-                                                        height: 80,
-                                                        width:
-                                                            screenWidth - 50,
-                                                        child: Column(
-                                                          children: [
-                                                            Padding(
-                                                              padding:
-                                                                  const EdgeInsets
-                                                                      .only(
-                                                                      left:
-                                                                          10),
-                                                              child: Row(
-                                                                children: [
-                                                                  Expanded(
-                                                                      child: Text(
-                                                                          user['ServiceBase'])),
-                                                                  Text(
-                                                                      "${user['hours']}"),
-                                                                ],
-                                                              ),
-                                                            ),
-                                                            const Divider(),
-                                                            Padding(
-                                                              padding:
-                                                                  const EdgeInsets
-                                                                      .only(
-                                                                      left:
-                                                                          10),
-                                                              child: Row(
-                                                                children: [
-                                                                  const Text(
-                                                                      "Total",
-                                                                      style: TextStyle(
-                                                                          fontWeight:
-                                                                              FontWeight.bold)),
-                                                                  const Padding(
-                                                                    padding: EdgeInsets.only(
-                                                                        left:
-                                                                            10),
-                                                                    child: Text(
-                                                                        "Know more",
-                                                                        style:
-                                                                            TextStyle(color: Colors.green)),
-                                                                  ),
-                                                                  const Spacer(),
-                                                                  Text(
-                                                                      "${user['totalcost'].toString()} ${currentStaffData['Currency'] ?? '-'}",
-                                                                      style: const TextStyle(
-                                                                          fontWeight:
-                                                                              FontWeight.bold)),
-                                                                ],
-                                                              ),
-                                                            ),
-                                                            const Divider(),
-                                                          ],
-                                                        ),
-                                                      ),
-                                                      const Padding(
-                                                        padding:
+                                                          Padding(
+                                                            padding:
                                                             EdgeInsets.only(
-                                                                left: 10),
-                                                        child: Row(
-                                                          children: [
-                                                            Text(
-                                                              "Schedule",
-                                                              style: TextStyle(
-                                                                  fontWeight:
+                                                                left: 10, right : 10),
+                                                            child: Row(
+                                                              children: [
+                                                                Text(
+                                                                  "Schedule".trKey,
+                                                                  style: TextStyle(
+                                                                      fontWeight:
                                                                       FontWeight
                                                                           .bold,
-                                                                  fontSize:
+                                                                      fontSize:
                                                                       18),
+                                                                ),
+                                                              ],
                                                             ),
-                                                          ],
-                                                        ),
-                                                      ),
-                                                      Padding(
-                                                        padding:
+                                                          ),
+                                                          Padding(
+                                                            padding:
                                                             const EdgeInsets
                                                                 .only(
                                                                 left: 10.0,
                                                                 right: 10.0),
-                                                        child: Row(
-                                                          crossAxisAlignment:
+                                                            child: Row(
+                                                              crossAxisAlignment:
                                                               CrossAxisAlignment
                                                                   .center,
-                                                          mainAxisAlignment:
+                                                              mainAxisAlignment:
                                                               MainAxisAlignment
                                                                   .spaceBetween,
-                                                          children: [
-                                                            Text(
-                                                              "${user['ScheduledDate']} ${user['ScheduledTime']}",
-                                                              style:
+                                                              children: [
+                                                                Text(
+                                                                  "${user['ScheduledDate']} ${user['ScheduledTime']}",
+                                                                  style:
                                                                   const TextStyle(
                                                                       fontSize:
-                                                                          12),
-                                                            ),
-                                                            const Text(
-                                                              "Due To",
-                                                              style: TextStyle(
-                                                                  fontWeight:
+                                                                      12),
+                                                                ),
+                                                                Text(
+                                                                  "until".trKey,
+                                                                  style: TextStyle(
+                                                                      fontWeight:
                                                                       FontWeight
                                                                           .bold,
-                                                                  fontSize:
+                                                                      fontSize:
                                                                       13),
-                                                            ),
-                                                            Text(
-                                                              "${user['ScheduledDateEnd']} ${user['ScheduledTimeEnd']}",
-                                                              style:
+                                                                ),
+                                                                Text(
+                                                                  "${user['ScheduledDateEnd']} ${user['ScheduledTimeEnd']}",
+                                                                  style:
                                                                   const TextStyle(
                                                                       fontSize:
-                                                                          12),
+                                                                      12),
+                                                                ),
+                                                              ],
                                                             ),
-                                                          ],
-                                                        ),
-                                                      ),
-                                                      const Padding(
-                                                        padding:
+                                                          ),
+                                                          Padding(
+                                                            padding:
                                                             EdgeInsets.only(
-                                                                left: 10),
-                                                        child: Row(
-                                                          children: [
-                                                            Text(
-                                                              "Location",
-                                                              style: TextStyle(
-                                                                  fontWeight:
+                                                                left: 10, right : 10),
+                                                            child: Row(
+                                                              children: [
+                                                                Text(
+                                                                  "Location".trKey,
+                                                                  style: TextStyle(
+                                                                      fontWeight:
                                                                       FontWeight
                                                                           .bold,
-                                                                  fontSize:
+                                                                      fontSize:
                                                                       18),
+                                                                ),
+                                                              ],
                                                             ),
-                                                          ],
-                                                        ),
-                                                      ),
-                                                      Padding(
-                                                        padding:
+                                                          ),
+                                                          Padding(
+                                                            padding:
                                                             const EdgeInsets
                                                                 .only(
-                                                                left: 10),
-                                                        child: Row(
-                                                            mainAxisAlignment:
+                                                                left: 10, right : 10),
+                                                            child: Row(
+                                                                mainAxisAlignment:
                                                                 MainAxisAlignment
                                                                     .start,
-                                                            children: [
-                                                              SizedBox(
-                                                                width:
+                                                                children: [
+                                                                  SizedBox(
+                                                                    width:
                                                                     screenWidth *
                                                                         0.8,
-                                                                child: Text(
-                                                                  "${user['Scheduled_Sub_Address']}, ${user['Scheduled_Address']}, ${user['Scheduled_City']}",
-                                                                  style: const TextStyle(
-                                                                      fontSize:
+                                                                    child: Text(
+                                                                      "${user['Scheduled_Sub_Address']}, ${user['Scheduled_Address']}, ${user['Scheduled_City']}",
+                                                                      style: const TextStyle(
+                                                                          fontSize:
                                                                           12),
-                                                                ),
-                                                              ),
-                                                            ]),
-                                                      ),
-                                                      const SizedBox(
-                                                        height: 10,
-                                                      ),
-                                                      Padding(
-                                                        padding:
+                                                                    ),
+                                                                  ),
+                                                                ]),
+                                                          ),
+                                                          const SizedBox(
+                                                            height: 10,
+                                                          ),
+                                                          Padding(
+                                                            padding:
                                                             const EdgeInsets
                                                                 .only(
                                                                 left: 10,
                                                                 right: 10,
                                                                 top: 5),
-                                                        child: InkWell(
-                                                          onTap: () {
-                                                            if (user['Client_Coordinates_lat'] !=
+                                                            child: InkWell(
+                                                              onTap: () {
+                                                                if (user['Client_Coordinates_lat'] !=
                                                                     "" &&
-                                                                user['Client_Coordinates_long'] !=
-                                                                    "") {
-                                                              Navigator.push(
-                                                                  context,
-                                                                  MaterialPageRoute(
-                                                                    builder:
-                                                                        (context) =>
+                                                                    user['Client_Coordinates_long'] !=
+                                                                        "") {
+                                                                  Navigator.push(
+                                                                      context,
+                                                                      MaterialPageRoute(
+                                                                        builder:
+                                                                            (context) =>
                                                                             TempMap(
-                                                                      lat: user[
-                                                                          'Client_Coordinates_lat'],
-                                                                      long: user[
-                                                                          'Client_Coordinates_long'],
-                                                                    ),
-                                                                  ));
-                                                            } else {
-                                                              Fluttertoast
-                                                                  .showToast(
-                                                                msg:
-                                                                    'Not Available',
-                                                                gravity:
+                                                                              lat: user[
+                                                                              'Client_Coordinates_lat'],
+                                                                              long: user[
+                                                                              'Client_Coordinates_long'],
+                                                                            ),
+                                                                      ));
+                                                                } else {
+                                                                  Fluttertoast
+                                                                      .showToast(
+                                                                    msg:
+                                                                    'Not Available'.trKey,
+                                                                    gravity:
                                                                     ToastGravity
                                                                         .BOTTOM,
-                                                                toastLength: Toast
-                                                                    .LENGTH_SHORT,
-                                                              );
-                                                            }
-                                                          },
-                                                          child: Container(
-                                                            height: 45,
-                                                            width:
+                                                                    toastLength: Toast
+                                                                        .LENGTH_SHORT,
+                                                                  );
+                                                                }
+                                                              },
+                                                              child: Container(
+                                                                height: 45,
+                                                                width:
                                                                 screenWidth -
                                                                     16,
-                                                            decoration:
+                                                                decoration:
                                                                 BoxDecoration(
                                                                     color: const Color(
                                                                         0xff2874f0),
                                                                     boxShadow: const [
                                                                       BoxShadow(
                                                                         color:
-                                                                            Colors.black26,
+                                                                        Colors.black26,
                                                                         spreadRadius:
-                                                                            1,
+                                                                        1,
                                                                         blurRadius:
-                                                                            1,
+                                                                        1,
                                                                       )
                                                                     ],
                                                                     borderRadius:
-                                                                        BorderRadius.circular(
-                                                                            5)),
-                                                            child:
-                                                                const Center(
-                                                              child: Text(
-                                                                "Check Map",
-                                                                style: TextStyle(
-                                                                    fontWeight:
+                                                                    BorderRadius.circular(
+                                                                        5)),
+                                                                child:
+                                                                Center(
+                                                                  child: Text(
+                                                                    "Check Map".trKey,
+                                                                    style: TextStyle(
+                                                                        fontWeight:
                                                                         FontWeight
                                                                             .bold,
-                                                                    color: Colors
-                                                                        .white),
+                                                                        color: Colors
+                                                                            .white),
+                                                                  ),
+                                                                ),
                                                               ),
                                                             ),
                                                           ),
-                                                        ),
-                                                      ),
-                                                      const SizedBox(
-                                                        height: 10,
-                                                      ),
-                                                      Padding(
-                                                          padding:
+                                                          const SizedBox(
+                                                            height: 10,
+                                                          ),
+                                                          Padding(
+                                                              padding:
                                                               const EdgeInsets
                                                                   .only(
                                                                   right: 10.0,
                                                                   left: 10,
                                                                   bottom: 5),
-                                                          child: GlowingBorderContainer(
-                                                              status: user['status'] == "Accepted"? "Staff Will Arrive On Time" : user['status'] == "Rejected"? "Not Coming" : user['status'] == "Request sent"? "Waiting for staff to accept" : user['status']?? "Unknown")),
-                                                      Padding(
-                                                        padding:
+                                                              child: GlowingBorderContainer(
+                                                                  status: user['status'] == "Accepted"? "Staff Will Arrive On Time".trKey : user['status'] == "Rejected"? "Not Coming".trKey : user['status'] == "Request sent"? "Waiting for staff to accept".trKey : user['status']?? "Unknown".trKey)),
+                                                          Padding(
+                                                            padding:
                                                             const EdgeInsets
                                                                 .only(
                                                                 left: 10,
                                                                 right: 10,
                                                                 top: 5),
-                                                        child: InkWell(
-                                                            onTap: () async {
-                                                              DocumentSnapshot
+                                                            child: InkWell(
+                                                                onTap: () async {
+                                                                  DocumentSnapshot
                                                                   doc =
                                                                   await FirebaseFirestore
                                                                       .instance
                                                                       .collection(
-                                                                          "user")
+                                                                      "user")
                                                                       .doc(user[
-                                                                          "staffUID"])
+                                                                  "staffUID"])
                                                                       .get();
-                                                              var phoneNumber =
+                                                                  var phoneNumber =
                                                                   doc["Phone_Number1"]
                                                                       .toString();
-                                                              final Uri
+                                                                  final Uri
                                                                   phoneUri =
                                                                   Uri(
-                                                                scheme: 'tel',
-                                                                path: phoneNumber
-                                                                    .toString(),
-                                                              );
-                                                              if (await canLaunchUrl(
-                                                                  phoneUri)) {
-                                                                await launchUrl(
-                                                                    phoneUri);
-                                                              } else {
-                                                                Fluttertoast
-                                                                    .showToast(
+                                                                    scheme: 'tel',
+                                                                    path: phoneNumber
+                                                                        .toString(),
+                                                                  );
+                                                                  if (await canLaunchUrl(
+                                                                      phoneUri)) {
+                                                                    await launchUrl(
+                                                                        phoneUri);
+                                                                  } else {
+                                                                    Fluttertoast
+                                                                        .showToast(
                                                                         msg:
-                                                                            "System Problem, Use Staff No. $phoneNumber");
-                                                              }
-                                                            },
-                                                            child:
-                                                                const GlowingBorderContainerPhone(
-                                                              Text:
-                                                                  "Call Now",
-                                                              color: Colors
-                                                                  .white,
-                                                              color1: Colors
-                                                                  .black,
-                                                            )),
-                                                      ),
-                                                      (user['status'] ==
-                                                              "Accepted")
-                                                          ? Padding(
-                                                        padding: const EdgeInsets.only(left: 12.0, right: 12.0, top: 10),
-                                                        child: Text.rich(
-                                                          TextSpan(
-                                                            style: const TextStyle(
-                                                              fontSize: 14,
-                                                              color: Colors.black,
-                                                            ),
-                                                            children: [
-                                                              const TextSpan(
-                                                                text: "Please give One Time Password(OTP) to Staff when staff reach the work location. \nOTP is ",
-                                                              ),
-                                                              TextSpan(
-                                                                text: "${user['OTP'] ?? 'Invalid'}",
-                                                                style: const TextStyle(fontWeight: FontWeight.bold),
-                                                              ),
-                                                            ],
+                                                                        "System Problem, Use Staff No. $phoneNumber");
+                                                                  }
+                                                                },
+                                                                child:
+                                                                GlowingBorderContainerPhone(
+                                                                  Text:
+                                                                  "Call Now".trKey,
+                                                                  color: Colors
+                                                                      .white,
+                                                                  color1: Colors
+                                                                      .black,
+                                                                )),
                                                           ),
-                                                          textAlign: TextAlign.justify,
-                                                        ),
-                                                      )
-                                                          : Container(),
-                                                      const SizedBox(
-                                                        height: 10,
+                                                          (user['status'] ==
+                                                              "Accepted")
+                                                              ? Padding(
+                                                            padding: const EdgeInsets.only(left: 12.0, right: 12.0, top: 10),
+                                                            child: Text.rich(
+                                                              TextSpan(
+                                                                style: const TextStyle(
+                                                                  fontSize: 14,
+                                                                  color: Colors.black,
+                                                                ),
+                                                                children: [
+                                                                  TextSpan(
+                                                                    text: "Please give One Time Password(OTP) to Staff when staff reach the work location. \nOTP is ".trKey,
+                                                                  ),
+                                                                  TextSpan(
+                                                                    text: " ${user['OTP'] ?? 'Invalid'.trKey}",
+                                                                    style: const TextStyle(fontWeight: FontWeight.bold),
+                                                                  ),
+                                                                ],
+                                                              ),
+                                                              textAlign: TextAlign.justify,
+                                                            ),
+                                                          )
+                                                              : Container(),
+                                                          const SizedBox(
+                                                            height: 10,
+                                                          ),
+                                                        ],
                                                       ),
-                                                    ],
+                                                    ),
                                                   ),
-                                                ),
+                                                ],
                                               ),
                                             ],
-                                          ),
-                                        ],
-                                      );
-                                    },
-                                  ),
-                                );
+                                          );
+                                        },
+                                      ),
+                                    );
+                                  }
+                                }
+                                if (userViews.isEmpty) {
+                                  return Padding(
+                                    padding: const EdgeInsets.only(top : 200.0),
+                                    child: Center(
+                                        child: Text(
+                                          "There are no any notifications".trKey,
+                                          style: TextStyle(fontSize: 16),
+                                        )),
+                                  );
+                                }
+                                return Column(children: userViews);
                               }
-                            }
-                            if (userViews.isEmpty) {
-                              return const Center(
-                                  child: Text(
-                                "There are no any notifications",
-                                style: TextStyle(fontSize: 16),
-                              ));
-                            }
-                            return Column(children: userViews);
-                          },
-                        ),
-                      )
-                    ],
+                            },
+                          ),
+                        )
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ],
-          )
-        ],
+              ],
+            )
+          ],
+        ),
       ),
     );
   }
@@ -797,15 +824,15 @@ class _GlowingBorderContainerState extends State<GlowingBorderContainer>
             ),
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                const Text(
-                  "Status : ",
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-                Text(
-                  widget.status,
-                  style: const TextStyle(fontSize: 15),
+                Expanded(
+                  child: Text(
+                    "${"Status : ".trKey} ${widget.status}",
+                    softWrap: true,
+                    style: const TextStyle(fontSize: 15),
+                  ),
                 ),
               ],
             ),

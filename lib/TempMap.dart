@@ -55,7 +55,7 @@ class _TempMapState extends State<TempMap> {
                 initialZoom: 18,
                 maxZoom: 20,
                 minZoom: 3,
-                center: LatLng(double.parse(lat), double.parse(long)),
+                initialCenter: LatLng(double.parse(lat), double.parse(long)),
               ),
               children: [
                 TileLayer(
@@ -196,7 +196,7 @@ class _SelectDestinationState extends State<SelectDestination> {
               initialZoom: 16,
               maxZoom: 20,
               minZoom: 3,
-              center: selectedLocation,
+              initialCenter: selectedLocation,
               onPositionChanged: (position, hasGesture) {
                 if (hasGesture) {
                   setState(() {

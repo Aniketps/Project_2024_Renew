@@ -1,4 +1,6 @@
+import 'package:carehub/services/convertToTranslate.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:country_code_picker/country_code_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -17,8 +19,8 @@ class _EContact extends State<EContact> {
   String Skill;
   _EContact({required this.Skill});
   DateTime? pickedDate;
-  String? selectedPhoneCode01;
-  String? selectedPhoneCode02;
+  String selectedPhoneCode01 = "+91";
+  String selectedPhoneCode02 = "+91";
 
   TextEditingController PrimeryNumber = TextEditingController();
   TextEditingController SeconderyNumber = TextEditingController();
@@ -44,8 +46,8 @@ class _EContact extends State<EContact> {
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 AppBar(
-                  title: const Center(
-                    child: Text("Contact Information",
+                  title: Center(
+                    child: Text("Contact Information".trKey,
                         style: TextStyle(
                             fontSize: 20, fontWeight: FontWeight.bold, color : Colors.white)),
                   ),
@@ -82,11 +84,11 @@ class _EContact extends State<EContact> {
                               scrollDirection: Axis.vertical,
                               child: Column(
                                 children: [
-                                  const Padding(
+                                  Padding(
                                     padding: EdgeInsets.only(
                                         left: 20, top: 10, bottom: 5),
                                     child: Text(
-                                      "Make Changes",
+                                      "Make Changes".trKey,
                                       style: TextStyle(
                                           fontSize: 18,
                                           fontWeight: FontWeight.bold),
@@ -109,60 +111,29 @@ class _EContact extends State<EContact> {
                                           ]),
                                       child: Row(
                                         children: [
-                                          Padding(
-                                            padding: const EdgeInsets.only(
-                                                left: 10),
-                                            child: SizedBox(
-                                              height: 50,
-                                              width: 60,
-                                              child: DropdownButton<String>(
-                                                value: selectedPhoneCode01,
-                                                items: PhoneCode.map(
-                                                    (String item) {
-                                                  return DropdownMenuItem<
-                                                      String>(
-                                                    value: item,
-                                                    child: Container(
-                                                      constraints:
-                                                          const BoxConstraints(
-                                                        maxWidth: 40,
-                                                      ),
-                                                      child: Text(
-                                                        item,
-                                                        overflow: TextOverflow
-                                                            .ellipsis,
-                                                        maxLines: 1,
-                                                      ),
-                                                    ),
-                                                  );
-                                                }).toList(),
-                                                onChanged: (newValue) {
-                                                  setState(() {
-                                                    selectedPhoneCode01 =
-                                                        newValue;
-                                                  });
-                                                },
-                                              ),
-                                            ),
-                                          ),
                                           SizedBox(
                                             height: 50,
-                                            width: screenWidth * 0.6,
+                                            child: CountryCodePicker(
+                                              onChanged: (value) {
+                                                setState(() {
+                                                  selectedPhoneCode01 = value.toString();
+                                                });
+                                              },
+                                              initialSelection: '+91',
+                                              favorite: ['+91'],
+                                              showCountryOnly: false,
+                                              showOnlyCountryWhenClosed: false,
+                                              alignLeft: false,
+                                            ),
+                                          ),
+                                          Expanded(
                                             child: TextField(
                                               controller: PrimeryNumber,
                                               decoration:
-                                                  const InputDecoration(
-                                                      hintText:
-                                                          "Primary Phone Number", // Placeholder text
-                                                      border:
-                                                          InputBorder.none,
-                                                      contentPadding:
-                                                          EdgeInsets.fromLTRB(
-                                                              20,
-                                                              16,
-                                                              16,
-                                                              16) // Adds border around the text field
-                                                      ),
+                                              InputDecoration(
+                                                      hintText: "Primary Phone Number".trKey, // Placeholder text
+                                                      border: InputBorder.none,
+                                              )
                                             ),
                                           ),
                                         ],
@@ -185,59 +156,28 @@ class _EContact extends State<EContact> {
                                           ]),
                                       child: Row(
                                         children: [
-                                          Padding(
-                                            padding: const EdgeInsets.only(
-                                                left: 10),
-                                            child: SizedBox(
-                                              height: 50,
-                                              width: 60,
-                                              child: DropdownButton<String>(
-                                                value: selectedPhoneCode02,
-                                                items: PhoneCode.map(
-                                                    (String item) {
-                                                  return DropdownMenuItem<
-                                                      String>(
-                                                    value: item,
-                                                    child: Container(
-                                                      constraints:
-                                                          const BoxConstraints(
-                                                        maxWidth: 40,
-                                                      ),
-                                                      child: Text(
-                                                        item,
-                                                        overflow: TextOverflow
-                                                            .ellipsis,
-                                                        maxLines: 1,
-                                                      ),
-                                                    ),
-                                                  );
-                                                }).toList(),
-                                                onChanged: (newValue) {
-                                                  setState(() {
-                                                    selectedPhoneCode02 =
-                                                        newValue;
-                                                  });
-                                                },
-                                              ),
-                                            ),
-                                          ),
                                           SizedBox(
                                             height: 50,
-                                            width: screenWidth * 0.6,
+                                            child: CountryCodePicker(
+                                              onChanged: (value) {
+                                                setState(() {
+                                                  selectedPhoneCode02 = value.toString();
+                                                });
+                                              },
+                                              initialSelection: '+91',
+                                              favorite: ['+91'],
+                                              showCountryOnly: false,
+                                              showOnlyCountryWhenClosed: false,
+                                              alignLeft: false,
+                                            ),
+                                          ),
+                                          Expanded(
                                             child: TextField(
                                               controller: SeconderyNumber,
                                               decoration:
-                                                  const InputDecoration(
-                                                      hintText:
-                                                          "Secondary Phone Number", // Placeholder text
-                                                      border:
-                                                          InputBorder.none,
-                                                      contentPadding:
-                                                          EdgeInsets.fromLTRB(
-                                                              20,
-                                                              16,
-                                                              16,
-                                                              16) // Adds border around the text field
+                                                  InputDecoration(
+                                                      hintText: "Secondary Phone Number".trKey, // Placeholder text
+                                                      border: InputBorder.none,
                                                       ),
                                             ),
                                           ),
@@ -257,10 +197,8 @@ class _EContact extends State<EContact> {
                                               setState((){
                                                 loading = true;
                                               });
-                                              String PrimeryNum =
-                                                  PrimeryNumber.text;
-                                              String SeconderyNum =
-                                                  SeconderyNumber.text;
+                                              String PrimeryNum = PrimeryNumber.text == ""? PrimeryNumber.text : "$selectedPhoneCode01${PrimeryNumber.text}";
+                                              String SeconderyNum = SeconderyNumber.text == ""? SeconderyNumber.text : "$selectedPhoneCode02${SeconderyNumber.text}";
 
                                                 try {
                                                   User? user = FirebaseAuth
@@ -307,8 +245,8 @@ class _EContact extends State<EContact> {
                                             style: ElevatedButton.styleFrom(
                                                 backgroundColor:
                                                     Colors.green),
-                                            child: const Text(
-                                              "Confirm",
+                                            child:  Text(
+                                              "Confirm".trKey,
                                               style: TextStyle(
                                                   color: Colors.white),
                                             )),

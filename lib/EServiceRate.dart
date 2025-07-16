@@ -1,4 +1,5 @@
 import 'package:carehub/LoaderSupport.dart';
+import 'package:carehub/services/convertToTranslate.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:currency_picker/currency_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -56,9 +57,9 @@ class _EServiceRateState extends State<EServiceRate> {
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 AppBar(
-                  title: const Center(
-                    child: Text("Professional",
-                        style: TextStyle(
+                  title: Center(
+                    child: Text("Professional".trKey,
+                        style: const TextStyle(
                             fontSize: 20, fontWeight: FontWeight.bold)),
                   ),
                   backgroundColor: Globle.theme,
@@ -96,12 +97,12 @@ class _EServiceRateState extends State<EServiceRate> {
                               scrollDirection: Axis.vertical,
                               child: Column(
                                 children: [
-                                  const Padding(
-                                    padding: EdgeInsets.only(
+                                  Padding(
+                                    padding: const EdgeInsets.only(
                                         left: 20, top: 10, bottom: 5),
                                     child: Text(
-                                      "Make Changes",
-                                      style: TextStyle(
+                                      "Make Changes".trKey,
+                                      style: const TextStyle(
                                           fontSize: 18,
                                           fontWeight: FontWeight.bold),
                                     ),
@@ -116,7 +117,7 @@ class _EServiceRateState extends State<EServiceRate> {
                                         keyboardType: TextInputType.number,
                                         controller: HourRate,
                                         decoration: InputDecoration(
-                                          labelText: "Hour Rate",
+                                          labelText: "Hour Rate".trKey,
                                           border: OutlineInputBorder(
                                             borderRadius:
                                                 BorderRadius.circular(10),
@@ -136,7 +137,7 @@ class _EServiceRateState extends State<EServiceRate> {
                                         keyboardType: TextInputType.number,
                                         controller: DayRate,
                                         decoration: InputDecoration(
-                                          labelText: "Day service rate",
+                                          labelText: "Day service rate".trKey,
                                           border: OutlineInputBorder(
                                             borderRadius:
                                                 BorderRadius.circular(10),
@@ -156,7 +157,7 @@ class _EServiceRateState extends State<EServiceRate> {
                                         keyboardType: TextInputType.number,
                                         controller: DayShift,
                                         decoration: InputDecoration(
-                                          labelText: "Hours in a day shift",
+                                          labelText: "Hours in a day shift".trKey,
                                           border: OutlineInputBorder(
                                             borderRadius:
                                                 BorderRadius.circular(10),
@@ -176,7 +177,7 @@ class _EServiceRateState extends State<EServiceRate> {
                                         keyboardType: TextInputType.number,
                                         controller: TravelingCharges,
                                         decoration: InputDecoration(
-                                          labelText: "Traveling Charges",
+                                          labelText: "Traveling Charges".trKey,
                                           border: OutlineInputBorder(
                                             borderRadius:
                                                 BorderRadius.circular(10),
@@ -199,7 +200,7 @@ class _EServiceRateState extends State<EServiceRate> {
                                       onPressed: _showCurrencyPicker,
                                       child: Text(
                                         _selectedCurrency == null
-                                            ? 'Pick a currency'
+                                            ? 'Pick a currency'.trKey
                                             : '${_selectedCurrency!.name} (${_selectedCurrency!.code})',
                                       ),
                                     ),
@@ -299,7 +300,7 @@ class _EServiceRateState extends State<EServiceRate> {
                                               });
                                               Fluttertoast.showToast(
                                                 msg:
-                                                    "Please fill all fields with valid numbers",
+                                                    "Please fill all fields with valid numbers".trKey,
                                                 toastLength:
                                                     Toast.LENGTH_SHORT,
                                                 gravity: ToastGravity.BOTTOM,
@@ -309,9 +310,9 @@ class _EServiceRateState extends State<EServiceRate> {
                                           style: ElevatedButton.styleFrom(
                                             backgroundColor: Colors.green,
                                           ),
-                                          child: const Text(
-                                            "Confirm",
-                                            style: TextStyle(
+                                          child: Text(
+                                            "Confirm".trKey,
+                                            style: const TextStyle(
                                                 color: Colors.white),
                                           ),
                                         ),

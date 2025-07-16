@@ -1,4 +1,5 @@
 import 'package:carehub/LoginPage.dart';
+import 'package:carehub/services/convertToTranslate.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
@@ -97,39 +98,41 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                   ),
                 ],),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   const SizedBox(height: 10,),
-                  Padding(
-                    padding:
-                    const EdgeInsets.only(right: 30, left: 30, top: 10),
-                    child: Row(
-                      children: [
-                        Container(
-                          height: 80,
-                          width: 80,
-                          margin: const EdgeInsets.only(bottom: 10, top: 20),
-                          decoration: BoxDecoration(
-                            color: Colors.black,
-                            borderRadius: BorderRadius.circular(80),
-                            boxShadow: const [
-                              BoxShadow(
-                                  color: Colors.black12, spreadRadius: 2, blurRadius: 1),
-                            ],
-                            image: const DecorationImage(
-                              image: AssetImage("assets/images/logo.png"),
-                              fit: BoxFit.none, // No scaling
-                              alignment: Alignment.center,
-                              scale: 2, // Zoom in (smaller = more zoom)
-                            ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Container(
+                        height: 80,
+                        width: 80,
+                        margin: const EdgeInsets.only(bottom: 10, top: 20),
+                        decoration: BoxDecoration(
+                          color: Colors.black,
+                          borderRadius: BorderRadius.circular(80),
+                          boxShadow: const [
+                            BoxShadow(
+                                color: Colors.black12, spreadRadius: 2, blurRadius: 1),
+                          ],
+                          image: const DecorationImage(
+                            image: AssetImage("assets/images/logo.png"),
+                            fit: BoxFit.none, // No scaling
+                            alignment: Alignment.center,
+                            scale: 2, // Zoom in (smaller = more zoom)
                           ),
                         ),
-                        const SizedBox(width: 10,),
-                        const Padding(
-                          padding: EdgeInsets.symmetric(vertical: 16.0),
+                      ),
+                      const SizedBox(width: 10,),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 16.0),
+                        child: Container(
+                          width: 200,
                           child: Text(
-                            "CARENEST \nSTAFF SIGN UP",
+                            "CARENEST \n${"STAFF SIGN UP".trKey}",
                             textAlign: TextAlign.start,
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.bold,      // Semi-bold for professionalism
                               color: Colors.black87,             // Dark color for readability
@@ -139,8 +142,8 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                             ),
                           ),
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
 
                   // Google buttom
@@ -206,7 +209,7 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                                 ));
                           }
                         } catch (e) {
-                          Fluttertoast.showToast(msg: "Error during Google Sign-In");
+                          Fluttertoast.showToast(msg: "Error during Google Sign-In".trKey);
                         } finally {
                           setState(() {
                             isLoading = false;
@@ -253,22 +256,21 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                   ),
 
                   // Sign in by Email
-                  isEmailSignIn
-                      ? Column(
+                  if (isEmailSignIn) Column(
                     children: [
                       const SizedBox(height: 5,),
-                      const Padding(
+                      Padding(
                         padding:
-                        EdgeInsets.only(right: 30, left: 30, top: 10),
+                        const EdgeInsets.only(right: 30, left: 30, top: 10),
                         child: Row(
-                          children: [
-                            Expanded(
+                          children: <Widget>[
+                            const Expanded(
                               child: Divider(thickness: 1, color: Colors.black),
                             ),
-                            SizedBox(width: 8),
-                            Text("OR", style: TextStyle(fontWeight: FontWeight.bold),),
-                            SizedBox(width: 8),
-                            Expanded(
+                            const SizedBox(width: 8),
+                            Text("OR".trKey, style: const TextStyle(fontWeight: FontWeight.bold),),
+                            const SizedBox(width: 8),
+                            const Expanded(
                               child: Divider(thickness: 1, color: Colors.black,),
                             ),
                           ],
@@ -297,7 +299,7 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                             },
                             controller: FirstName,
                             decoration: InputDecoration(
-                              labelText: "First name",
+                              labelText: "First name".trKey,
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(10),
                               ),
@@ -307,13 +309,13 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                         ),
                       ),
                       !isValidFirstName
-                          ? const Padding(
-                        padding: EdgeInsets.only(right: 30, left: 30, top: 5),
+                          ? Padding(
+                        padding: const EdgeInsets.only(right: 30, left: 30, top: 5),
                         child: Row(
                           children: [
                             Text(
-                              "Invalid First Name",
-                              style: TextStyle(color: Colors.red),
+                              "Invalid First Name".trKey,
+                              style: const TextStyle(color: Colors.red),
                             ),
                           ],
                         ),
@@ -341,7 +343,7 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                             },
                             controller: LastName,
                             decoration: InputDecoration(
-                              labelText: "Last name",
+                              labelText: "Last name".trKey,
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(10),
                               ),
@@ -351,13 +353,13 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                         ),
                       ),
                       !isValidLastName
-                          ? const Padding(
-                        padding: EdgeInsets.only(right: 30, left: 30, top: 5),
+                          ? Padding(
+                        padding: const EdgeInsets.only(right: 30, left: 30, top: 5),
                         child: Row(
                           children: [
                             Text(
-                              "Invalid Last Name",
-                              style: TextStyle(color: Colors.red),
+                              "Invalid Last Name".trKey,
+                              style: const TextStyle(color: Colors.red),
                             ),
                           ],
                         ),
@@ -381,7 +383,7 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                               });
                             },
                             decoration: InputDecoration(
-                              labelText: "Email",
+                              labelText: "Email".trKey,
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(10),
                               ),
@@ -391,13 +393,13 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                         ),
                       ),
                       !isValidEmail
-                          ? const Padding(
-                        padding: EdgeInsets.only(right: 30, left: 30, top: 5),
+                          ? Padding(
+                        padding: const EdgeInsets.only(right: 30, left: 30, top: 5),
                         child: Row(
                           children: [
                             Text(
-                              "Invalid Email",
-                              style: TextStyle(color: Colors.red),
+                              "Invalid Email".trKey,
+                              style: const TextStyle(color: Colors.red),
                             ),
                           ],
                         ),
@@ -418,8 +420,8 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                               });
                             },
                             decoration: InputDecoration(
-                              labelText: "Password",
-                              hintText: "Enter your password",
+                              labelText: "Password".trKey,
+                              hintText: "Enter your password".trKey,
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(10),
                                 borderSide: const BorderSide(color: Colors.grey, width: 1),
@@ -441,18 +443,18 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                         ),
                       ),
                       !isValidPassword
-                          ? const Padding(
-                        padding: EdgeInsets.only(right: 30, left: 30, top: 10),
+                          ? Padding(
+                        padding: const EdgeInsets.only(right: 30, left: 30, top: 10),
                         child: Row(
                           children: [
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text("Password must include:", style: TextStyle(color: Colors.red)),
-                                Text("• At least 8 characters", style: TextStyle(color: Colors.red, fontSize: 12)),
-                                Text("• Uppercase & lowercase letters", style: TextStyle(color: Colors.red, fontSize: 12)),
-                                Text("• At least 1 digit", style: TextStyle(color: Colors.red, fontSize: 12)),
-                                Text("• At least 1 special character", style: TextStyle(color: Colors.red, fontSize: 12)),
+                                Text("Password must include:".trKey, style: const TextStyle(color: Colors.red)),
+                                Text("• At least 8 characters".trKey, style: const TextStyle(color: Colors.red, fontSize: 12)),
+                                Text("• Uppercase & lowercase letters".trKey, style: const TextStyle(color: Colors.red, fontSize: 12)),
+                                Text("• At least 1 digit".trKey, style: const TextStyle(color: Colors.red, fontSize: 12)),
+                                Text("• At least 1 special character".trKey, style: const TextStyle(color: Colors.red, fontSize: 12)),
                               ],
                             ),
                           ],
@@ -475,9 +477,9 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                             },
                             obscureText: true, // Hides the text for password fields
                             decoration: InputDecoration(
-                              labelText: "Confirm Password", // Label text
+                              labelText: "Confirm Password".trKey, // Label text
                               hintText:
-                              "Re-enter your password", // Hint text for better guidance
+                              "Re-enter your password".trKey, // Hint text for better guidance
                               border: OutlineInputBorder(
                                 borderRadius:
                                 BorderRadius.circular(10), // Rounded border
@@ -489,21 +491,20 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                         ),
                       ),
                       !isPasswordMatch
-                          ? const Padding(
-                        padding: EdgeInsets.only(right: 30, left: 30, top: 5),
+                          ? Padding(
+                        padding: const EdgeInsets.only(right: 30, left: 30, top: 5),
                         child: Row(
                           children: [
                             Text(
-                              "Passwords don't match",
-                              style: TextStyle(color: Colors.red),
+                              "Passwords don't match".trKey,
+                              style: const TextStyle(color: Colors.red),
                             ),
                           ],
                         ),
                       )
                           : Container(),
                     ],
-                  )
-                      : Padding(
+                  ) else Padding(
                     padding:
                     const EdgeInsets.only(right: 30, left: 30, top: 10),
                     child: InkWell(
@@ -532,22 +533,7 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                             crossAxisAlignment: CrossAxisAlignment.center,
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Padding(
-                                padding: const EdgeInsets.only(right : 8.0),
-                                child: Container(
-                                  height: 28,
-                                  width: 28,
-                                  decoration: const BoxDecoration(
-                                    image: DecorationImage(
-                                      image: AssetImage("assets/images/email.png"),
-                                      fit: BoxFit.cover, // No scaling
-                                      alignment: Alignment.center,
-                                      scale: 2, // Zoom in (smaller = more zoom)
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              const Text("Email", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 19),)
+                              Text("Manually Enter".trKey, style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 19),)
                             ],
                           )
                       ),
@@ -557,7 +543,7 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
 
                   // Already have account
                   Padding(
-                    padding: const EdgeInsets.only(top: 5, bottom: 5, left: 30),
+                    padding: const EdgeInsets.only(top: 5, bottom: 5, left: 30, right: 30),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
@@ -569,9 +555,9 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                                     builder: (context) => const LoginPage(),
                                   ));
                             },
-                            child: const Text(
-                              "Already have an account?",
-                              style: TextStyle(
+                            child: Text(
+                              "Already have an account?".trKey,
+                              style: const TextStyle(
                                   fontSize: 12,
                                   color: Colors.blue,
                                   fontWeight: FontWeight.bold),
@@ -627,13 +613,13 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                               setState(() {
                                 isLoading = false;
                               });
-                              Fluttertoast.showToast(msg: "Fill the blanks");
+                              Fluttertoast.showToast(msg: "Fill the blanks".trKey);
                             }
                           }else{
-                            Fluttertoast.showToast(msg: "Check all Boxes");
+                            Fluttertoast.showToast(msg: "Check all Boxes".trKey);
                           }
                         },
-                        child: const Text("Next", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),),
+                        child: Text("Next".trKey, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),),
                       ),
                     ),
                   )
@@ -664,12 +650,15 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
 
                   const SizedBox(height: 20,),
 
-                  const Text(
-                    "By Sign up your agree with our",
-                    style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.green,
-                        fontWeight: FontWeight.bold),
+                  Center(
+                    child: Text(
+                      "By Sign up your agree with our".trKey,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                          fontSize: 12,
+                          color: Colors.green,
+                          fontWeight: FontWeight.bold),
+                    ),
                   ),
                   // Polacy link
                   Padding(
@@ -684,9 +673,9 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                                 throw 'Could not launch ${"https://carenest.ancientcoders.in/Privacy_Policy.html"}';
                               }
                             },
-                            child: const Text(
-                              "Privacy Policy, ",
-                              style: TextStyle(
+                            child: Text(
+                              "Privacy Policy,".trKey,
+                              style: const TextStyle(
                                   fontSize: 12,
                                   color: Colors.blue,
                                   fontWeight: FontWeight.bold),
@@ -698,29 +687,31 @@ class _AndroidStaffPage extends State<AndroidStaffPage> {
                                 throw 'Could not launch ${"https://carenest.ancientcoders.in/Terms_Conditions.html"}';
                               }
                             },
-                            child: const Text(
-                              "Terms & Conditions, ",
-                              style: TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.blue,
-                                  fontWeight: FontWeight.bold),
-                            )),
-                        InkWell(
-                            onTap: () async {
-                              final Uri uri = Uri.parse("https://carenest.ancientcoders.in/Refund_Policy.html");
-                              if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
-                                throw 'Could not launch ${"https://carenest.ancientcoders.in/Refund_Policy.html"}';
-                              }
-                            },
-                            child: const Text(
-                              "Refund Policy",
-                              style: TextStyle(
+                            child: Text(
+                              "Terms & Conditions,".trKey,
+                              style: const TextStyle(
                                   fontSize: 12,
                                   color: Colors.blue,
                                   fontWeight: FontWeight.bold),
                             )),
                       ],
                     ),
+                  ),
+                  Center(
+                    child: InkWell(
+                        onTap: () async {
+                          final Uri uri = Uri.parse("https://carenest.ancientcoders.in/Refund_Policy.html");
+                          if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+                            throw 'Could not launch ${"https://carenest.ancientcoders.in/Refund_Policy.html"}';
+                          }
+                        },
+                        child: Text(
+                          "Refund Policy".trKey,
+                          style: const TextStyle(
+                              fontSize: 12,
+                              color: Colors.blue,
+                              fontWeight: FontWeight.bold),
+                        )),
                   ),
                 ],
               ),
@@ -800,7 +791,10 @@ class _AndroidUserPage extends State<AndroidUserPage> {
     }
 
     Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high);
+      locationSettings: const LocationSettings(
+        accuracy: LocationAccuracy.lowest,
+      ),
+    );
 
     if (!mounted) return;
     setState(() {
@@ -830,6 +824,7 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                   ),
                 ],),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   const SizedBox(height: 10,),
                   // logo title
@@ -858,18 +853,21 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                           ),
                         ),
                         const SizedBox(width: 10,),
-                        const Padding(
-                          padding: EdgeInsets.symmetric(vertical: 16.0),
-                          child: Text(
-                            "CARENEST \nCUSTOMER SIGN UP",
-                            textAlign: TextAlign.start,
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,      // Semi-bold for professionalism
-                              color: Colors.black87,             // Dark color for readability
-                              fontFamily: 'Roboto',              // Use a clean, modern font (make sure it's added in your project)
-                              letterSpacing: 0.5,
-                              // Slight subtle letter spacing
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 16.0),
+                          child: Container(
+                            width: 200,
+                            child: Text(
+                              "CARENEST \n"+("CUSTOMER SIGN UP".trKey),
+                              textAlign: TextAlign.start,
+                              style: const TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,      // Semi-bold for professionalism
+                                color: Colors.black87,             // Dark color for readability
+                                fontFamily: 'Roboto',              // Use a clean, modern font (make sure it's added in your project)
+                                letterSpacing: 0.5,
+                                // Slight subtle letter spacing
+                              ),
                             ),
                           ),
                         ),
@@ -958,7 +956,7 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                           }
 
                         } catch (e) {
-                          Fluttertoast.showToast(msg: "Error during Google Sign-In");
+                          Fluttertoast.showToast(msg: "Error during Google Sign-In".trKey);
                         } finally {
                           setState(() {
                             isLoading = false;
@@ -1009,18 +1007,18 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                       ? Column(
                     children: [
                       const SizedBox(height: 5,),
-                      const Padding(
+                      Padding(
                         padding:
-                        EdgeInsets.only(right: 30, left: 30, top: 10),
+                        const EdgeInsets.only(right: 30, left: 30, top: 10),
                         child: Row(
                           children: [
-                            Expanded(
+                            const Expanded(
                               child: Divider(thickness: 1, color: Colors.black),
                             ),
-                            SizedBox(width: 8),
-                            Text("OR", style: TextStyle(fontWeight: FontWeight.bold),),
-                            SizedBox(width: 8),
-                            Expanded(
+                            const SizedBox(width: 8),
+                            Text("OR".trKey, style: const TextStyle(fontWeight: FontWeight.bold),),
+                            const SizedBox(width: 8),
+                            const Expanded(
                               child: Divider(thickness: 1, color: Colors.black,),
                             ),
                           ],
@@ -1050,7 +1048,7 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                               });
                             },
                             decoration: InputDecoration(
-                                labelText: "First name", // Placeholder text
+                                labelText: "First name".trKey, // Placeholder text
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(10),
                                 ),
@@ -1061,13 +1059,13 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                         ),
                       ),
                       !isValidFirstName
-                          ? const Padding(
-                        padding: EdgeInsets.only(right: 30, left: 30, top: 5),
+                          ? Padding(
+                        padding: const EdgeInsets.only(right: 30, left: 30, top: 5),
                         child: Row(
                           children: [
                             Text(
-                              "Invalid First Name",
-                              style: TextStyle(color: Colors.red),
+                              "Invalid First Name".trKey,
+                              style: const TextStyle(color: Colors.red),
                             ),
                           ],
                         ),
@@ -1096,7 +1094,7 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                               });
                             },
                             decoration: InputDecoration(
-                                labelText: "Last name", // Placeholder text
+                                labelText: "Last name".trKey, // Placeholder text
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(10),
                                 ),
@@ -1107,13 +1105,13 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                         ),
                       ),
                       !isValidLastName
-                          ? const Padding(
-                        padding: EdgeInsets.only(right: 30, left: 30, top: 5),
+                          ? Padding(
+                        padding: const EdgeInsets.only(right: 30, left: 30, top: 5),
                         child: Row(
                           children: [
                             Text(
-                              "Invalid Last Name",
-                              style: TextStyle(color: Colors.red),
+                              "Invalid Last Name".trKey,
+                              style: const TextStyle(color: Colors.red),
                             ),
                           ],
                         ),
@@ -1138,7 +1136,7 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                               });
                             },
                             decoration: InputDecoration(
-                              labelText: "Email", // Label for the TextField
+                              labelText: "Email".trKey, // Label for the TextField
                               border: OutlineInputBorder(
                                 borderRadius:
                                 BorderRadius.circular(10), // Rounded border
@@ -1150,13 +1148,13 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                         ),
                       ),
                       !isValidEmail
-                          ? const Padding(
-                        padding: EdgeInsets.only(right: 30, left: 30, top: 5),
+                          ? Padding(
+                        padding: const EdgeInsets.only(right: 30, left: 30, top: 5),
                         child: Row(
                           children: [
                             Text(
-                              "Invalid Email",
-                              style: TextStyle(color: Colors.red),
+                              "Invalid Email".trKey,
+                              style: const TextStyle(color: Colors.red),
                             ),
                           ],
                         ),
@@ -1178,9 +1176,9 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                             },
                             obscureText: !_isPasswordVisible, // Hides the text for password fields
                             decoration: InputDecoration(
-                              labelText: "Password", // Label text
+                              labelText: "Password".trKey, // Label text
                               hintText:
-                              "Enter your password",
+                              "Enter your password".trKey,
                               suffixIcon: IconButton(
                                 icon: Icon(
                                   _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
@@ -1203,18 +1201,18 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                         ),
                       ),
                       !isValidPassword
-                          ? const Padding(
+                          ? Padding(
                         padding: EdgeInsets.only(right: 30, left: 30, top: 10),
                         child: Row(
                           children: [
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text("Password must include:", style: TextStyle(color: Colors.red)),
-                                Text("• At least 8 characters", style: TextStyle(color: Colors.red, fontSize: 12)),
-                                Text("• Uppercase & lowercase letters", style: TextStyle(color: Colors.red, fontSize: 12)),
-                                Text("• At least 1 digit", style: TextStyle(color: Colors.red, fontSize: 12)),
-                                Text("• At least 1 special character", style: TextStyle(color: Colors.red, fontSize: 12)),
+                                Text("Password must include:".trKey, style: const TextStyle(color: Colors.red)),
+                                Text("• At least 8 characters".trKey, style: const TextStyle(color: Colors.red, fontSize: 12)),
+                                Text("• Uppercase & lowercase letters".trKey, style: const TextStyle(color: Colors.red, fontSize: 12)),
+                                Text("• At least 1 digit".trKey, style: const TextStyle(color: Colors.red, fontSize: 12)),
+                                Text("• At least 1 special character".trKey, style: const TextStyle(color: Colors.red, fontSize: 12)),
                               ],
                             ),
                           ],
@@ -1237,9 +1235,9 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                             },
                             obscureText: true, // Hides the text for password fields
                             decoration: InputDecoration(
-                              labelText: "Confirm Password", // Label text
+                              labelText: "Confirm Password".trKey, // Label text
                               hintText:
-                              "Re-enter your password", // Hint text for better guidance
+                              "Re-enter your password".trKey, // Hint text for better guidance
                               border: OutlineInputBorder(
                                 borderRadius:
                                 BorderRadius.circular(10), // Rounded border
@@ -1251,13 +1249,13 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                         ),
                       ),
                       !isPasswordMatch
-                          ? const Padding(
-                        padding: EdgeInsets.only(right: 30, left: 30, top: 5),
+                          ? Padding(
+                        padding: const EdgeInsets.only(right: 30, left: 30, top: 5),
                         child: Row(
                           children: [
                             Text(
-                              "Passwords don't match",
-                              style: TextStyle(color: Colors.red),
+                              "Passwords don't match".trKey,
+                              style: const TextStyle(color: Colors.red),
                             ),
                           ],
                         ),
@@ -1294,22 +1292,7 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                             crossAxisAlignment: CrossAxisAlignment.center,
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Padding(
-                                padding: const EdgeInsets.only(right : 8.0),
-                                child: Container(
-                                  height: 28,
-                                  width: 28,
-                                  decoration: const BoxDecoration(
-                                    image: DecorationImage(
-                                      image: AssetImage("assets/images/email.png"),
-                                      fit: BoxFit.cover, // No scaling
-                                      alignment: Alignment.center,
-                                      scale: 2, // Zoom in (smaller = more zoom)
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              const Text("Email", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 19),)
+                              Text("Manually Enter".trKey, style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 19),)
                             ],
                           )
                       ),
@@ -1318,7 +1301,7 @@ class _AndroidUserPage extends State<AndroidUserPage> {
 
                   // Already have account
                   Padding(
-                    padding: const EdgeInsets.only(top: 5, bottom: 5, left: 30),
+                    padding: const EdgeInsets.only(top: 5, bottom: 5, left: 30, right : 30),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
@@ -1330,9 +1313,9 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                                     builder: (context) => const LoginPage(),
                                   ));
                             },
-                            child: const Text(
-                              "Already have an account?",
-                              style: TextStyle(
+                            child: Text(
+                              "Already have an account?".trKey,
+                              style: const TextStyle(
                                   fontSize: 12,
                                   color: Colors.blue,
                                   fontWeight: FontWeight.bold),
@@ -1391,7 +1374,7 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                                 user?.sendEmailVerification();
                                 Fluttertoast.showToast(
                                     msg:
-                                    "Link send, A link has been send to your email");
+                                    "Link send, A link has been send to your email".trKey);
                                 await FirebaseAuth.instance.signOut();
 
                                 Navigator.pushReplacement(
@@ -1409,12 +1392,12 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                                 if (e.code == 'email-already-in-use') {
                                   Fluttertoast.showToast(
                                     toastLength: Toast.LENGTH_LONG,
-                                    msg: "The email address is already in use by another account.",
+                                    msg: "The email address is already in use by another account.".trKey,
                                   );
                                 } else {
                                   Fluttertoast.showToast(
                                     toastLength: Toast.LENGTH_LONG,
-                                    msg: e.message ?? "An unknown error occurred",
+                                    msg: e.message ?? "An unknown error occurred".trKey,
                                   );
                                 }
                               }
@@ -1424,7 +1407,7 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                               });
                               Fluttertoast.showToast(
                                   toastLength: Toast.LENGTH_LONG,
-                                  msg: "Password not matching");
+                                  msg: "Password not matching".trKey);
                             }
                           } else {
                             setState(() {
@@ -1432,10 +1415,10 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                             });
                             Fluttertoast.showToast(
                                 toastLength: Toast.LENGTH_LONG,
-                                msg: "Fill the blanks");
+                                msg: "Fill the blanks".trKey);
                           }
                         },
-                        child: const Text("Submit", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),),
+                        child: Text("Submit".trKey, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),),
                       ),
                     ),
                   )
@@ -1466,9 +1449,10 @@ class _AndroidUserPage extends State<AndroidUserPage> {
 
                   const SizedBox(height: 20,),
 
-                  const Text(
-                    "By Sign up your agree with our",
-                    style: TextStyle(
+                  Text(
+                    "By Sign up your agree with our".trKey,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
                         fontSize: 12,
                         color: Colors.green,
                         fontWeight: FontWeight.bold),
@@ -1486,9 +1470,9 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                                 throw 'Could not launch ${"https://carenest.ancientcoders.in/Privacy_Policy.html"}';
                               }
                             },
-                            child: const Text(
-                              "Privacy Policy, ",
-                              style: TextStyle(
+                            child: Text(
+                              "Privacy Policy,".trKey,
+                              style: const TextStyle(
                                   fontSize: 12,
                                   color: Colors.blue,
                                   fontWeight: FontWeight.bold),
@@ -1500,29 +1484,31 @@ class _AndroidUserPage extends State<AndroidUserPage> {
                                 throw 'Could not launch ${"https://carenest.ancientcoders.in/Terms_Conditions.html"}';
                               }
                             },
-                            child: const Text(
-                              "Terms & Conditions, ",
-                              style: TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.blue,
-                                  fontWeight: FontWeight.bold),
-                            )),
-                        InkWell(
-                            onTap: () async {
-                              final Uri uri = Uri.parse("https://carenest.ancientcoders.in/Refund_Policy.html");
-                              if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
-                                throw 'Could not launch ${"https://carenest.ancientcoders.in/Refund_Policy.html"}';
-                              }
-                            },
-                            child: const Text(
-                              "Refund Policy",
-                              style: TextStyle(
+                            child: Text(
+                              "Terms & Conditions,".trKey,
+                              style: const TextStyle(
                                   fontSize: 12,
                                   color: Colors.blue,
                                   fontWeight: FontWeight.bold),
                             )),
                       ],
                     ),
+                  ),
+                  Center(
+                    child: InkWell(
+                        onTap: () async {
+                          final Uri uri = Uri.parse("https://carenest.ancientcoders.in/Refund_Policy.html");
+                          if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+                            throw 'Could not launch ${"https://carenest.ancientcoders.in/Refund_Policy.html"}';
+                          }
+                        },
+                        child: Text(
+                          "Refund Policy".trKey,
+                          style: const TextStyle(
+                              fontSize: 12,
+                              color: Colors.blue,
+                              fontWeight: FontWeight.bold),
+                        )),
                   ),
                 ],
               ),
@@ -1626,9 +1612,9 @@ class _AndroidView extends State<AndroidView> {
                                     alignment: Alignment.center,
                                     height: 50,
                                     child: Text(
-                                      "Staff",
+                                      "Staff".trKey,
                                       style: TextStyle(
-                                        color: isStaff ? Colors.white : Colors.black,
+                                        color: isStaff ? Colors.black : Colors.black,
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
@@ -1646,9 +1632,9 @@ class _AndroidView extends State<AndroidView> {
                                     alignment: Alignment.center,
                                     height: 40,
                                     child: Text(
-                                      "User",
+                                      "User".trKey,
                                       style: TextStyle(
-                                        color: !isStaff ? Colors.white : Colors.black,
+                                        color: !isStaff ? Colors.black : Colors.black,
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),

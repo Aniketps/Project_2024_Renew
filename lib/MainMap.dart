@@ -85,7 +85,9 @@ class _MainMapState extends State<MainMap> {
   }
   Future<void> liveLocation() async {
     Position position = await Geolocator.getCurrentPosition(
-      desiredAccuracy: LocationAccuracy.lowest, // fastest
+      locationSettings: const LocationSettings(
+        accuracy: LocationAccuracy.lowest,
+      ),
     );
         setState(() {
           lat = position.latitude;
@@ -409,18 +411,16 @@ class _MainMapState extends State<MainMap> {
                               child: LoaderCheck
                                   ? Center(child: LoaderSupport.loadingAnimation.widget)
                                   : FlutterMap(
-                                      mapController: _mapController,
-                                      options: MapOptions(
-                                        initialZoom: 14,
-                                        maxZoom: 18,
-                                        minZoom: 3,
-                                        center: (searchedlat == 0.0 &&
-                                                searchedlong == 0.0)
-                                            ? LatLng(
-                                                currentUserlat, currentUserlong)
-                                            : LatLng(searchedlat, searchedlong),
-                                      ),
-                                      children: [
+                                  mapController: _mapController,
+                                  options: MapOptions(
+                                    initialZoom: 14,
+                                    maxZoom: 18,
+                                    minZoom: 3,
+                                    initialCenter: (searchedlat == 0.0 && searchedlong == 0.0)
+                                        ? LatLng(currentUserlat, currentUserlong)
+                                        : LatLng(searchedlat, searchedlong),
+                                  ),
+                                  children: [
                                           TileLayer(
                                             urlTemplate: 'https://mt.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',
                                           ),

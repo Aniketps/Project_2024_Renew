@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:carehub/ClientNotificationPage.dart';
+import 'package:carehub/services/convertToTranslate.dart';
 import 'package:carehub/services/sendNotificationService.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -148,7 +149,10 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
       return;
     }
     Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.lowest);
+      locationSettings: const LocationSettings(
+        accuracy: LocationAccuracy.lowest,
+      ),
+    );
 
     setState(() {
       lat = '${position.latitude}';
@@ -252,7 +256,7 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
           pickedTime!.hour,
           pickedTime!.minute,
         );
-        int shift = int.parse(StaffData['Day_Shift'].toString());
+        int.parse(StaffData['Day_Shift'].toString());
         endDateTime = startDateTime.add(Duration(days: hoursToAdd));
       } else {
         // Handle case where pickedDate is null
@@ -283,8 +287,8 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 AppBar(
-                  title: const Center(
-                    child: Text("Hiring And Payment",
+                  title: Center(
+                    child: Text("Hiring And Payment".trKey,
                         style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
@@ -344,7 +348,7 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                         padding: const EdgeInsets.only(
                                             top: 3, right: 10, left: 10),
                                         child: Container(
-                                          width: screenWidth * 0.95,
+                                          width: screenWidth,
                                           height: screenHeight * 0.3,
                                           decoration: BoxDecoration(
                                               color: Colors.white,
@@ -416,8 +420,8 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                                           Text(
                                                               StaffData[
                                                                       "Status"]
-                                                                  ? "Online"
-                                                                  : "Offline",
+                                                                  ? "Online".trKey
+                                                                  : "Offline".trKey,
                                                               style:
                                                                   const TextStyle(
                                                                 fontSize: 10,
@@ -425,7 +429,7 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                                                     .green,
                                                               )),
                                                           Text(
-                                                              "Current time is ${TimeOfDay.now().hourOfPeriod == 0 ? 12 : TimeOfDay.now().hourOfPeriod}:${TimeOfDay.now().minute.toString().padLeft(2, '0')} ${TimeOfDay.now().period == DayPeriod.am ? 'AM' : 'PM'}",
+                                                              "${"Current time is".trKey} ${TimeOfDay.now().hourOfPeriod == 0 ? 12 : TimeOfDay.now().hourOfPeriod}:${TimeOfDay.now().minute.toString().padLeft(2, '0')} ${TimeOfDay.now().period == DayPeriod.am ? 'AM' : 'PM'}",
                                                               style:
                                                                   const TextStyle(
                                                                 fontSize: 10,
@@ -462,19 +466,22 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                                                 const EdgeInsets
                                                                     .only(
                                                                     left: 5),
-                                                            child: Text(
-                                                              "${StaffData['professionOfStaff'][0].toUpperCase()}${StaffData['professionOfStaff'].substring(1)}",
-                                                              overflow:
-                                                                  TextOverflow
-                                                                      .ellipsis,
-                                                              style: const TextStyle(
-                                                                  fontSize:
-                                                                      16,
-                                                                  color: Colors
-                                                                      .red,
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .bold),
+                                                            child: Container(
+                                                                width: 75,
+                                                              child: Text(
+                                                                "${StaffData['professionOfStaff'][0].toUpperCase()}${StaffData['professionOfStaff'].substring(1)}".trKey,
+                                                                overflow:
+                                                                    TextOverflow
+                                                                        .ellipsis,
+                                                                style: const TextStyle(
+                                                                    fontSize:
+                                                                        16,
+                                                                    color: Colors
+                                                                        .red,
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .bold),
+                                                              ),
                                                             ),
                                                           ),
                                                           Text(
@@ -496,22 +503,22 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                               Padding(
                                                 padding:
                                                     const EdgeInsets.only(
-                                                        left: 50.0,
+                                                        left: 20.0,
                                                         right: 30),
                                                 child: Row(
                                                   mainAxisAlignment:
                                                       MainAxisAlignment
                                                           .spaceBetween,
                                                   children: [
-                                                    const Text(
-                                                      "Hire on basis of",
+                                                    Text(
+                                                      "Hire on basis of".trKey,
                                                       style: TextStyle(
                                                           fontSize: 12),
                                                     ),
                                                     Padding(
                                                       padding:
                                                           const EdgeInsets
-                                                              .only(left: 20),
+                                                              .only(left: 10),
                                                       child: Row(
                                                         children: [
                                                           InkWell(
@@ -528,14 +535,6 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                                               width: 50,
                                                               decoration:
                                                                   BoxDecoration(
-                                                                      borderRadius:
-                                                                          const BorderRadius
-                                                                              .only(
-                                                                        topLeft:
-                                                                            Radius.circular(10),
-                                                                        bottomLeft:
-                                                                            Radius.circular(10),
-                                                                      ),
                                                                       color: HourBased
                                                                           ? Colors.blue
                                                                           : Colors.white,
@@ -551,7 +550,7 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                                                   ]),
                                                               child: Center(
                                                                   child: Text(
-                                                                "Hour",
+                                                                "Hour".trKey,
                                                                 style: TextStyle(
                                                                     color: HourBased
                                                                         ? Colors
@@ -578,14 +577,6 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                                               width: 50,
                                                               decoration:
                                                                   BoxDecoration(
-                                                                      borderRadius:
-                                                                          const BorderRadius
-                                                                              .only(
-                                                                        topRight:
-                                                                            Radius.circular(10),
-                                                                        bottomRight:
-                                                                            Radius.circular(10),
-                                                                      ),
                                                                       color: DayBased
                                                                           ? Colors.blue
                                                                           : Colors.white,
@@ -601,7 +592,7 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                                                   ]),
                                                               child: Center(
                                                                   child: Text(
-                                                                "Day",
+                                                                "Day".trKey,
                                                                 style: TextStyle(
                                                                     color: DayBased
                                                                         ? Colors
@@ -626,8 +617,8 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                               Padding(
                                                 padding:
                                                     const EdgeInsets.only(
-                                                        left: 50,
-                                                        right: 10,
+                                                        left: 20,
+                                                        right: 20,
                                                         top: 5),
                                                 child: Column(
                                                   children: [
@@ -643,8 +634,8 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                                                       0.38,
                                                               child: Text(
                                                                 HourBased
-                                                                    ? "Hour"
-                                                                    : "Day",
+                                                                    ? "Hour".trKey
+                                                                    : "Day".trKey,
                                                                 style:
                                                                     const TextStyle(
                                                                   fontSize:
@@ -779,8 +770,8 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                                               width:
                                                                   screenWidth *
                                                                       0.619,
-                                                              child: const Text(
-                                                                "Traveling Charges",
+                                                              child: Text(
+                                                                "Traveling Charges".trKey,
                                                                 style:
                                                                     TextStyle(
                                                                   fontSize:
@@ -810,7 +801,7 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                                               top: 2.0,
                                                               left: 2,
                                                               bottom: 2,
-                                                              right: 18),
+                                                              right: 40),
                                                       child: Row(
                                                         mainAxisAlignment:
                                                             MainAxisAlignment
@@ -820,8 +811,8 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                                               width:
                                                                   screenWidth *
                                                                       0.2,
-                                                              child: const Text(
-                                                                "Total",
+                                                              child: Text(
+                                                                "Total".trKey,
                                                                 style: TextStyle(
                                                                     fontSize:
                                                                         12,
@@ -867,7 +858,7 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                               ]),
                                           child: Padding(
                                             padding:
-                                                const EdgeInsets.only(left: 10),
+                                                const EdgeInsets.only(left: 5, right : 5),
                                             child: Column(
                                               children: [
                                                 Container(
@@ -881,13 +872,13 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                                         width:
                                                             screenWidth * 0.6,
                                                         height: 60,
-                                                        child: const Row(
+                                                        child: Row(
                                                           crossAxisAlignment:
                                                               CrossAxisAlignment
                                                                   .center,
                                                           children: [
                                                             Text(
-                                                              "Schedule",
+                                                              "Schedule".trKey,
                                                               style: TextStyle(
                                                                   fontSize:
                                                                       16,
@@ -925,12 +916,12 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                                                       1,
                                                                 )
                                                               ]),
-                                                          child: const Padding(
+                                                          child: Padding(
                                                             padding:
                                                                 EdgeInsets
                                                                     .all(5.0),
                                                             child: Text(
-                                                              "GUERANTEE ON TIME",
+                                                              "GUERANTEE ON TIME".trKey,
                                                               style: TextStyle(
                                                                   fontSize:
                                                                       10),
@@ -977,8 +968,8 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                                                 });
                                                               }
                                                             },
-                                                            child: const Text(
-                                                              "Select Date",
+                                                            child: Text(
+                                                              "Select Date".trKey,
                                                               style: TextStyle(
                                                                   fontSize:
                                                                       12,
@@ -1009,8 +1000,8 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                                                 });
                                                               }
                                                             },
-                                                            child: const Text(
-                                                              "Select Time",
+                                                            child: Text(
+                                                              "Select Time".trKey,
                                                               style: TextStyle(
                                                                   fontSize:
                                                                       12,
@@ -1052,8 +1043,8 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                                         width: screenWidth *
                                                             0.15,
                                                         height: 30,
-                                                        child: const Text(
-                                                          "Due to",
+                                                        child: Text(
+                                                          "Due to".trKey,
                                                           style: TextStyle(
                                                             fontSize: 12,
                                                           ),
@@ -1075,8 +1066,8 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                                                     Address
                                                                         .text
                                                                         .isEmpty)
-                                                                ? "Select Address"
-                                                                : "Change Address",
+                                                                ? "Select Address".trKey
+                                                                : "Change Address".trKey,
                                                             style: const TextStyle(
                                                                 fontSize: 12,
                                                                 color: Colors
@@ -1123,356 +1114,359 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                             top: 10, right: 10, left: 10),
                                         child: InkWell(
                                           onTap: () async {
-                                            setState(() {
-                                              loading = true;
-                                            });
-                                            isAcceptOpen = false;
-                                            var UID = FirebaseAuth.instance.currentUser?.uid;
-                                            String city = City.text;
-                                            String address = Address.text;
-                                            String subAddress =
-                                                SubAddress.text;
-                                            String place = Place;
-                                            SharedPreferences prefs =
-                                                await SharedPreferences
-                                                    .getInstance();
+                                            bool confirmed = await showHireConfirmationDialog(context);
+                                            if(confirmed){
+                                              setState(() {
+                                                loading = true;
+                                              });
+                                              isAcceptOpen = false;
+                                              var UID = FirebaseAuth.instance.currentUser?.uid;
+                                              String city = City.text;
+                                              String address = Address.text;
+                                              String subAddress =
+                                                  SubAddress.text;
+                                              String place = Place;
+                                              SharedPreferences prefs =
+                                              await SharedPreferences
+                                                  .getInstance();
 
-                                            if (price != 0 &&
-                                                WorkDate != '--/--/----' &&
-                                                WorkTime != '--:--' &&
-                                                city.isNotEmpty &&
-                                                address.isNotEmpty &&
-                                                subAddress.isNotEmpty &&
-                                                place.isNotEmpty &&
-                                                prefs.getDouble(
-                                                        "SelectedLat") !=
-                                                    0.0 &&
-                                                prefs.getDouble(
-                                                        "SelectedLong") !=
-                                                    0.0) {
+                                              if (price != 0 &&
+                                                  WorkDate != '--/--/----' &&
+                                                  WorkTime != '--:--' &&
+                                                  city.isNotEmpty &&
+                                                  address.isNotEmpty &&
+                                                  subAddress.isNotEmpty &&
+                                                  place.isNotEmpty &&
+                                                  prefs.getDouble(
+                                                      "SelectedLat") !=
+                                                      0.0 &&
+                                                  prefs.getDouble(
+                                                      "SelectedLong") !=
+                                                      0.0) {
 
-                                              if ("Payment Successful" ==
-                                                  "Payment Successful") {
-                                                try {
-                                                  // Add data to 'NotificationForStaff' collection
-                                                  FirebaseFirestore.instance
-                                                      .collection(
-                                                          'NotificationForStaff')
-                                                      .add({
-                                                    'userUID': UID,
-                                                    'Scheduled_City': city,
-                                                    'Scheduled_Address':
-                                                        address,
-                                                    'Scheduled_Sub_Address':
-                                                        subAddress,
-                                                    'Scheduled_Place': place,
-                                                    "Client_Coordinates_lat":
-                                                        ShareCoordinates
-                                                            ? prefs
-                                                                .getDouble(
-                                                                    "SelectedLat")
-                                                                .toString()
-                                                            : "",
-                                                    "Client_Coordinates_long":
-                                                        ShareCoordinates
-                                                            ? prefs
-                                                                .getDouble(
-                                                                    "SelectedLong")
-                                                                .toString()
-                                                            : "",
-                                                    'staffUID': StaffID,
-                                                    'professionOfStaff':
-                                                        Skill,
-                                                    'status':
-                                                        'Received a Request',
-                                                    'timeofdeal':
-                                                        "${DateTime.now().day} ${DateFormat.MMM().format(DateTime.now())} ${DateTime.now().year} ${DateFormat.jm().format(DateTime.now())}",
-                                                    'totalcost': total,
-                                                    'ServiceBase': HourBased
-                                                        ? 'Hour'
-                                                        : 'Day',
-                                                    'hours': "${count}",
-                                                    'ScheduledDate': WorkDate,
-                                                    'ScheduledTime': WorkTime,
-                                                    'PlatformTax': '1.5%',
-                                                    'ScheduledDateEnd':
-                                                        WorkDateEnd,
-                                                    'clientContact' : contactController.text,
-                                                    'ScheduledTimeEnd':
-                                                        WorkTimeEnd,
-                                                  }).then((staffDocRef) {
-                                                    String staffDocUID =
-                                                        staffDocRef.id;
-                                                    // Add data to 'NotificationForUser' collection
+                                                if ("Payment Successful" ==
+                                                    "Payment Successful") {
+                                                  try {
+                                                    // Add data to 'NotificationForStaff' collection
                                                     FirebaseFirestore.instance
                                                         .collection(
-                                                            'NotificationForUser')
+                                                        'NotificationForStaff')
                                                         .add({
                                                       'userUID': UID,
-                                                      'staffUID': StaffID,
-                                                      'status':
-                                                          'Request sent',
                                                       'Scheduled_City': city,
                                                       'Scheduled_Address':
-                                                          address,
+                                                      address,
                                                       'Scheduled_Sub_Address':
-                                                          subAddress,
-                                                      'Scheduled_Place':
-                                                          place,
+                                                      subAddress,
+                                                      'Scheduled_Place': place,
                                                       "Client_Coordinates_lat":
-                                                          ShareCoordinates
-                                                              ? prefs
-                                                                  .getDouble(
-                                                                      "SelectedLat")
-                                                                  .toString()
-                                                              : "",
+                                                      ShareCoordinates
+                                                          ? prefs
+                                                          .getDouble(
+                                                          "SelectedLat")
+                                                          .toString()
+                                                          : "",
                                                       "Client_Coordinates_long":
-                                                          ShareCoordinates
-                                                              ? prefs
-                                                                  .getDouble(
-                                                                      "SelectedLong")
-                                                                  .toString()
-                                                              : "",
+                                                      ShareCoordinates
+                                                          ? prefs
+                                                          .getDouble(
+                                                          "SelectedLong")
+                                                          .toString()
+                                                          : "",
+                                                      'staffUID': StaffID,
                                                       'professionOfStaff':
-                                                          Skill,
+                                                      Skill,
+                                                      'status':
+                                                      'Received a Request',
                                                       'timeofdeal':
-                                                          "${DateTime.now().day} ${DateFormat.MMM().format(DateTime.now())} ${DateTime.now().year} ${DateFormat.jm().format(DateTime.now())}",
-                                                      'DocUID': staffDocUID,
+                                                      "${DateTime.now().day} ${DateFormat.MMM().format(DateTime.now())} ${DateTime.now().year} ${DateFormat.jm().format(DateTime.now())}",
                                                       'totalcost': total,
                                                       'ServiceBase': HourBased
                                                           ? 'Hour'
                                                           : 'Day',
                                                       'hours': "${count}",
-                                                      'ScheduledDate':
-                                                          WorkDate,
-                                                      'ScheduledTime':
-                                                          WorkTime,
+                                                      'ScheduledDate': WorkDate,
+                                                      'ScheduledTime': WorkTime,
                                                       'PlatformTax': '1.5%',
                                                       'ScheduledDateEnd':
-                                                          WorkDateEnd,
-                                                      'ScheduledTimeEnd':
-                                                          WorkTimeEnd,
+                                                      WorkDateEnd,
                                                       'clientContact' : contactController.text,
-                                                    }).then((userDocRef) {
-                                                      String userDocUID =
-                                                          userDocRef.id;
-
-                                                      // Update 'NotificationForStaff' with the 'DocUID' from 'NotificationForUser'
-                                                      FirebaseFirestore
-                                                          .instance
+                                                      'ScheduledTimeEnd':
+                                                      WorkTimeEnd,
+                                                    }).then((staffDocRef) {
+                                                      String staffDocUID =
+                                                          staffDocRef.id;
+                                                      // Add data to 'NotificationForUser' collection
+                                                      FirebaseFirestore.instance
                                                           .collection(
-                                                              'NotificationForStaff')
-                                                          .doc(staffDocUID)
-                                                          .update({
-                                                        'DocUID': userDocUID,
+                                                          'NotificationForUser')
+                                                          .add({
+                                                        'userUID': UID,
+                                                        'staffUID': StaffID,
+                                                        'status':
+                                                        'Request sent',
+                                                        'Scheduled_City': city,
+                                                        'Scheduled_Address':
+                                                        address,
+                                                        'Scheduled_Sub_Address':
+                                                        subAddress,
+                                                        'Scheduled_Place':
+                                                        place,
+                                                        "Client_Coordinates_lat":
+                                                        ShareCoordinates
+                                                            ? prefs
+                                                            .getDouble(
+                                                            "SelectedLat")
+                                                            .toString()
+                                                            : "",
+                                                        "Client_Coordinates_long":
+                                                        ShareCoordinates
+                                                            ? prefs
+                                                            .getDouble(
+                                                            "SelectedLong")
+                                                            .toString()
+                                                            : "",
+                                                        'professionOfStaff':
+                                                        Skill,
+                                                        'timeofdeal':
+                                                        "${DateTime.now().day} ${DateFormat.MMM().format(DateTime.now())} ${DateTime.now().year} ${DateFormat.jm().format(DateTime.now())}",
+                                                        'DocUID': staffDocUID,
+                                                        'totalcost': total,
+                                                        'ServiceBase': HourBased
+                                                            ? 'Hour'
+                                                            : 'Day',
+                                                        'hours': "${count}",
+                                                        'ScheduledDate':
+                                                        WorkDate,
+                                                        'ScheduledTime':
+                                                        WorkTime,
+                                                        'PlatformTax': '1.5%',
+                                                        'ScheduledDateEnd':
+                                                        WorkDateEnd,
+                                                        'ScheduledTimeEnd':
+                                                        WorkTimeEnd,
+                                                        'clientContact' : contactController.text,
+                                                      }).then((userDocRef) {
+                                                        String userDocUID =
+                                                            userDocRef.id;
+
+                                                        // Update 'NotificationForStaff' with the 'DocUID' from 'NotificationForUser'
+                                                        FirebaseFirestore
+                                                            .instance
+                                                            .collection(
+                                                            'NotificationForStaff')
+                                                            .doc(staffDocUID)
+                                                            .update({
+                                                          'DocUID': userDocUID,
+                                                        });
+                                                      }).catchError((error) {
+                                                        setState(() {
+                                                          loading = false;
+                                                        });
+                                                        print(
+                                                            "Error adding document to NotificationForUser: $error");
                                                       });
                                                     }).catchError((error) {
                                                       setState(() {
                                                         loading = false;
                                                       });
                                                       print(
-                                                          "Error adding document to NotificationForUser: $error");
+                                                          "Error adding document to NotificationForStaff: $error");
                                                     });
-                                                  }).catchError((error) {
+
+                                                    User? user =
+                                                    await FirebaseAuth
+                                                        .instance
+                                                        .currentUser;
+                                                    var userDoc =
+                                                    await FirebaseFirestore
+                                                        .instance
+                                                        .collection("user")
+                                                        .doc(user?.uid)
+                                                        .get();
+                                                    var staffDoc =
+                                                    await FirebaseFirestore
+                                                        .instance
+                                                        .collection("user")
+                                                        .doc(StaffID)
+                                                        .get();
+                                                    var usertoken = userDoc
+                                                        .data()?['token'];
+                                                    var stafftoken = staffDoc
+                                                        .data()?['token'];
+
+
+                                                    // Generate unique IDs for the notifications
+                                                    int notificationId1 = DateTime
+                                                        .now()
+                                                        .millisecondsSinceEpoch; // Unique ID based on timestamp
+                                                    int notificationId2 =
+                                                        notificationId1 +
+                                                            1; // Increment to ensure uniqueness for the second notification
+
+                                                    // Send first notification
+                                                    String uid = FirebaseAuth.instance.currentUser!.uid;
+
+                                                    // Access document using UID
+                                                    DocumentSnapshot<Map<String, dynamic>> doc = await FirebaseFirestore.instance
+                                                        .collection("user").doc(uid).get();
+
+                                                    sendNotificationService
+                                                        .sendNotificationUsingApi(
+                                                        body:
+                                                        "✅ ${StaffData['First_name']} ${StaffData['Last_name']} has been notified. They'll connect with you soon. Thanks for choosing CareNest 💙",
+                                                        data: {
+                                                          "screen":
+                                                          "ClientNotificationPage",
+                                                          "notificationId":
+                                                          notificationId1
+                                                              .toString(), // Include notification ID in the data if needed
+                                                        },
+                                                        title: "🌟 Your Request Is in Good Hands",
+                                                        token: usertoken);
+                                                    // Send second notification
+
+                                                    sendNotificationService
+                                                        .sendNotificationUsingApi(
+                                                        body: "CareNest client ${doc['First_name']} ${doc['Last_name']} has reached out for your help. Tap to view details.",
+                                                        data: {
+                                                          "screen":
+                                                          "StaffNotificationPage",
+                                                          "notificationId":
+                                                          notificationId2
+                                                              .toString(),
+                                                          "hire":
+                                                          "true" // Include notification ID in the data if needed
+                                                        },
+                                                        title: "🛎️ New Job Opportunity",
+                                                        token: stafftoken);
+                                                    prefs.setDouble(
+                                                        "SelectedLat", 0.0);
+                                                    prefs.setDouble(
+                                                        "SelectedLong", 0.0);
+
                                                     setState(() {
                                                       loading = false;
                                                     });
-                                                    print(
-                                                        "Error adding document to NotificationForStaff: $error");
-                                                  });
+                                                    Navigator.push(
+                                                      context,
+                                                      MaterialPageRoute(
+                                                        builder: (context) =>
+                                                        const ClientNotificationPage(),
+                                                      ),
+                                                    );
 
-                                                  User? user =
-                                                      await FirebaseAuth
-                                                          .instance
-                                                          .currentUser;
-                                                  var userDoc =
-                                                      await FirebaseFirestore
-                                                          .instance
-                                                          .collection("user")
-                                                          .doc(user?.uid)
-                                                          .get();
-                                                  var staffDoc =
-                                                      await FirebaseFirestore
-                                                          .instance
-                                                          .collection("user")
-                                                          .doc(StaffID)
-                                                          .get();
-                                                  var usertoken = userDoc
-                                                      .data()?['token'];
-                                                  var stafftoken = staffDoc
-                                                      .data()?['token'];
-
-
-                                                  // Generate unique IDs for the notifications
-                                                  int notificationId1 = DateTime
-                                                          .now()
-                                                      .millisecondsSinceEpoch; // Unique ID based on timestamp
-                                                  int notificationId2 =
-                                                      notificationId1 +
-                                                          1; // Increment to ensure uniqueness for the second notification
-
-                                                  // Send first notification
-                                                  String uid = FirebaseAuth.instance.currentUser!.uid;
-
-                                                  // Access document using UID
-                                                  DocumentSnapshot<Map<String, dynamic>> doc = await FirebaseFirestore.instance
-                                                      .collection("user").doc(uid).get();
-
-                                                  sendNotificationService
-                                                      .sendNotificationUsingApi(
-                                                          body:
-                                                              "✅ ${StaffData['First_name']} ${StaffData['Last_name']} has been notified. They'll connect with you soon. Thanks for choosing CareNest 💙",
-                                                          data: {
-                                                            "screen":
-                                                                "ClientNotificationPage",
-                                                            "notificationId":
-                                                                notificationId1
-                                                                    .toString(), // Include notification ID in the data if needed
-                                                          },
-                                                          title: "🌟 Your Request Is in Good Hands",
-                                                          token: usertoken);
-                                                  // Send second notification
-
-                                                  sendNotificationService
-                                                      .sendNotificationUsingApi(
-                                                          body: "CareNest client ${doc['First_name']} ${doc['Last_name']} has reached out for your help. Tap to view details.",
-                                                          data: {
-                                                            "screen":
-                                                                "StaffNotificationPage",
-                                                            "notificationId":
-                                                                notificationId2
-                                                                    .toString(),
-                                                            "hire":
-                                                                "true" // Include notification ID in the data if needed
-                                                          },
-                                                          title: "🛎️ New Job Opportunity",
-                                                          token: stafftoken);
-                                                  prefs.setDouble(
-                                                      "SelectedLat", 0.0);
-                                                  prefs.setDouble(
-                                                      "SelectedLong", 0.0);
-
-                                                  setState(() {
-                                                    loading = false;
-                                                  });
-                                                  Navigator.push(
-                                                    context,
-                                                    MaterialPageRoute(
-                                                      builder: (context) =>
-                                                          const ClientNotificationPage(),
-                                                    ),
-                                                  );
-
-                                                  Fluttertoast.showToast(
-                                                      msg:
-                                                          "Request has been send");
-                                                } catch (e) {
+                                                    Fluttertoast.showToast(
+                                                        msg:
+                                                        "Request has been send".trKey);
+                                                  } catch (e) {
+                                                    setState(() {
+                                                      loading = false;
+                                                    });
+                                                    Fluttertoast.showToast(
+                                                      msg: "$e",
+                                                      toastLength:
+                                                      Toast.LENGTH_SHORT,
+                                                      gravity:
+                                                      ToastGravity.BOTTOM,
+                                                    );
+                                                  }
+                                                } else {
                                                   setState(() {
                                                     loading = false;
                                                   });
                                                   Fluttertoast.showToast(
-                                                    msg: "$e",
-                                                    toastLength:
-                                                        Toast.LENGTH_SHORT,
-                                                    gravity:
-                                                        ToastGravity.BOTTOM,
-                                                  );
+                                                      msg: "Payment Failed");
                                                 }
                                               } else {
                                                 setState(() {
                                                   loading = false;
                                                 });
-                                                Fluttertoast.showToast(
-                                                    msg: "Payment Failed");
-                                              }
-                                            } else {
-                                              setState(() {
-                                                loading = false;
-                                              });
-                                              // Handle validation errors
-                                              if (price == 0) {
-                                                setState(() {
-                                                  loading = false;
-                                                });
-                                                Fluttertoast.showToast(
-                                                  msg:
-                                                      "User did not set service rate",
-                                                  toastLength:
-                                                      Toast.LENGTH_SHORT,
-                                                  gravity:
-                                                      ToastGravity.BOTTOM,
-                                                );
-                                              } else if (WorkDate == '') {
-                                                setState(() {
-                                                  loading = false;
-                                                });
-                                                Fluttertoast.showToast(
-                                                  msg: "Please Select Date",
-                                                  toastLength:
-                                                      Toast.LENGTH_SHORT,
-                                                  gravity:
-                                                      ToastGravity.BOTTOM,
-                                                );
-                                              } else if (WorkTime ==
-                                                  '--:--') {
-                                                setState(() {
-                                                  loading = false;
-                                                });
-                                                Fluttertoast.showToast(
-                                                  msg: "Please Select Time",
-                                                  toastLength:
-                                                      Toast.LENGTH_SHORT,
-                                                  gravity:
-                                                      ToastGravity.BOTTOM,
-                                                );
-                                              } else if (city.isEmpty) {
-                                                setState(() {
-                                                  loading = false;
-                                                });
-                                                Fluttertoast.showToast(
-                                                  msg: "Please Enter Address",
-                                                  toastLength:
-                                                      Toast.LENGTH_SHORT,
-                                                  gravity:
-                                                      ToastGravity.BOTTOM,
-                                                );
-                                              } else if (address.isEmpty) {
-                                                setState(() {
-                                                  loading = false;
-                                                });
-                                                Fluttertoast.showToast(
-                                                  msg: "Invalid Address",
-                                                  toastLength:
-                                                      Toast.LENGTH_SHORT,
-                                                  gravity:
-                                                      ToastGravity.BOTTOM,
-                                                );
-                                              } else if (subAddress.isEmpty) {
-                                                setState(() {
-                                                  loading = false;
-                                                });
-                                                Fluttertoast.showToast(
-                                                  msg: "Invalid Sub Address",
-                                                  toastLength:
-                                                      Toast.LENGTH_SHORT,
-                                                  gravity:
-                                                      ToastGravity.BOTTOM,
-                                                );
-                                              } else {
-                                                setState(() {
-                                                  loading = false;
-                                                });
-                                                Fluttertoast.showToast(
-                                                  msg: "Invalid Place",
-                                                  toastLength:
-                                                      Toast.LENGTH_SHORT,
-                                                  gravity:
-                                                      ToastGravity.BOTTOM,
-                                                );
+                                                // Handle validation errors
+                                                if (price == 0) {
+                                                  setState(() {
+                                                    loading = false;
+                                                  });
+                                                  Fluttertoast.showToast(
+                                                    msg:
+                                                    "User did not set service rate".trKey,
+                                                    toastLength:
+                                                    Toast.LENGTH_SHORT,
+                                                    gravity:
+                                                    ToastGravity.BOTTOM,
+                                                  );
+                                                } else if (WorkDate == '') {
+                                                  setState(() {
+                                                    loading = false;
+                                                  });
+                                                  Fluttertoast.showToast(
+                                                    msg: "Please Select Date".trKey,
+                                                    toastLength:
+                                                    Toast.LENGTH_SHORT,
+                                                    gravity:
+                                                    ToastGravity.BOTTOM,
+                                                  );
+                                                } else if (WorkTime ==
+                                                    '--:--') {
+                                                  setState(() {
+                                                    loading = false;
+                                                  });
+                                                  Fluttertoast.showToast(
+                                                    msg: "Please Select Time".trKey,
+                                                    toastLength:
+                                                    Toast.LENGTH_SHORT,
+                                                    gravity:
+                                                    ToastGravity.BOTTOM,
+                                                  );
+                                                } else if (city.isEmpty) {
+                                                  setState(() {
+                                                    loading = false;
+                                                  });
+                                                  Fluttertoast.showToast(
+                                                    msg: "Please Enter Address".trKey,
+                                                    toastLength:
+                                                    Toast.LENGTH_SHORT,
+                                                    gravity:
+                                                    ToastGravity.BOTTOM,
+                                                  );
+                                                } else if (address.isEmpty) {
+                                                  setState(() {
+                                                    loading = false;
+                                                  });
+                                                  Fluttertoast.showToast(
+                                                    msg: "Invalid Address".trKey,
+                                                    toastLength:
+                                                    Toast.LENGTH_SHORT,
+                                                    gravity:
+                                                    ToastGravity.BOTTOM,
+                                                  );
+                                                } else if (subAddress.isEmpty) {
+                                                  setState(() {
+                                                    loading = false;
+                                                  });
+                                                  Fluttertoast.showToast(
+                                                    msg: "Invalid Sub Address".trKey,
+                                                    toastLength:
+                                                    Toast.LENGTH_SHORT,
+                                                    gravity:
+                                                    ToastGravity.BOTTOM,
+                                                  );
+                                                } else {
+                                                  setState(() {
+                                                    loading = false;
+                                                  });
+                                                  Fluttertoast.showToast(
+                                                    msg: "Invalid Place".trKey,
+                                                    toastLength:
+                                                    Toast.LENGTH_SHORT,
+                                                    gravity:
+                                                    ToastGravity.BOTTOM,
+                                                  );
+                                                }
                                               }
                                             }
                                           },
-                                          child: Container(
+                                          child : Container(
                                             height: 50,
                                             width: screenWidth,
                                             decoration: BoxDecoration(
@@ -1485,9 +1479,9 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                                       spreadRadius: 1,
                                                       blurRadius: 1)
                                                 ]),
-                                            child: const Center(
+                                            child: Center(
                                                 child: Text(
-                                              "Hire Now",
+                                              "Hire Now".trKey,
                                               style: TextStyle(
                                                   color: Colors.white,
                                                   fontSize: 20,
@@ -1527,7 +1521,7 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                                           .spaceBetween,
                                                   children: [
                                                     Text(
-                                                      "Your Location",
+                                                      "Your Location".trKey,
                                                       style:
                                                           GoogleFonts.sanchez(
                                                               fontSize: 20),
@@ -1596,7 +1590,7 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                                       decoration:
                                                       InputDecoration(
                                                           labelText:
-                                                          "Phone no.", // Placeholder text
+                                                          "Phone no.".trKey, // Placeholder text
                                                           border:
                                                           OutlineInputBorder(
                                                             borderRadius:
@@ -1622,7 +1616,7 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                                             decoration:
                                                                 InputDecoration(
                                                                     labelText:
-                                                                        "City", // Placeholder text
+                                                                        "City".trKey, // Placeholder text
                                                                     border:
                                                                         OutlineInputBorder(
                                                                       borderRadius:
@@ -1649,7 +1643,7 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                                             decoration:
                                                                 InputDecoration(
                                                                     labelText:
-                                                                        "Building/House/Flat/Floor no", // Placeholder text
+                                                                        "Building/House/Flat/Floor no".trKey, // Placeholder text
                                                                     border:
                                                                         OutlineInputBorder(
                                                                       borderRadius:
@@ -1679,7 +1673,7 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                                             decoration:
                                                                 InputDecoration(
                                                                     labelText:
-                                                                        "Address", // Placeholder text
+                                                                        "Address".trKey, // Placeholder text
                                                                     border:
                                                                         OutlineInputBorder(
                                                                       borderRadius:
@@ -1723,7 +1717,7 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                                                     ),
                                                                     child:
                                                                         Text(
-                                                                      "Home",
+                                                                      "Home".trKey,
                                                                       style: TextStyle(
                                                                           color: Home
                                                                               ? Colors.white
@@ -1757,7 +1751,7 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                                                     ),
                                                                     child:
                                                                         Text(
-                                                                      "Office",
+                                                                      "Office".trKey,
                                                                       style: TextStyle(
                                                                           color: Office
                                                                               ? Colors.white
@@ -1806,7 +1800,7 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                                                             BorderRadius.circular(5),
                                                                       ),
                                                                       child:
-                                                                          const Row(
+                                                                          Row(
                                                                         mainAxisAlignment:
                                                                             MainAxisAlignment.center,
                                                                         crossAxisAlignment:
@@ -1815,7 +1809,7 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                                                           Icon(Icons.my_location,
                                                                               color: Colors.white),
                                                                           SizedBox(width: 5),
-                                                                          Text("Use my current location",
+                                                                          Text("Use my current location".trKey,
                                                                               style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                                                                         ],
                                                                       ),
@@ -1864,7 +1858,7 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                                                   EnterAddress = false;
                                                                   isManually = false;
                                                                 });
-                                                                Fluttertoast.showToast(msg: "Address Saved");
+                                                                Fluttertoast.showToast(msg: "Address Saved".trKey);
                                                               }else{
                                                                 FirebaseFirestore.instance.collection('Addresses').doc(UID).collection("UserAddresses").add({
                                                                   "placeType" : Place,
@@ -1880,19 +1874,19 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                                                   EnterAddress = false;
                                                                   isManually = false;
                                                                 });
-                                                                Fluttertoast.showToast(msg: "Address Saved");
+                                                                Fluttertoast.showToast(msg: "Address Saved".trKey);
                                                               }
                                                             } else {
                                                               if(City.text.isEmpty){
-                                                                Fluttertoast.showToast(msg: "Please Enter City");
+                                                                Fluttertoast.showToast(msg: "Please Enter City".trKey);
                                                               }else if(Address.text.isEmpty){
-                                                                Fluttertoast.showToast(msg: "Please Enter Address");
+                                                                Fluttertoast.showToast(msg: "Please Enter Address".trKey);
                                                               }else if(contactController.text.isEmpty){
-                                                                Fluttertoast.showToast(msg: "Please Enter Phone Number");
+                                                                Fluttertoast.showToast(msg: "Please Enter Phone Number".trKey);
                                                               }else if(SubAddress.text.isEmpty){
-                                                                Fluttertoast.showToast(msg: "Please Enter Building/House/flat");
+                                                                Fluttertoast.showToast(msg: "Please Enter Building/House/flat".trKey);
                                                               }else{
-                                                                Fluttertoast.showToast(msg: "Please Select Location from Map");
+                                                                Fluttertoast.showToast(msg: "Please Select Location from Map".trKey);
                                                               }
                                                             }
                                                           },
@@ -1910,9 +1904,9 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                                                       .circular(
                                                                           5),
                                                             ),
-                                                            child: const Center(
+                                                            child: Center(
                                                                 child: Text(
-                                                              "Save Address",
+                                                              "Save Address".trKey,
                                                               style: TextStyle(
                                                                   fontWeight:
                                                                       FontWeight
@@ -1952,9 +1946,9 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                                             ),
                                                           ],
                                                         ),
-                                                        child: const Center(
+                                                        child: Center(
                                                             child: Text(
-                                                                "New Address",
+                                                                "New Address".trKey,
                                                                 style: TextStyle(
                                                                     fontWeight:
                                                                         FontWeight
@@ -2024,11 +2018,11 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                                                                 Column(
                                                                                   crossAxisAlignment: CrossAxisAlignment.start,
                                                                                   children: [
-                                                                                    Text("${address["city"]?? "No City Name"}", style: const TextStyle(fontWeight: FontWeight.bold),),
+                                                                                    Text("${address["city"]?? "No City Name".trKey}", style: const TextStyle(fontWeight: FontWeight.bold),),
                                                                                     SizedBox(
                                                                                         width: screenWidth - 100,
                                                                                         child: Text("${address["subAddress"]?? ""}, ${address["localName"]?? ""}, ${address["address"]?? ""}, ${address["city"]?? ""} ")),
-                                                                                    Text("${address["contact"]?? "No Contact"}"),
+                                                                                    Text("${address["contact"]?? "No Contact".trKey}"),
                                                                                   ],
                                                                                 )
                                                                               ],
@@ -2050,7 +2044,7 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
                                                                                     });
                                                                                     prefs.setDouble("SelectedLat", address["lat"]);
                                                                                     prefs.setDouble("SelectedLong", address["long"]);
-                                                                                    Fluttertoast.showToast(msg: "Location Selected");
+                                                                                    Fluttertoast.showToast(msg: "Location Selected".trKey);
                                                                                     print("Before ${isSelected[address.id]}");
                                                                                     setState(() {
                                                                                       EnterAddress = false;
@@ -2123,4 +2117,95 @@ class _BookingScheduleAndPayment extends State<BookingScheduleAndPayment> {
       ),
     );
   }
+}
+
+Future<bool> showHireConfirmationDialog(BuildContext context) async {
+  int countdown = 45;
+  Timer? timer;
+
+  return await showDialog<bool>(
+    context: context,
+    barrierDismissible: false,
+    builder: (BuildContext context) {
+      return StatefulBuilder(
+        builder: (context, setState) {
+          // Start timer only once
+          timer ??= Timer.periodic(Duration(seconds: 1), (t) {
+            if (countdown > 1) {
+              setState(() {
+                countdown--;
+              });
+            } else {
+              t.cancel();
+              Navigator.of(context).pop(false);
+            }
+          });
+
+          return AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            title: Row(
+              children: [
+                Icon(Icons.warning_amber_rounded, color: Colors.orange),
+                SizedBox(width: 8),
+                Text('Confirm Hire'.trKey),
+              ],
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Are you sure?\n\n'
+                      'Once the request is sent, to cancel it you will need to call the staff by youself and say, don\'t come.'.trKey,
+                  style: TextStyle(fontSize: 16),
+                ),
+                SizedBox(height: 12),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    Icon(Icons.timer, size: 20, color: Colors.grey),
+                    SizedBox(width: 4),
+                    Text(
+                      '$countdown ${'sec remaining'.trKey}',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: countdown <= 5 ? Colors.red : Colors.blueGrey,
+                      ),
+                    ),
+                  ],
+                )
+              ],
+            ),
+            actions: [
+              TextButton(
+                style: TextButton.styleFrom(
+                  foregroundColor: Colors.blueGrey,
+                ),
+                child: Text('Cancel'.trKey),
+                onPressed: () {
+                  timer?.cancel();
+                  Navigator.of(context).pop(false);
+                },
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green,
+                ),
+                child: Text('Hire'.trKey, style: TextStyle(color: Colors.white),),
+                onPressed: () {
+                  timer?.cancel();
+                  Navigator.of(context).pop(true);
+                },
+              ),
+            ],
+          );
+        },
+      );
+    },
+  ).then((value) {
+    timer?.cancel(); // Safety clean-up
+    return value ?? false;
+  });
 }

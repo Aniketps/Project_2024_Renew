@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:carehub/services/convertToTranslate.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -39,8 +40,7 @@ class _ActualUser extends State<ActualUser> {
     CollectionReference user = FirebaseFirestore.instance.collection('user');
     try {
       DocumentSnapshot documentSnapshot = await user.doc(currentUserID).get();
-      CollectionReference documentSnapshotDish =
-          user.doc(currentUserID).collection("dishes");
+      user.doc(currentUserID).collection("dishes");
 
       if (documentSnapshot.exists) {
         setState(() {
@@ -111,10 +111,10 @@ class _ActualUser extends State<ActualUser> {
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 AppBar(
-                  title: const Padding(
+                  title: Padding(
                     padding: EdgeInsets.only(bottom: 35),
                     child: Center(
-                      child: Text("Profile",
+                      child: Text("Profile".trKey,
                           style: TextStyle(
                               fontSize: 20, fontWeight: FontWeight.bold, color : Colors.white)),
                     ),
@@ -269,27 +269,6 @@ class _ActualUser extends State<ActualUser> {
                                               ],
                                             ),
 
-                                            // Notifications
-                                            Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.center,
-                                              children: [
-                                                InkWell(
-                                                  onTap: () {
-                                                    Navigator.push(
-                                                      context,
-                                                      MaterialPageRoute(
-                                                        builder: (context) =>
-                                                            const ClientNotificationPage(),
-                                                      ),
-                                                    );
-                                                  },
-                                                  child: const Icon(
-                                                      Icons.notifications),
-                                                ),
-                                              ],
-                                            ),
-
                                             const SizedBox(height: 20),
 
                                             // Input fields for email, address, phone, and services
@@ -302,9 +281,9 @@ class _ActualUser extends State<ActualUser> {
                                                     controller:
                                                         _emailController,
                                                     decoration:
-                                                        const InputDecoration(
+                                                        InputDecoration(
                                                             labelText:
-                                                                "Email"),
+                                                                "Email".trKey),
                                                   ),
                                                 ),
                                               ],
@@ -341,7 +320,7 @@ class _ActualUser extends State<ActualUser> {
                                               style: ElevatedButton.styleFrom(
                                                   backgroundColor:
                                                       Colors.greenAccent),
-                                              child: const Text("Logout"),
+                                              child: Text("Logout".trKey),
                                             ),
                                           ],
                                         ),
@@ -371,7 +350,7 @@ class _ActualUser extends State<ActualUser> {
           child: TextField(
             controller: controller,
             keyboardType: label == "Phone Number"? const TextInputType.numberWithOptions() : TextInputType.text,
-            decoration: InputDecoration(labelText: label),
+            decoration: InputDecoration(labelText: label.trKey),
           ),
         ),
         InkWell(
@@ -386,8 +365,7 @@ class _ActualUser extends State<ActualUser> {
                   databasename: label,
                 });
                 // Show a confirmation message
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("Information updated successfully!")),
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Information updated successfully!".trKey)),
                 );
               }
             },

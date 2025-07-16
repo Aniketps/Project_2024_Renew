@@ -2,6 +2,8 @@ import 'package:carehub/LoginPage.dart';
 import 'package:carehub/StaffProfilePage.dart';
 import 'package:carehub/services/PaymentServices/PaymentRecordImpl.dart';
 import 'package:carehub/services/PaymentServices/PaymentRecordService.dart';
+import 'package:carehub/services/convertToTranslate.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -182,8 +184,8 @@ class _StaffPage extends State<StaffPage> {
                                 ),
                         ),
                   (StaffData == null)
-                      ? const Text(
-                          "Empty",
+                      ? Text(
+                          "Empty".trKey,
                           style: TextStyle(
                               fontWeight: FontWeight.bold, fontSize: 18),
                         )
@@ -195,7 +197,7 @@ class _StaffPage extends State<StaffPage> {
                 ])),
             ListTile(
               leading: const Icon(Icons.home),
-              title: const Text('Home'),
+              title: Text('Home'.trKey),
               onTap: () {
                 Navigator.pushReplacement(
                     context,
@@ -206,7 +208,7 @@ class _StaffPage extends State<StaffPage> {
             ),
             ListTile(
               leading: const Icon(Icons.history),
-              title: const Text('Deals'),
+              title: Text('Deals'.trKey),
               onTap: () {
                 Navigator.push(
                     context,
@@ -218,7 +220,7 @@ class _StaffPage extends State<StaffPage> {
             const Divider(),
             ListTile(
               leading: const Icon(Icons.headset_mic),
-              title: const Text('Contact Us'),
+              title: Text('Contact Us'.trKey),
               onTap: () {
                 Navigator.push(
                     context,
@@ -229,7 +231,7 @@ class _StaffPage extends State<StaffPage> {
             ),
             ListTile(
               leading: const Icon(Icons.library_books),
-              title: const Text('Terms and Conditions'),
+              title: Text('Terms and Conditions'.trKey),
               onTap: () {
                 Navigator.push(
                     context,
@@ -240,7 +242,7 @@ class _StaffPage extends State<StaffPage> {
             ),
             ListTile(
               leading: const Icon(Icons.feedback),
-              title: const Text('Feedback'),
+              title: Text('Feedback'.trKey),
               onTap: () {
                 Navigator.push(
                     context,
@@ -252,7 +254,7 @@ class _StaffPage extends State<StaffPage> {
             const Divider(),
             ListTile(
               leading: const Icon(Icons.logout),
-              title: const Text('Logout'),
+              title: Text('Logout'.trKey),
               onTap: () async {
                 await GoogleSignIn().signOut();
                 await FirebaseAuth.instance.signOut();
@@ -260,6 +262,115 @@ class _StaffPage extends State<StaffPage> {
                     MaterialPageRoute(builder: (context) => const LoginPage()));
               },
             ),
+
+            Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: DropdownButtonFormField<Locale>(
+                dropdownColor: Colors.blue,
+                value: context.locale,
+                style: const TextStyle(color: Colors.black),
+                icon: const Icon(Icons.language, color: Colors.black),
+                items: const [
+                  DropdownMenuItem(
+                    value: Locale('en'),
+                    child: Text('English'),
+                  ),
+                  DropdownMenuItem(
+                    value: Locale('hi'),
+                    child: Text('हिंदी'),
+                  ),
+                  DropdownMenuItem(
+                    value: Locale('mr'),
+                    child: Text('मराठी'),
+                  ),
+                  DropdownMenuItem(
+                    value: Locale('fr'),
+                    child: Text('Français'),
+                  ),
+                  DropdownMenuItem(
+                    value: Locale('ru'),
+                    child: Text('Русский'),
+                  ),
+                  DropdownMenuItem(
+                    value: Locale('bn'),
+                    child: Text('বাংলা'),
+                  ),
+                  DropdownMenuItem(
+                    value: Locale('pt'),
+                    child: Text('Português'),
+                  ),
+                  DropdownMenuItem(
+                    value: Locale('es'),
+                    child: Text('Español'),
+                  ),
+                  DropdownMenuItem(
+                    value: Locale('ur'),
+                    child: Text('اردو'),
+                  ),
+                  DropdownMenuItem(
+                    value: Locale('ja'),
+                    child: Text('日本語'),
+                  ),
+                  DropdownMenuItem(
+                    value: Locale('te'),
+                    child: Text('తెలుగు'),
+                  ),
+                  DropdownMenuItem(
+                    value: Locale('ar'),
+                    child: Text('العربية'),
+                  ),
+                  DropdownMenuItem(
+                    value: Locale('de'),
+                    child: Text('Deutsch'),
+                  ),
+                  DropdownMenuItem(
+                    value: Locale('vi'),
+                    child: Text('Tiếng Việt'),
+                  ),
+                  DropdownMenuItem(
+                    value: Locale('id'),
+                    child: Text('Bahasa Indonesia'),
+                  ),
+                  DropdownMenuItem(
+                    value: Locale('zh'),
+                    child: Text('中文'),
+                  ),
+                  DropdownMenuItem(
+                    value: Locale('ta'),
+                    child: Text('தமிழ்'),
+                  ),
+                  DropdownMenuItem(
+                    value: Locale('tr'),
+                    child: Text('Türkçe'),
+                  ),
+                  DropdownMenuItem(
+                    value: Locale('ko'),
+                    child: Text('한국어'),
+                  ),
+                  DropdownMenuItem(
+                    value: Locale('it'),
+                    child: Text('Italiano'),
+                  ),
+                  DropdownMenuItem(
+                    value: Locale('ml'),
+                    child: Text('മലയാളം'),
+                  ),
+                  DropdownMenuItem(
+                    value: Locale('th'),
+                    child: Text('ไทย'),
+                  ),
+                  DropdownMenuItem(
+                    value: Locale('pl'),
+                    child: Text('Polski'),
+                  ),
+                ],
+                onChanged: (Locale? locale) {
+                  if (locale != null) {
+                    context.setLocale(locale);
+                  }
+                },
+              ),
+            )
           ],
         ),
       ),
@@ -281,7 +392,7 @@ class _StaffPage extends State<StaffPage> {
                   child: Text(
                       overflow: TextOverflow.ellipsis,
                       maxLines: 1,
-                      Skill[0].toUpperCase() + Skill.substring(1),
+                      (Skill[0].toUpperCase() + Skill.substring(1)).trKey,
                       style: const TextStyle(
                           fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white)),
                 ),
@@ -292,7 +403,7 @@ class _StaffPage extends State<StaffPage> {
           ),
           // Profile photo
           Padding(
-            padding: const EdgeInsets.only(top: 60, right: 20),
+            padding: const EdgeInsets.only(top: 60, right: 20, left: 20),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
@@ -402,7 +513,7 @@ class _StaffPage extends State<StaffPage> {
                             child: Row(
                               children: [
                                 const Padding(
-                                  padding: EdgeInsets.only(left: 10),
+                                  padding: EdgeInsets.only(left: 10, right : 10),
                                   child: Icon(Icons.search,
                                       color: Colors.blue, size: 25),
                                 ),
@@ -413,9 +524,9 @@ class _StaffPage extends State<StaffPage> {
                                         SearchGlobal = value;
                                       });
                                     },
-                                    decoration: const InputDecoration(
+                                    decoration: InputDecoration(
                                       border: InputBorder.none,
-                                      hintText: 'Search...',
+                                      hintText: 'Search...'.trKey,
                                       contentPadding:
                                           EdgeInsets.symmetric(
                                               horizontal: 10),
@@ -463,8 +574,7 @@ class _StaffPage extends State<StaffPage> {
                         builder: (context, snapshot) {
                           List<Row> chefViews = [];
                           if (snapshot.hasData) {
-                            final chefs =
-                                snapshot.data?.docs.reversed.toList();
+                            final chefs = snapshot.data?.docs.reversed.toList();
                             for (var chef in chefs!) {
 
                               Row rowCopy = Row(
@@ -567,8 +677,8 @@ class _StaffPage extends State<StaffPage> {
                                                       children: [
                                                         Text(
                                                             chef["Status"]
-                                                                ? "Online"
-                                                                : "Offline",
+                                                                ? "Online".trKey
+                                                                : "Offline".trKey,
                                                             style: const TextStyle(
                                                                 color: Colors
                                                                     .green)),
@@ -630,7 +740,7 @@ class _StaffPage extends State<StaffPage> {
                                                             const EdgeInsets
                                                                 .all(3.0),
                                                             child: Text(
-                                                              Skill[0].toUpperCase() + Skill.substring(1),
+                                                              (Skill[0].toUpperCase() + Skill.substring(1)).trKey,
                                                               overflow:
                                                               TextOverflow
                                                                   .ellipsis,
@@ -687,7 +797,7 @@ class _StaffPage extends State<StaffPage> {
                             }
                           }
                           if(chefViews.isEmpty){
-                            return const Center(child: Text("No Staff", style: TextStyle(fontSize: 24),));
+                            return Center(child: Text("No Staff".trKey, style: TextStyle(fontSize: 24),));
                           }
                           return ListView(
                             padding: EdgeInsets.zero,
@@ -718,8 +828,8 @@ class _StaffPage extends State<StaffPage> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text(
-                                "Availability",
+                              Text(
+                                "Availability".trKey,
                                 style: TextStyle(
                                     fontSize: 18, fontWeight: FontWeight.bold),
                               ),
@@ -749,9 +859,9 @@ class _StaffPage extends State<StaffPage> {
                                                 color: Colors.blue,
                                                 spreadRadius: 1)
                                           ]),
-                                      child: const Padding(
+                                      child: Padding(
                                         padding: EdgeInsets.all(8.0),
-                                        child: Text("Immediately"),
+                                        child: Text("Immediately".trKey),
                                       ),
                                     ),
                                   ),
@@ -778,9 +888,9 @@ class _StaffPage extends State<StaffPage> {
                                                 color: Colors.blue,
                                                 spreadRadius: 1)
                                           ]),
-                                      child: const Padding(
+                                      child: Padding(
                                         padding: EdgeInsets.all(8.0),
-                                        child: Text("Any Time"),
+                                        child: Text("Any Time".trKey),
                                       ),
                                     ),
                                   )
@@ -829,13 +939,13 @@ class _StaffPage extends State<StaffPage> {
 
                                   if (!snapshot.hasData ||
                                       snapshot.data!.docs.isEmpty) {
-                                    return const Center(
-                                      child: Text("No Users Found"),
+                                    return Center(
+                                      child: Text("No Users Found".trKey),
                                     );
                                   }
 
                                   if (SearchGlobal.isEmpty) {
-                                    return const Center(child: Text("Empty"));
+                                    return Center(child: Text("Empty".trKey));
                                   }
 
                                   return ListView.builder(
